@@ -1,11 +1,26 @@
-	    v0.5.4
+IN PROGRESS v0.5.4 - SVN
 
+	    01/02/2007
+	
 	    New Features
 	    ------------
+	   
+	    * Continuously variable feedback for overdubs
 
-	    * Save Current Scene (F7) now overwrites an existing scene,
-	      unless no scene is loaded
-	    * Save New Scene (shift + F7) forces a new scene to be created
+	      You can now change the loop feedback during overdubbing.
+	      You can realtime vary the amount of the loop that is fed-back
+	      into itself. The current feedback level is shown on-screen.
+	    
+	      By default, MIDI CC#87 controls the loop feedback. 
+	      The feedback controls are configurable in .fweelin.rc, here:
+	    
+	      <!-- Which MIDI controller # controls overdub feedback. -->
+	      <declare var="VAR_overdubfeedback_midicontrol" type="int" init="87"/>
+	      <declare var="VAR_overdubfeedback" type="float" init="0.8"/>
+	    	      
+	    * Save Current Scene (F7) now overwrites an existing scene.
+	
+	    * Save New Scene (shift + F7) forces a new scene to be created.
 	    
 	      When overwriting, sequential backups are made 
 	      with the extensions '.backup.1' '.backup.2' etc. 
@@ -19,6 +34,10 @@
 	    Fixes
 	    -----
 
+	    - Deliberate MIDI output of events now follows the ports and 
+	      channels you specify. Incidental echoing of MIDI events follows
+	      the settings from the current patch.
+	
 	    - Fixed crash on repeat loading of scenes/loading of large scenes
 
             - Library path can now be specified relative to home folder
