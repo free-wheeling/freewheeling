@@ -1,0 +1,2707 @@
+<?xml version="1.0"?>
+<!-- Welcome to FreeWheeling's configuration system.
+
+     If you know XML, no problem.
+     Otherwise, please try to follow along.
+     It's not a piece of cake to edit,
+     but it sure is flexible!
+
+     Here, you can set up FreeWheeling to look and feel 
+     the way that is most intuitive for you. 
+
+     FreeWheeling is especially configurable where it comes to
+     different input controllers, such as QWERTY and piano keyboards,
+     MIDI footswitches and pedalboards, etc. 
+
+     In the video section, you can define a graphical layout so that your 
+     control surfaces will appear onscreen as they do at your feet or 
+     fingertips. This is important, because you will be grabbing and 
+     controlling loops from different MIDI/keyboard controllers.
+
+     In the events section, you can tell FreeWheeling how you want it to
+     respond to the physical buttons and switches you press,
+     sliders you move, and movements you make. Most of FreeWheeling's 
+     important functions can be controlled from any input. 
+
+     Underlying the configuration system is a robust language. 
+     You can do things like map velocity of a MIDI note to a 
+     certain parameter in FreeWheeling; Scale, map and transform MIDI
+     events; Create your own toggles and modes; And trigger several events
+     from one input. If you can learn how to configure FreeWheeling,
+     then you will have a robust performance controller at your fingertips.
+
+     Thanks for Reading, and Happy FreeWheeeling! 
+     Your feedback is appreciated.
+-->
+
+<freewheeling version="0.5.4">
+<general>
+<!-- In FreeWheeling, the storage of loops is independent from 
+     the user interface that was used to capture them. This is important, 
+     because it opens up doors for collaboration: loops captured by a PC 
+     keyboard can be triggered by a footswitch. In future, perhaps loops will
+     be downloaded from the Net as part of collaborative improvisation rooms.
+     These will then be available on any user interface.
+
+     This parameter establishes the number of loop ids or places to put loops.
+     FreeWheeling starts with a map of empty placeholders.
+     As the user captures loops, they are assigned to different
+     places in this map. Different user interfaces, such as keyboard keys,
+     drum triggers, footpedals, switches, or piano keys- can refer to
+     different loopids for capturing and triggering loops. And visually, 
+     you can define different onscreen layouts to show loops.
+
+     This variable determines the total number of loopids.
+     Note that even a very large map is memory efficient, because space for 
+     a loop sample is not allocated until that loop is recorded. -->
+  <var numloopids="1024"/>
+
+<!-- Path to FreeWheeling library. The library stores loops, scenes and
+     other data that persists between FreeWheeling sessions. -->
+  <var librarypath="fw-lib/"/>
+
+<!-- Number of MIDI output ports. 
+     You can echo MIDI events to different MIDI out ports, and direct 
+     specific MIDI events to specific ports. This allows you to connect 
+     FreeWheeling to different soft-synths and FX and control them through
+     separate MIDI ports. -->
+  <var midiouts="3"/>
+
+<!-- External audio inputs to create into FreeWheeling.
+     For each input, you have to specify- do I want a mono or stereo input?
+     Each audio input in the string is one letter- M for mono or S for stereo.
+     A stereo input creates two ports- input2L and input2R, for example.
+     If you create any stereo ports, or if FluidSynth is set to run in
+     stereo, FreeWheeling runs in stereo, which means larger buffers.
+
+     You can capture loops from different combinations of inputs, and you
+     can control their levels. FreeWheeling may add its own internal audio
+     inputs- for example, from its integrated softsynth. 
+     You don't need to account for those here. -->
+
+<!-- Create inputs- one input per letter- M is mono and S is stereo! -->
+  <var externalaudioinputs="MMS"/>
+
+<!-- Limit the maximum play amplification to protect your sound system-
+     this prevents us from accidentally ramping up the volume of a loop
+     to ridiculous levels. 1.0 is 100% (0 dB) volume. -->
+  <var maxplayvol="5.0"/>
+
+<!-- Maximum gain for limiter. When this is above 1.0 (100% amplitude), the
+     limiter acts like a compressor, gently rising in gain until it reaches 
+     this max. -->
+  <var maxlimitergain="1.0"/>
+
+<!-- Threshhold for limiter. When audio out goes above this threshold (1.0 is
+     100% amplitude), the limiter kicks in. Since the limiter does not look 
+     ahead, it is a good idea to set the threshhold slightly below max to
+     avoid clipping. -->
+  <var limiterthreshhold="0.9"/>
+
+<!-- Limiter release rate. A higher number is a faster release. -->
+  <var limiterreleaserate="0.000020"/>
+
+<!-- File formats for saving loops and streaming audio. 
+
+     Choose from the following options:
+
+     OGG
+     WAV
+     AU
+     FLAC
+
+     -->
+  <var loopoutformat="OGG"/>
+  <var streamoutformat="WAV"/>
+
+<!-- Quality setting for OGG encoding -->
+  <var oggquality="0.5"/>
+
+<!-- FreeWheeling compiles with FluidSynth, a SoundFont-based 
+     soft synthesizer (Linux only, as of v0.5.3) -->
+
+<!-- Run FluidSynth in stereo? This increases the size of audio memory. -->
+  <fluidsynth stereo="1"/>
+
+<!-- Parameters for FluidSynth integrated softsynth.
+     See www.fluidsynth.org for details.
+     See www.hammersound.net for free soundfonts.  -->
+  <fluidsynth param="synth.polyphony" setint="64"/>
+ 
+<!-- Interpolation setting for FluidSynth- lower setting, lower quality, 
+     faster. FluidSynth default is 4. -->
+  <fluidsynth interpolation="1"/>
+
+<!-- MIDI channel for integrated FluidSynth. All unused MIDI events are
+     folded into this channel and fired to FluidSynth. So, currently,
+     the integrated FluidSynth behaves as a single channel synth. -->
+  <fluidsynth channel="0"/>
+
+<!-- Soundfonts to load. Soundfonts without a path load from
+     /usr/local/share/fweelin/.
+
+     Two good places to find free Soundfonts:
+
+     http://www.hammersound.net/
+     http://www.sf2midi.com/
+-->
+
+  <fluidsynth soundfont="basic.sf2"/>
+
+<!-- Mercury's soundfonts: -->
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_tb303.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/Ruckus_Acoustic_Drums.SF2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_magic_techno_drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_acoustic_perc.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_african_perc.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_linn_drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_m1_drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_r8_drums.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/2/vintage-drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/tr-808-drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/StomperSet.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/2/hs_boss_dr_550.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/3/Industromatic.SF2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Alesis_DM5_Industrial_Set.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/BasementNoise.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/3/insane_kit.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Roland_TD10_Woody.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/dbkv21.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/3/GoldDrums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/3/PremierKit.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Ellade.SF2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/2/Tabla.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Talking_Drum.SF2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/RCubero_Percusion_Flamenca.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/bennetng_8850asia.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Chris_Percussion2.sf2"/>
+
+</general>
+
+<events>
+<!--
+
+*********************** EVENTS ***********************
+
+This is the events part of the configuration file. Here you can 
+specify how FreeWheeling responds to the input commands you give it.
+
+Keyboard Keys
+*************
+
+Here is a table that lists keyboard keys and corresponding keysym.
+When referring to keys in this config file, use the name given in the
+second column. 
+
+008 - backspace
+009 - tab
+012 - clear
+013 - return
+019 - pause
+027 - escape
+032 - space
+033 - exclamation
+034 - dblquote
+035 - numbersign
+036 - dollarsign
+038 - ampersand
+039 - backquote
+040 - openparen
+041 - closeparen
+042 - asterisk
+043 - plus
+044 - comma
+045 - minus
+046 - period
+047 - slash
+048 - zero
+049 - one
+050 - two
+051 - three
+052 - four
+053 - five
+054 - six
+055 - seven
+056 - eight
+057 - nine
+058 - colon
+059 - semicolon
+060 - lessthan
+061 - equal
+062 - greaterthan
+063 - questionmark
+064 - at
+091 - squarebracketopen
+092 - backslash
+093 - squarebracketclose
+094 - caret
+095 - underscore
+096 - tilde
+097 - a
+098 - b
+099 - c
+100 - d
+101 - e
+102 - f
+103 - g
+104 - h
+105 - i
+106 - j
+107 - k
+108 - l
+109 - m
+110 - n
+111 - o
+112 - p
+113 - q
+114 - r
+115 - s
+116 - t
+117 - u
+118 - v
+119 - w
+120 - x
+121 - y
+122 - z
+127 - delete
+160 - world0
+161 - world1
+162 - world2
+163 - world3
+164 - world4
+165 - world5
+166 - world6
+167 - world7
+168 - world8
+169 - world9
+170 - world10
+171 - world11
+172 - world12
+173 - world13
+174 - world14
+175 - world15
+176 - world16
+177 - world17
+178 - world18
+179 - world19
+180 - world20
+181 - world21
+182 - world22
+183 - world23
+184 - world24
+185 - world25
+186 - world26
+187 - world27
+188 - world28
+189 - world29
+190 - world30
+191 - world31
+192 - world32
+193 - world33
+194 - world34
+195 - world35
+196 - world36
+197 - world37
+198 - world38
+199 - world39
+200 - world40
+201 - world41
+202 - world42
+203 - world43
+204 - world44
+205 - world45
+206 - world46
+207 - world47
+208 - world48
+209 - world49
+210 - world50
+211 - world51
+212 - world52
+213 - world53
+214 - world54
+215 - world55
+216 - world56
+217 - world57
+218 - world58
+219 - world59
+220 - world60
+221 - world61
+222 - world62
+223 - world63
+224 - world64
+225 - world65
+226 - world66
+227 - world67
+228 - world68
+229 - world69
+230 - world70
+231 - world71
+232 - world72
+233 - world73
+234 - world74
+235 - world75
+236 - world76
+237 - world77
+238 - world78
+239 - world79
+240 - world80
+241 - world81
+242 - world82
+243 - world83
+244 - world84
+245 - world85
+246 - world86
+247 - world87
+248 - world88
+249 - world89
+250 - world90
+251 - world91
+252 - world92
+253 - world93
+254 - world94
+255 - world95
+256 - KP0
+257 - KP1
+258 - KP2
+259 - KP3
+260 - KP4
+261 - KP5
+262 - KP6
+263 - KP7
+264 - KP8
+265 - KP9
+266 - KPperiod
+267 - KPslash
+268 - KPasterisk
+269 - KPminus
+270 - KPplus
+271 - enter
+272 - equals
+273 - up
+274 - down
+275 - right
+276 - left
+277 - insert
+278 - home
+279 - end
+280 - pageup
+281 - pagedown
+282 - f1
+283 - f2
+284 - f3
+285 - f4
+286 - f5
+287 - f6
+288 - f7
+289 - f8
+290 - f9
+291 - f10
+292 - f11
+293 - f12
+294 - f13
+295 - f14
+296 - f15
+300 - numlock
+301 - capslock
+302 - scrolllock
+303 - rightshift
+304 - leftshift
+305 - rightctrl
+306 - leftctrl
+307 - rightalt
+308 - leftalt
+309 - rightmeta
+310 - leftmeta
+311 - leftsuper
+312 - rightsuper
+313 - altgr
+314 - compose
+315 - help
+316 - printscreen
+317 - sysreq
+318 - break
+319 - menu
+320 - power
+321 - euro
+322 - undo
+
+Input Events
+************
+
+Here is a table of recognized input events. 
+The inputmatrix is flexible in that different types of input events
+can be routed to different output events. There is also a parameter routing
+that connects input parameters like MIDI note velocity to control parameters
+within FreeWheeling. For example, we can specify that the number of the note
+pressed controls which loop is triggered.
+
+Event "key"
+  binding input="key" conditions="keydown=1 and key=space"
+    A keyboard key is pressed or released.
+
+    "keydown": 1 if key was pressed, otherwise 0
+    "key": Name or number of the key (see above table)
+
+Event "midicontroller"
+  binding input="midicontroller" conditions="controlnum=64 and midichannel=0 
+                                             and controlval=64>127"
+    A MIDI controller is changed.
+
+    "outport": # of MIDI output to echo event to
+    "midichannel": Channel of event
+    "controlnum": Number of control change
+    "controlval": Value of control change
+
+Event "midikey"
+  binding input="midikey" conditions="keydown=1 and midichannel=0 and 
+                                      notenum=VAR_noterange and velocity=1>127"
+    A MIDI note is pressed or released.
+
+    "outport": # of MIDI output to echo event to
+    "keydown": 1 if note is pressed, 0 if note is released
+    "midichannel": Channel of event
+    "notenum": Number of note
+    "velocity": Velocity of noteon/noteoff
+
+Event "midiprogramchange"
+  binding input="midiprogramchange" conditions="midichannel=0 and 
+				                programval=64"
+    A MIDI program change message.
+
+    "outport": # of MIDI output to echo event to
+    "midichannel": Channel of event
+    "programval": Program change #
+
+Event "midipitchbend"
+  binding input="midipitchbend" conditions="midichannel=0 and 
+				            pitchval=6000"
+    A MIDI pitch bend message.
+
+    "outport": # of MIDI output to echo event to
+    "midichannel": Channel of event
+    "pitchval": Pitch bender value
+
+Event "joybutton"
+  binding input="joybutton" conditions="joystick=1 and 
+                                        button=3 and
+                                        down=1"
+
+    A joystick button has been moved.
+
+    "joystick": # of the joystick
+    "button":   # of the button
+    "down":     1 if button is down, 0 if button is up
+
+Event "start-freewheeling"
+  binding input="start-freewheeling"
+    FreeWheeling has just been started.
+
+Event "go-sub"
+  binding input="go-sub"
+    Subroutine is being invoked- see "go-sub" in output events.
+
+The above input events can also be used as output events.
+For example, we can trigger a series of MIDI controller changes
+when a QWERTY key is pressed.
+
+Output Events
+*************
+
+Here is a table of recognized output events, what they do and
+what parameters they accept:
+
+Event "exit-freewheeling"
+  Quit! Quit!
+
+Event "slide-loop-amplifier-stop-all"
+  Stops sliding amplitudes for all loops. 
+  
+Event "slide-loop-amplifier"
+  Slides the amplitude of a given loop, like a fade.
+  
+  "loopid": the ID of the loop
+  "slide": the speed at which to slide the amplitude. Successive events 
+           accelerate the sliding, until you reverse the speed or call
+           set-loop-amplifier
+
+Event "set-loop-amplifier"
+  Sets the amplitude of a given loop, and stops any sliding
+  
+  "loopid": the ID of the loop
+  "amp": the amplitude to set it to 
+
+Event "trigger-loop"
+  Triggers a given loop-
+
+  if no loop exists at that loopid, 
+  begins recording a new loop..
+
+  if a new loop is recording, the behavior depends:
+  if overdub="1", switches to overdub.. 
+  if overdub="0", switches to play..
+
+  if a loop is playing, the behavior depends:
+  if overdub="1", switches to overdub..
+  if overdub="0", switches off..
+
+  if a loop is overdubbing, switches to play.
+
+  This is similar to an EDP style tapin-tapout-play/overdub.
+  When recording a new loop, the length grows until we trigger-loop again.
+  When overdubbing into an existing loop, the existing loop is blended with
+  new input material.
+
+  You can modify this behavior with the "engage" option. 
+  When "engage" is set to 1, the loop will -always- start.
+  When "engage" is set to 0, the loop will -always- stop.
+  If engage is not set, the behavior depends on the current state of the loop,
+  as described above.
+
+  You can modify the looping behavior with the "shot" option.
+  When "shot" is set to 1, the loop will play through only once.
+  When "shot" is not set, the loop will repeat indefinitely.
+
+  "loopid": the ID of the loop
+  "vol": the volume to trigger with- this combined with the loop amplitude
+         determine the overall amplitude of the playing loop
+  "shot": shot mode
+  "engage": force on or off?
+  "overdub": 1 or 0 determine whether to overdub or just play
+  "overdubfeedback": Variable that holds the value of feedback to
+                     apply during overdub. Variable must be of type 
+		     float (from 0.0 to 1.0). Variable can be continuously
+		     varied. 
+
+Event "set-trigger-volume"
+  Sets the volume of a given loop trigger. If you have a loop playing, you
+  can change the volume with this event. It is different than the
+  loop amplifier, because each time you trigger the loop you can have a 
+  different trigger volume, whereas the loop amplifier changes the volume
+  of the loop once-and-for-all.
+  
+  "loopid": the ID of the loop
+  "vol": the volume to set it to
+
+Event "erase-all-loops"
+  Erases all loops and time meters.
+
+Event "erase-loop"
+  Erases a given loop- if recording is happening on the given id,
+  stops and erases recording. 
+
+  "loopid": the ID of the loop
+
+Event "move-loop"
+  Moves a loop from "oldloopid" to "newloopid", if a loop exists there.
+  This can be done at any time- when recording or playing a loop,
+  or when it is inactive.
+ 
+  "oldloopid": old loop ID
+  "newloopid": new loop ID
+
+Event "slide-master-in-volume"
+  Slides the master input volume at the speed given. A positive value
+  increases volume. Actually, if you call slide-master-in-volume 
+  several times you cumulatively increase the speed of sliding. It is
+  like a fade. This applies for other slide events too.
+
+  "slide": speed of slide
+
+Event "slide-in-volume"
+  Slides one input volume at the speed given. A positive value
+  increases volume.
+	
+  "input": number of input to slide volume for
+  "slide": speed of slide
+
+Event "slide-master-out-volume"
+  Slides the master output volume at the speed given. A positive value
+  increases volume.
+
+  "slide": speed of slide
+
+Event "set-master-in-volume"
+  Sets the master input volume to 'vol'. 1.0 is 100% volume. 
+  Stops sliding.
+
+  "vol": new volume
+
+Event "set-master-out-volume"
+  Sets the master output volume to 'vol'. 1.0 is 100% volume. 
+  Stops sliding.
+
+  "vol": new volume
+
+Event "set-in-volume"
+  Sets one input volume to 'vol'. 1.0 is 100% volume.
+  Stops sliding.
+	
+  "input": number of input to set volume for
+  "vol": new volume
+
+Event "toggle-input-record"
+  Toggles recording of one input. Does not change monitoring for this input,
+  only whether loops are recorded from the input.
+	
+  "input": number of input to toggle recording for
+
+Event "adjust-midi-transpose"
+  Adjusts the pitch transpose for MIDI out. MIDI events that aren't used in
+  an event are echoed back out the MIDI out and to the internal FluidSynth
+  synthesizer. This parameter adjusts the transpose that is applied to MIDI
+  notes before they are echoed. It does not affect the note numbers coming
+  into FreeWheeling events.
+
+  "adjust": amount to shift transpose (semitones)
+
+Event "fluidsynth-enable"
+  Enables or disables processing for the integrated FluidSynth. When
+  FluidSynth is disabled, the real-time DSP for FluidSynth is not active,
+  so FreeWheeling runs faster. By default, this is done by the patch browser.
+  When you select FluidSynth patches, FluidSynth is enabled. When you select
+  other patches, FluidSynth is automatically disabled.
+
+  "enable": 1 for enable or 0 for disable
+
+Event "set-midi-tuning"
+  Retunes MIDI by the current value of the pitchbender. What this does is 
+  offset the zero position of pitchbender to a given value. You can
+  easily tune to outside instruments by sweeping the pitchbender until you are
+  in tune and then calling set-midi-tuning with the current value of the
+  pitchbender (see system variables).
+
+  "tuning": new zero position for MIDI pitchbender
+
+Event "set-midi-echo-port"
+  DEPRECATED- FreeWheeling now sends to ports/channels as specified by
+  the patch browser.
+
+  Sets the MIDI port where incoming MIDI events are echoed. The only events
+  echoed are those that do not trigger something in FreeWheeling.
+
+  "echoport": new MIDI out port number to echo MIDI events
+              (0 disables) 
+
+Event "set-variable"
+  Sets the user variable named "var" to the value "val". The value
+  given must be convertible into the type of variable "var".
+
+  "var": variable to set
+  "value": what to set it to
+
+Event "toggle-variable"
+  Toggles (increments) the user variable named "var" through an integer
+  range of values, with a maximum of "maxvalue". Wraps to 0 when maxvalue
+  is exceeded. 
+
+  "var": variable to toggle
+  "maxvalue": maximum value of variable
+
+Event "video-show-loop"
+  Change the range of loops shown onscreen-
+
+  In the onscreen layout given by "layoutid", shows loops in the range
+  "loopid". For example, if you specify layoutid 0 and loopid 15>30,
+  then layout 0 will show the loop at id 15 in its first element
+  (element id 0), up to loopid 30 in element 15. 
+
+  You will see these changes only if the layout is set to show onscreen,
+  and when there are loops stored in the loopids given.
+
+  "layoutid": which layout to change the range of shown loops
+  "loopid": new range of shown loops
+
+Event "video-show-layout"
+  Shows or hides the layout given by "layoutid". 
+  If hideothers is "1", all other layouts are made hidden.
+
+  "layoutid": layout to show/hide
+  "show": "1" for show and "0" for hide
+  "hideothers": "1" to hide all other layouts
+
+Event "video-show-help"
+  Shows or hides help.
+  FreeWheeling has an online help that can be overlaid on the screen while
+  you are playing. This event shows a given page of that help (or hides it).
+
+  The help text is user defined. Throughout this config file, you'll see
+  comments which begin in "HELP:". Any comments that begin in this way become
+  a part of the help text. If you have a second ":" in the help comment, it
+  becomes a second column in the help text.
+
+  "page": Help page number to show or "0" for hide
+
+Event "video-full-screen"
+  Put FreeWheeling in a window, or let 'er hog the whole screen
+
+  "fullscreen": "1" for hog fullscreen and "0" for window
+
+Event "select-pulse"
+  Selects time pulse #pulse. If no pulse exists at the given #,
+  creates a new one. The length and downbeat of a new pulse are taken from the
+  last recorded loop. 
+
+  Once a pulse is created, it is automatically selected. The selected pulse
+  determines the timing of all newly recorded loops. If a new pulse is
+  selected, only those loops recorded from that point on are affected.
+
+  To deselect all pulses and return to free time, set pulse="-1".
+
+  "pulse": Number of the time pulse to create/select
+
+Event "delete-pulse"
+  Delete time pulse #pulse. All loops attached to that pulse are also deleted.
+
+  "pulse": Number of the time pulse to delete
+
+Event "show-debug-info"
+  Shows or hides debugging information.
+  The information is printed to the console. It includes input events like
+  MIDI and keyboard keys, and information from bound events. 
+
+  It can help track down problems in your configuration, 
+  if FreeWheeling is not working as you imagined. 
+  But it introduces some performance latency, so I recommend leaving it off!
+
+  "show": "1" for show debug info and "0" for hide
+
+Event "toggle-disk-output"
+  Toggles output of the master outs to disk. This includes the input mix.
+  OGG files are created in the library folder with the name 'live1.ogg', 
+  'live2.ogg', etc.. The live mix is exactly what you hear from 
+  FreeWheeling's outputs.
+
+  Accompanying each OGG file is a timing file named live.wav.usx,
+  to be used in the GnuSound editor for doing precise splice edits on loop 
+  downbeats. Run oggdec on the OGG files and then load into GnuSound.
+  You can also import timing information into Ardour from this .wav.usx file-
+  see the file scripts/go-import-markers.
+
+  If FreeWheeling is already writing to disk, this shuts the record off.
+  The next write starts in a new folder.
+
+  FreeWheeling no longer overwrites old files and folders. Existing save
+  folders are skipped.
+
+Event "set-auto-loop-saving"
+  Turns on/off auto loop saving. This saves all new loops to disk. 
+  The loops are saved in the current "save" folder (see toggle-disk-output),
+  with the name 'loop???.ogg'. The loopID is given in the filename.
+  Loop files are not overwritten- subsequent writes of 55, for example,
+  will yield filenames 'loop55-0.ogg', 'loop55-1.ogg', etc.
+
+  "save": "1" to turn on auto loop saving and "0" for off
+
+Event "save-loop"
+  Saves the loop with given index. The file is named and saved as described
+  above.
+ 
+  "loopid": ID of loop to save
+
+Event "save-new-scene"
+Event "save-current-scene"
+  Saves a new/overwrites current scene. 
+  A scene is a snapshot of all loaded loops and levels.
+  It is like a save of the complete session.
+ 
+Event "switch-metronome"
+  Switches an audible metronome on or off for the given pulse. The metronome
+  sounds on the downbeat of the pulse.
+ 
+  "pulse": Number of the pulse
+  "metronome": 1 for metronome on, 0 for off
+
+Event "tap-pulse"
+  Taps a pulse- each tap gives a new downbeat.
+
+  This allows you to tap tempo, instead of creating a pulse around an 
+  existing loop. If you tap a tempo and switch-metronome to on, it is
+  like playing along with a click track. 
+
+  If you already have loops playing on a pulse, the effect is to change the
+  timing when they loop to their start. The loops themselves do not change
+  speed (yet).
+
+  "pulse": Number of the pulse
+  "newlen": 1 for change tempo, 0 for just hit downbeat
+
+Event "go-sub"
+  Triggers event "go-sub", which you can bind to. The effect is like
+  creating a subroutine of several event triggers. You can then trigger
+  go-sub from many places, and have the same subroutine of events triggered.
+
+  This allows you to have FreeWheeling do several predefined things in 
+  response to one input, like changing loop volumes and moving loops,
+  or repeating some operation on several loops.
+  
+  You can have many subroutines, and each subroutine can accept parameters.
+  Search for go-sub to find examples in this config.
+
+  "sub": Number of the subroutine
+  "param1": Integer parameter 1
+  "param2": Integer parameter 2
+  "param3": Integer parameter 3
+
+Event "browser-move-to-item"
+  Moves forward or back in a browser
+
+  "browserid": Browser ID- as you have defined in 'display' section
+  "adjust": Number of individual items to move by (+ is forward - is back)
+  "jumpadjust": number of divisions to jump by
+                divisions are placed depending on the type of browser-
+                for example, for Fluidsynth patches, there are divisions
+                between soundfonts
+
+Event "browser-select-item"
+  Choose or select the current item in a browser.
+  Different browser types behave differently when an item is selected
+  For example, the loop browser loads the selected loop
+
+  "browserid": Browser ID- as you have defined in 'display' section
+
+Event "browser-rename-item"
+  Rename the current item in a browser.
+  This is an interactive process where the user can make changes to the item
+  name. Many of the regular keyboard bindings become disabled during renaming.
+
+  During renaming, you can type a new name with the keyboard. 
+  ESC aborts renaming, and ENTER accepts the new name.
+
+  "browserid": Browser ID- as you have defined in 'display' section
+
+Event "patchbrowser-move-to-bank"
+  Switch patch browser banks.
+
+  "direction": -1 or 1 to move backward or forward
+
+Event "browser-item-browsed"
+  This event is sent out by Freewheeling's browsers whenever a browser item
+  is changed. This is useful in the patch browser- you can bind to
+  browser-item-browsed and send out control changes or change MIDI echo ports
+  whenever a new item is browsed.
+
+  "browserid": Browser ID- as you have defined in 'display' section.
+               Identifies which browser has had a change in item.
+
+Event "video-show-display"
+  Show or hide a video display with the given ID- you define the displays and
+  IDs in the video section below, and then you can turn them on or off as
+  needed through this event.
+
+  "displayid": Display ID
+  "show": 1 or 0 is show or hide display
+
+Event "set-load-loop-id"
+  Sets the loop ID where to put a loop when it is loaded from disk.
+  Loops are loaded by the loop browser when an item is selected
+  (browser-select-item).
+  Whenever a single loop is loaded from disk, it will appear in this 
+  loop ID.
+
+  "loopid": ID to load loops into
+
+Event "set-default-loop-placement"
+  Sets the range of loop IDs to be used by default.
+  For example when loading external loops, FW can place them here if 
+  the requested IDs are not available.
+
+  "looprange": Range of IDs to use as default
+
+Event "loop-clicked"
+  This event is generated whenever the user clicks a mouse button on
+  a loop slot on-screen. It allows you to respond to clicks on loops.
+
+  "down": Mouse button down or up? (1 or 0)
+  "button": Number of mouse button pressed/released
+  "loopid": Number of the corresponding loopid clicked on
+  "in": Zero if the loop was clicked in the loop tray
+        One if the loop was clicked in a layout
+
+*****************************************************************************
+
+Creating Bindings
+*****************
+
+Each binding has two parts-
+
+1) What input event and conditions trigger the binding?
+2) What output event(s) are generated and what parameters are set for those
+   events?
+
+For example-
+binding: input="key" conditions="key=escape and keydown=1"
+         output="exit-freewheeling"
+Is triggered when the escape key is pressed. The key must match "escape"
+and keydown must match "1" (the key is pressed, not released). 
+The event generated under these conditions is "exit-freewheeling".
+No parameters are set.
+
+Dynamic Parameters
+******************
+
+In the table of recognized inputs (above), you can see that there are different
+input types that can trigger events. It is possible to use simple expressions
+in your bindings to dynamically check conditions and assign parameters. 
+
+For example- This binding is for a MIDI keyboard with volume faders that 
+transmit on different MIDI channels. Here, the volume faders are being 
+used to fade loop levels:
+
+binding input="midicontroller" conditions="controlnum=7 and
+                                           midichannel=0>15"
+        output="set-loop-amplifier" parameters="loopid=midichannel+36 and
+                                                amp=controlval/127*2"
+
+This binding is triggered when MIDI controller 7 (volume) changes are
+received on channels 0-15. Event "set-loop-amplifier" is generated
+(to change the volume of a given loop). The loop given is "midichannel+36".
+The volume to set the loop to is "controlval/127*2". So, a MIDI controller 7
+input on channel 2 with controller value 127 will set loop #38 to
+volume 2.0 (200%). 
+
+The example shows how input parameters, such as MIDI channel and controller 
+value, can be referenced in your bindings along with simple 
+algebra (+ - / *). 
+
+Order of Operations
+*******************
+
+When entering algebraic expressions, note that
+FreeWheeling does not evaluate with standard order of operations. 
+The order of evaluation is always left to right. So:
+
+amp="3+3/6" will evaluate to 1 and not 3 and not 3.5.
+
+Algebra is evaluated conservatively with respect to type 
+(I'm such a conservative!) That means that the expression:
+
+amp="1/2" will evaluate to 0 and not 0.5. 
+
+For explicit floating point, use:
+
+amp="1.0/2" which evaluates to 0.5.
+
+Algebra on Ranges
+*****************
+
+value="0>12 + 10" evaluates to "10>22". Both ends of the range are worked on.
+
+or
+
+value="0>5 + 1>5" evaluates to "1>10". Note that the types of each end of a 
+range are always integers, so:
+
+value="0.5>1.5 + 0.5>1.5" evaluates to "0>2"
+
+User Variables
+**************
+
+It is also possible to create your own user variables. These can then be
+referenced in your bindings, or changed during runtime, for a much more
+dynamic user interface. 
+
+For example, the binding below will set trigger volume for loops across 
+a range of notes. The binding checks to see that the MIDI note number 
+matches the user variable "VAR_noterange". Since "VAR_noterange" is a 
+range variable, this means that the binding will only trigger event
+"set-trigger-volume" if the note number is within the range specified
+by "VAR_noterange". 
+
+binding input="midikey" conditions="VAR_cutmode=1 and notenum=VAR_noterange
+                                    and keydown=1"
+        output="set-trigger-volume" parameters="loopid=notenum and 
+                                                vol=velocity/127"
+
+****
+Note that as of version 0.5pre3, FreeWheeling automatically indexes your
+bindings based on a hash key, so there is no need to specify wildcard cases
+(previously done with midikey="*").
+****
+
+Another example... The binding:
+
+binding input="midikey" conditions="VAR_xferloop=1 and notenum=VAR_noterange
+                                    adn keydown=1"
+        output="move-loop" parameters="oldloopid=VAR_xferidx and 
+                                       newloopid=notenum+VAR_loopid_pianostart"
+
+Checks these conditions:
+
+Input event is a MIDI Key
+Variable 'VAR_xferloop' equals 1?
+Input parameter notenum is within range of variable 'VAR_noterange'
+  (When comparing against a range, a condition is true when the value is
+   within the bounds of the range)
+Input parameter keydown equals 1
+
+This binding is used to move a loop onto a piano key. Presumably, this is
+a special case where we have a loop in a holding place (such as a loop grabbed
+by a footswitch), and we want to move from that holding place onto the
+MIDI keyboard. 
+
+Using a combination of user variables and careful configuration of bindings,
+a highly tailored user interface can be created. 
+
+Order of Bindings
+*****************
+
+The order in which we declare bindings in this file is important.
+Bindings are checked from top to bottom, so you will need to put special
+case bindings first. For example, if you want to modify the behavior of a
+binding when a certain variable is set or key is held, you will have to
+put the special case before the general case.
+
+The first matching binding is the only binding that is triggered.
+
+For an example, look under comment -Erase Loops-, and see that holding
+space while pressing a loop trigger key erases a loop, whereas if space is
+not held, it triggers the loop.
+
+System Variables
+****************
+
+The following system variables may also be used in configuration.
+They are internal to FreeWheeling and are always available.
+
+You can not change the value of these variables with events like
+'set-variable' and 'toggle-variable'.System variables have special events 
+like 'set-master-in-volume' for control. 
+
+Variables:
+
+SYSTEM_midi_transpose - 
+  semitones of current MIDI transpose - 
+  affects all outgoing MIDI events to FluidSynth and the 
+  external MIDI output port
+                    
+SYSTEM_master_in_volume -
+  master input volume - 1.0 is full scale
+
+SYSTEM_master_out_volume
+  master output volume - 1.0 is full scale
+
+SYSTEM_cur_pitchbend
+  current value of MIDI pitchbender before offset
+
+SYSTEM_cur_patch_midiport
+  current patch is set to which MIDI output port?
+
+SYSTEM_bender_tune -
+  current offset of MIDI pitchbender (see set-midi-tuning)
+
+SYSTEM_cur_limiter_gain -
+  current autolimiter gain - changes as audio levels change
+  it's actually more of a soft compressor
+
+SYSTEM_audio_cpu_load -
+  current audio CPU load
+
+SYSTEM_sync_active -
+  nonzero if transport sync is sending or receiving beats/bars/ticks
+  This will happen whenever you have a pulse, or if another audio app
+  is transmitting sync information.
+
+SYSTEM_sync_transmit -
+  nonzero if Freewheeling is transmitting sync information
+  By default, Freewheeling tries to become timebase master.
+  When the transport starts rolling, FW will transmit sync information.
+  If another app is master, FW will receive sync information.
+
+SYSTEM_fluidsynth_enabled -
+  is FluidSynth enabled?
+
+SYSTEM_num_help_pages - 
+  number of help pages available
+  
+SYSTEM_num_loops_in_map -
+  total number of loops in the whole map
+
+SYSTEM_num_recording_loops_in_map -
+  total number of loops currently recording or overdubbing in map
+  watch this to see if you have runaway loops recording
+
+SYSTEM_loopid_lastrecord_0
+SYSTEM_loopid_lastrecord_1
+SYSTEM_loopid_lastrecord_2 ... -
+  loop ids for those loops last recorded -
+  lastrecord_0 is the most recently recorded loop, and so on..
+  the number of last record appears under loops, so you can see
+  which loops were recorded more recently
+
+SYSTEM_in_1_volume
+SYSTEM_in_2_volume ... -
+  current volumes for given inputs - up to the number of inputs you have
+  defined
+
+SYSTEM_in_1_record 
+SYSTEM_in_2_record ... -
+  flag for each input that tells us whether the input is set to record
+
+SYSTEM_num_midi_outs
+  number of MIDI outputs you have defined
+
+Browser types:
+
+BROWSE_patch
+  Patch browser
+BROWSE_loop
+  Loop browser- loads loops from disk
+BROWSE_scene
+  Scene browser- loads scenes from disk
+
+Triggering Multiple Outputs
+***************************
+
+You can set up one event input to trigger many output events. To do this,
+specify your output events and parameters for each in a list. Have a look
+at the binding for input="start-freewheeling", which triggers a bunch of
+events when FreeWheeling is first started.
+
+**
+Note that as of version 0.5pre3, this new syntax replaces the old start="1"
+and continued="1" syntax for startup and multiple output events.
+**
+
+MIDI Echo
+*********
+
+FreeWheeling echos incoming MIDI events to MIDI output. However, events 
+that trigger a binding are not echoed. This allows you to connect a 
+softsynth or other MIDI device to one of FreeWheeling's MIDI outputs.
+Then MIDI inputs which trigger your event bindings, such as triggering loops,
+will not go to your synth.
+
+-->
+
+  <!-- Variables -->
+
+  <!-- Note: You can't declare one variable with an initial value based on
+             another variable. All init values must be scalar numbers. 
+
+	     So the following will not work:
+	     <declare var="VAR_my_variable" type="int" init="VAR_my_other+1"/> 
+    -->
+
+  <!-- Display IDs- so we can refer to displays for turning them on/off -->
+  <declare var="DISPLAY_browser_patch" type="int" init="0"/>
+  <declare var="DISPLAY_browser_loop" type="int" init="1"/>
+  <declare var="DISPLAY_browser_scene" type="int" init="2"/>
+  <declare var="VAR_max_browser" type="int" init="2"/>
+  <declare var="VAR_cur_browser" type="int" init="0"/>
+
+  <declare var="DISPLAY_loop_tray" type="int" init="10"/>
+
+  <!-- Last received MIDI program change -->
+  <declare var="VAR_cur_program" type="int" init="0"/>
+
+  <!-- Show sync panel? -->
+  <declare var="VAR_syncpanel_show" type="int" init="0"/>
+  
+  <declare var="VAR_keyheld_up" type="char" init="0"/>
+  <declare var="VAR_keyheld_down" type="char" init="0"/>
+  <declare var="VAR_keyheld_shift" type="char" init="0"/>
+  <declare var="VAR_keyheld_ctrl" type="char" init="0"/>
+  <declare var="VAR_keyheld_alt" type="char" init="0"/>
+  <declare var="VAR_keyheld_space" type="char" init="0"/>
+
+  <declare var="VAR_midi_suspend" type="int" init="95"/>
+  <declare var="VAR_midi_footswitch" type="int" init="64"/>
+  <declare var="VAR_switch_on" type="range" init="64>127"/>
+  <declare var="VAR_switch_off" type="int" init="0"/>
+	
+  <declare var="VAR_overdubmode" type="char" init="0"/>
+  
+<!-- Which MIDI controller # controls overdub feedback. -->
+  <declare var="VAR_overdubfeedback_midicontrol" type="int" init="87"/>
+  <declare var="VAR_overdubfeedback" type="float" init="0.8"/>
+
+  <declare var="VAR_inputs" type="range" init="1>4"/>
+  <declare var="VAR_zero_keysym" type="int" init="48"/>
+
+  <declare var="VAR_footpedal_ctrl_num" type="int" init="120"/>
+  <declare var="VAR_footpedal_vol_max" type="float" init="3.0"/>
+  <declare var="VAR_footpedal_ignore" type="char" init="0"/>
+  <declare var="VAR_footpedal_mode" type="int" init="0"/>
+
+  <declare var="VAR_switch_metronome" type="char" init="0"/>
+  
+  <declare var="VAR_cutmode" type="char" init="0"/>
+  <declare var="VAR_shotmode" type="char" init="0"/>
+
+  <declare var="VAR_xferloop" type="char" init="0"/>
+  <declare var="VAR_xferidx" type="int" init="0"/>
+
+  <declare var="VAR_numsync_per_pulse" type="int" init="1"/>
+  <declare var="VAR_synctype" type="int" init="0"/>
+
+  <!-- Development mode sets options that I use for development, testing, 
+       and playing. I don't recommend you use it. -->
+  <declare var="VAR_develmode" type="char" init="0"/>
+
+  <!-- Mercury mode sets options that I use for performance.
+       You can also roll your own special options. -->
+  <declare var="VAR_mercurymode" type="char" init="1"/>
+
+  <declare var="VAR_auto_loop_save" type="char" init="0"/>
+
+  <!-- HELP: Keys listed in [] are for laptop keyboard mode -->
+  <!-- Laptop keyboard mode reorganizes keys for smaller keyboards that
+       are missing some keys. -->
+  <declare var="VAR_laptopkeymode" type="char" init="1"/>
+
+  <declare var="VAR_videofullscreen" type="char" init="0"/>
+
+  <declare var="VAR_showdebuginfo" type="char" init="0"/>
+  <declare var="VAR_helppage" type="char" init="0"/>
+  <declare var="VAR_showlayout" type="int" init="0"/>
+
+  <declare var="VAR_loopid_pckeystart" type="int" init="0"/>
+  <declare var="VAR_loopid_pianostart" type="int" init="350"/>
+  <declare var="VAR_loopid_dancemat" type="int" init="500"/>
+  <declare var="VAR_loopid_footswitch" type="int" init="340"/>
+  <declare var="VAR_loopid_default_range" type="range" init="600>1000"/>
+
+  <declare var="VAR_slide_speed" type="float" init="0.3"/>
+
+  <declare var="VAR_pianocapture" type="int" init="0"/>
+  <declare var="VAR_pianocapture_set" type="char" init="0"/>
+
+  <declare var="VAR_noterange" type="range" init="36>47"/>
+  <declare var="VAR_notechan" type="int" init="0"/>
+  <declare var="VAR_noterangechange" type="int" init="12"/>
+
+  <declare var="VAR_dancematrange" type="range" init="0>15"/>
+  <declare var="VAR_dancemat_joystick" type="int" init="0"/>
+
+  <declare var="VAR_pckeyfullrange" type="range" init="0>322"/>
+  <declare var="VAR_pckeyrange" type="range" init="97>122"/>
+  <declare var="VAR_channelrange" type="range" init="0>15"/>
+
+  <!-- Sub 0: Startup - do startup stuff -->
+  <binding input="go-sub" conditions="sub=0"
+   output1="video-show-loop" 
+   parameters1="layoutid=0 and
+                loopid=VAR_pckeyfullrange+VAR_loopid_pckeystart"
+   output2="video-show-loop" 
+   parameters2="layoutid=1 and loopid=VAR_noterange+VAR_loopid_pianostart"
+   output3="video-show-loop" 
+   parameters3="layoutid=2 and loopid=VAR_dancematrange+VAR_loopid_dancemat"
+   output4="video-show-loop" 
+   parameters4="layoutid=3 and loopid=VAR_loopid_footswitch"
+   output5="set-auto-loop-saving"
+   parameters5="save=VAR_auto_loop_save"
+   output6="set-load-loop-id"
+   parameters6="loopid=VAR_loopid_footswitch"
+   output7="set-default-loop-placement"
+   parameters7="looprange=VAR_loopid_default_range"/>
+
+  <!-- Startup -->
+  
+  <!-- Mercury's startup -->
+  <binding input="start-freewheeling" conditions="VAR_mercurymode=1"
+   output1="set-variable" parameters1="var=VAR_midi_footswitch and value=67"
+   output2="set-variable" parameters2="var=VAR_laptopkeymode and value=1"
+   output3="set-variable" parameters3="var=VAR_notechan and value=1"
+   output4="set-variable" parameters4="var=VAR_noterange and value=48>59"
+   output5="go-sub"       parameters5="sub=0"/>
+
+  <!-- Regular startup -->
+  <binding input="start-freewheeling" output="go-sub" parameters="sub=0"/>
+
+  <!-- Rest of the bindings... -->
+
+  <!-- F toggles action of footpedal
+  <binding input="key" conditions="VAR_mercurymode=1 and key=f and keydown=1"
+   output="toggle-variable" 
+   parameters="var=VAR_footpedal_ctrl_num and maxvalue=1"/>
+   -->
+   
+  <!-- Piano capture -
+       this allows you to specify any piano key for capturing loops.
+
+       First, you hit 'C' and then you hit the piano key.
+       From then on, that key triggers loops. -->
+  <!-- DISABLED-
+  <binding input="key" conditions="VAR_keyheld_space=1 and VAR_mercurymode=1 
+                                   and key=c"
+   output1="set-variable" parameters1="var=VAR_pianocapture_set and value=0"
+   output2="set-variable" parameters2="var=VAR_pianocapture and value=0"/>
+
+  <binding input="key" conditions="VAR_mercurymode=1 and key=c"
+   output="set-variable" parameters="var=VAR_pianocapture_set and value=1"/>
+    -->
+    
+  <binding input="midikey" 
+   conditions="VAR_pianocapture_set=1 and keydown=1"
+   output1="set-variable" parameters1="var=VAR_pianocapture and value=notenum"
+   output2="set-variable" parameters2="var=VAR_pianocapture_set and value=0"/>
+
+  <!-- HELP: Esc: Exit -->
+  <binding input="key" conditions="key=escape and keydown=1"
+   output="exit-freewheeling"/>
+
+  <!-- HELP: / key: Toggle help -->
+  <binding input="key" conditions="key=slash and keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_helppage and
+                                          maxvalue=SYSTEM_num_help_pages"
+   output2="video-show-help" parameters2="page=VAR_helppage"/>      
+
+  <!-- HELP: [Shift + enter] KP enter: Toggle debug info -->
+  <binding input="key" conditions="VAR_laptopkeymode=1 and
+                                   VAR_keyheld_shift=1 and key=return and
+                                   keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_showdebuginfo and 
+                                          maxvalue=1"
+   output2="show-debug-info" parameters2="show=VAR_showdebuginfo"/>      
+  <binding input="key" conditions="key=enter and keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_showdebuginfo and 
+                                          maxvalue=1"
+   output2="show-debug-info" parameters2="show=VAR_showdebuginfo"/>      
+
+  <!-- HELP: [F3] Pause: Toggle full screen -->
+  <binding input="key" conditions="VAR_laptopkeymode=1 and 
+				   key=f3 and keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_videofullscreen and
+                                          maxvalue=1"
+   output2="video-full-screen" parameters2="fullscreen=VAR_videofullscreen"/>      
+  <binding input="key" conditions="key=pause and keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_videofullscreen and
+                                          maxvalue=1"
+   output2="video-full-screen" parameters2="fullscreen=VAR_videofullscreen"/> 
+    
+  <!-- HELP: [F4] PrintScreen: Toggle record to disk -->
+  <binding input="key" conditions="VAR_laptopkeymode=1 and 
+				   key=f4 and keydown=1"
+   output="toggle-disk-output"/>
+  <binding input="key" conditions="key=printscreen and keydown=1"
+   output="toggle-disk-output"/>
+
+  <!-- This binding toggles development mode. -->
+  <binding input="key" conditions="VAR_keyheld_ctrl=1 and key=d and keydown=1"
+   output="toggle-variable" parameters="var=VAR_develmode and maxvalue=1"/>
+
+  <!-- This binding is for development and 
+       starts disk output from a MIDI keyboard. -->
+  <binding input="midikey" 
+   conditions="notenum=47 and VAR_develmode=1 and keydown=1"
+   output="toggle-disk-output"/>
+
+  <!-- This binding (development) triggers a MIDI note from the QWERTY
+       keyboard. -->
+  <binding input="key" conditions="key=d and VAR_develmode=1"
+   output="midikey" parameters="keydown=keydown and outport=1 and 
+                                midichannel=0 and 
+                                notenum=37 and velocity=127"/>
+   
+  <!-- HELP: -->
+  <!-- HELP: __ LEVELS __ -->
+  <!-- HELP: -->
+
+  <!-- HELP: shift + 1-4: Toggle inputs for recording -->
+  <!-- HELP: up/down + 1-4: +/- input volumes -->
+  <!-- HELP: 1-4: Select inputs for footpedal volume adjust (CC1) -->
+ 
+  <!-- Slide -->
+  <binding input="key" conditions="VAR_keyheld_up=1 and
+                                   key=VAR_inputs+VAR_zero_keysym and
+                                   keydown=1"
+   output="slide-in-volume" parameters="input=key-VAR_zero_keysym and
+                                        slide=VAR_slide_speed"/>
+  <binding input="key" conditions="VAR_keyheld_down=1 and
+                                   key=VAR_inputs+VAR_zero_keysym and 
+                                   keydown=1"
+   output="slide-in-volume" parameters="input=key-VAR_zero_keysym and
+                                        slide=-VAR_slide_speed"/>
+
+  <!-- Toggle -->
+  <binding input="key" conditions="VAR_keyheld_shift=1 and
+                                   key=VAR_inputs+VAR_zero_keysym and
+                                   keydown=1"
+   output="toggle-input-record" parameters="input=key-VAR_zero_keysym"/>
+
+  <!-- Overdub feedback continuous adjust from MIDI control -->
+  <!-- HELP: MIDI CC87: Overdub feedback continuous adjust -->
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_overdubfeedback_midicontrol"
+   output="set-variable" parameters="var=VAR_overdubfeedback and
+                                     value=controlval/127"/>
+
+  <!-- Footpedal adjust -->
+  <!-- Sub 2: Footpedal adjust- param1 is parameter to adjust -->
+  <!-- This sub is called whenever a parameter needs to be adjusted by the
+       footpedal -->
+  <binding input="go-sub" conditions="sub=2 and param1=VAR_inputs"
+   output1="set-in-volume" parameters1="input=param1 and vol=param2"/>
+
+  <!-- Here is the binding that calls sub 2: -->
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_footpedal_ctrl_num and VAR_footpedal_ignore=0"
+   output="go-sub" parameters="sub=2 and
+                               param1=VAR_footpedal_mode and
+                               param2=controlval/127*VAR_footpedal_vol_max"/>
+
+  <!-- And here are the input selectors for footpedal adjust: -->
+  <binding input="key" conditions="key=VAR_inputs+VAR_zero_keysym and
+                                   keydown=1"
+   output1="set-variable" parameters1="var=VAR_footpedal_ignore and
+                                       value=1"
+   output2="set-variable" parameters2="var=VAR_footpedal_mode and
+                                       value=key-VAR_zero_keysym"/>
+  <binding input="key" conditions="key=VAR_inputs+VAR_zero_keysym and
+                                   keydown=0"
+   output="set-variable" parameters="var=VAR_footpedal_ignore and
+	                             value=0"/>					  
+  <!-- HELP: Alt + \: Stop sliding loop volumes -->
+  <binding input="key" 
+   conditions="VAR_keyheld_alt=1 and key=backslash and keydown=1"
+   output="slide-loop-amplifier-stop-all"/>
+
+  <!-- HELP: [;'] Ins/Del/Bkspc: +/-/reset master in volume -->
+  <binding input="key" conditions="VAR_laptopkeymode=1 and 
+				   key=semicolon and keydown=1" 
+   output="slide-master-in-volume" parameters="slide=VAR_slide_speed"/>
+  <binding input="key" conditions="VAR_laptopkeymode=1 and
+				   key=backquote and keydown=1" 
+   output="slide-master-in-volume" parameters="slide=-VAR_slide_speed"/>
+  <binding input="key" conditions="key=insert and keydown=1" 
+   output="slide-master-in-volume" parameters="slide=VAR_slide_speed"/>
+  <binding input="key" conditions="key=delete and keydown=1" 
+   output="slide-master-in-volume" parameters="slide=-VAR_slide_speed"/>
+  <binding input="key" conditions="key=backspace and keydown=1" 
+   output="set-master-in-volume" parameters="vol=1.0"/>
+
+  <!-- Knob 1: Master in volume -->
+  <binding input="midicontroller" conditions="controlnum=80" 
+   output="set-master-in-volume" parameters="vol=controlval/127.0*2.0"/>
+
+  <!-- Knob 2: Master out volume -->
+  <binding input="midicontroller" conditions="controlnum=81" 
+   output="set-master-out-volume" parameters="vol=controlval/127.0*2.0"/>
+
+  <!-- Knobs: Input volumes -->
+  <binding input="midicontroller" conditions="controlnum=82" 
+   output="set-in-volume" parameters="input=1 and vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=83" 
+   output="set-in-volume" parameters="input=2 and vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=84" 
+   output="set-in-volume" parameters="input=3 and vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=85" 
+   output="set-in-volume" parameters="input=4 and vol=controlval/127.0*2.0"/>
+
+  <!-- Knobs: Loop volumes -->
+  <binding input="midicontroller" conditions="controlnum=90" 
+   output="set-loop-amplifier" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_0 and 
+               amp=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=91" 
+   output="set-loop-amplifier" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_1 and 
+               amp=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=92" 
+   output="set-loop-amplifier" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_2 and 
+               amp=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=93" 
+   output="set-loop-amplifier" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_3 and 
+               amp=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=94" 
+   output="set-loop-amplifier" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_4 and 
+               amp=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=95" 
+   output="set-loop-amplifier" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_5 and 
+               amp=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=96" 
+   output="set-loop-amplifier" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_6 and 
+               amp=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=97" 
+   output="set-loop-amplifier" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_7 and 
+               amp=controlval/127.0*2.0"/>
+
+<!-- Loops on buttons mode-
+
+  <binding input="midicontroller" conditions="controlnum=91" 
+   output="set-loop-amplifier" 
+   parameters="loopid=1+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+  <binding input="midicontroller" conditions="controlnum=92" 
+   output="set-loop-amplifier" 
+   parameters="loopid=2+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+  <binding input="midicontroller" conditions="controlnum=93" 
+   output="set-loop-amplifier" 
+   parameters="loopid=3+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+  <binding input="midicontroller" conditions="controlnum=94" 
+   output="set-loop-amplifier" 
+   parameters="loopid=4+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+  <binding input="midicontroller" conditions="controlnum=95" 
+   output="set-loop-amplifier" 
+   parameters="loopid=5+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+-->
+
+  <!-- HELP: [[]] Home/End/Backslash: +/-/reset master out volume -->
+  <binding input="key" conditions="VAR_laptopkeymode=1 and 
+                                   key=squarebracketopen and keydown=1" 
+   output="slide-master-out-volume" parameters="slide=VAR_slide_speed/2"/>
+  <binding input="key" conditions="VAR_laptopkeymode=1 and 
+                                   key=squarebracketclose and keydown=1" 
+   output="slide-master-out-volume" parameters="slide=-VAR_slide_speed/2"/>
+
+  <binding input="key" conditions="key=home and keydown=1" 
+   output="slide-master-out-volume" parameters="slide=VAR_slide_speed/2"/>
+  <binding input="key" conditions="key=end and keydown=1" 
+   output="slide-master-out-volume" parameters="slide=-VAR_slide_speed/2"/>
+  <binding input="key" conditions="key=backslash and keydown=1" 
+   output="set-master-out-volume" parameters="vol=1.0"/>
+
+<!-- MIDI faders: Set loop volumes
+  <binding input="midicontroller" conditions="controlnum=7 and midichannel=0" 
+   output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_0
+                                           and amp=controlval/127*2"/>
+  <binding input="midicontroller" conditions="controlnum=7 and midichannel=1" 
+   output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_1
+                                           and amp=controlval/127*2"/>
+  <binding input="midicontroller" conditions="controlnum=7 and midichannel=2" 
+   output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_2
+                                           and amp=controlval/127*2"/>
+  <binding input="midicontroller" conditions="controlnum=7 and midichannel=3" 
+   output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_3
+                                           and amp=controlval/127*2"/>
+  <binding input="midicontroller" conditions="controlnum=7 and midichannel=4" 
+   output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_4
+                                           and amp=controlval/127*2"/>
+  <binding input="midicontroller" conditions="controlnum=7 and midichannel=5" 
+   output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_5
+                                           and amp=controlval/127*2"/>
+  <binding input="midicontroller" conditions="controlnum=7 and midichannel=6" 
+   output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_6
+                                           and amp=controlval/127*2"/>
+  <binding input="midicontroller" conditions="controlnum=7 and midichannel=7" 
+   output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_7
+                                           and amp=controlval/127*2"/>
+-->
+
+  <!-- HELP: Arrow up/down + click: +/- loop volume -->
+  <binding input="loop-clicked"
+   conditions="VAR_keyheld_up=1 and button=1 and down=1"
+   output="slide-loop-amplifier"
+   parameters="loopid=loopid and
+               slide=VAR_slide_speed/2"/> 
+  <binding input="loop-clicked"
+   conditions="VAR_keyheld_down=1 and button=1 and down=1"
+   output="slide-loop-amplifier"
+   parameters="loopid=loopid and
+               slide=-VAR_slide_speed/2"/> 
+
+  <!-- HELP: Mousewheel on loops: +/- loop volume -->
+  <binding input="loop-clicked" 
+   conditions="button=4"
+   output="adjust-loop-amplifier"
+   parameters="loopid=loopid and damp=0.1"/>
+  <binding input="loop-clicked" 
+   conditions="button=5"
+   output="adjust-loop-amplifier"
+   parameters="loopid=loopid and damp=-0.1"/>
+
+  <!-- Renaming loops by clicking -->
+  <binding input="loop-clicked" 
+   conditions="VAR_keyheld_ctrl=1 and button=1 and down=1"
+   output="rename-loop"
+   parameters="loopid=loopid and in=in"/>
+   
+  <!-- Slide Loop Volumes -->
+  <!-- HELP: up/down + trigger: +/- loop volume -->
+  <binding input="midikey"
+   conditions="VAR_keyheld_up=1 and midichannel=VAR_notechan and 
+               notenum=VAR_noterange"
+   output="slide-loop-amplifier"
+   parameters="loopid=notenum+VAR_loopid_pianostart and 
+               slide=keydown*VAR_slide_speed/2"/> 
+  <binding input="key"
+   conditions="VAR_keyheld_up=1 and key=VAR_pckeyrange" 
+   output="slide-loop-amplifier"
+   parameters="loopid=key+VAR_loopid_pckeystart and 
+               slide=keydown*VAR_slide_speed/2"/> 
+  <binding input="joybutton"
+   conditions="VAR_keyheld_up=1 and joystick=VAR_dancemat_joystick and
+               button=VAR_dancematrange and down=1"
+   output="slide-loop-amplifier" parameters="loopid=VAR_loopid_dancemat+button
+                                             and slide=VAR_slide_speed/2"/>
+  <binding input="midicontroller"
+   conditions="VAR_keyheld_up=1 and controlnum=VAR_midi_footswitch and
+               controlval=VAR_switch_on"
+   output="slide-loop-amplifier"
+   parameters="loopid=VAR_loopid_footswitch and slide=VAR_slide_speed/2"/> 
+
+  <binding input="midikey"
+   conditions="VAR_keyheld_down=1 and midichannel=VAR_notechan and 
+               notenum=VAR_noterange"
+   output="slide-loop-amplifier"
+   parameters="loopid=notenum+VAR_loopid_pianostart and 
+               slide=-keydown*VAR_slide_speed/2"/> 
+  <binding input="key"
+   conditions="VAR_keyheld_down=1 and key=VAR_pckeyrange" 
+   output="slide-loop-amplifier"
+   parameters="loopid=key+VAR_loopid_pckeystart and 
+               slide=-keydown*VAR_slide_speed/2"/> 
+  <binding input="joybutton"
+   conditions="VAR_keyheld_down=1 and joystick=VAR_dancemat_joystick and
+               button=VAR_dancematrange and down=1"
+   output="slide-loop-amplifier" parameters="loopid=VAR_loopid_dancemat+button
+                                             and slide=-VAR_slide_speed/2"/>
+  <binding input="midicontroller"
+   conditions="VAR_keyheld_down=1 and controlnum=VAR_midi_footswitch and
+               controlval=VAR_switch_on"
+   output="slide-loop-amplifier"
+   parameters="loopid=VAR_loopid_footswitch and slide=-VAR_slide_speed/2"/> 
+
+  <!-- HELP: cut mode + trigger/click: Play loops with velocity sensitive volume -->
+  <!-- Set Trigger Volume (play volume) for Loops -->
+  <binding input="loop-clicked" 
+   conditions="VAR_cutmode=1 and button=1"
+   output="set-trigger-volume"
+   parameters="loopid=loopid and vol=1.0*down"/>
+
+  <binding input="key"
+   conditions="VAR_cutmode=1 and key=VAR_pckeyrange"
+   output="set-trigger-volume"
+   parameters="loopid=key+VAR_loopid_pckeystart and vol=1.0*keydown"/> 
+
+  <binding input="joybutton"
+   conditions="VAR_cutmode=1 and joystick=VAR_dancemat_joystick and
+               button=VAR_dancematrange"
+   output="set-trigger-volume"
+   parameters="loopid=VAR_loopid_dancemat+button and vol=1.0*down"/>
+
+  <binding input="midikey"
+   conditions="VAR_cutmode=1 and midichannel=VAR_notechan and 
+               notenum=VAR_noterange and keydown=1"
+   output="set-trigger-volume" 
+   parameters="loopid=notenum+VAR_loopid_pianostart and vol=velocity/127"/> 
+  <binding input="midikey"
+   conditions="VAR_cutmode=1 and midichannel=VAR_notechan and 
+               notenum=VAR_noterange and keydown=0"
+   output="set-trigger-volume"
+   parameters="loopid=notenum+VAR_loopid_pianostart and vol=0"/>
+
+  <!-- HELP: -->
+  <!-- HELP: __ MIDI __ -->
+  <!-- HELP: -->
+
+  <!-- HELP: [,.] KP Ins/Del: Transpose MIDI output -->
+  <binding input="key" conditions="VAR_laptopkeymode=1 and key=comma and 
+                                   keydown=1"
+   output="adjust-midi-transpose" parameters="adjust=-12"/>
+  <binding input="key" conditions="VAR_laptopkeymode=1 and key=period and
+                                   keydown=1"
+   output="adjust-midi-transpose" parameters="adjust=12"/>
+
+  <binding input="key" conditions="key=KP0 and keydown=1"
+   output="adjust-midi-transpose" parameters="adjust=-12"/>
+  <binding input="key" conditions="key=KPperiod and keydown=1"
+   output="adjust-midi-transpose" parameters="adjust=12"/>
+
+  <!-- HELP: 0/shift-0: Set/reset tuning from MIDI pitchbender -->
+  <binding input="key" conditions="key=openparen and keydown=1"
+   output="set-midi-tuning" parameters="tuning=0"/>
+  <binding input="key" conditions="key=zero and keydown=1"
+   output="set-midi-tuning" parameters="tuning=SYSTEM_cur_pitchbend"/>
+
+  <!-- HELP: -->
+  <!-- HELP: __ LOOPS __ -->
+  <!-- HELP: -->
+
+  <!-- Dance Mat controls -->
+  <!-- START button: Start pulse -->
+  <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
+                                         button=9 and down=1"
+   output="select-pulse" parameters="pulse=0"/>
+
+  <!-- SELECT button: Undo -->
+  <binding input="joybutton" 
+   conditions="SYSTEM_loopid_lastrecord_0=VAR_loopid_footswitch and 
+               joystick=VAR_dancemat_joystick and button=8 and down=1"
+   output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+  <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
+                                         button=8 and down=1" 
+   output="erase-loop" parameters="loopid=SYSTEM_loopid_lastrecord_0"/>
+
+  <!-- L1 button: Cut mode
+  <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
+                                         button=6 and down=1"
+   output="toggle-variable" parameters="var=VAR_cutmode and maxvalue=1"/>
+   -->
+
+  <!-- L2 button: Overdub mode -->
+  <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
+                                         button=4 and down=1"
+   output="toggle-variable" parameters="var=VAR_overdubmode and maxvalue=1"/>
+
+  <!-- L3 button: Shot mode -->
+  <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
+                                         button=7 and down=1"
+   output="toggle-variable" parameters="var=VAR_shotmode and maxvalue=1"/>
+
+  <!-- Erase Loops -->
+  <!-- HELP: space + trigger/click: Erase loop -->
+  <binding input="loop-clicked" 
+   conditions="VAR_keyheld_space=1 and button=1 and down=1"
+   output="erase-loop" parameters="loopid=loopid"/>
+
+  <binding input="midikey" 
+   conditions="VAR_keyheld_space=1 and notenum=VAR_pianocapture and keydown=1" 
+   output1="erase-loop" parameters1="loopid=VAR_loopid_footswitch"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+  <binding input="midikey" 
+   conditions="VAR_keyheld_space=1 and midichannel=VAR_notechan and 
+               notenum=VAR_noterange and keydown=1" 
+   output="erase-loop" parameters="loopid=notenum+VAR_loopid_pianostart"/> 
+
+  <binding input="key" 
+   conditions="VAR_keyheld_space=1 and key=VAR_pckeyrange and keydown=1" 
+   output="erase-loop" parameters="loopid=key+VAR_loopid_pckeystart"/> 
+
+  <binding input="joybutton"
+   conditions="VAR_keyheld_space=1 and joystick=VAR_dancemat_joystick and
+               button=VAR_dancematrange and down=1"
+   output1="erase-loop" parameters1="loopid=VAR_loopid_dancemat+button" 
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+  <binding input="midicontroller"
+   conditions="VAR_keyheld_space=1 and controlnum=VAR_midi_footswitch and 
+               controlval=VAR_switch_on"
+   output1="erase-loop" parameters1="loopid=VAR_loopid_footswitch" 
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+  <!-- Move Loops -->
+  <binding input="loop-clicked" 
+   conditions="VAR_xferloop=1 and button=1 and down=1"
+   output1="move-loop"
+   parameters1="oldloopid=VAR_xferidx and 
+                newloopid=loopid"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+  <binding input="midikey"
+   conditions="VAR_xferloop=1 and midichannel=VAR_notechan and
+               notenum=VAR_noterange and keydown=1"
+   output1="move-loop"
+   parameters1="oldloopid=VAR_xferidx and 
+                newloopid=notenum+VAR_loopid_pianostart"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+  <binding input="joybutton"
+   conditions="VAR_xferloop=1 and joystick=VAR_dancemat_joystick and
+               button=VAR_dancematrange and down=1"
+   output1="move-loop"
+   parameters1="oldloopid=VAR_xferidx and
+               newloopid=VAR_loopid_dancemat+button"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+  <binding input="key"
+   conditions="VAR_xferloop=1 and key=VAR_pckeyrange and keydown=1"
+   output1="move-loop"
+   parameters1="oldloopid=VAR_xferidx and
+               newloopid=key+VAR_loopid_pckeystart"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+  <!-- HELP: overdub mode + trigger: Overdub into loop -->
+  <!-- Overdub Loops -->
+  <!-- Auto-overdub for first recorded loop- disabled!
+  <binding input="midicontroller"
+   conditions="SYSTEM_num_loops_in_map=0 and controlnum=VAR_midi_footswitch
+               and controlval=VAR_switch_on"
+   output1="trigger-loop"
+   parameters1="loopid=VAR_loopid_footswitch and overdub=1 and
+                overdubfeedback=VAR_overdubfeedback and vol=1.0" 
+   output2="set-variable" parameters2="var=VAR_xferloop and value=1"
+   output3="set-variable" parameters3="var=VAR_xferidx and 
+                                       value=VAR_loopid_footswitch"/>
+    -->
+
+  <binding input="loop-clicked" 
+   conditions="VAR_overdubmode=1 and button=1 and down=1"
+   output="trigger-loop"
+   parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+               loopid=loopid and vol=1.0"/>
+
+  <binding input="key"
+   conditions="VAR_overdubmode=1 and key=VAR_pckeyrange and keydown=1"
+   output="trigger-loop"
+   parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+               loopid=key+VAR_loopid_pckeystart and vol=1.0"/> 
+
+  <binding input="joybutton"
+   conditions="VAR_overdubmode=1 and joystick=VAR_dancemat_joystick and
+               button=VAR_dancematrange and down=1"
+   output="trigger-loop"
+   parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+               loopid=VAR_loopid_dancemat+button and vol=1.0*down"/>
+<!--	       engage=down" -->
+
+  <binding input="midicontroller"
+   conditions="VAR_overdubmode=1 and controlnum=VAR_midi_footswitch
+               and controlval=VAR_switch_on"
+   output1="trigger-loop" 
+   parameters1="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+                loopid=VAR_loopid_footswitch and vol=1.0" 
+   output2="set-variable" parameters2="var=VAR_xferloop and value=1"
+   output3="set-variable" parameters3="var=VAR_xferidx and
+                                       value=VAR_loopid_footswitch"/>
+
+  <binding input="midikey"
+   conditions="VAR_overdubmode=1 and notenum=VAR_pianocapture and keydown=1"
+   output1="trigger-loop"
+   parameters1="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+                loopid=VAR_loopid_footswitch and vol=velocity/127"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=1"
+   output3="set-variable" parameters3="var=VAR_xferidx and
+                                       value=VAR_loopid_footswitch"/>
+
+  <binding input="midikey"
+   conditions="VAR_overdubmode=1 and midichannel=VAR_notechan and 
+               notenum=VAR_noterange and keydown=1"
+   output="trigger-loop"
+   parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+               loopid=notenum+VAR_loopid_pianostart and vol=velocity/127"/> 
+ 
+  <!-- HELP: trigger/click: Toggle Record-Play-Off for loop -->
+  <!-- Trigger Loops -->
+  <binding input="loop-clicked" conditions="button=1 and down=1"
+   output="trigger-loop"
+   parameters="loopid=loopid and vol=1.0"/>
+
+  <binding input="key" conditions="key=VAR_pckeyrange and keydown=1"
+   output="trigger-loop"
+   parameters="loopid=key+VAR_loopid_pckeystart and vol=1.0"/>
+
+  <binding input="joybutton"
+   conditions="VAR_shotmode=1 and joystick=VAR_dancemat_joystick and
+               button=VAR_dancematrange"
+   output="trigger-loop"
+   parameters="loopid=VAR_loopid_dancemat+button and vol=1.0*down and
+               engage=down and shot=1"/>
+
+  <binding input="joybutton"
+   conditions="joystick=VAR_dancemat_joystick and button=VAR_dancematrange
+               and down=1"
+   output="trigger-loop"
+   parameters="loopid=VAR_loopid_dancemat+button and vol=1.0*down"/>
+
+  <binding input="midicontroller"
+   conditions="controlnum=VAR_midi_footswitch and controlval=VAR_switch_on"
+   output1="trigger-loop" 
+   parameters1="loopid=VAR_loopid_footswitch and vol=1.0" 
+   output2="set-variable" parameters2="var=VAR_xferloop and value=1"
+   output3="set-variable" parameters3="var=VAR_xferidx and
+                                       value=VAR_loopid_footswitch"/>
+
+  <binding input="midikey"
+   conditions="notenum=VAR_pianocapture and keydown=1"
+   output1="trigger-loop"
+   parameters1="loopid=VAR_loopid_footswitch and vol=velocity/127"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=1"
+   output3="set-variable" parameters3="var=VAR_xferidx and
+                                       value=VAR_loopid_footswitch"/>
+
+  <binding input="midikey"
+   conditions="midichannel=VAR_notechan and notenum=VAR_noterange and 
+               keydown=1"
+   output="trigger-loop"
+   parameters="loopid=notenum+VAR_loopid_pianostart and vol=velocity/127"/>
+
+  <!-- HELP: Tab: Switch layouts -->
+  <!-- Always show footswitch layout.. -->
+  <binding input="key" conditions="key=tab and keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_showlayout and maxvalue=2"
+   output2="video-show-layout" parameters2="layoutid=VAR_showlayout and show=1
+                                            and hideothers=1"      
+   output3="video-show-layout" parameters3="layoutid=3 and show=1 and 
+                                            hideothers=0"/>      
+
+  <!-- HELP: ctrl + click on loop: Rename loop -->
+  <!-- See 'Renaming loops by clicking'- binding defined earlier for
+       precedence -->
+
+  <!-- HELP: u: Undo last loop record -->
+  <binding input="key" 
+   conditions="SYSTEM_loopid_lastrecord_0=VAR_loopid_footswitch and 
+               key=u and keydown=1" 
+   output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+  <!-- HELP: Alt-Space: Erase all loops -->
+  <binding input="key"
+   conditions="VAR_keyheld_alt=1 and key=space and keydown=1"
+   output="erase-all-loops"/>
+
+  <binding input="key" conditions="key=u and keydown=1" 
+   output="erase-loop" parameters="loopid=SYSTEM_loopid_lastrecord_0"/>
+
+  <!-- HELP: shift-`: Toggle loop overdub mode -->
+  <binding input="key" 
+   conditions="VAR_keyheld_shift=1 and key=tilde and keydown=1"
+   output="toggle-variable" parameters="var=VAR_overdubmode and maxvalue=1"/>
+
+  <!-- HELP: `: Toggle loop cut mode -->
+  <binding input="key" conditions="key=tilde and keydown=1"
+   output="toggle-variable" parameters="var=VAR_cutmode and maxvalue=1"/>
+
+  <!-- HELP: z/x: Change keyboard loop bank -->
+  <binding input="key" conditions="key=x and keydown=1" 
+   output1="set-variable" parameters1="var=VAR_loopid_pianostart and 
+                                       value=VAR_loopid_pianostart+
+                                             VAR_noterangechange"
+   output2="video-show-loop"
+   parameters2="layoutid=1 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+
+  <binding input="key" conditions="key=z and keydown=1" 
+   output1="set-variable" 
+   parameters1="var=VAR_loopid_pianostart and 
+                value=VAR_loopid_pianostart-VAR_noterangechange"
+   output2="video-show-loop"
+   parameters2="layoutid=1 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+
+  <!-- DEPRECATED HELP: z/x: Change keyboard octave used for loops
+  <binding input="key" conditions="key=x and keydown=1" 
+   output1="set-variable" parameters1="var=VAR_noterange and 
+                                       value=VAR_noterange+VAR_noterangechange"
+   output2="video-show-loop"
+   parameters2="layoutid=1 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+
+  <binding input="key" conditions="key=z and keydown=1" 
+   output1="set-variable" 
+   parameters1="var=VAR_noterange and value=VAR_noterange-VAR_noterangechange"
+   output2="video-show-loop"
+   parameters2="layoutid=1 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+   -->
+
+  <!-- HELP: F9: Toggle loop auto-saving --> 
+  <binding input="key" conditions="key=f9 and keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_auto_loop_save and
+                                          maxvalue=1"
+   output2="set-auto-loop-saving" parameters2="save=VAR_auto_loop_save"/>
+
+  <!-- HELP: F8: Save last recorded loop --> 
+  <binding input="key" conditions="key=f8 and keydown=1"
+   output="save-loop" parameters="loopid=SYSTEM_loopid_lastrecord_0"/>
+
+  <!-- HELP: shift + F7: Force save new scene of all loops -->
+  <binding input="key" conditions="VAR_keyheld_shift=1 and key=f7 and
+				   keydown=1"
+   output="save-new-scene"/>
+
+  <!-- HELP: F7: Save current scene of all loops -->
+  <binding input="key" conditions="key=f7 and keydown=1"
+   output="save-current-scene"/>
+
+  <!-- HELP: -->
+  <!-- HELP: __ BROWSING __ -->
+  <!-- HELP: -->
+
+  <!-- HELP: left/right: Change patch bank -->
+  <binding input="key" conditions="key=left and keydown=1"
+   output="patchbrowser-move-to-bank" parameters="direction=-1"/>
+  <binding input="key" conditions="key=right and keydown=1"
+   output="patchbrowser-move-to-bank" parameters="direction=1"/>
+
+  <!-- HELP: b: Switch browser- patch, loop, or scene -->
+  <binding input="key" conditions="key=b and keydown=1"
+   output1="video-show-display" parameters1="displayid=VAR_cur_browser and
+                                             show=0"
+   output2="toggle-variable" parameters2="var=VAR_cur_browser and 
+                                          maxvalue=VAR_max_browser"
+   output3="video-show-display" parameters3="displayid=VAR_cur_browser and
+                                             show=1"/>
+
+  <!-- HELP: (ctrl) Enter: Rename browser item -->
+  <binding input="key"
+   conditions="VAR_keyheld_ctrl=1 and key=return and keydown=1"
+   output="browser-rename-item" parameters="browserid=VAR_cur_browser"/>
+  
+  <!-- HELP: Enter: Select browser item -->
+  <!-- When selecting a loop in the loop browser, FW will load the loop-
+       since we load onto the footswitch, set our state so that we can
+       transfer the loop from the footswitch -->
+  <binding input="key"
+   conditions="VAR_cur_browser=DISPLAY_browser_loop and key=return and 
+               keydown=1"
+   output1="set-variable" parameters1="var=VAR_xferloop and value=1"
+   output2="set-variable" parameters2="var=VAR_xferidx and
+                                       value=VAR_loopid_footswitch"
+   output3="browser-select-item" parameters3="browserid=VAR_cur_browser"/>
+  <binding input="key"
+   conditions="key=return and keydown=1"
+   output="browser-select-item" parameters="browserid=VAR_cur_browser"/>
+
+  <!-- Unofficial feature: Midi Program Change: Change browser item -->
+  <binding input="midiprogramchange" conditions="programval=VAR_cur_program+1"
+   output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+   output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+                                               adjust=1 and jumpadjust=0"/>
+
+  <binding input="midiprogramchange" conditions="VAR_cur_program=127 and
+                                                 programval=0"
+   output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+   output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+                                               adjust=1 and jumpadjust=0"/>
+
+  <binding input="midiprogramchange" conditions="programval=VAR_cur_program-1"
+   output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+   output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+                                               adjust=-1 and jumpadjust=0"/>
+
+  <binding input="midiprogramchange" conditions="VAR_cur_program=0 and
+                                                 programval=127"
+   output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+   output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+                                               adjust=-1 and jumpadjust=0"/>
+
+  <binding input="midiprogramchange"
+   output="set-variable" parameters="var=VAR_cur_program and value=programval"/>
+
+  <!-- HELP: (shift) [+/-] KP +/-: (Jump)/change browser item -->
+  <binding input="key"
+   conditions="VAR_keyheld_shift=1 and VAR_laptopkeymode=1 and key=minus
+	       and keydown=1"
+   output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
+                                             adjust=0 and jumpadjust=-1"/>
+  <binding input="key"
+   conditions="VAR_keyheld_shift=1 and VAR_laptopkeymode=1 and key=equal 
+               and keydown=1"
+   output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
+                                             adjust=0 and jumpadjust=1"/>
+  <binding input="key"
+   conditions="VAR_laptopkeymode=1 and key=minus and keydown=1"
+   output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
+                                             adjust=-1 and jumpadjust=0"/>
+  <binding input="key"
+   conditions="VAR_laptopkeymode=1 and key=equal and keydown=1"
+   output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
+                                             adjust=1 and jumpadjust=0"/>
+
+  <binding input="key"
+   conditions="VAR_keyheld_shift=1 and key=KPminus and keydown=1"
+   output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
+                                             adjust=0 and jumpadjust=-1"/>
+  <binding input="key"
+   conditions="VAR_keyheld_shift=1 and key=KPplus and keydown=1"
+   output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
+                                             adjust=0 and jumpadjust=1"/>
+  <binding input="key"
+   conditions="key=KPminus and keydown=1"
+   output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
+                                             adjust=-1 and jumpadjust=0"/>
+  <binding input="key"
+   conditions="key=KPplus and keydown=1"
+   output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
+                                             adjust=1 and jumpadjust=0"/> 
+	
+  <!-- HELP: -->
+  <!-- HELP: __ TIMING __ -->
+  <!-- HELP: -->
+
+  <!-- HELP: Shift-F1: Toggle sync panel -->
+  <binding input="key" conditions="VAR_keyheld_shift=1 and key=f1 and 
+                                   keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_syncpanel_show and 
+                                          maxvalue=1"
+   output2="video-show-display" parameters2="displayid=1000 and
+                                             show=VAR_syncpanel_show"
+   output3="video-show-display" parameters3="displayid=1001 and
+                                             show=VAR_syncpanel_show"
+   output4="video-show-display" parameters4="displayid=1002 and
+                                             show=VAR_syncpanel_show"
+   output5="video-show-display" parameters5="displayid=1003 and
+                                             show=VAR_syncpanel_show"/>
+
+  <!-- HELP: (space) F1: (Delete)/create/select pulse -->
+  <binding input="key" 
+   conditions="VAR_keyheld_space=1 and key=f1 and keydown=1"
+   output="delete-pulse" parameters="pulse=0"/>
+  <binding input="key" conditions="key=f1 and keydown=1"
+   output="select-pulse" parameters="pulse=0"/>
+
+  <!-- HELP: Shift/Ctrl-S: Adjust transport sync timing -->
+  <binding input="key"
+   conditions="VAR_keyheld_shift=1 and key=s and keydown=1"
+   output1="set-variable"
+   parameters1="var=VAR_numsync_per_pulse and value=VAR_numsync_per_pulse+1"
+   output2="set-sync-speed" parameters2="speed=VAR_numsync_per_pulse"/>
+  <binding input="key"
+   conditions="VAR_keyheld_ctrl=1 and key=s and keydown=1"
+   output1="set-variable"
+   parameters1="var=VAR_numsync_per_pulse and value=VAR_numsync_per_pulse-1"
+   output2="set-sync-speed" parameters2="speed=VAR_numsync_per_pulse"/>
+   
+  <!-- HELP: Alt-S: Switch between sync-to-bar and sync-to-beat -->
+  <binding input="key"
+   conditions="VAR_keyheld_alt=1 and key=s and keydown=1"
+   output1="toggle-variable"
+   parameters1="var=VAR_synctype and maxvalue=1"
+   output2="set-sync-type" parameters2="type=VAR_synctype"/>
+
+  <!-- HELP: F2: Tap pulse -->
+  <binding input="key" conditions="key=f2 and keydown=1"
+   output="tap-pulse" parameters="pulse=0 and newlen=1"/>
+  <!--
+  <binding input="midicontroller"
+   conditions="controlnum=VAR_midi_footswitch and controlval=VAR_switch_on"
+   output="tap-pulse" parameters="pulse=0 and newlen=1"/>
+    -->
+
+  <!-- HELP: [F5] F11: Toggle metronome -->
+  <binding input="key" conditions="VAR_laptopkeymode=1 and key=f5 and 
+                                   keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_switch_metronome and
+                                          maxvalue=1"
+   output2="switch-metronome" parameters2="pulse=0 and
+                                           metronome=VAR_switch_metronome"/>
+
+  <binding input="key" conditions="key=f11 and keydown=1"
+   output1="toggle-variable" parameters1="var=VAR_switch_metronome and
+                                          maxvalue=1"
+   output2="switch-metronome" parameters2="pulse=0 and
+                                           metronome=VAR_switch_metronome"/>
+
+  <!-- HELP: [F6] F12: Select no pulse- free timing -->
+  <binding input="key" conditions="VAR_laptopkeymode=1 and key=f6 and 
+                                   keydown=1"
+   output="select-pulse" parameters="pulse=-1"/>
+  <binding input="key" conditions="key=f12 and keydown=1"
+   output="select-pulse" parameters="pulse=-1"/>
+
+  <!-- Update held keyboard states -->
+  <!-- This should be done at the end in case any other bindings respond to
+       these keys. -->
+  <binding input="key" conditions="key=space"
+   output="set-variable" parameters="var=VAR_keyheld_space and 
+                                     value=keydown"/>
+  <binding input="key" conditions="key=up"
+   output="set-variable" parameters="var=VAR_keyheld_up and 
+                                     value=keydown"/>
+  <binding input="key" conditions="key=down"
+   output="set-variable" parameters="var=VAR_keyheld_down and 
+                                     value=keydown"/>
+
+  <binding input="key" conditions="key=leftshift"
+   output="set-variable" parameters="var=VAR_keyheld_shift and 
+                                     value=keydown"/>
+  <binding input="key" conditions="key=rightshift"
+   output="set-variable" parameters="var=VAR_keyheld_shift and 
+                                     value=keydown"/>
+
+  <binding input="key" conditions="key=leftctrl"
+   output="set-variable" parameters="var=VAR_keyheld_ctrl and 
+                                     value=keydown"/>
+  <binding input="key" conditions="key=rightctrl"
+   output="set-variable" parameters="var=VAR_keyheld_ctrl and 
+                                     value=keydown"/>
+
+  <binding input="key" conditions="key=leftalt"
+   output="set-variable" parameters="var=VAR_keyheld_alt and 
+                                     value=keydown"/>
+  <binding input="key" conditions="key=rightalt"
+   output="set-variable" parameters="var=VAR_keyheld_alt and 
+                                     value=keydown"/>
+</events>
+
+<video>
+<!-- Here in this video section, we define the way FreeWheeling looks onscreen.
+     The aim is to create a visual layout that is simple and functional.
+     
+     So, key areas are highly configurable. For example, FreeWheeling is
+     designed to show you where your loops are mapped. One user may be a 
+     drummer with a MIDI kit and footswitches, where another might be sitting
+     at the keyboard of a laptop. The video section for each of these users
+     can be configured with the geometry of the places where loops go. We 
+     can say how our laptop keyboard looks, so that the loops will appear
+     onscreen inside pictures of the keys to which they are assigned. Or we 
+     could configure visuals for our drumkit layout.
+
+     The section is divided into a number of layouts. Each layout is a
+     collection of elements. Each element is a collection of geometries that
+     tell FreeWheeling how to draw that element. For example, a MIDI piano
+     keyboard is composed of all the white and black notes. Each note is
+     made up of rectangles. 
+   
+     Elements also specify where loops should be drawn, and at what size.
+     For the E key on the PC keyboard, we can specify where the loop will
+     show and at what size. For a footswitch, we can do the same.
+
+     Layouts do not define how loops are captured and triggered- only
+     how they look onscreen. -->
+
+<!-- Screen resolution. This must be set first! -->
+  <var resolution="640,480"/>
+
+<!-- Video update delay (ms). Delay for this many milliseconds between
+     video draws. On a slow system you will want a higher number to conserve
+     CPU. -->
+  <var videodelay="40"/>
+
+<!-- Fonts to load -
+
+     name="main" is the main font for all onscreen text displays 
+     name="help" is the font for help text 
+ 
+     Font files must live in /usr/share/fonts/truetype/ -->
+
+  <font name="main" file="verabd.ttf" size="20"/>
+  <font name="small" file="verabd.ttf" size="14"/>
+  <font name="tiny" file="vera.ttf" size="10"/>
+  <font name="help" file="vera.ttf" size="16"/>
+
+<!-- All positions on screen follow a coordinate system with (0,0) at the 
+     top left and (1,1) at the bottom right of the screen.
+    
+     So if the screen resolution changes, no problem. -->
+
+<!-- Here are some examples:
+
+     <layout id="0" name="PC Keyboard" scale="1.0,1.0" pos="0.00,0.00"
+      label="0" elabel="1" show="1">
+
+     This defines a visual layout "PC Keyboard":
+     
+     The ID is used later in the event bindings to refer to a layout. 
+     The name will show up onscreen if label="1" is set. 
+
+     Scale specifies scaling for the whole layout. It is
+     an easy way to make the whole layout bigger or smaller. 
+
+     Pos specifies the top left position for the whole layout- an easy way 
+     to move the whole layout onscreen. 
+
+     If elabel="1" is set, the elements will have their names showing. 
+
+     If show="0", this layout will remain hidden until an 
+     video-show-layout event is received.
+
+       <element id="113" name="Q" base="0.0,0.0" looppos="0.05,0.05" 
+        loopsize="0.1" namepos="0.01,0.00">
+
+     Inside this layout, we have defined one element named "Q".
+     This is the Q key on the PC keyboard. It is not associated with the
+     keypress of Q, but only the way the Q key looks.
+
+     ID is the identifier for the element within the layout. It is 
+     important to choose IDs carefully, because visual layouts will
+     be matched with loopids based on this ID. For example, an event binding
+     (specified later) assigns loops to keys pressed on the keyboard. 
+     The loopid is assigned based on the keysym (key symbol) for the key 
+     pressed, so that when Q is pressed, the loop is stored in loopid 113. 
+     Then, the visuals will correctly draw the loop in id 113.
+
+     Base specifies the base location of the element in the layout.
+     All coordinates for loop and name position, as well as the geometries
+     of the element, are relative to this base.
+
+     The name of the element is shown at namepos (relative to the base),
+     if elabel="1" is set in the layout.
+
+     An animated graphical loop scope is shown at looppos and
+     loopsize. The loop shown is stored at baseloopid + element ID.
+     Baseloopid is set with the video-show-loop event, which allows
+     a layout to show a range of loop ids.
+
+          <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+       </element> 
+
+     In each element, we have a number of geometries. Right now there is only
+     one type of geometry and that is box. An element is made of boxes.
+     Each box has position left,top,right,bottom given in pos. The box
+     is outlined as given in outline (letters T B L and R for top, bottom,
+     left and right).
+-->     
+
+  <layout id="0" name="PC Keyboard" scale="1.0,1.0" pos="0.00,0.00"
+   label="0" elabel="1" show="0">
+    <element id="113" name="Q" base="0.0,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="119" name="W" base="0.1,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="101" name="E" base="0.2,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="114" name="R" base="0.3,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="116" name="T" base="0.4,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="121" name="Y" base="0.5,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="117" name="U" base="0.6,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="105" name="I" base="0.7,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="111" name="O" base="0.8,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="112" name="P" base="0.9,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+
+    <element id="97" name="A" base="0.03,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="115" name="S" base="0.13,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="100" name="D" base="0.23,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="102" name="F" base="0.33,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="103" name="G" base="0.43,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="104" name="H" base="0.53,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="106" name="J" base="0.63,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="107" name="K" base="0.73,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="108" name="L" base="0.83,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+
+    <element id="122" name="Z" base="0.06,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="120" name="X" base="0.16,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="99" name="C" base="0.26,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="118" name="V" base="0.36,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="98" name="B" base="0.46,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="110" name="N" base="0.56,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="109" name="M" base="0.66,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+  </layout>
+
+  <layout id="1" name="Piano Keyboard" scale="0.35,0.55" pos="0.00,0.00"
+   label="0" elabel="0" namepos="0.02,0.02" show="1">
+    <element id="0" name="C" base="0.0,0.0" looppos="0.20,0.85" loopsize="0.5"
+     namepos="0.15,1.10">
+      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+      <box outline="T LR" pos="0.00,0.00, 0.15,0.60"/>
+    </element>
+    <element id="1" name="C#" base="0.0,0.0" looppos="0.35,0.25" loopsize="0.5"
+     namepos="0.25,0.50">
+      <box outline="TBLR" pos="0.15,0.00, 0.55,0.60"/>
+    </element>
+    <element id="2" name="D" base="0.4,0.0" looppos="0.20,0.85" loopsize="0.5"
+     namepos="0.15,1.10">
+      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+      <box outline="T LR" pos="0.15,0.00, 0.25,0.60"/>
+    </element>
+    <element id="3" name="D#" base="0.4,0.0" looppos="0.45,0.25" loopsize="0.5"
+     namepos="0.35,0.50">
+      <box outline="TBLR" pos="0.25,0.00, 0.65,0.60"/>
+    </element>
+    <element id="4" name="E" base="0.8,0.0" looppos="0.20,0.85" loopsize="0.5"
+     namepos="0.15,1.10">
+      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+      <box outline="T LR" pos="0.25,0.00, 0.40,0.60"/>
+    </element>
+    <element id="5" name="F" base="1.2,0.0" looppos="0.20,0.85" loopsize="0.5"
+     namepos="0.15,1.10">
+      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+      <box outline="T LR" pos="0.00,0.00, 0.15,0.60"/>
+    </element>
+    <element id="6" name="F#" base="1.2,0.0" looppos="0.35,0.25" loopsize="0.5"
+     namepos="0.25,0.50">
+      <box outline="TBLR" pos="0.15,0.00, 0.55,0.60"/>
+    </element>
+    <element id="7" name="G" base="1.6,0.0" looppos="0.20,0.85" loopsize="0.5"
+     namepos="0.15,1.10">
+      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+      <box outline="T LR" pos="0.15,0.00, 0.20,0.60"/>
+    </element>
+    <element id="8" name="G#" base="1.6,0.0" looppos="0.40,0.25" loopsize="0.5"
+     namepos="0.30,0.50">
+      <box outline="TBLR" pos="0.20,0.00, 0.60,0.60"/>
+    </element>
+    <element id="9" name="A" base="2.0,0.0" looppos="0.20,0.85" loopsize="0.5"
+     namepos="0.15,1.10">
+      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+      <box outline="T LR" pos="0.20,0.00, 0.25,0.60"/>
+    </element>
+    <element id="10" name="A#" base="2.0,0.0" looppos="0.45,0.25" 
+     loopsize="0.5" namepos="0.35,0.50">
+      <box outline="TBLR" pos="0.25,0.00, 0.65,0.60"/>
+    </element>
+    <element id="11" name="B" base="2.4,0.0" looppos="0.20,0.85" loopsize="0.5"
+     namepos="0.15,1.10">
+      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+      <box outline="T LR" pos="0.25,0.00, 0.40,0.60"/>
+    </element>
+  </layout>
+
+  <!-- Layout for 'Competition Pro' PS2 dancemat thru EMSUSB2 PS2->USB
+       adaptor. Button indexes are given in 'id'. They may be different
+       for another dance mat or adaptor. -->
+  <layout id="2" name="DANCEMAT" scale="2.0,2.0" pos="0.02,0.02"
+   label="0" elabel="1" namepos="0.02,0.02" show="0">
+    <element id="2" name="TL" base="0.0,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="12" name="T" base="0.1,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="1" name="TR" base="0.2,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+
+    <element id="15" name="L" base="0.0,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="13" name="R" base="0.2,0.1" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+
+    <element id="0" name="BL" base="0.0,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="14" name="B" base="0.1,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+    <element id="3" name="BR" base="0.2,0.2" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+  </layout>
+
+  <layout id="3" name="Footswitch" scale="1.0,1.3" pos="0.90,0.85"
+   label="0" elabel="1" namepos="0.02,0.02" show="1">
+    <element id="0" name="SW" base="0.0,0.0" looppos="0.05,0.05" 
+     loopsize="0.1" namepos="0.01,0.00">
+      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+    </element> 
+  </layout>
+
+<!-- You can also have FreeWheeling display system and user-defined variables
+     such as midi transposition, or the last pressed midi key. This is done
+     by defining 'display' sections: -->
+ 
+  <display var="SYSTEM_midi_transpose" type="text" font="small"
+   title="poze " pos="0.0,0.9"/>
+  <display var="SYSTEM_audio_cpu_load/100" type="bar" font="main"
+   title="CPU" pos="0.05,0.8" 
+   orientation="vertical" barscale="0.2" thickness="0.03"/>
+  <display var="SYSTEM_master_in_volume" type="bar" font="main"
+   title="IN" pos="0.245,0.8" 
+   orientation="vertical" barscale="0.2" thickness="0.07"/>
+
+  <display var="SYSTEM_in_1_volume" type="bar-switch" 
+   switchvar="SYSTEM_in_1_record"
+   orientation="vertical" pos="0.20,0.8" barscale="0.2" thickness="0.025"/>
+  <display var="SYSTEM_in_2_volume" type="bar-switch" 
+   switchvar="SYSTEM_in_2_record"
+   orientation="vertical" pos="0.23,0.8" barscale="0.2" thickness="0.025"/>
+  <display var="SYSTEM_in_3_volume" type="bar-switch" 
+   switchvar="SYSTEM_in_3_record" 
+   orientation="vertical" pos="0.26,0.8" barscale="0.2" thickness="0.025"/>
+  <display var="SYSTEM_in_4_volume" type="bar-switch" 
+   switchvar="SYSTEM_in_4_record" 
+   orientation="vertical" pos="0.29,0.8" barscale="0.2" thickness="0.025"/>
+  
+  <display var="SYSTEM_in_1_peak" type="bar-switch"
+   switchvar="SYSTEM_in_1_record"
+   orientation="vertical" pos="0.20,0.8" barscale="0.2" thickness="0.015"
+   color="2" calibrate="1.0"/>
+  <display var="SYSTEM_in_2_peak" type="bar-switch"
+   switchvar="SYSTEM_in_2_record"
+   orientation="vertical" pos="0.23,0.8" barscale="0.2" thickness="0.015"
+   color="2" calibrate="1.0"/>
+  <display var="SYSTEM_in_3_peak" type="bar-switch"
+   switchvar="SYSTEM_in_3_record"
+   orientation="vertical" pos="0.26,0.8" barscale="0.2" thickness="0.015"
+   color="2" calibrate="1.0"/>
+  <display var="SYSTEM_in_4_peak" type="bar-switch"
+   switchvar="SYSTEM_in_4_record"
+   orientation="vertical" pos="0.29,0.8" barscale="0.2" thickness="0.015"
+   color="2" calibrate="1.0"/>
+
+  <display var="SYSTEM_master_out_volume" type="bar" font="main"
+   title="OUT" pos="0.45,0.8" 
+   orientation="vertical" barscale="0.2" thickness="0.03"/>
+  <display var="SYSTEM_cur_limiter_gain" type="bar" font="main"
+   title="LMT" pos="0.6,0.8" 
+   orientation="vertical" barscale="0.2" thickness="0.03"/>
+
+  <display var="VAR_numsync_per_pulse" id="1000" type="text" font="small"
+   title="sync " pos="0.0,0.87" show="0"/>
+  <display var="VAR_synctype" id="1001" 
+   type="text-switch" font="small" pos="0.1,0.87"
+   text0="bars per pulse" text1="beats per pulse" show="0"/>
+  <display var="SYSTEM_sync_active" id="1002" type="circle-switch" 
+   font="small" title="Sync"
+   pos="0.65,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
+  <display var="SYSTEM_sync_transmit" id="1003" type="circle-switch" 
+   font="small" title="XMit"
+   pos="0.75,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
+
+  <display var="VAR_overdubfeedback" type="bar" font="small"
+   title="FB" pos="0.7,0.9" orientation="horizontal" barscale="0.04"
+   thickness="0.01"/>
+
+  <display var="SYSTEM_num_recording_loops_in_map" type="circle-switch" 
+   pos="0.61,0.96" size1="0.02" size0="0.01" flash="0"/>
+  <display var="SYSTEM_fluidsynth_enabled" type="switch" font="small" 
+   pos="0.54,0.9" title="SYNTH"/> 
+  <display var="VAR_auto_loop_save" type="switch" font="small" pos="0.42,0.9" 
+   title="SAVE"/> 
+  <display var="VAR_xferloop" type="switch" font="small" pos="0.36,0.9" 
+   title="X"/> 
+  <display var="VAR_overdubmode" type="switch" font="small" pos="0.26,0.9" 
+   title="DUB"/> 
+  <display var="VAR_cutmode" type="switch" font="small" pos="0.16,0.9" 
+   title="CUT"/> 
+
+  <display id="DISPLAY_browser_patch" type="browser" font="main" 
+   browsetype="BROWSE_patch" pos="0.0,0.96" 
+   xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="1">
+<!-- Load the given patch bank for patch browsing. Link this bank of patches
+     to the given MIDI output port. You can have several of these statements,
+     each controlling patches for a different MIDI output port. 
+
+     You can also have combination patches, where one MIDI controller is routed
+     to several MIDI ports and channels, depending on keyboard zones. 
+     See examples/README for more information.
+
+     Patch browsing allows the user to browse through meaningful patch names
+     for external synthesizers. It allows a single MIDI control source to
+     control multiple sound sources. 
+
+     You can define the patches and program numbers
+     in the 'patches' file (see examples/patches1.xml).
+     
+     You can automatically generate patch names for DSSI synth plugins 
+     by using a patched version of Ghostess, which saves patch names 
+     in the right XML format for Freewheeling to load (see examples/README).
+
+     Each patches.xml file contains data for all channels. You can have 
+     different patches available on each MIDI channel.
+
+     By default, FreeWheeling looks in the folder ~/.fweelin/ for your
+     XML patch files. FreeWheeling also checks /usr/local/share/fweelin/ for
+     XML patch files.
+
+     Each patch file has optional settings as follows:
+
+	        With suppressprogramchanges=1, no MIDI bank and program change
+	        messages are sent when patches are changed within a patch bank.
+	        This is useful when you have a softsynth loaded with patches on
+  	        different channels and you merely want to switch channels-
+	        each patch is mapped to a different channel, but you don't want
+	        program change messages being sent to mess up your patches. 
+
+	        Use this for banks of Linuxsampler channels.
+	
+	        With separatechannels=0, patches mapped to different channels
+		appear in the same patch bank. With this option, you can have a
+		collection of several patches on different channels that appear
+		together in one list for browsing. This is useful for sampling
+		synths where your patches are pre-loaded onto channels.
+	
+                With separatechannels=1, the old behavior is used. 
+	        The old behavior splits each channel into a separate bank.
+	        This works well for DSSI softsynths, where many synths run on
+	        the same port, but each channel accesses a different synth and
+	        different set of patches.
+
+     -->
+
+     <!-- Uncomment to load ~/.fweelin/patches1.xml and make patches available
+          on MIDI output 1. 
+
+         <patchbank midiport="1" separatechannels="1" patches="patches1.xml"/>
+     -->
+
+     <!-- Mercury's patchbanks: -->
+     <patchbank midiport="2" separatechannels="1" patches="patches2.xml"/>
+     <patchbank midiport="1" suppressprogramchanges="1" separatechannels="0" patches="patches-piano-strings-big.xml"/>
+     <patchbank midiport="3" patches="patches3.xml"/>
+
+     <!-- Patch file with all channels available: This is a basic template
+          for allowing the user to simply switch between MIDI output channels
+	  without sending MIDI program/bank changes. -->
+     <patchbank midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-channels.xml"/>
+  </display>
+
+  <display id="DISPLAY_browser_loop" type="browser" font="small"
+   browsetype="BROWSE_loop" pos="0.0,0.96"
+   xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="0"/>
+  <display id="DISPLAY_browser_scene" type="browser" font="small"
+   browsetype="BROWSE_scene" pos="0.0,0.96" 
+   xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="0"/>
+
+  <display id="DISPLAY_loop_tray" type="browser" font="tiny"
+   browsetype="BROWSE_loop_tray" pos="0.015,0.92"
+   xpand="0" xbox="0.05,0.6, 0.95,0.9" loopsize="0.05" show="1"/>
+</video>
+
+</freewheeling>

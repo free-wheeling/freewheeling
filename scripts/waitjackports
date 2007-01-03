@@ -1,0 +1,16 @@
+# Script to wait for named JACK ports to appear
+#
+# usage: waitjackports <name>
+#
+# where name is the full or partial client name (grep search will be done)
+#
+# prints all ports belonging to the named client
+
+JACK_NAME=$1
+
+while ((`jack_lsp | grep $JACK_NAME | awk 'END { print NR }'` == 0))
+do 
+  sleep 0.1
+done
+
+jack_lsp | grep $JACK_NAME

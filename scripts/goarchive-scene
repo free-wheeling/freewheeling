@@ -1,0 +1,22 @@
+# Aid for managing loop/scene libraries
+#
+# This script can be used in the FreeWheeling library folder (fw-lib/ by default)
+# to archive -one scene plus all the loops it uses-
+#
+# This is useful for sharing scenes between people. You simply archive up the scene with the loops,
+# send the archive to the person, and they extract it into their fw-lib/ folder. Then they can
+# build on your improvisation.
+#
+# For example: goarchive-scene "scene-504B642155558670C0DD84717E4B4DF8-Hacking the Database 2.xml" hacking
+#                archives the above named scene and all loops it refers to into the archive 'hacking.tar.bz2'
+#
+# No files are archived before prompting you.
+#
+echo Files to archive:
+
+awk '{ if ($1 == "<loop") { sub(/hash="/,"",$3) ; sub(/"/,"",$3) ; print "loop-" $3 "*" } }' "$1"
+echo "$1"
+echo "Archive these files to $2.tar.bz2? (Enter=Yes, CTRL-C=Abort)"
+read
+SCENEFILE=`echo "$1" | cut -d- -f1,2`
+tar cjvf $2.tar.bz2 `awk '{ if ($1 == "<loop") { sub(/hash="/,"",$3) ; sub(/"/,"",$3) ; print "loop-" $3 "*" } }' "$1"` $SCENEFILE*

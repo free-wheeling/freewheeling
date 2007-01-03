@@ -1,0 +1,16 @@
+# Aid for managing loop/scene libraries
+#
+# This script can be used in the FreeWheeling library folder (fw-lib/ by default)
+# to archive all loops & scenes with a specific date-
+#
+# For example: goarchive-date "Apr 15" test archives all files from April 15 to archive 'test.tar.bz2'. 
+#                Don't forget quotes!
+#              goarchive-date "Apr 16 21:" old archives all files from April 16 from 9pm-10pm to archive 'old.tar.bz2'. 
+#
+# No files are archived before prompting you.
+#
+echo Found these files..
+ls -lt | grep "$1"
+echo "Archive these files to $2.tar.bz2? (Enter=Yes, CTRL-C=Abort)"
+read
+tar cjvf $2.tar.bz2 `ls -lt | grep "$1" | awk '{ print $9 }'`

@@ -1,0 +1,27 @@
+# Script to wait for named ALSA midi ports to appear
+#
+# usage: waitalsaports <name>
+#
+# where name is the full or partial client name (grep search will be done)
+#
+# prints the port numbers for system MIDI input and client MIDI input,
+# respectively
+#
+# typically they are 72:0 128:0
+ 
+ALSA_NAME=$1
+
+# **** You will have to change the following line to reflect the name of your MIDI hardware
+# On my system aconnect -li reports client 72: 'MidiSport 2x2', so the name can be any subset of that:
+
+ALSA_IN_NAME=MidiSport
+#ALSA_IN_NAME=PCR
+
+while ((`aconnect -lo | grep $ALSA_NAME | awk 'END { print NR }'` == 0))
+do 
+  sleep 0.1
+done
+
+ALSA_SYSTEM_MIDI=`aconnect -lo | grep $ALSA_IN_NAME | grep client | awk '{ print $2 }'`0
+ALSA_CLIENT_MIDI=`aconnect -lo | grep $ALSA_NAME | grep client | awk '{ print $2 }'`0
+echo $ALSA_SYSTEM_MIDI $ALSA_CLIENT_MIDI

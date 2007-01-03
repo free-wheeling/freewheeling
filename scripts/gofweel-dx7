@@ -1,0 +1,4 @@
+#Restart FreeWheeling, and Hexter, and link them together with FX
+./killfweel
+./gofweel
+./godx7

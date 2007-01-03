@@ -1,0 +1,105 @@
+Intro for Mac OS X
+==================
+
+FreeWheeling for Mac OS X is a direct port of the Linux version. 
+A Universal binary will be made available for each release, along
+with source code if you wish to compile it yourself.
+
+The user interface remains the same across OS X and Linux versions. 
+This means that FreeWheeling OS X does not make use of Mac's Aqua interface. A few basic commands specific to the Mac version have been provided in a Mac menu. The rest of the functionality is built into the
+app window.
+
+FreeWheeling is designed to be mostly MIDI and keyboard driven. A few things can be done from a mouse, but while playing music, the idea is to keep your hands on your instrument. FreeWheeling is not a music production
+or DJing tool. FreeWheeling works for instrumentalists, such as drummers,
+guitarists, keyboardists and vocalists. FreeWheeling is like a second
+instrument, that you use to reflect back parts of your playing, to build
+loops in a spontaneous way. 
+
+You can configure FreeWheeling to work with the PC keyboard, joysticks,
+or MIDI-enabled devices. 
+
+Setup for Mac OS X
+==================
+
+1. Drag the 'Fweelin' app to the 'Applications' folder.
+
+2. Download and install JACK. http://jackosx.com/
+
+	Jack is an audio connection kit similar to Rewire.
+
+	It allows you to plug FreeWheeling into different audio apps,
+	such as soft synths or sequencers.
+
+3. Start 'Jack Pilot', included with your JACK installation.
+
+	Set the lowest possible latency that provides stable performance.
+ 
+	Set 'Jack Pilot' to 'Full Duplex' (recording and playback enabled),
+	if you wish to record live instruments in FreeWheeling.
+
+	If you are using the onboard Mac sound, you can get 'Full Duplex'
+	recording and playback by creating an 'Aggregate Audio Device'.
+	To do this, run 'Applications/Utilities/Audio MIDI Setup'.
+
+4. If you wish to debug the console output of FreeWheeling for
+   troubleshooting, start 'Applications/Utilities/Console' now.
+
+5. Run 'fweelin'. The main window should appear. If it does not,
+   consult the Console log (step 4), or try running from a Terminal.
+
+Using FreeWheeling for Mac OS X
+===============================
+
+FreeWheeling can be driven from any one MIDI source. To select
+the source, choose 'Preferences' from the 'Fweelin' menu.
+
+By default, FreeWheeling grabs loops with the QWERTY keys as well as
+one octave of keys on your MIDI keyboard. This can be configured in
+the main configuration file, ~/.fweelin/.fweelin.rc.
+
+You will have to connect audio to go into and out of FreeWheeling using
+Jack Pilot. Most often, you will want to route your system audio inputs
+into FreeWheeling, and FreeWheeling's audio outputs back out to the system,
+or into a sequencer or effects program. Regular Mac audio apps work with JACK. Simply point them to the 'JACK' device.
+
+FreeWheeling can also drive soft-synths and effects. FreeWheeling creates
+several MIDI outputs, which appear as virtual MIDI sources. You can connect your audio apps to these MIDI sources. FreeWheeling has a built-in configurable patch browser that can be used to select patches on different
+MIDI outputs. You can also create combination patches that split your
+MIDI input into a variety of keyboard zones, playing different outputs
+together.
+
+For more help, please refer to the video tutorials at:
+http://freewheeling.sourceforge.net/
+
+And read the configuration file:
+~/.fweelin/.fweelin.rc
+(once you've run FreeWheeling, this file appears)
+
+Browse or sign on to the mailing-list for help.
+
+Happy Looping!
+-JP Mercury.
+
+Compiling FreeWheeling from Source
+==================================
+
+FreeWheeling for Mac OS X can be compiled from source.
+Download the source package.
+You will need Apple's XCode tools.
+
+Load MacOSX/fweelin.xcodeproj
+FreeWheeling depends on several frameworks.
+Many of these can be installed from third-party sites.
+
+However, some, such as libsndfile, 
+require a small amount of tweaking to be compiled as Frameworks. 
+A ZIP file of all dependency Frameworks with xcodeproj files is
+available. Please contact JP Mercury:
+
+http://home.graffiti.net/swirlee/swirlee.jpg
+
+If you wish to contribute to the development of FreeWheeling, 
+please be in touch.
+
+Happy Compiling!
+-JP Mercury.

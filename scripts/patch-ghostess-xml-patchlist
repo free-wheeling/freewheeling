@@ -1,0 +1,164 @@
+diff -u ghostess-20050916/src/ghostess.c ghostess-20050916-nw/src/ghostess.c
+--- ghostess-20050916/src/ghostess.c	2005-09-16 10:03:16.000000000 -0700
++++ ghostess-20050916-nw/src/ghostess.c	2006-03-29 11:46:38.000000000 -0800
+@@ -14,6 +14,9 @@
+  *     Chris Cannam, and Richard Bown.
+  * - midisine.c, copyright (C) 2004 Ian Esten.
+  *
++ * Modifications for outputting XML formatted patch list
++ * by JP Mercury
++ *
+  * This is a host for DSSI plugins.  It listens for MIDI events on an
+  * ALSA sequencer or CoreMIDI port, delivers them to DSSI synths and
+  * outputs the result via JACK.
+@@ -848,7 +851,7 @@
+ }
+ 
+ int
+-write_configuration(FILE *fp)
++write_configuration(char *filename)
+ {
+     int rc = 0;
+     int id, instno, i, in, port;
+@@ -856,6 +859,21 @@
+     char *arg1 = NULL,
+          *arg2 = NULL;
+     configure_item_t *item;
++    FILE *fp, *fp2;
++    char fn2[strlen(filename)+strlen(".xml")+1];
++    char tmp[255];
++    int j, slen;
++
++    // Save configuration
++    if ((fp = fopen(filename, "w")) == NULL)
++      return 0;
++
++    // Save XML patch list
++    strcpy(fn2,filename);
++    strcat(fn2,".xml");
++    if ((fp2 = fopen(fn2, "w")) == NULL)
++      return 0;
++    fprintf(fp2,"<patchlist>\n");
+ 
+     if (fprintf(fp, "#!/bin/sh\n") < 0) goto error;
+     if (dssi_path) {
+@@ -878,6 +896,7 @@
+         for (instno = 0; instances[instno].id != id; instno++);
+         instance = &instances[instno];
+ 
++	// Write config
+         escape_for_shell(&arg1, instance->friendly_name);
+         if (fprintf(fp, "-comment %s \\\n", arg1) < 0) goto error;
+ 
+@@ -910,14 +929,59 @@
+         escape_for_shell(&arg1, instance->plugin->dll->name);
+         escape_for_shell(&arg2, instance->plugin->label);
+         if (fprintf(fp, " %s:%s \\\n", arg1, arg2) < 0) goto error;
++
++	// Write patch list
++	
++#if 0
++	instance->pluginProgramCount = i;
++	instance->pluginPrograms = (DSSI_Program_Descriptor *)
++	  malloc(i * sizeof(DSSI_Program_Descriptor));
++	while (i > 0) {
++	  const DSSI_Program_Descriptor *descriptor;
++	  --i;
++	  descriptor = instance->plugin->descriptor->
++	    get_program(instanceHandles[instance->number], i);
++	  instance->pluginPrograms[i].Bank = descriptor->Bank;
++	  instance->pluginPrograms[i].Program = descriptor->Program;
++	  instance->pluginPrograms[i].Name = strdup(descriptor->Name);
++	  ghss_debug(GDB_PROGRAM, " %s: program %d is MIDI bank %lu program %lu, named '%s'",
++		     instance->friendly_name, i,
++		     instance->pluginPrograms[i].Bank,
++		     instance->pluginPrograms[i].Program,
++		     instance->pluginPrograms[i].Name);
++	}
++#endif
++	
++	for (i = 0; i < instance->pluginProgramCount; i++) {
++	  // Replace < and > characters in name (bad XML)
++	  strncpy(tmp,instance->pluginPrograms[i].Name,254);
++	  tmp[254] = '\0';
++	  slen = strlen(tmp);
++	  for (j = 0; j < slen; j++) 
++	    if (tmp[j] == '<' ||
++		tmp[j] == '>')
++	      tmp[j] = ' ';
++
++	  fprintf(fp2,"<patch channel=\"%d\" "
++		  "name=\"%s\" bank=\"%d\" program=\"%d\"/>\n",
++		  instance->channel,
++		  tmp,
++		  (int) instance->pluginPrograms[i].Bank,
++		  (int) instance->pluginPrograms[i].Program);
++	}
+     }
+     if (fprintf(fp, "\n") < 0) goto error;
+     rc = 1;
+ 
++    fprintf(fp2,"</patchlist>\n");
++
+   error:
+     if (arg1) free(arg1);
+     if (arg2) free(arg2);
+ 
++    fclose(fp);
++    fclose(fp2);
++
+     return rc;
+ }
+ 
+@@ -1670,7 +1734,10 @@
+                 if (itemplate->program_set) {
+                     instance->currentBank = itemplate->bank;
+                     instance->currentProgram = itemplate->program;
+-                    instance->pendingProgramChange = 0;
++		    // JPM-Changed pendingProgramChange from 0 to -1
++		    // was causing program list to not be dumped when
++		    // -prog specified
++                    instance->pendingProgramChange = -1; 
+                 } else {
+                     instance->currentBank = 0;
+                     instance->currentProgram = 0;
+diff -u ghostess-20050916/src/ghostess.h ghostess-20050916-nw/src/ghostess.h
+--- ghostess-20050916/src/ghostess.h	2005-09-16 09:12:13.000000000 -0700
++++ ghostess-20050916-nw/src/ghostess.h	2006-03-29 11:05:57.000000000 -0800
+@@ -188,7 +188,7 @@
+ extern int             midi_thread_running;
+ extern pthread_mutex_t midiEventBufferMutex;
+ 
+-int  write_configuration(FILE *fp);
++int  write_configuration(char *filename);
+ void ui_osc_free(d3h_instance_t *instance);
+ void start_ui(d3h_instance_t *instance);
+ 
+diff -u ghostess-20050916/src/gui_callbacks.c ghostess-20050916-nw/src/gui_callbacks.c
+--- ghostess-20050916/src/gui_callbacks.c	2005-09-16 10:09:22.000000000 -0700
++++ ghostess-20050916-nw/src/gui_callbacks.c	2006-03-29 11:08:32.000000000 -0800
+@@ -120,8 +120,6 @@
+ void
+ on_save_file_ok( GtkWidget *widget, gpointer data )
+ {
+-    FILE *fp;
+-
+     gtk_widget_hide(save_file_selection);
+     file_selection_last_filename = (gchar *)gtk_file_selection_get_filename(
+                                                 GTK_FILE_SELECTION(save_file_selection));
+@@ -129,14 +127,9 @@
+     ghss_debug(GDB_GUI, " on_save_file_ok: file '%s' selected",
+                file_selection_last_filename);
+ 
+-    if ((fp = fopen(file_selection_last_filename, "w")) == NULL) {
+-        display_notice("Save Configuration failed:", strerror(errno));
+-        return;
+-    }
+-    if (!write_configuration(fp)) {
++    if (!write_configuration(file_selection_last_filename)) {
+         display_notice("Save Configuration failed:", strerror(errno));
+     }
+-    fclose(fp);
+     display_notice("Configuration Saved.", "");
+ }
+ 

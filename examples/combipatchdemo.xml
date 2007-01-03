@@ -1,0 +1,42 @@
+<patchlist>
+<!-- These patch will split the keyboard into four zones. Each zone transmits
+     to a different MIDI channel, all on the same MIDI port (the default 
+     output port for this patchbank, defined when you load this configuration
+     into .fweelin.rc). -->
+
+<!-- It is also possible to specify the 'midiport' parameter for each zone,
+     so each zone routes to a different MIDI output. -->    
+<combi name="Strings">
+  <!-- Note overlap- several ranges map across -->
+  <zone keyrange="12>55" channel="0"/>
+  <zone keyrange="46>64" channel="1"/>
+  <zone keyrange="55>76" channel="2"/>
+  <zone keyrange="60>127" channel="3"/>
+</combi>
+
+<combi name="Woods">
+  <zone keyrange="12>55" channel="8"/>
+  <zone keyrange="46>64" channel="9"/>
+  <zone keyrange="55>76" channel="10"/>
+  <zone keyrange="60>127" channel="11"/>
+</combi>
+
+<combi name="Brass">
+<!-- Need to send CC1 value 0 -->
+  <zone keyrange="12>55" channel="6"/>
+  <zone keyrange="46>64" channel="4"/>
+  <zone keyrange="55>76" channel="5"/>
+  <zone keyrange="60>127" channel="7"/>
+</combi>
+
+<patch channel="12" name="Big Ol Flutes" bank="32" program="0"/>
+<patch channel="12" name="Big Ol Clarinets" bank="32" program="10"/>
+
+<!-- This patch transmit MIDI bank and program change messages when it is
+     selected. -->
+<combi name="Flutes/Clarinets">
+  <zone keyrange="0>127" channel="12" bank="32" program="11"/>
+  <zone keyrange="0>127" channel="13" bank="32" program="12"/>
+</combi>
+
+</patchlist>

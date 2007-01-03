@@ -1,0 +1,29 @@
+Some Suggestions for Tuning Freewheeling's Audio Performance:
+************************************************************
+
+on Linux
+
+Updated September, 2004
+-----------------------
+
+Run hdparm to set DMA & well behaved disk IO. Try:
+hdparm -c3 -d1 -m16 -A1 -u1 /dev/hda (do for /dev/hdb .. also)
+
+If you have a PCI audio interface, run setpci to set PCI latency. 
+First, run 'lspci -v' and find the address of your audio board. Then run:
+setpci -s 00:07.5 latency_timer=F8
+(if your audio is at 00:07.5)
+
+Set video depth to 8 or 16 bits. 24 and 32 bits are generally much slower.
+
+Use fluxbox, blackbox, or another lightweight window manager on slower
+machines.
+
+Use lower sampling rates to achieve lower latency. Try 64 samples, 32000 Hz,
+3 periods per buffer. This works well on several low end audio boards such as
+ESS Maestro and AC 97. 
+
+Lower latency is key for live looping! Otherwise, the latency will lag your
+timing and it will feel very awkward.
+
+

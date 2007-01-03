@@ -1,0 +1,13 @@
+# Aid for trimming loop/scene libraries
+#
+# This script can be used in the FreeWheeling library folder (fw-lib/ by default)
+# to delete all loops & scenes with a specific date-
+#
+# For example: godelete-date "Apr 15" deletes all files from April 15. Don't forget quotes!
+#              godelete-date "Apr 16 21:" deletes all files from April 16 from 9pm-10pm. 
+#
+# No files are deleted before prompting you
+#
+echo Found these files..
+ls -lt | grep "$1"
+rm -i `ls -lt | grep "$1" | awk '{ print $9 }'`

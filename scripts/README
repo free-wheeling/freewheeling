@@ -1,0 +1,55 @@
+Managing A Library Of Loops & Scenes
+------------------------------------
+
+** godelete-date, gomv-date, goarchive-date scripts
+   
+   Delete/Move, and Archive loops & scenes by date.
+   See individual files for instructions.
+
+** goarchive-scene script
+   
+   Archive a scene and all the loops it uses.
+
+Connecting FreeWheeling with Other Linux Audio apps
+---------------------------------------------------
+
+-Hexter
+-Jack-Rack
+
+Example Scripts and Presets:
+---------------------------
+
+Several Jack-Racks that use tube amp sims and reverb, and some scripts to load FreeWheeling and Hexter, a killer
+DX7 synth emulator. 
+
+-
+Running 'gofweel' will load FreeWheeling and hook it up to reverb and tube amp. Your live mix will still be
+saved to disk dry, so you can tweak the FX later.
+
+-
+Running 'godx7' will load Hexter DX7 emulator and connect to tube amp. If FreeWheeling is running, DX7 becomes
+an input into FreeWheeling (channel 2). If not, DX7 is loaded standalone.
+
+-
+Running 'gofweel-dx7' will load FreeWheeling and DX7 as above, and connect them. You get the DX7 synth connected
+through a light phaser, then into FreeWheeling. FreeWheeling is channeled through valve saturation and tube amp
+plugins, and a wide open reverb. This is the whole enchilada.
+
+***
+You will have to tweak the scripts to change your MIDI hardware name- see script 'waitalsaports'.
+***
+
+***
+You will also have to patch Jack-Rack (see included patch-) to load a .rack at startup. 
+This is a feature that the author, I think, intends to implement, but I have done it for him.
+The scripts use this feature to autoload a rack.
+For more info, type 'jack-rack -?' after patching and recompiling and look at the -f option. 
+***
+
+*** Note these scripts are rather aggressive at killing tasks. If you have running versions of
+    freewheeling, ghostess, jack-dssi-host, or jack-rack, expect them to suddenly stop! **
+
+*** I recommend ghostess for hosting your DSSI synths- it allows you to save patch banks for auto startup.
+
+Good Luck!
+-Mercury

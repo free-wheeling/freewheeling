@@ -1,0 +1,66 @@
+#Start FreeWheeling and link it to nice Jack-Rack FX
+JACK_PCM1="alsa_pcm:playback_1"
+JACK_PCM2="alsa_pcm:playback_2"
+JACK_IN_PCM1="alsa_pcm:capture_1"
+JACK_IN_PCM2="alsa_pcm:capture_2"
+
+if ((RUNNING_MERCURY != 0))
+then 
+  echo Running with Mercury config.
+  cd ~/audio
+  cp ~/.fweelin/.fweelin.rc ~/.fweelin/.fweelin.rc.2
+  ~/gokeys-std
+fi
+
+fweelin &
+
+running=`ps -ef | grep jack-rack | awk 'END { print NR }'`
+if ((running < 2)) 
+then
+  jack-rack -n -o vocalverb-canyon.rack &
+  sleep 1
+else
+  echo Rack already running..
+fi
+
+# MIDI ports
+if ((RUNNING_MERCURY != 0))
+then
+  aconnect `~/waitalsaports-jv80 FreeWheeling`
+  aconnect `~/waitalsaports-pcr FreeWheeling`
+else
+  aconnect `./waitalsaports FreeWheeling`
+fi
+
+# SYSTEM_MIDI=`echo $FWEELIN_MIDI_PORTS | awk '{ print $1 }'`
+# FWEELIN_MIDI=`echo $FWEELIN_MIDI_PORTS | awk '{ print $2 }'`
+
+# Audio ports
+FWEELIN_JACK_IPORTS=`./waitjackports FreeWheeling | grep in`
+FWEELIN_JACK_OPORTS=`./waitjackports FreeWheeling | grep out`
+FWEELIN_JACK_IP1=`echo $FWEELIN_JACK_IPORTS | awk '{ print $1 }'`
+FWEELIN_JACK_IP2=`echo $FWEELIN_JACK_IPORTS | awk '{ print $2 }'`
+FWEELIN_JACK_OP1=`echo $FWEELIN_JACK_OPORTS | awk '{ print $1 }'`
+FWEELIN_JACK_OP2=`echo $FWEELIN_JACK_OPORTS | awk '{ print $2 }'`
+
+#echo Ins: $FWEELIN_JACK_IP1 $FWEELIN_JACK_IP2
+#echo Outs: $FWEELIN_JACK_OP1 $FWEELIN_JACK_OP2
+
+JRACK_JACK_IPORTS=`./waitjackports jack_rack | grep in`
+JRACK_JACK_OPORTS=`./waitjackports jack_rack | grep out`
+JRACK_JACK_IP1=`echo $JRACK_JACK_IPORTS | awk '{ print $1 }'`
+JRACK_JACK_IP2=`echo $JRACK_JACK_IPORTS | awk '{ print $2 }'`
+JRACK_JACK_OP1=`echo $JRACK_JACK_OPORTS | awk '{ print $1 }'`
+JRACK_JACK_OP2=`echo $JRACK_JACK_OPORTS | awk '{ print $2 }'`
+
+#echo Ins: $JRACK_JACK_IP1 $JRACK_JACK_IP2
+#echo Outs: $JRACK_JACK_OP1 $JRACK_JACK_OP2
+
+sleep 1
+
+jack_connect $JACK_IN_PCM1 $FWEELIN_JACK_IP1
+jack_connect $JACK_IN_PCM2 $FWEELIN_JACK_IP2
+jack_connect $FWEELIN_JACK_OP1 $JRACK_JACK_IP1
+jack_connect $FWEELIN_JACK_OP2 $JRACK_JACK_IP2
+jack_connect $JRACK_JACK_OP1 $JACK_PCM1
+jack_connect $JRACK_JACK_OP2 $JACK_PCM2

@@ -1,0 +1,18 @@
+<patchlist>
+<patch channel="0" name="OUTPUT TO MIDI CHANNEL 1"/>
+<patch channel="1" name="OUTPUT TO MIDI CHANNEL 2"/>
+<patch channel="2" name="OUTPUT TO MIDI CHANNEL 3"/>
+<patch channel="3" name="OUTPUT TO MIDI CHANNEL 4"/>
+<patch channel="4" name="OUTPUT TO MIDI CHANNEL 5"/>
+<patch channel="5" name="OUTPUT TO MIDI CHANNEL 6"/>
+<patch channel="6" name="OUTPUT TO MIDI CHANNEL 7"/>
+<patch channel="7" name="OUTPUT TO MIDI CHANNEL 8"/>
+<patch channel="8" name="OUTPUT TO MIDI CHANNEL 9"/>
+<patch channel="9" name="OUTPUT TO MIDI CHANNEL 10"/>
+<patch channel="10" name="OUTPUT TO MIDI CHANNEL 11"/>
+<patch channel="11" name="OUTPUT TO MIDI CHANNEL 12"/>
+<patch channel="12" name="OUTPUT TO MIDI CHANNEL 13"/>
+<patch channel="13" name="OUTPUT TO MIDI CHANNEL 14"/>
+<patch channel="14" name="OUTPUT TO MIDI CHANNEL 15"/>
+<patch channel="15" name="OUTPUT TO MIDI CHANNEL 16"/>
+</patchlist>
