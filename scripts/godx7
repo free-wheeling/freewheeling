@@ -1,0 +1,59 @@
+# Script to run DX7 emulator
+# and to run it through FreeWheeling if it's running
+
+RUN_CMD="jack-dssi-host hexter.so"
+HEXTER_MIDI_NAME="hexter"
+HEXTER_JACK_NAME="hexter"
+
+if ((RUNNING_MERCURY != 0))
+then 
+  echo Running with Mercury config.
+  cd ~/audio
+  killall -s KILL ghostess
+  RUN_CMD="./gohexter-1"
+  HEXTER_MIDI_NAME="ghostess"
+  HEXTER_JACK_NAME="ghostess"
+  #RUN_CMD="ghostess hexter.so"
+fi
+
+JACK_PCM1="alsa_pcm:playback_1"
+JACK_PCM2="alsa_pcm:playback_2"
+JACK_IN_DISCONNECT="alsa_pcm:capture_2"
+FWEELIN_DX7_IN="FreeWheeling:in_2"
+
+# Startup 
+killall -s KILL jack-dssi-host
+sleep 1
+$RUN_CMD &
+# Now check if FreeWheeling is running
+FWEELIN_RUNNING=`ps -ef | grep fweelin | awk 'END { print NR }'`
+
+echo Connect JACK.
+HEXTER_JACK_PORT=`./waitjackports $HEXTER_JACK_NAME`
+
+echo Hexter port: $HEXTER_JACK_PORT
+echo Hookup DX7..
+
+if ((FWEELIN_RUNNING < 2)) 
+then
+  echo Standalone use...
+
+  echo Connect ALSA MIDI.
+  aconnect `./waitalsaports $HEXTER_MIDI_NAME`
+else
+  echo Connect to FreeWheeling...
+
+  sleep 1
+  jack_disconnect "$HEXTER_JACK_PORT" $JACK_PCM1
+  sleep 1
+  jack_disconnect "$HEXTER_JACK_PORT" $JACK_PCM2
+
+  echo Connect MIDI from FW.
+  HEXTER_MIDI_PORT=`./waitalsaports $HEXTER_MIDI_NAME | awk '{ print $2 }'`
+  FWEELIN_MIDI_PORT=`./waitalsaports FreeWheeling | awk '{ print $2 }' | cut -d ':' -f 1`:2
+  echo MIDI ports: $FWEELIN_MIDI_PORT $HEXTER_MIDI_PORT
+  aconnect $FWEELIN_MIDI_PORT $HEXTER_MIDI_PORT
+  
+  echo Connect DX7 to FW.
+  jack_connect "$HEXTER_JACK_PORT" $FWEELIN_DX7_IN
+fi

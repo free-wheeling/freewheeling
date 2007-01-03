@@ -1,0 +1,34 @@
+--- jack-rack-1.4.3/src/main.c
++++ jack-rack-1.4.3/src/main.c
+96a97
+>   printf(" -f, --file <string>         %s\n", _("Load <string> .rack at start"));
+106,107c107,109
+< 
+<   const char * options = "hps:ionc:tD:";
+---
+>   char *loadfile = 0;
+>   
+>   const char * options = "hps:ionc:tDf:";
+118a121
+>     { "file", 1, NULL, 'f' },
+211a215,219
+> 
+>       case 'f':
+> 	loadfile = (char *) malloc(sizeof(char) * (strlen(optarg)+1));
+> 	strcpy(loadfile,optarg);
+> 	break;
+237c245,256
+<   
+---
+> 
+>   /* Load a file at startup? */
+>   if (loadfile) {  
+>     int err;
+>     
+>     printf("Loading file: '%s'\n",loadfile);
+>     err = ui_open_file (global_ui, loadfile);
+>     
+>     if (!err)
+>       ui_set_filename (global_ui, loadfile);
+>   }
+> 

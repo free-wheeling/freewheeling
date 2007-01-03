@@ -1,0 +1,9 @@
+#Stop all of these tasks..
+killall jack-dssi-host
+killall ghostess
+killall -s KILL fweelin
+killall -s KILL beatrix
+killall linuxsampler
+killall jack-rack
+killall md
+~/gokeys

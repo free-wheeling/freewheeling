@@ -1,0 +1,27 @@
+if [ -z $1 ]; then
+  echo "This script imports timing (downbeat) information from a Freewheeling session stream into an Ardour session."
+  echo 
+  echo This is useful when you want to make a mix using live material from Freewheeling.
+  echo "Freewheeling dumps timing information to Gnusound format (.wav.usx). For every live stream,"
+  echo Freewheeling also creates a .wav.usx file.
+  echo
+  echo To use a Freewheeling stream in Ardour:
+  echo
+  echo 1- Run 'oggdec live??.ogg'.
+  echo 2- Create or load your Ardour project.
+  echo 3- Add a track, and import 'live??.wav' as a source
+  echo 4- Save your Ardour session, and close it.
+  echo
+  echo Now run go-import-markers session.ardour live??.wav.usx
+  echo This script makes a backup of your session.ardour.
+  echo The timing information is imported as location markers.
+  echo 
+  echo Reload your Ardour project.
+  echo You can now grab, copy, and work with regions on the downbeat, making editing a lot easier.
+  echo
+  echo "Usage: go-import-markers <file.ardour> <file.wav.usx>"
+else
+  echo Importing markers from $2 into $1...
+  mv $1 $1.orig
+  awk -v USX="$2" '$1 == "<Locations>" { loc = 1; } loc == 0 { print; } loc == 1 { print; while ($1 != "[Markers") { getline < USX; } while (getline < USX) { split($1,A,"="); print "    <Location name=\"mark\" start=\""A[1]"\" end=\""A[1]"\" flags=\"1\"/>"; } loc = 0; }' $1.orig > $1
+fi

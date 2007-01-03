@@ -1,0 +1,197 @@
+Focus
+-----
+
+- Add generic 'dialog' method for startup questions
+- Fix SF_FORMAT_FLAC prob
+- Setup SVN
+- Sustained High CPU-> OGG encoding gets behind and kills FW
+  Make more forgiving OGG encoding-- plus variable buffer size
+
+- Pictures for loops, determined from which inputs/patches were active
+  when recording. Also, perhaps frequency composition of loops.
+
+* A 'performance' environment built around looping
+
+but 'Session' might be an easy way to encapsulate everything that is loaded into software
+.. ie only ONE SESSION can be loaded.. but many SCENES can be loaded. is this what I want?
+.. or perhaps stay with scene
+
+Scenes > Progressions
+ watch out for 'sessions' because they suggest something static
+ ie how would you connect sessions together?
+ they also imply a product
+ and we want to stay in the playful moment for as long as possible
+
+-- Expand scene functionality
+   - Multiple loaded scenes
+   - Triggering scenes, fading between scenes, managing several pulses
+   - Consider how this will work once Elastin is implemented
+   - Drag loops from browser to triggers
+
+-- Store which patches were active in creating a loop
+   Then we can go back to the right patch if we want to replace the 
+   loop with our own live content-- that could be a function, to mute a
+   loop and activate the loop's patch & input settings
+      
+-- Loop volume adjust ( clickdrag on bar )
+-- Last *touched* loop faders ( not just last rec loop faders)
+-- Audio input 'humanized' guidance of flock dynamics
+   'flock of loops'...
+   for ex match loop amp envelope to audio input envelope and cause those
+   loops to flock louder.
+
+* Integrating community needs
+
+* Web-based collaboration-- simple fileshare for now
+
+* WHS Apps- Dynamics control (safe space)-- mute..
+
+            Undo layers in overdub? (Copy loop function)...
+              tricky-- has to wait for FadeOut_Input then copy then reenable
+              FadeIn- would need to be coordinated by nonRT events
+
+	    RT adjustable feedback for overdub
+
+            Auto grab loops
+	    Trigger/grab from dance mat
+
+* Open Inputs- a place to engage community?
+
+To-Do
+-----
+
+* Loop deleted while renaming- segfault
+* Disable erase while saving?
+* No instances available for loading large scenes-- perhaps not enough
+  time given to allocate free instances
+* Possible issue with race condition when changing name pointer- if vid uses
+  pointer while name is in flux
+
+Expansions
+----------
+
+* Better video tutorials
+* Multiple audio outputs with routing (cue mixes, etc)
+  * Muting input monitors
+* Networked FreeWheeling
+* Better patch, loop & scene browsing with associative Memory
+  - Multiple scenes of playing loops in memory/disk
+
+- better browsing (OK)
+  - paging thru browse
+  - keyrepeat thru browse
+- clickable menus to replace help
+- loop tray design
+
+- Possibility to remap scene loops to a fixed range
+
+- Implement shot functionality (shot will stop Play/Rec after one shot)--
+  This may need a new event- EndShotEvent.. no, we should keep the processor
+  going, only it is stopped
+
+- FWEELIN INTRO - Four corners colored circle four directions pies
+                  seasons spinning, in the center a spirit improviser.
+
+Testing
+-------
+
+- Test old & new loops save/load/overdub with new Jump() and PulseSync methods
+
+Fixes
+-----
+
+- Round corners of tray
+
+- Wraparound stripe bug-- markers either need to be deleted in the
+  fixedlen recordprocessor for audio input, or we need to skip to the right
+  marker when starting a record late, because the timing is off
+
+- Rapid changes with preprocess() calls can cause crackles-- suspect it is
+  because dopreprocess() runs in nonRT and gets interrupted by RT.
+  Fix so dopreprocess() is queued and always runs in RT.
+
+- Auto video refresh on-time with critical events
+  Different refresh rate for when window is out-of-focus
+
+- Segfault- when exiting during scene loading
+- Race conditions in RootProcessor when adding/removing children-- change layout to fixed array
+  with swappable pointer
+
+- In config if range var declared but only lower bound given, no warning or 
+  error.
+
+  ** Threading Areas of Weakness
+
+  - Mutex for LoopManager- to prevent concurrent accesses to loops
+
+* Segfaults/exits:
+	if Jack server stopped midsession
+	No free time markers- try making 9 meters
+	SYNCREC: Previous markers in mem unknown
+	Sometimes on memmgr exit
+        More graceful error handling on PREALLOCATED: No instances available
+	
+  
+Code Cleanup
+------------
+
+- Move StripeBlockManager functionality to an Event
+- Move RP cleanup thread to event functionality? 
+  BroadcastEvent RemoveProcessorEvent perhaps
+
+Other Possible Directions
+-------------------------
+
+- ** Add suspend for BlockManagers (save/load)
+- ** Bug- autosave can interfere with saving scenes
+- ** Bug- segfault on overdub? with blocksize < 64- need to adjust smoothlen
+- ** No way to assign loaded loop to a pulse if it isn't already
+
+- OGG based undo of multiple overdubs
+
+- Slide-trigger-volume (fading)
+- Trigger-loop "retrigger" & "position"
+  or
+  Retrigger-loop "position"
+- Retrigger-pulse "position"
+- Nudge-position
+
+* Pattern match for finding loops in playing- perhaps pattern match to
+  find loops based on pulse tap- perhaps use labio to extract onsets/
+  features and then pattern match from that
+
+* Extract velocity stats from MIDI- std deviation
+
+* New smarter RT system that isolates RT processes with 'states'
+    
+* Event sequencer for giving timedelayed commands
+  (Way to queue events and have a way to fire off a whole queue)
+* Generic ramp function? for sliding variables and calling events
+
+* Events
+	SetRecord
+  	SetSelection, AddToSelection- then make commands work w/ selections
+	
+* Config
+	better configurability of multiple inputs, recording from different ins
+        colors- configure mid, optional calc shadow, hilight and bright
+
+* CoreDSP
+	redesign RootProcessor with clearer signal chain support-
+          needed for LADSPA routing
+        move limiter into its own processor
+
+* Debug
+
+* Mem
+	replace sprintf with snprintf to avoid mem overwrite on big tmp strings
+
+* Timing
+	* High latency reproduction of loop timing seems to be off-
+	  because loop endpts can occur only at fragment boundary?
+	* Time Markers don't know about multiple meters
+
+* Threads
+    -RTInterrupt active event dispatch (large fragmentsize) (FIXED?) 
+    -Possible glitch when emptying event queue- non-atomic
+     also with Preallocated queues

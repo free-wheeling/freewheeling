@@ -1,0 +1,63 @@
+Loops and Scenes Examples
+-------------------------
+
+You can find sample loops and scenes in the 'Remix Playground' area of the Freewheeling website.
+http://freewheeling.sourceforge.net/#scenes
+
+NEW in V0.5.3- Combination Zone Patches
+---------------------------------------
+
+	    * More flexible MIDI patch routing. 
+
+	      - Combination patches allow you to split one MIDI controller
+	        into a range of zones. This allows you to control several
+	        different sounds or softsynths from one MIDI control source.
+		
+		A patch defines the zones, as well as the output port and
+		channel that each zone sends to. You can also send
+	        MIDI program and bank change messages for each zone, allowing
+		you to switch programs on external synths. 
+
+		All of this functionality is integrated into the patch browser,
+		so you can seamlessly control other synth apps and 
+		sound modules from within FreeWheeling. 
+		
+		See 'examples/combipatchdemo.xml' for an example 
+		configuration.
+
+Patch Browser Definition Example
+--------------------------------
+
+The file patches1.xml contains an example for how to define patches for an external soft synth.
+In this case it's an example for a Ghostess DSSI host running one instance of WhySynth and
+one instance of Hexter.
+
+To use this example, copy 'examples/patches1.xml' to the ~/.fweelin/ folder
+(this folder is created by version 0.5.2 and forward).
+
+The WhySynth instance is on channel 0 (first channel),
+and the Hexter instance is on channel 1 (second channel).
+
+When you specify this patch list in Freewheeling's .fweelin.rc configuration file:
+
+    <patchbank midiport="2" patches="patches1.xml"/>
+    
+you will then be able to play both your WhySynth and your Hexter patches, and
+switch between them.
+
+The WhySynth and Hexter patches will appear in separate sections of the patch browser.
+
+-------------------------------------------------------------------------------------------
+
+You can automatically generate a patch list from a set of DSSI plugin patches.
+This saves the work of manually entering all of your patch information.
+
+To do this, apply the included patch to Ghostess (scripts/patch-ghostess-xml-patchlist).
+The patch modifies Ghostess so that when you select 'Save Configuration...' from the
+File menu, you get both a script to startup Ghostess with the current config and patchset,
+-as well as- an .XML file with the same base name, that contains the patch list for Freewheeling.
+
+I've submitted this patch to Sean Bolton for inclusion in an upcoming Ghostess release.
+Please nudge him if it has been useful for you (http://home.jps.net/~musound/).
+
+-------------------------------------------------------------------------------------------

@@ -1,0 +1,15 @@
+# Aid for managing loop/scene libraries
+#
+# This script can be used in the FreeWheeling library folder (fw-lib/ by default)
+# to move all loops & scenes with a specific date-
+#
+# For example: gomv-date "Apr 15" test/ moves all files from April 15 to folder 'test'. Don't forget quotes!
+#              gomv-date "Apr 16 21:" old/ moves all files from April 16 from 9pm-10pm to folder 'old'. 
+#
+# No files are moved before prompting you.
+#
+echo Found these files..
+ls -lt | grep "$1"
+echo "Move these files to $2? (Enter=Yes, CTRL-C=Abort)"
+read
+mv -i -v `ls -lt | grep "$1" | awk '{ print $9 }'` $2

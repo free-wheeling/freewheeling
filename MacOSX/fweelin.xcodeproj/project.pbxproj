@@ -1,0 +1,485 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		002F39FA09D0881F00EBEB88 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F39F909D0881F00EBEB88 /* SDL.framework */; };
+		002F3A0009D0884600EBEB88 /* SDL.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = 002F39F909D0881F00EBEB88 /* SDL.framework */; };
+		002F3A2E09D0888800EBEB88 /* SDLMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = 002F3A2C09D0888800EBEB88 /* SDLMain.mm */; };
+		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
+		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		AC12675D0AC8E0BE00FE916E /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC12675C0AC8E0BE00FE916E /* CoreMIDI.framework */; };
+		AC126C3F0AC8EED400FE916E /* .fweelin.rc in Resources */ = {isa = PBXBuildFile; fileRef = AC126C3E0AC8EED400FE916E /* .fweelin.rc */; };
+		AC126C440AC8EF4000FE916E /* verabd.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AC126C420AC8EF4000FE916E /* verabd.ttf */; };
+		AC126C450AC8EF4000FE916E /* vera.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AC126C430AC8EF4000FE916E /* vera.ttf */; };
+		AC5A53280AC099C900622F72 /* Jack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5A53220AC099C900622F72 /* Jack.framework */; };
+		AC5A532A0AC099C900622F72 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5A53240AC099C900622F72 /* Ogg.framework */; };
+		AC5A532B0AC099C900622F72 /* SDL_gfx.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5A53250AC099C900622F72 /* SDL_gfx.framework */; };
+		AC5A532C0AC099C900622F72 /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5A53260AC099C900622F72 /* SDL_ttf.framework */; };
+		AC5A532D0AC099C900622F72 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC5A53270AC099C900622F72 /* Vorbis.framework */; };
+		AC5A53EF0AC09A6400622F72 /* fweelin_audioio.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53D30AC09A6400622F72 /* fweelin_audioio.cc */; };
+		AC5A53F10AC09A6400622F72 /* fweelin_block.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53D50AC09A6400622F72 /* fweelin_block.cc */; };
+		AC5A53F30AC09A6400622F72 /* fweelin_browser.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53D70AC09A6400622F72 /* fweelin_browser.cc */; };
+		AC5A53F50AC09A6400622F72 /* fweelin_config.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53D90AC09A6400622F72 /* fweelin_config.cc */; };
+		AC5A53F70AC09A6400622F72 /* fweelin_core_dsp.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53DB0AC09A6400622F72 /* fweelin_core_dsp.cc */; };
+		AC5A53F90AC09A6400622F72 /* fweelin_core.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53DD0AC09A6400622F72 /* fweelin_core.cc */; };
+		AC5A53FB0AC09A6400622F72 /* fweelin_datatypes.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53DF0AC09A6400622F72 /* fweelin_datatypes.cc */; };
+		AC5A53FD0AC09A6400622F72 /* fweelin_event.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53E10AC09A6400622F72 /* fweelin_event.cc */; };
+		AC5A53FF0AC09A6400622F72 /* fweelin_fluidsynth.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53E30AC09A6400622F72 /* fweelin_fluidsynth.cc */; };
+		AC5A54020AC09A6400622F72 /* fweelin_mem.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53E60AC09A6400622F72 /* fweelin_mem.cc */; };
+		AC5A54040AC09A6400622F72 /* fweelin_midiio.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53E80AC09A6400622F72 /* fweelin_midiio.cc */; };
+		AC5A54060AC09A6400622F72 /* fweelin_sdlio.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53EA0AC09A6400622F72 /* fweelin_sdlio.cc */; };
+		AC5A54080AC09A6400622F72 /* fweelin_videoio.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53EC0AC09A6400622F72 /* fweelin_videoio.cc */; };
+		AC5A540A0AC09A6400622F72 /* fweelin.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53EE0AC09A6400622F72 /* fweelin.cc */; };
+		AC6429D90AD9C85700752A08 /* Sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC6429D80AD9C85700752A08 /* Sndfile.framework */; };
+		AC6429DC0AD9C85C00752A08 /* Sndfile.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC6429D80AD9C85700752A08 /* Sndfile.framework */; };
+		ACA2C53F0B06DCB600E02DC6 /* SDLMain.nib in Resources */ = {isa = PBXBuildFile; fileRef = ACA2C53E0B06DCB600E02DC6 /* SDLMain.nib */; };
+		ACA2C7B70B07C73900E02DC6 /* patches-channels.xml in Resources */ = {isa = PBXBuildFile; fileRef = ACA2C7B60B07C73900E02DC6 /* patches-channels.xml */; };
+		ACE0E9160ACA15B4007E3ED2 /* Jack.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC5A53220AC099C900622F72 /* Jack.framework */; };
+		ACE0E9170ACA15B4007E3ED2 /* Ogg.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC5A53240AC099C900622F72 /* Ogg.framework */; };
+		ACE0E9180ACA15B4007E3ED2 /* SDL_gfx.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC5A53250AC099C900622F72 /* SDL_gfx.framework */; };
+		ACE0E9190ACA15B4007E3ED2 /* SDL_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC5A53260AC099C900622F72 /* SDL_ttf.framework */; };
+		ACE0E91A0ACA15B4007E3ED2 /* Vorbis.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC5A53270AC099C900622F72 /* Vorbis.framework */; };
+		ACE0E97A0ACA1B5D007E3ED2 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = ACE0E9790ACA1B5D007E3ED2 /* main.c */; };
+		ACFC0A9C0AC99CDF00DAC478 /* FweelinMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = ACFC0A9A0AC99CDF00DAC478 /* FweelinMac.mm */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		002F39FD09D0883400EBEB88 /* Copy Frameworks into .app bundle */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				AC6429DC0AD9C85C00752A08 /* Sndfile.framework in Copy Frameworks into .app bundle */,
+				ACE0E9190ACA15B4007E3ED2 /* SDL_ttf.framework in Copy Frameworks into .app bundle */,
+				ACE0E9180ACA15B4007E3ED2 /* SDL_gfx.framework in Copy Frameworks into .app bundle */,
+				002F3A0009D0884600EBEB88 /* SDL.framework in Copy Frameworks into .app bundle */,
+				ACE0E9160ACA15B4007E3ED2 /* Jack.framework in Copy Frameworks into .app bundle */,
+				ACE0E9170ACA15B4007E3ED2 /* Ogg.framework in Copy Frameworks into .app bundle */,
+				ACE0E91A0ACA15B4007E3ED2 /* Vorbis.framework in Copy Frameworks into .app bundle */,
+			);
+			name = "Copy Frameworks into .app bundle";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		002F39F909D0881F00EBEB88 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
+		002F3A2B09D0888800EBEB88 /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = SOURCE_ROOT; };
+		002F3A2C09D0888800EBEB88 /* SDLMain.mm */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.objcpp; path = SDLMain.mm; sourceTree = "<group>"; };
+		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		32CA4F630368D1EE00C91783 /* fweelin_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fweelin_Prefix.pch; sourceTree = "<group>"; };
+		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8D1107320486CEB800E47090 /* fweelin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fweelin.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC12675C0AC8E0BE00FE916E /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = /System/Library/Frameworks/CoreMIDI.framework; sourceTree = "<absolute>"; };
+		AC126C3E0AC8EED400FE916E /* .fweelin.rc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = .fweelin.rc; path = ../data/.fweelin.rc; sourceTree = SOURCE_ROOT; };
+		AC126C420AC8EF4000FE916E /* verabd.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = verabd.ttf; path = ../data/verabd.ttf; sourceTree = SOURCE_ROOT; };
+		AC126C430AC8EF4000FE916E /* vera.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = vera.ttf; path = ../data/vera.ttf; sourceTree = SOURCE_ROOT; };
+		AC5A53220AC099C900622F72 /* Jack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Jack.framework; path = /Library/Frameworks/Jack.framework; sourceTree = "<absolute>"; };
+		AC5A53240AC099C900622F72 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
+		AC5A53250AC099C900622F72 /* SDL_gfx.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_gfx.framework; path = /Library/Frameworks/SDL_gfx.framework; sourceTree = "<absolute>"; };
+		AC5A53260AC099C900622F72 /* SDL_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_ttf.framework; path = /Library/Frameworks/SDL_ttf.framework; sourceTree = "<absolute>"; };
+		AC5A53270AC099C900622F72 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
+		AC5A53D30AC09A6400622F72 /* fweelin_audioio.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_audioio.cc; path = ../src/fweelin_audioio.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53D40AC09A6400622F72 /* fweelin_audioio.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_audioio.h; path = ../src/fweelin_audioio.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53D50AC09A6400622F72 /* fweelin_block.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_block.cc; path = ../src/fweelin_block.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53D60AC09A6400622F72 /* fweelin_block.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_block.h; path = ../src/fweelin_block.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53D70AC09A6400622F72 /* fweelin_browser.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_browser.cc; path = ../src/fweelin_browser.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53D80AC09A6400622F72 /* fweelin_browser.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_browser.h; path = ../src/fweelin_browser.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53D90AC09A6400622F72 /* fweelin_config.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_config.cc; path = ../src/fweelin_config.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53DA0AC09A6400622F72 /* fweelin_config.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_config.h; path = ../src/fweelin_config.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53DB0AC09A6400622F72 /* fweelin_core_dsp.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_core_dsp.cc; path = ../src/fweelin_core_dsp.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53DC0AC09A6400622F72 /* fweelin_core_dsp.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_core_dsp.h; path = ../src/fweelin_core_dsp.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53DD0AC09A6400622F72 /* fweelin_core.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_core.cc; path = ../src/fweelin_core.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53DE0AC09A6400622F72 /* fweelin_core.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_core.h; path = ../src/fweelin_core.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53DF0AC09A6400622F72 /* fweelin_datatypes.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_datatypes.cc; path = ../src/fweelin_datatypes.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E00AC09A6400622F72 /* fweelin_datatypes.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_datatypes.h; path = ../src/fweelin_datatypes.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E10AC09A6400622F72 /* fweelin_event.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_event.cc; path = ../src/fweelin_event.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E20AC09A6400622F72 /* fweelin_event.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_event.h; path = ../src/fweelin_event.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E30AC09A6400622F72 /* fweelin_fluidsynth.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_fluidsynth.cc; path = ../src/fweelin_fluidsynth.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E40AC09A6400622F72 /* fweelin_fluidsynth.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_fluidsynth.h; path = ../src/fweelin_fluidsynth.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E50AC09A6400622F72 /* fweelin_logo.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_logo.h; path = ../src/fweelin_logo.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E60AC09A6400622F72 /* fweelin_mem.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_mem.cc; path = ../src/fweelin_mem.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E70AC09A6400622F72 /* fweelin_mem.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_mem.h; path = ../src/fweelin_mem.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E80AC09A6400622F72 /* fweelin_midiio.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_midiio.cc; path = ../src/fweelin_midiio.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53E90AC09A6400622F72 /* fweelin_midiio.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_midiio.h; path = ../src/fweelin_midiio.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53EA0AC09A6400622F72 /* fweelin_sdlio.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_sdlio.cc; path = ../src/fweelin_sdlio.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; usesTabs = 1; };
+		AC5A53EB0AC09A6400622F72 /* fweelin_sdlio.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_sdlio.h; path = ../src/fweelin_sdlio.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53EC0AC09A6400622F72 /* fweelin_videoio.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin_videoio.cc; path = ../src/fweelin_videoio.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53ED0AC09A6400622F72 /* fweelin_videoio.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_videoio.h; path = ../src/fweelin_videoio.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC5A53EE0AC09A6400622F72 /* fweelin.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin.cc; path = ../src/fweelin.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
+		AC6429D80AD9C85700752A08 /* Sndfile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sndfile.framework; path = /Library/Frameworks/Sndfile.framework; sourceTree = "<absolute>"; };
+		ACA2C53E0B06DCB600E02DC6 /* SDLMain.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = SDLMain.nib; sourceTree = "<group>"; };
+		ACA2C7B60B07C73900E02DC6 /* patches-channels.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = "patches-channels.xml"; path = "../data/patches-channels.xml"; sourceTree = SOURCE_ROOT; };
+		ACE0E9790ACA1B5D007E3ED2 /* main.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		ACFC0A990AC99CDF00DAC478 /* FweelinMac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FweelinMac.h; sourceTree = "<group>"; };
+		ACFC0A9A0AC99CDF00DAC478 /* FweelinMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FweelinMac.mm; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8D11072E0486CEB800E47090 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				002F39FA09D0881F00EBEB88 /* SDL.framework in Frameworks */,
+				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
+				AC5A53280AC099C900622F72 /* Jack.framework in Frameworks */,
+				AC5A532A0AC099C900622F72 /* Ogg.framework in Frameworks */,
+				AC5A532B0AC099C900622F72 /* SDL_gfx.framework in Frameworks */,
+				AC5A532C0AC099C900622F72 /* SDL_ttf.framework in Frameworks */,
+				AC5A532D0AC099C900622F72 /* Vorbis.framework in Frameworks */,
+				AC12675D0AC8E0BE00FE916E /* CoreMIDI.framework in Frameworks */,
+				AC6429D90AD9C85700752A08 /* Sndfile.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				AC5A53D30AC09A6400622F72 /* fweelin_audioio.cc */,
+				AC5A53D40AC09A6400622F72 /* fweelin_audioio.h */,
+				AC5A53D50AC09A6400622F72 /* fweelin_block.cc */,
+				AC5A53D60AC09A6400622F72 /* fweelin_block.h */,
+				AC5A53D70AC09A6400622F72 /* fweelin_browser.cc */,
+				AC5A53D80AC09A6400622F72 /* fweelin_browser.h */,
+				AC5A53D90AC09A6400622F72 /* fweelin_config.cc */,
+				AC5A53DA0AC09A6400622F72 /* fweelin_config.h */,
+				AC5A53DB0AC09A6400622F72 /* fweelin_core_dsp.cc */,
+				AC5A53DC0AC09A6400622F72 /* fweelin_core_dsp.h */,
+				AC5A53DD0AC09A6400622F72 /* fweelin_core.cc */,
+				AC5A53DE0AC09A6400622F72 /* fweelin_core.h */,
+				AC5A53DF0AC09A6400622F72 /* fweelin_datatypes.cc */,
+				AC5A53E00AC09A6400622F72 /* fweelin_datatypes.h */,
+				AC5A53E10AC09A6400622F72 /* fweelin_event.cc */,
+				AC5A53E20AC09A6400622F72 /* fweelin_event.h */,
+				AC5A53E30AC09A6400622F72 /* fweelin_fluidsynth.cc */,
+				AC5A53E40AC09A6400622F72 /* fweelin_fluidsynth.h */,
+				AC5A53E50AC09A6400622F72 /* fweelin_logo.h */,
+				AC5A53E60AC09A6400622F72 /* fweelin_mem.cc */,
+				AC5A53E70AC09A6400622F72 /* fweelin_mem.h */,
+				AC5A53E80AC09A6400622F72 /* fweelin_midiio.cc */,
+				AC5A53E90AC09A6400622F72 /* fweelin_midiio.h */,
+				AC5A53EA0AC09A6400622F72 /* fweelin_sdlio.cc */,
+				AC5A53EB0AC09A6400622F72 /* fweelin_sdlio.h */,
+				AC5A53EC0AC09A6400622F72 /* fweelin_videoio.cc */,
+				AC5A53ED0AC09A6400622F72 /* fweelin_videoio.h */,
+				AC5A53EE0AC09A6400622F72 /* fweelin.cc */,
+				ACFC0A990AC99CDF00DAC478 /* FweelinMac.h */,
+				ACFC0A9A0AC99CDF00DAC478 /* FweelinMac.mm */,
+				002F3A2B09D0888800EBEB88 /* SDLMain.h */,
+				002F3A2C09D0888800EBEB88 /* SDLMain.mm */,
+				ACE0E9790ACA1B5D007E3ED2 /* main.c */,
+				ACA2C53E0B06DCB600E02DC6 /* SDLMain.nib */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AC6429D80AD9C85700752A08 /* Sndfile.framework */,
+				AC12675C0AC8E0BE00FE916E /* CoreMIDI.framework */,
+				AC5A53220AC099C900622F72 /* Jack.framework */,
+				AC5A53240AC099C900622F72 /* Ogg.framework */,
+				AC5A53250AC099C900622F72 /* SDL_gfx.framework */,
+				AC5A53260AC099C900622F72 /* SDL_ttf.framework */,
+				AC5A53270AC099C900622F72 /* Vorbis.framework */,
+				002F39F909D0881F00EBEB88 /* SDL.framework */,
+				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
+				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8D1107320486CEB800E47090 /* fweelin.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* fweelin */ = {
+			isa = PBXGroup;
+			children = (
+				080E96DDFE201D6D7F000001 /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+			);
+			name = fweelin;
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				32CA4F630368D1EE00C91783 /* fweelin_Prefix.pch */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AC126C3E0AC8EED400FE916E /* .fweelin.rc */,
+				ACA2C7B60B07C73900E02DC6 /* patches-channels.xml */,
+				AC126C420AC8EF4000FE916E /* verabd.ttf */,
+				AC126C430AC8EF4000FE916E /* vera.ttf */,
+				8D1107310486CEB800E47090 /* Info.plist */,
+				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
+				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8D1107260486CEB800E47090 /* fweelin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "fweelin" */;
+			buildPhases = (
+				8D1107290486CEB800E47090 /* Resources */,
+				8D11072C0486CEB800E47090 /* Sources */,
+				8D11072E0486CEB800E47090 /* Frameworks */,
+				002F39FD09D0883400EBEB88 /* Copy Frameworks into .app bundle */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = fweelin;
+			productInstallPath = "$(HOME)/Applications";
+			productName = fweelin;
+			productReference = 8D1107320486CEB800E47090 /* fweelin.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "fweelin" */;
+			hasScannedForEncodings = 1;
+			mainGroup = 29B97314FDCFA39411CA2CEA /* fweelin */;
+			projectDirPath = "";
+			targets = (
+				8D1107260486CEB800E47090 /* fweelin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D1107290486CEB800E47090 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
+				AC126C3F0AC8EED400FE916E /* .fweelin.rc in Resources */,
+				AC126C440AC8EF4000FE916E /* verabd.ttf in Resources */,
+				AC126C450AC8EF4000FE916E /* vera.ttf in Resources */,
+				ACA2C53F0B06DCB600E02DC6 /* SDLMain.nib in Resources */,
+				ACA2C7B70B07C73900E02DC6 /* patches-channels.xml in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8D11072C0486CEB800E47090 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				002F3A2E09D0888800EBEB88 /* SDLMain.mm in Sources */,
+				AC5A53EF0AC09A6400622F72 /* fweelin_audioio.cc in Sources */,
+				AC5A53F10AC09A6400622F72 /* fweelin_block.cc in Sources */,
+				AC5A53F30AC09A6400622F72 /* fweelin_browser.cc in Sources */,
+				AC5A53F50AC09A6400622F72 /* fweelin_config.cc in Sources */,
+				AC5A53F70AC09A6400622F72 /* fweelin_core_dsp.cc in Sources */,
+				AC5A53F90AC09A6400622F72 /* fweelin_core.cc in Sources */,
+				AC5A53FB0AC09A6400622F72 /* fweelin_datatypes.cc in Sources */,
+				AC5A53FD0AC09A6400622F72 /* fweelin_event.cc in Sources */,
+				AC5A53FF0AC09A6400622F72 /* fweelin_fluidsynth.cc in Sources */,
+				AC5A54020AC09A6400622F72 /* fweelin_mem.cc in Sources */,
+				AC5A54040AC09A6400622F72 /* fweelin_midiio.cc in Sources */,
+				AC5A54060AC09A6400622F72 /* fweelin_sdlio.cc in Sources */,
+				AC5A54080AC09A6400622F72 /* fweelin_videoio.cc in Sources */,
+				AC5A540A0AC09A6400622F72 /* fweelin.cc in Sources */,
+				ACFC0A9C0AC99CDF00DAC478 /* FweelinMac.mm in Sources */,
+				ACE0E97A0ACA1B5D007E3ED2 /* main.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C165DFE840E0CC02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		C01FCF4B08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = fweelin;
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = YES;
+			};
+			name = Debug;
+		};
+		C01FCF4C08A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = fweelin;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		C01FCF4F08A954540054247B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					i386,
+					ppc,
+				);
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(HOME)/Library/Frameworks",
+					/Library/Frameworks,
+					"$(FRAMEWORK_SEARCH_PATHS)",
+				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL.framework/Headers,
+					"$(HEADER_SEARCH_PATHS)",
+					/usr/include/libxml2,
+				);
+				OTHER_CFLAGS = (
+					"-D",
+					__MACOSX__,
+					"-fpermissive",
+				);
+				OTHER_LDFLAGS = (
+					"-lcrypto",
+					"-lxml2",
+				);
+				PREBINDING = NO;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				ZERO_LINK = NO;
+			};
+			name = Debug;
+		};
+		C01FCF5008A954540054247B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					i386,
+					ppc,
+				);
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(HOME)/Library/Frameworks",
+					/Library/Frameworks,
+					"$(FRAMEWORK_SEARCH_PATHS)",
+				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL.framework/Headers,
+					"$(HEADER_SEARCH_PATHS)",
+					/usr/include/libxml2,
+				);
+				OTHER_CFLAGS = (
+					"-D",
+					__MACOSX__,
+					"-fpermissive",
+				);
+				OTHER_LDFLAGS = (
+					"-lcrypto",
+					"-lxml2",
+				);
+				PREBINDING = NO;
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "fweelin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4B08A954540054247B /* Debug */,
+				C01FCF4C08A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "fweelin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C01FCF4F08A954540054247B /* Debug */,
+				C01FCF5008A954540054247B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}

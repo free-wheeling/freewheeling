@@ -1,0 +1,13 @@
+{
+    IBClasses = (
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {quitFW = id; setMIDIInput = id; showHelp = id; toggleDebugMode = id; }; 
+            CLASS = SDLMain; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {midiInputSel = NSPopUpButton; }; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}
