@@ -3,7 +3,6 @@ Focus
 
 - Add generic 'dialog' method for startup questions
 - Fix SF_FORMAT_FLAC prob
-- Setup SVN
 - Sustained High CPU-> OGG encoding gets behind and kills FW
   Make more forgiving OGG encoding-- plus variable buffer size
 
