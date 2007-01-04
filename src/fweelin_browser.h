@@ -452,7 +452,7 @@ class PatchBrowser : public Browser {
   PatchBrowser(BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
 	       int xpand_x2, int xpand_y2, float xpand_delay) : 
     Browser(btype,xpand,xpand_x1,xpand_y1,xpand_x2,xpand_y2,xpand_delay),
-    pb_first(0), pb_cur(0) {};
+    pb_first(0), pb_cur(0), num_pb(0) {};
   virtual ~PatchBrowser();
 
   virtual void ClearAllItems();
@@ -462,6 +462,7 @@ class PatchBrowser : public Browser {
   // Add patch bank
   void PB_Add (PatchBank *pb) {
     LockBrowser();
+    num_pb++;
 
     // Update pb_cur
     if (pb_cur != 0) {
@@ -491,6 +492,7 @@ class PatchBrowser : public Browser {
   // Add patch bank at beginning of patchbanks
   void PB_AddBegin (PatchBank *pb) {
     LockBrowser();
+    num_pb++;
 
     // Update pb_cur
     if (pb_cur != 0) {
@@ -514,6 +516,9 @@ class PatchBrowser : public Browser {
   // Move to the next (+ve direction) or previous (-ve direction) patch bank
   void PB_MoveTo (int direction);
 
+  // Move to a patchbank given by index 
+  void PB_MoveToIndex (int index);
+
   inline PatchBank *GetCurPatchBank() const { return pb_cur; };
 
   // Sets the right MIDI port(s) and channel(s) for echo based on this
@@ -528,6 +533,7 @@ class PatchBrowser : public Browser {
 
   PatchBank *pb_first, // List of patchbanks
     *pb_cur;           // Current patchbank
+  int num_pb;          // Number of patchbanks defined
 };
 
 #endif

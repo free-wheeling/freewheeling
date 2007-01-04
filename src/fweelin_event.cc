@@ -38,13 +38,36 @@ EventTypeTable *Event::ett = 0;
     { \
       Event *proto = \
         ::new typ[PreallocatedType:: \
-                PREALLOC_DEFAULT_NUM_INSTANCES]; \
+                  PREALLOC_DEFAULT_NUM_INSTANCES]; \
       ett[i].name = nm; \
       ett[i].mgr = \
         new PreallocatedType(mmgr,proto,sizeof(typ), \
 			     PreallocatedType:: \
 			     PREALLOC_DEFAULT_NUM_INSTANCES, \
 			     1); \
+      ett[i].slowdelivery = 0; \
+      int paramidx = -1, j = 0; \
+      for (; j < proto->GetNumParams() && \
+	   proto->GetParam(j).max_index == -1; j++); \
+      if (j < proto->GetNumParams()) \
+	paramidx = j; \
+      ett[i].paramidx = paramidx; \
+    } \
+    break; 
+
+#define SET_ETYPE_SLOW(etyp,nm,typ) \
+  case etyp : \
+    { \
+      Event *proto = \
+        ::new typ[PreallocatedType:: \
+                  PREALLOC_DEFAULT_NUM_INSTANCES]; \
+      ett[i].name = nm; \
+      ett[i].mgr = \
+        new PreallocatedType(mmgr,proto,sizeof(typ), \
+			     PreallocatedType:: \
+			     PREALLOC_DEFAULT_NUM_INSTANCES, \
+			     1); \
+      ett[i].slowdelivery = 1; \
       int paramidx = -1, j = 0; \
       for (; j < proto->GetNumParams() && \
 	   proto->GetParam(j).max_index == -1; j++); \
@@ -95,6 +118,15 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
   ett = new EventTypeTable[evnum];
   for (int i = 0; i < evnum; i++) {
     switch (EventType(i)) {
+      // *** Notice some events are marked SET_ETYPE_SLOW
+      // This is critical because some code sections are not able to run in RT
+      // Any event marked SET_ETYPE should be able to be run in RT,
+      // because if it is bound to a MIDI trigger, that will happen.
+      //
+      // Events marked SET_ETYPE_SLOW will always run from the nonRT event
+      // thread. This means they will be delivered after SET_ETYPE events if
+      // a sequence of events is sent.
+
       SET_ETYPE(T_EV_Input_Key,"key",KeyInputEvent);
       SET_ETYPE(T_EV_Input_JoystickButton,"joybutton",
 		JoystickButtonInputEvent);
@@ -111,7 +143,7 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
 
       SET_ETYPE(T_EV_GoSub,"go-sub",GoSubEvent);
       SET_ETYPE(T_EV_StartSession,"start-freewheeling",StartSessionEvent);
-      SET_ETYPE(T_EV_ExitSession,"exit-freewheeling",ExitSessionEvent);
+      SET_ETYPE_SLOW(T_EV_ExitSession,"exit-freewheeling",ExitSessionEvent);
 
       SET_ETYPE(T_EV_SlideMasterInVolume,"slide-master-in-volume",
 		SlideMasterInVolumeEvent);
@@ -146,14 +178,14 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_AdjustLoopAmp,"adjust-loop-amplifier",AdjustLoopAmpEvent);
       SET_ETYPE(T_EV_TriggerLoop,"trigger-loop",TriggerLoopEvent);
       SET_ETYPE(T_EV_MoveLoop,"move-loop",MoveLoopEvent);
-      SET_ETYPE(T_EV_RenameLoop,"rename-loop",RenameLoopEvent);
-      SET_ETYPE(T_EV_EraseLoop,"erase-loop",EraseLoopEvent);
-      SET_ETYPE(T_EV_EraseAllLoops,"erase-all-loops",EraseAllLoopsEvent);
+      SET_ETYPE_SLOW(T_EV_RenameLoop,"rename-loop",RenameLoopEvent);
+      SET_ETYPE_SLOW(T_EV_EraseLoop,"erase-loop",EraseLoopEvent);
+      SET_ETYPE_SLOW(T_EV_EraseAllLoops,"erase-all-loops",EraseAllLoopsEvent);
       SET_ETYPE(T_EV_SlideLoopAmpStopAll,"slide-loop-amplifier-stop-all",
 		SlideLoopAmpStopAllEvent);
 
-      SET_ETYPE(T_EV_DeletePulse,"delete-pulse",DeletePulseEvent);
-      SET_ETYPE(T_EV_SelectPulse,"select-pulse",SelectPulseEvent);
+      SET_ETYPE_SLOW(T_EV_DeletePulse,"delete-pulse",DeletePulseEvent);
+      SET_ETYPE_SLOW(T_EV_SelectPulse,"select-pulse",SelectPulseEvent);
       SET_ETYPE(T_EV_TapPulse,"tap-pulse",TapPulseEvent);
       SET_ETYPE(T_EV_SwitchMetronome,"switch-metronome",SwitchMetronomeEvent);
       SET_ETYPE(T_EV_SetSyncType,"set-sync-type",SetSyncTypeEvent);
@@ -169,34 +201,37 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
 		VideoShowDisplayEvent);
       SET_ETYPE(T_EV_VideoShowHelp,"video-show-help",
 		VideoShowHelpEvent);
-      SET_ETYPE(T_EV_VideoFullScreen,"video-full-screen",
-		VideoFullScreenEvent);
+      SET_ETYPE_SLOW(T_EV_VideoFullScreen,"video-full-screen",
+		     VideoFullScreenEvent);
       SET_ETYPE(T_EV_ShowDebugInfo,"show-debug-info",
 		ShowDebugInfoEvent);
 
-      SET_ETYPE(T_EV_ToggleDiskOutput,"toggle-disk-output",
-		ToggleDiskOutputEvent);
+      SET_ETYPE_SLOW(T_EV_ToggleDiskOutput,"toggle-disk-output",
+		     ToggleDiskOutputEvent);
       SET_ETYPE(T_EV_SetAutoLoopSaving,"set-auto-loop-saving",
 		SetAutoLoopSavingEvent);
-      SET_ETYPE(T_EV_SaveLoop,"save-loop",SaveLoopEvent);
-      SET_ETYPE(T_EV_SaveNewScene,"save-new-scene",SaveNewSceneEvent);
-      SET_ETYPE(T_EV_SaveCurrentScene,"save-current-scene",SaveCurrentSceneEvent);
+      SET_ETYPE_SLOW(T_EV_SaveLoop,"save-loop",SaveLoopEvent);
+      SET_ETYPE_SLOW(T_EV_SaveNewScene,"save-new-scene",SaveNewSceneEvent);
+      SET_ETYPE_SLOW(T_EV_SaveCurrentScene,"save-current-scene",SaveCurrentSceneEvent);
       SET_ETYPE(T_EV_SetLoadLoopId,"set-load-loop-id",SetLoadLoopIdEvent);
       SET_ETYPE(T_EV_SetDefaultLoopPlacement,"set-default-loop-placement",
 		SetDefaultLoopPlacementEvent);
 
-      SET_ETYPE(T_EV_BrowserMoveToItem,"browser-move-to-item",
-	        BrowserMoveToItemEvent);
-      SET_ETYPE(T_EV_BrowserMoveToItemAbsolute,"browser-move-to-item-absolute",
-	        BrowserMoveToItemAbsoluteEvent);
-      SET_ETYPE(T_EV_BrowserSelectItem,"browser-select-item",
-	        BrowserSelectItemEvent);
-      SET_ETYPE(T_EV_BrowserRenameItem,"browser-rename-item",
-	        BrowserRenameItemEvent);
+      SET_ETYPE_SLOW(T_EV_BrowserMoveToItem,"browser-move-to-item",
+		     BrowserMoveToItemEvent);
+      SET_ETYPE_SLOW(T_EV_BrowserMoveToItemAbsolute,"browser-move-to-item-absolute",
+		     BrowserMoveToItemAbsoluteEvent);
+      SET_ETYPE_SLOW(T_EV_BrowserSelectItem,"browser-select-item",
+		     BrowserSelectItemEvent);
+      SET_ETYPE_SLOW(T_EV_BrowserRenameItem,"browser-rename-item",
+		     BrowserRenameItemEvent);
       SET_ETYPE(T_EV_BrowserItemBrowsed,"browser-item-browsed",
-		BrowserItemBrowsedEvent);
-      SET_ETYPE(T_EV_PatchBrowserMoveToBank,"patchbrowser-move-to-bank",
-	        PatchBrowserMoveToBankEvent);
+	        BrowserItemBrowsedEvent);
+      SET_ETYPE_SLOW(T_EV_PatchBrowserMoveToBank,"patchbrowser-move-to-bank",
+		     PatchBrowserMoveToBankEvent);
+      SET_ETYPE_SLOW(T_EV_PatchBrowserMoveToBankByIndex,
+		     "patchbrowser-move-to-bank-by-index",
+		     PatchBrowserMoveToBankByIndexEvent);
 
       // Internal events-- don't try to bind to these
 

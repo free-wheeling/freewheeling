@@ -880,6 +880,12 @@ Event "patchbrowser-move-to-bank"
 
   "direction": -1 or 1 to move backward or forward
 
+Event "patchbrowser-move-to-bank-by-index"
+  Switch patch browser banks, choosing by index.
+
+  "index": Index of patchbank to select
+           Must be in the range of 0 to SYSTEM_num_patchbanks-1
+
 Event "browser-item-browsed"
   This event is sent out by Freewheeling's browsers whenever a browser item
   is changed. This is useful in the patch browser- you can bind to
@@ -1210,17 +1216,34 @@ will not go to your synth.
   <declare var="VAR_keyheld_alt" type="char" init="0"/>
   <declare var="VAR_keyheld_space" type="char" init="0"/>
 
-  <declare var="VAR_midi_suspend" type="int" init="95"/>
-  <declare var="VAR_midi_footswitch" type="int" init="64"/>
   <declare var="VAR_switch_on" type="range" init="64>127"/>
   <declare var="VAR_switch_off" type="int" init="0"/>
-	
+
   <declare var="VAR_overdubmode" type="char" init="0"/>
+
+  <declare var="VAR_midi_suspend" type="int" init="95"/>
+
+<!-- Footswitch controller # used to grab loops initially -->
+  <declare var="VAR_midi_footswitch" type="int" init="64"/>
   
+<!-- Which MIDI controller # controls fast scroll switch in browser.
+     This switch also doubles for the space key. -->
+  <declare var="VAR_midishift_midicontrol" type="int" init="50"/>
+  <declare var="VAR_keyheld_midishift" type="char" init="0"/>
+
 <!-- Which MIDI controller # controls overdub feedback. -->
   <declare var="VAR_overdubfeedback_midicontrol" type="int" init="87"/>
   <declare var="VAR_overdubfeedback" type="float" init="0.8"/>
 
+<!-- MIDI controller #s for patchbank select -->
+  <declare var="VAR_patchbank_midicontrol" type="int" init="88"/>
+  <declare var="VAR_patchbank_back_midicontrol" type="int" init="53"/>
+  <declare var="VAR_patchbank_forward_midicontrol" type="int" init="54"/>
+
+<!-- MIDI controller # for undo -->
+  <declare var="VAR_undo_midicontrol" type="int" init="51"/>
+
+<!-- Range of inputs -->
   <declare var="VAR_inputs" type="range" init="1>4"/>
   <declare var="VAR_zero_keysym" type="int" init="48"/>
 
@@ -1932,6 +1955,13 @@ will not go to your synth.
   <!-- See 'Renaming loops by clicking'- binding defined earlier for
        precedence -->
 
+  <!-- HELP: MIDI CC51: Undo last loop record -->
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_undo_midicontrol and
+               controlval=VAR_switch_on"
+   output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
+   output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
   <!-- HELP: u: Undo last loop record -->
   <binding input="key" 
    conditions="SYSTEM_loopid_lastrecord_0=VAR_loopid_footswitch and 
@@ -2014,6 +2044,41 @@ will not go to your synth.
   <binding input="key" conditions="key=right and keydown=1"
    output="patchbrowser-move-to-bank" parameters="direction=1"/>
 
+  <!-- HELP: MIDI CC88: Change patch bank by MIDI fader -->
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_patchbank_midicontrol"   
+   output1="video-show-display" parameters1="displayid=VAR_cur_browser and
+                                             show=0"
+   output2="set-variable" parameters2="var=VAR_cur_browser and 
+                                       value=DISPLAY_browser_patch"
+   output3="video-show-display" parameters3="displayid=VAR_cur_browser and
+                                             show=1"
+   output4="patchbrowser-move-to-bank-by-index" 
+   parameters4="index=controlval*SYSTEM_num_patchbanks/128"/>
+
+  <!-- HELP: MIDI CC53/54: Change patch bank by MIDI buttons -->
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_patchbank_back_midicontrol and
+               controlval=VAR_switch_on"   
+   output1="video-show-display" parameters1="displayid=VAR_cur_browser and
+                                             show=0"
+   output2="set-variable" parameters2="var=VAR_cur_browser and 
+                                       value=DISPLAY_browser_patch"
+   output3="video-show-display" parameters3="displayid=VAR_cur_browser and
+                                             show=1"
+   output4="patchbrowser-move-to-bank" parameters4="direction=-1"/>
+
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_patchbank_forward_midicontrol and
+               controlval=VAR_switch_on"
+   output1="video-show-display" parameters1="displayid=VAR_cur_browser and
+                                             show=0"
+   output2="set-variable" parameters2="var=VAR_cur_browser and 
+                                       value=DISPLAY_browser_patch"
+   output3="video-show-display" parameters3="displayid=VAR_cur_browser and
+                                             show=1"
+   output4="patchbrowser-move-to-bank" parameters4="direction=1"/>
+
   <!-- HELP: b: Switch browser- patch, loop, or scene -->
   <binding input="key" conditions="key=b and keydown=1"
    output1="video-show-display" parameters1="displayid=VAR_cur_browser and
@@ -2043,28 +2108,72 @@ will not go to your synth.
    conditions="key=return and keydown=1"
    output="browser-select-item" parameters="browserid=VAR_cur_browser"/>
 
-  <!-- Unofficial feature: Midi Program Change: Change browser item -->
-  <binding input="midiprogramchange" conditions="programval=VAR_cur_program+1"
+  <!-- Overdub feedback continuous adjust from MIDI control -->
+  <!-- HELP: MIDI CC50: MIDI shift key (equivalent to holding space) -->
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_midishift_midicontrol and
+               controlval=VAR_switch_on"
+   output1="set-variable" parameters1="var=VAR_keyheld_midishift and
+                                       value=1"
+   output2="set-variable" parameters2="var=VAR_keyheld_space and
+                                       value=1"/>
+
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_midishift_midicontrol and
+               controlval=VAR_switch_off"
+   output1="set-variable" parameters1="var=VAR_keyheld_midishift and
+                                       value=0"
+   output2="set-variable" parameters2="var=VAR_keyheld_space and
+                                       value=0"/>
+
+  <!-- HELP: (midishift) + MIDI Program Change: (Jump)/Change browser item -->
+  <binding input="midiprogramchange" 
+   conditions="programval=VAR_cur_program+1 and VAR_keyheld_midishift=0"
    output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
    output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
                                                adjust=1 and jumpadjust=0"/>
 
-  <binding input="midiprogramchange" conditions="VAR_cur_program=127 and
-                                                 programval=0"
+  <binding input="midiprogramchange" 
+   conditions="VAR_keyheld_midishift=0 and VAR_cur_program=127 and programval=0"
    output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
    output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
                                                adjust=1 and jumpadjust=0"/>
 
-  <binding input="midiprogramchange" conditions="programval=VAR_cur_program-1"
+  <binding input="midiprogramchange"
+   conditions="programval=VAR_cur_program-1 and VAR_keyheld_midishift=0"
    output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
    output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
                                                adjust=-1 and jumpadjust=0"/>
 
-  <binding input="midiprogramchange" conditions="VAR_cur_program=0 and
-                                                 programval=127"
+  <binding input="midiprogramchange"
+   conditions="VAR_keyheld_midishift=0 and VAR_cur_program=0 and programval=127"
    output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
    output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
                                                adjust=-1 and jumpadjust=0"/>
+
+  <binding input="midiprogramchange" 
+   conditions="programval=VAR_cur_program+1 and VAR_keyheld_midishift=1"
+   output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+   output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+                                               adjust=0 and jumpadjust=1"/>
+
+  <binding input="midiprogramchange" 
+   conditions="VAR_keyheld_midishift=1 and VAR_cur_program=127 and programval=0"
+   output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+   output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+                                               adjust=0 and jumpadjust=1"/>
+
+  <binding input="midiprogramchange"
+   conditions="programval=VAR_cur_program-1 and VAR_keyheld_midishift=1"
+   output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+   output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+                                               adjust=0 and jumpadjust=-1"/>
+
+  <binding input="midiprogramchange"
+   conditions="VAR_keyheld_midishift=1 and VAR_cur_program=0 and programval=127"
+   output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+   output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+                                               adjust=0 and jumpadjust=-1"/>
 
   <binding input="midiprogramchange"
    output="set-variable" parameters="var=VAR_cur_program and value=programval"/>

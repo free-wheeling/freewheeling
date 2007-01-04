@@ -31,7 +31,7 @@ public:
 
   // Enable/disable FluidSynth- if disabled, bypasses
   // processor stage to reduce CPU usage, but leaves memory allocated
-  void SetEnable(char en) { 
+  inline void SetEnable(char en) { 
     // Preprocess audio for smoothing
     //dopreprocess();
     this->enable = en;

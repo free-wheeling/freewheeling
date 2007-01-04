@@ -709,7 +709,7 @@ void MidiIO::SetMIDIEcho (int def_port, PatchItem *patch) {
     FluidSynthEnableEvent *fsevt = (FluidSynthEnableEvent *)
       Event::GetEventByType(T_EV_FluidSynthEnable);
     fsevt->enable = usefluid;
-    app->getEMG()->BroadcastEvent(fsevt, this);
+    app->getEMG()->BroadcastEventNow(fsevt, this);
   }
 }
 

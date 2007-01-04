@@ -1738,7 +1738,7 @@ void LoopManager::DeleteLoop (int index) {
       AudioBlock *recblk = recp->GetFirstRecordedBlock();
       if (recblk != 0) {
 	app->getBMG()->RefDeleted(recblk);
-	recblk->DeleteChain();
+	recblk->DeleteChain(); // *** Not RT Safe
 	if (lp != 0)
 	  lp->blocks = 0;
       }
@@ -1762,10 +1762,10 @@ void LoopManager::DeleteLoop (int index) {
     if (lp->blocks != 0) {
       // Notify any blockmanagers working on this loop's audio to end!
       app->getBMG()->RefDeleted(lp->blocks);
-      lp->blocks->DeleteChain();
+      lp->blocks->DeleteChain(); // *** Not RT Safe
     }
 
-    delete lp;
+    delete lp;                   // *** Not RT Safe
     numloops--;
   }
 
@@ -1775,6 +1775,7 @@ void LoopManager::DeleteLoop (int index) {
 // Trigger the loop at index within the map
 // The exact behavior varies depending on what is already happening with
 // this loop and the settings passed- see .fweelin.rc
+// *** Not RT Safe
 void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs, 
 			    char overdub, float *od_feedback) {
   // printf("ACTIVATE plist %p status %d\n",plist[index],status[index]);
@@ -1828,6 +1829,7 @@ void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs,
   }
 }
 
+// *** Not RT Safe
 void LoopManager::Deactivate (int index) {
   if (plist[index] == 0) {
     // We have a problem, there is supposed to be a processor here!
@@ -2675,6 +2677,7 @@ int Fweelin::setup()
   cfg->AddEmptyVariable("SYSTEM_num_help_pages");
   cfg->AddEmptyVariable("SYSTEM_num_loops_in_map");
   cfg->AddEmptyVariable("SYSTEM_num_recording_loops_in_map");
+  cfg->AddEmptyVariable("SYSTEM_num_patchbanks");
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
     cfg->AddEmptyVariable(tmp);
@@ -2897,6 +2900,10 @@ int Fweelin::setup()
 			  (char *) &(loopmgr->numrecordingloops));
   cfg->LinkSystemVariable("SYSTEM_num_recording_loops_in_map",T_int,
 			  (char *) &(loopmgr->numrecordingloops));
+  if (browsers[B_Patch] != 0) 
+    cfg->LinkSystemVariable("SYSTEM_num_patchbanks",T_int,
+			  (char *) &(((PatchBrowser *) browsers[B_Patch])->
+				     num_pb));
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
     cfg->LinkSystemVariable(tmp,T_int,

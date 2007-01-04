@@ -1,10 +1,16 @@
 IN PROGRESS v0.5.4 - SVN
 
-	    01/02/2007
+	    01/04/2007
 	
 	    New Features
 	    ------------
-	   
+
+	    * New configuration allows MIDI control of:
+
+	      Undo- CC#51
+	      Patch bank changing by fader- CC #88
+	      Patch bank changing by buttons- CC #53 / #54
+	      
 	    * Continuously variable feedback for overdubs
 
 	      You can now change the loop feedback during overdubbing.
@@ -17,7 +23,17 @@ IN PROGRESS v0.5.4 - SVN
 	      <!-- Which MIDI controller # controls overdub feedback. -->
 	      <declare var="VAR_overdubfeedback_midicontrol" type="int" init="87"/>
 	      <declare var="VAR_overdubfeedback" type="float" init="0.8"/>
-	    	      
+
+	    * New configuration allows browsing via MIDI program change
+	      
+	      I developed this config for my CME-UF8 master controller, which
+	      has a rotary encoder that sends MIDI program change messages.
+	      With the new config, a MIDI program change knob can be used
+	      to spin through scenes, loops, or softsynth patches.
+
+	      Also, controller #50 is configured to act as a shift key for
+	      faster scrolling through browsers.
+
 	    * Save Current Scene (F7) now overwrites an existing scene.
 	
 	    * Save New Scene (shift + F7) forces a new scene to be created.
@@ -34,6 +50,8 @@ IN PROGRESS v0.5.4 - SVN
 	    Fixes
 	    -----
 
+	    - Better stability in Event Manager- should fix crashes
+	
 	    - Deliberate MIDI output of events now follows the ports and 
 	      channels you specify. Incidental echoing of MIDI events follows
 	      the settings from the current patch.
