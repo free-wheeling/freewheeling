@@ -157,6 +157,7 @@ enum EventType {
   T_EV_BrowserSelectItem,
   T_EV_BrowserRenameItem,
   T_EV_PatchBrowserMoveToBank,
+  T_EV_PatchBrowserMoveToBankByIndex,
 
   T_EV_Last
 };
@@ -195,8 +196,9 @@ class EventParameter {
 class EventTypeTable {
  public:
   EventTypeTable (char *name = 0, PreallocatedType *mgr = 0,
-		  Event *proto = 0, int paramidx = -1) :
-    name(name), mgr(mgr), proto(proto), paramidx(paramidx) {};
+		  Event *proto = 0, int paramidx = -1, char slowdelivery = 0) :
+    name(name), mgr(mgr), proto(proto), paramidx(paramidx), 
+    slowdelivery(slowdelivery) {};
 
   char *name;
   PreallocatedType *mgr;
@@ -204,6 +206,9 @@ class EventTypeTable {
   int paramidx; // Index of event parameter that is used for hash index
                 // For example, in the keyboard input event, the keysym 
                 // is indexed for quick triggering of keyboard events by key
+  char slowdelivery; // Nonzero if this event should be delivered slow, in
+                     // a nonRT thread. This is useful for events that cause
+                     // nonRT-safe operations to be executed.
 };
 
 // Events can be allocated in realtime using class Preallocated
@@ -1534,6 +1539,32 @@ class PatchBrowserMoveToBankEvent : public Event {
   int direction;   // Direction to move (+1/-1 next/previous)
 };
 
+class PatchBrowserMoveToBankByIndexEvent : public Event {
+ public:
+  EVT_DEFINE(PatchBrowserMoveToBankByIndexEvent,
+	     T_EV_PatchBrowserMoveToBankByIndex);
+  virtual void Recycle() {
+    index = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    PatchBrowserMoveToBankByIndexEvent &s = 
+      (PatchBrowserMoveToBankByIndexEvent &) src;
+    index = s.index;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter("index",FWEELIN_GETOFS(index),T_int);
+    }
+
+    return EventParameter();
+  };    
+
+  int index; // Index of patchbank to choose
+};
+
 class RenameLoopEvent : public Event {
  public:
   EVT_DEFINE(RenameLoopEvent,T_EV_RenameLoop);
@@ -1871,21 +1902,27 @@ class EventManager {
 
   // Broadcast immediately!
   inline void BroadcastEventNow(Event *ev, 
-				EventProducer *source) {
+				EventProducer *source,
+				char allowslowdelivery = 1) {
     int evnum = (int) ev->GetType();
     
-    // Scan through the listeners to see who to call
-    EventListenerItem *cur = listeners[evnum];
-    while (cur != 0) {
-      if ((cur->eventsfrom == 0 && 
-	   (!cur->block_self_calls || source != (void *) cur->callwhom)) ||
-	  source == 0 || cur->eventsfrom == source)
-	cur->callwhom->ReceiveEvent(ev,source);
-      cur = cur->next;
+    // Check if this event is slow-delivery only
+    if (allowslowdelivery && Event::ett[evnum].slowdelivery)
+      BroadcastEvent(ev,source);
+    else {
+      // Scan through the listeners to see who to call
+      EventListenerItem *cur = listeners[evnum];
+      while (cur != 0) {
+	if ((cur->eventsfrom == 0 && 
+	     (!cur->block_self_calls || source != (void *) cur->callwhom)) ||
+	    source == 0 || cur->eventsfrom == source)
+	  cur->callwhom->ReceiveEvent(ev,source);
+	cur = cur->next;
+      }
+      
+      // This event has been broadcast.. erase it!.. use RTDelete()
+      ev->RTDelete();
     }
-
-    // This event has been broadcast.. erase it!.. use RTDelete()
-    ev->RTDelete();
   };
 
   // Broadcast through dispatch thread!
@@ -1903,7 +1940,10 @@ class EventManager {
       pthread_mutex_unlock (&dispatch_thread_lock);
     }
     else
-      printf("RTInterrupt active EventDispatchThread!\n");
+      // Priority inversion
+      printf("EVENT: WARNING: Priority inversion during event broadcast! Event '%s' may be lost!\n",Event::ett[(int) ev->GetType()].name);
+
+    // printf("EVENT: SENT: %s!\n",Event::ett[(int) ev->GetType()].name);
   };
 
   // Not RT safe, but threadsafe!
@@ -1975,8 +2015,10 @@ class EventManager {
 	//printf("Evt dispatch- dt: %2.2f ms\n",dt);
 
 	if (cur->GetMgr() == 0)
-	  printf("WARNING: Broadcast from RT nonRT event!!\n");
-	inst->BroadcastEventNow(cur,cur->from);
+	  printf("EVENT: WARNING: Broadcast from RT nonRT event!!\n");
+
+	// printf("EVENT: DISPATCH: %s!\n",Event::ett[(int) cur->GetType()].name);
+	inst->BroadcastEventNow(cur,cur->from,0); // Force delivery now
 	cur = cur->next;
       }
 
@@ -1988,11 +2030,14 @@ class EventManager {
       // someone is accessing the queue (for ex, BroadcastEvent)
       // So the dispatch thread holds for other threads. Not a big deal.
 
+      // ** Or, implement lockless ring buffer design here
+
       // Empty queue!
       inst->events = 0;
 
       // Wait for wakeup
       pthread_cond_wait (&inst->dispatch_ready, &inst->dispatch_thread_lock);
+      // printf("EVENT: WAKEUP!\n");
     }
 
     printf("Event Manager: end dispatch thread\n");

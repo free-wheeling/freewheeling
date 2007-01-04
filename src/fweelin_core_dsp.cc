@@ -1227,6 +1227,7 @@ void RecordProcessor::EndNow() {
   }
 
   // Broadcast a message that recording has finished
+  // Broadcast nonRT, because EndRecord does non-RT safe operations
   app->getEMG()->BroadcastEvent(endrec, this);
 }
 

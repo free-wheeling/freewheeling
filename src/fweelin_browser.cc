@@ -886,8 +886,10 @@ PatchBrowser::~PatchBrowser() {
   // Invoke our special ClearAllItems method
   ClearAllItems(); 
 
-  if (app != 0)
+  if (app != 0) {
     app->getEMG()->UnlistenEvent(this,0,T_EV_PatchBrowserMoveToBank);
+    app->getEMG()->UnlistenEvent(this,0,T_EV_PatchBrowserMoveToBankByIndex);
+  }
 };
 
 void PatchBrowser::ClearAllItems() {
@@ -914,6 +916,8 @@ void PatchBrowser::ClearAllItems() {
     curpb = curpb->next;
   };
   
+  // *** Do we need to clear all patchbanks too?
+
   UnlockBrowser();
 };
 
@@ -956,9 +960,42 @@ void PatchBrowser::PB_MoveTo (int direction) {
   UnlockBrowser();
 };
 
+void PatchBrowser::PB_MoveToIndex (int index) {
+  LockBrowser();
+  
+  if (xpand) {
+    xpand_lastactivity = mygettime();
+    xpanded = 1;
+  }
+
+  // Update pb_cur
+  if (pb_cur != 0) {
+    pb_cur->cur = cur;
+    pb_cur->first = first;
+  } else
+    pb_cur = pb_first;
+
+  // Count to right patchbank
+  pb_cur = pb_first;
+  for (int i = 0; i < index && pb_cur != 0; i++, pb_cur = pb_cur->next);
+  
+  if (pb_cur == 0)
+    pb_cur = pb_first;
+  else {
+    // Assign patch 'cur' and 'first' pointers based on this patch bank
+    first = pb_cur->first;
+    cur = pb_cur->cur;
+
+    SetMIDIEcho();
+  }
+
+  UnlockBrowser();
+};
+
 void PatchBrowser::Setup(Fweelin *a, BrowserCallback *c) {
   Browser::Setup(a,c);
   app->getEMG()->ListenEvent(this,0,T_EV_PatchBrowserMoveToBank);
+  app->getEMG()->ListenEvent(this,0,T_EV_PatchBrowserMoveToBankByIndex);
 };
 
 void PatchBrowser::ReceiveEvent(Event *ev, EventProducer *from) {
@@ -971,6 +1008,18 @@ void PatchBrowser::ReceiveEvent(Event *ev, EventProducer *from) {
       if (CRITTERS)
 	printf("PATCH BROWSER: Received PatchBrowserMoveToBank "
 	       "(direction: %d)\n", pbev->direction);
+    }
+    break;
+
+  case T_EV_PatchBrowserMoveToBankByIndex :
+    {
+      PatchBrowserMoveToBankByIndexEvent *pbev = 
+	(PatchBrowserMoveToBankByIndexEvent *) ev;
+      
+      PB_MoveToIndex(pbev->index);
+      if (CRITTERS)
+	printf("PATCH BROWSER: Received PatchBrowserMoveToBankByIndex "
+	       "(index: %d)\n", pbev->index);
     }
     break;
 

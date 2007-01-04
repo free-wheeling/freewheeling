@@ -1322,7 +1322,6 @@ void InputMatrix::ReceiveEvent(Event *ev, EventProducer *from) {
       
       while (match != 0) {
 	// So we have a binding.. trigger the bound event!
-	
 	Event *shot = (Event *) match->boundproto->RTNew();
 	if (shot == 0) 
 	  printf("CONFIG: WARNING: Can't send event- RTNew() failed\n");
