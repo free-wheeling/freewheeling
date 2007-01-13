@@ -1,6 +1,17 @@
 Focus
 -----
 
+- Whenever triggermap is updated watch out-- may have to update LoopLists
+
+- Trigger volume ramp loop
+- Trigger volume ramp selected loops
+- Selection > Scene and back
+- All loops off
+
+- SCENES- Multiple internal scenes (selecting loops, creating scenes, 
+  triggering scenes, saving), Scene tray
+- Script to Oggenc new live .WAVs, rename & delete
+
 - Add generic 'dialog' method for startup questions
 - Fix SF_FORMAT_FLAC prob
 - Sustained High CPU-> OGG encoding gets behind and kills FW

@@ -9,8 +9,14 @@
 
 #include "fweelin_block.h"
 
-#define MAX_PULSES 10 // Maximum number of time pulses
-#define LAST_REC_COUNT 8 // Keep track of the last n indexes we recorded to
+// Maximum number of time pulses
+#define MAX_PULSES 10 
+
+// How many different sets of loop selections to remember?
+#define NUM_LOOP_SELECTION_SETS 10 
+
+// Keep track of the last n indexes we recorded to
+#define LAST_REC_COUNT 8 
 
 // Divisions are added in browsers wherever files are greater than
 // FWEELIN_FILE_BROWSER_DIVISION_TIME seconds apart

@@ -26,7 +26,7 @@ IN PROGRESS v0.5.4 - SVN
 
 	    * New configuration allows browsing via MIDI program change
 	      
-	      I developed this config for my CME-UF8 master controller, which
+	      I developed this config for the CME-UF8 master controller, which
 	      has a rotary encoder that sends MIDI program change messages.
 	      With the new config, a MIDI program change knob can be used
 	      to spin through scenes, loops, or softsynth patches.

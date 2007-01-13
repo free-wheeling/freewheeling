@@ -1291,6 +1291,12 @@ char VideoIO::DrawLoop(LoopManager *loopmgr, int i,
     cursorclr = { 0xEF, 0x11, 0x11, 0 },
     txtclr2 = { 0xEF, 0xAF, 0xFF, 0 };
 
+  // Color for selected loops
+  static SDL_Color selcolor[4] = { { 0xF9, 0xE6, 0x13, 0 }, 
+				   { 0x62, 0x62, 0x62, 0 },
+				   { 0xFF, 0xFF, 0xFF, 0 },
+				   { 0xE0, 0xDA, 0xD5, 0 } };
+  
   const float cpeak_mul = 2.0, // For pulsing loops - magnitude of pulse
     cpeak_base = 0.5; // For pulsing loops - base size of loop 
   const int lscope_maxmag = OCY(15),
@@ -1332,6 +1338,12 @@ char VideoIO::DrawLoop(LoopManager *loopmgr, int i,
       plen = pa->peaks->GetTotalLen();
   }
   
+  char selected = 0;
+  if (l != 0 && l->selcnt > 0) {
+    selected = 1;
+    loopcolors = selcolor; // Color loop selected
+  }
+
   // Draw peaks & avgs
   float loopvol = 1.0, // Loop volume
     loopdvol = 1.0; // Loop volume delta
@@ -1854,10 +1866,23 @@ void VideoIO::video_event_loop ()
 	  }
 
 	  SDL_Color elclr;
-	  elclr.r = (int) (loopcolors[clrnum][0].r*colormag);
-	  elclr.g = (int) (loopcolors[clrnum][0].g*colormag);
-	  elclr.b = (int) (loopcolors[clrnum][0].b*colormag);
-	  elclr.unused = 0;
+	  Loop *l = loopmgr->GetSlot(i);
+	  if (l != 0 && l->selcnt > 0) {
+	    // Selected loop
+ 	    static SDL_Color selcolor[4] = { { 0xF9, 0xE6, 0x13, 0 }, 
+					     { 0x62, 0x62, 0x62, 0 },
+					     { 0xFF, 0xFF, 0xFF, 0 },
+					     { 0xE0, 0xDA, 0xD5, 0 } };
+	    elclr.r = selcolor[0].r;
+	    elclr.g = selcolor[0].g;
+	    elclr.b = selcolor[0].b;
+	    elclr.unused = 0;
+	  } else {
+	    elclr.r = (int) (loopcolors[clrnum][0].r*colormag);
+	    elclr.g = (int) (loopcolors[clrnum][0].g*colormag);
+	    elclr.b = (int) (loopcolors[clrnum][0].b*colormag);
+	    elclr.unused = 0;
+	  }
 
 	  // Draw each geometry of this element
 	  FloLayoutElementGeometry *curgeo = curel->geo;

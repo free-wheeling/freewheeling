@@ -181,7 +181,7 @@ public:
   Loop (AudioBlock *blocks, Pulse *pulse, float quant, float vol, 
 	long nbeats, codec format) : 
     name(0), format(format), blocks(blocks), pulse(pulse), quant(quant), 
-    vol(vol), dvol(1.0), nbeats(nbeats){};
+    vol(vol), dvol(1.0), nbeats(nbeats), selcnt(0) {};
   virtual ~Loop () {
     if (name != 0)
       delete[] name; 
@@ -214,6 +214,81 @@ public:
     dvol;             // Rate of volume change
 
   long nbeats;        // Number of beats in this loop
+  int selcnt;         // Number of times this loop is currently selected
+                      // (see toggle-select-loop). A loop can be selected
+                      // in several sets
+};
+
+// A set of loops
+class LoopList {
+public:
+  LoopList (int l_idx = -1) : l_idx(l_idx), next(0) {};
+
+  // Scans through the list beginning with 'first' for the loop 'l_idx'-
+  // returns the LoopList containing 'item', and sets 'prev' to the previous
+  // LoopList. If not found, returns 0.
+  static LoopList *Scan (LoopList *first, int l_idx, LoopList **prev) {
+    LoopList *cur = first,
+      *tprev = 0;
+    while (cur != 0 && cur->l_idx != l_idx) {
+      tprev = cur;
+      cur = cur->next;
+    }
+
+    *prev = tprev;
+    return cur;
+  };
+
+  // Add to the beginning of a list of loops- return the new first pointer
+  static LoopList *AddBegin (LoopList *first, int l_idx) {
+    if (first == 0)
+      return new LoopList(l_idx);
+    else {
+      LoopList *nwl = new LoopList(l_idx);
+      nwl->next = first;
+      return nwl;
+    }
+  };
+
+  // Remove the given looplist 'll' from the list of loops- 
+  // you must also pass the element previous to ll
+  // We return the new first pointer
+  static LoopList *Remove (LoopList *first, LoopList *ll, LoopList *prev) {
+    if (ll != 0) {
+      if (ll == first) {
+	LoopList *nwfirst = ll->next;
+	delete ll;
+	return nwfirst; 
+      } else {
+	if (prev != 0) 
+	  prev->next = ll->next;
+	delete ll;
+	return first;
+      }
+    }
+
+    return first;
+  };
+
+  // Remove the given loop from the list of loops- return the new first pointer
+  static LoopList *Remove (LoopList *first, int l_idx) {
+    LoopList *prev,
+      *ll = Scan(first,l_idx,&prev);
+    return Remove(first,ll,prev);
+  };
+
+  // Erase a list of loops, given the first
+  static void Delete (LoopList *first) {
+    LoopList *cur = first;
+    while (cur != 0) {
+      LoopList *tmp = cur->next;
+      delete cur;
+      cur = tmp;
+    }
+  };
+
+  int l_idx;
+  LoopList *next;
 };
 
 // This class manages sets of loops, allowing them to be triggered..
@@ -697,7 +772,6 @@ public:
 // This is Fweelin
 class Fweelin : public EventProducer, public BrowserCallback {
  public:
-
   Fweelin() : 
 
 #if USE_FLUIDSYNTH
@@ -772,6 +846,13 @@ class Fweelin : public EventProducer, public BrowserCallback {
       return 0;
   }
 
+  inline LoopList **getLOOPSEL(int idx) {
+    if (idx >= 0 && idx < NUM_LOOP_SELECTION_SETS) 
+      return &loopsel[idx];
+    else
+      return 0;
+  };
+
   // Patch browser callbacks
   virtual void ItemBrowsed(BrowserItem *i) { ItemSelected(i); };
   virtual void ItemSelected(BrowserItem *i);
@@ -800,6 +881,9 @@ class Fweelin : public EventProducer, public BrowserCallback {
   int writenum; // Number of audio output file currently being written
   char streamoutname[FWEELIN_OUTNAME_LEN], // Name of output file
     timingname[FWEELIN_OUTNAME_LEN];       // Name of timing stripe file
+
+  // ******************  LOOP SELECTIONS
+  LoopList *loopsel[NUM_LOOP_SELECTION_SETS];
 
   // ******************  SCENE INFO
   SceneBrowserItem *curscene;

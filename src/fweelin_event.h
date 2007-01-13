@@ -133,6 +133,11 @@ enum EventType {
   T_EV_SetSyncType,
   T_EV_SetSyncSpeed,
 
+  T_EV_ToggleSelectLoop,
+  T_EV_SelectOnlyPlayingLoops,
+  T_EV_SelectAllLoops,
+  T_EV_TriggerSelectedLoops,
+
   T_EV_SetTriggerVolume,
   T_EV_SlideLoopAmp,
   T_EV_SetLoopAmp,
@@ -1707,7 +1712,7 @@ class SetSyncSpeedEvent : public Event {
   EVT_DEFINE(SetSyncSpeedEvent,T_EV_SetSyncSpeed);
   virtual void operator = (const Event &src) {
     SetSyncSpeedEvent &s = (SetSyncSpeedEvent &) src;
-    sspd= s.sspd;
+    sspd = s.sspd;
   };
   virtual int GetNumParams() { return 1; };
   virtual EventParameter GetParam(int n) { 
@@ -1720,6 +1725,114 @@ class SetSyncSpeedEvent : public Event {
   };    
 
   int sspd; // Number of external transport beats/bars per internal pulse
+};
+
+class ToggleSelectLoopEvent : public Event {
+ public:
+  EVT_DEFINE(ToggleSelectLoopEvent,T_EV_ToggleSelectLoop);
+  virtual void operator = (const Event &src) {
+    ToggleSelectLoopEvent &s = (ToggleSelectLoopEvent &) src;
+    setid = s.setid;
+    loopid = s.loopid;
+  };
+  virtual int GetNumParams() { return 2; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
+    case 1:
+      return EventParameter("loopid",FWEELIN_GETOFS(loopid),T_int);
+    }
+
+    return EventParameter();
+  };    
+
+  int setid, // ID # of the selection set in which to toggle the loop
+    loopid;  // ID # of loop to toggle
+};
+
+class SelectOnlyPlayingLoopsEvent : public Event {
+ public:
+  EVT_DEFINE(SelectOnlyPlayingLoopsEvent,T_EV_SelectOnlyPlayingLoops);
+  virtual void operator = (const Event &src) {
+    SelectOnlyPlayingLoopsEvent &s = (SelectOnlyPlayingLoopsEvent &) src;
+    setid = s.setid;
+    playing = s.playing;
+  };
+  virtual int GetNumParams() { return 2; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
+    case 1:
+      return EventParameter("playing",FWEELIN_GETOFS(playing),T_char);
+    }
+
+    return EventParameter();
+  };    
+
+  int setid; // ID # of the selection set to work on
+  char playing; // Nonzero if we should select only those loops currently 
+                // playing-- zero if we should select only those loops 
+                // currently idle
+};
+
+class SelectAllLoopsEvent : public Event {
+ public:
+  EVT_DEFINE(SelectAllLoopsEvent,T_EV_SelectAllLoops);
+  virtual void operator = (const Event &src) {
+    SelectAllLoopsEvent &s = (SelectAllLoopsEvent &) src;
+    setid = s.setid;
+    select = s.select;
+  };
+  virtual int GetNumParams() { return 2; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
+    case 1:
+      return EventParameter("select",FWEELIN_GETOFS(select),T_char);
+    }
+
+    return EventParameter();
+  };    
+
+  int setid; // ID # of the selection set to work on
+  char select; // Nonzero to select/zero to unselect all loops
+};
+
+class TriggerSelectedLoopsEvent : public Event {
+ public:
+  EVT_DEFINE(TriggerSelectedLoopsEvent,T_EV_TriggerSelectedLoops);
+  virtual void Recycle() {
+    setid = 0;
+    vol = 1.0;
+    toggleloops = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    TriggerSelectedLoopsEvent &s = (TriggerSelectedLoopsEvent &) src;
+    setid = s.setid;
+    vol = s.vol;
+    toggleloops = s.toggleloops;
+  };
+  virtual int GetNumParams() { return 3; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
+    case 1:
+      return EventParameter("vol",FWEELIN_GETOFS(vol),T_float);
+    case 2:
+      return EventParameter("toggleloops",FWEELIN_GETOFS(toggleloops),T_char);
+    }
+
+    return EventParameter();
+  };    
+
+  int setid; // ID # of the selection set to work on
+  float vol; // Volume at which to trigger selected loops
+  char toggleloops; // Nonzero to toggle loops, zero to force active
 };
 
 class EndRecordEvent : public Event {
