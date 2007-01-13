@@ -212,14 +212,25 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
 		SetAutoLoopSavingEvent);
       SET_ETYPE_SLOW(T_EV_SaveLoop,"save-loop",SaveLoopEvent);
       SET_ETYPE_SLOW(T_EV_SaveNewScene,"save-new-scene",SaveNewSceneEvent);
-      SET_ETYPE_SLOW(T_EV_SaveCurrentScene,"save-current-scene",SaveCurrentSceneEvent);
+      SET_ETYPE_SLOW(T_EV_SaveCurrentScene,"save-current-scene",
+		     SaveCurrentSceneEvent);
       SET_ETYPE(T_EV_SetLoadLoopId,"set-load-loop-id",SetLoadLoopIdEvent);
       SET_ETYPE(T_EV_SetDefaultLoopPlacement,"set-default-loop-placement",
 		SetDefaultLoopPlacementEvent);
 
+      SET_ETYPE_SLOW(T_EV_ToggleSelectLoop,"toggle-select-loop",
+		     ToggleSelectLoopEvent);
+      SET_ETYPE_SLOW(T_EV_SelectOnlyPlayingLoops,"select-only-playing-loops",
+		     SelectOnlyPlayingLoopsEvent);
+      SET_ETYPE_SLOW(T_EV_SelectAllLoops,"select-all-loops",
+		     SelectAllLoopsEvent);
+      SET_ETYPE_SLOW(T_EV_TriggerSelectedLoops,"trigger-selected-loops",
+		     TriggerSelectedLoopsEvent);
+
       SET_ETYPE_SLOW(T_EV_BrowserMoveToItem,"browser-move-to-item",
 		     BrowserMoveToItemEvent);
-      SET_ETYPE_SLOW(T_EV_BrowserMoveToItemAbsolute,"browser-move-to-item-absolute",
+      SET_ETYPE_SLOW(T_EV_BrowserMoveToItemAbsolute,
+		     "browser-move-to-item-absolute",
 		     BrowserMoveToItemAbsoluteEvent);
       SET_ETYPE_SLOW(T_EV_BrowserSelectItem,"browser-select-item",
 		     BrowserSelectItemEvent);

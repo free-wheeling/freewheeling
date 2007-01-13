@@ -471,6 +471,9 @@ LoopManager::LoopManager (Fweelin *app) :
   // Listen for important events
   app->getEMG()->ListenEvent(this,0,T_EV_EndRecord);
   app->getEMG()->ListenEvent(this,0,T_EV_ToggleDiskOutput);
+  app->getEMG()->ListenEvent(this,0,T_EV_ToggleSelectLoop);
+  app->getEMG()->ListenEvent(this,0,T_EV_SelectOnlyPlayingLoops);
+  app->getEMG()->ListenEvent(this,0,T_EV_SelectAllLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->ListenEvent(this,0,T_EV_SaveLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_SaveNewScene);
@@ -498,6 +501,7 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_SetLoopAmp);
   app->getEMG()->ListenEvent(this,0,T_EV_AdjustLoopAmp);
   app->getEMG()->ListenEvent(this,0,T_EV_TriggerLoop);
+  app->getEMG()->ListenEvent(this,0,T_EV_TriggerSelectedLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_MoveLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_RenameLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_EraseLoop);
@@ -515,6 +519,9 @@ LoopManager::~LoopManager() {
   // Stop listening
   app->getEMG()->UnlistenEvent(this,0,T_EV_EndRecord);
   app->getEMG()->UnlistenEvent(this,0,T_EV_ToggleDiskOutput);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_ToggleSelectLoop);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_SelectOnlyPlayingLoops);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_SelectAllLoops);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SaveLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SaveNewScene);
@@ -542,6 +549,7 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetLoopAmp);
   app->getEMG()->UnlistenEvent(this,0,T_EV_AdjustLoopAmp);
   app->getEMG()->UnlistenEvent(this,0,T_EV_TriggerLoop);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_TriggerSelectedLoops);
   app->getEMG()->UnlistenEvent(this,0,T_EV_MoveLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_RenameLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_EraseLoop);
@@ -2028,6 +2036,123 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     }
     break;
 
+  case T_EV_ToggleSelectLoop :
+    {
+      ToggleSelectLoopEvent *sev = (ToggleSelectLoopEvent *) ev;
+
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received ToggleSelectLoopEvent: Set %d Loop ID %d\n",
+	       sev->setid,sev->loopid);
+      
+      LoopList **ll = app->getLOOPSEL(sev->setid);
+      if (ll != 0) {
+	// Get loop with id
+	Loop *l = app->getTMAP()->GetMap(sev->loopid);
+	if (l != 0) {
+	  LoopList *prev;
+	  LoopList *exists = LoopList::Scan(*ll,sev->loopid,&prev);
+	  if (exists != 0) {
+	    // printf("REMOVE!\n");
+	    *ll = LoopList::Remove(*ll,exists,prev);
+	    l->selcnt--;
+	  } else {
+	    // printf("ADD!\n");
+	    *ll = LoopList::AddBegin(*ll,sev->loopid);
+	    l->selcnt++;
+	  }
+	}
+      } else 
+	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+    }
+    break;
+
+  case T_EV_SelectOnlyPlayingLoops :
+    {
+      SelectOnlyPlayingLoopsEvent *sev = (SelectOnlyPlayingLoopsEvent *) ev;
+
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received SelectOnlyPlayingLoopsEvent: Set %d [%s]\n",
+	       sev->setid,(sev->playing ? "PLAYING" : "IDLE"));
+      
+      LoopList **ll = app->getLOOPSEL(sev->setid);
+      if (ll != 0) {
+	// Scan all loops for playing loops
+	for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
+	  Loop *l = app->getTMAP()->GetMap(i);
+	  if (GetStatus(i) == T_LS_Overdubbing ||
+	      GetStatus(i) == T_LS_Playing) {
+	    if (l != 0) {
+	      // Loop exists, and it's playing!
+	      LoopList *prev;
+	      LoopList *exists = LoopList::Scan(*ll,i,&prev);
+	      if (!sev->playing && exists != 0) {
+		// printf("REMOVE!\n");
+		*ll = LoopList::Remove(*ll,exists,prev);
+		l->selcnt--;
+	      } else if (sev->playing && exists == 0) {
+		// printf("ADD!\n");
+		*ll = LoopList::AddBegin(*ll,i);
+		l->selcnt++;
+	      }
+	    }
+	  } else if (app->getTMAP()->GetMap(i) != 0) {
+	    // Loop exists, but not playing/overdubbing
+	    LoopList *prev;
+	    LoopList *exists = LoopList::Scan(*ll,i,&prev);
+	    if (sev->playing && exists != 0) {
+	      // printf("REMOVE!\n");
+	      *ll = LoopList::Remove(*ll,exists,prev);
+	      l->selcnt--;
+	    } else if (!sev->playing && exists == 0) {
+	      // printf("ADD!\n");
+	      *ll = LoopList::AddBegin(*ll,i);
+	      l->selcnt++;
+	    }
+	  }
+	}
+      } else 
+	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+    }
+    break;
+
+  case T_EV_SelectAllLoops :
+    {
+      SelectAllLoopsEvent *sev = (SelectAllLoopsEvent *) ev;
+
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received SelectAllLoopsEvent: Set %d [%s]\n",
+	       sev->setid,(sev->select ? "SELECT" : "UNSELECT"));
+      
+      LoopList **ll = app->getLOOPSEL(sev->setid);
+      if (ll != 0) {
+	// Scan all loops
+	for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
+	  Loop *l = app->getTMAP()->GetMap(i);
+	  if (l != 0) {
+	    // Loop exists in map
+	    LoopList *prev;
+	    LoopList *exists = LoopList::Scan(*ll,i,&prev);
+	    if (!sev->select && exists != 0) {
+	      // Unselect loops- remove loop from list
+	      // printf("REMOVE!\n");
+	      *ll = LoopList::Remove(*ll,exists,prev);
+	      l->selcnt--;
+	    } else if (sev->select && exists == 0) {
+	      // Select loops- add loop to list
+	      // printf("ADD!\n");
+	      *ll = LoopList::AddBegin(*ll,i);
+	      l->selcnt++;
+	    }
+	  }
+	}
+      } else 
+	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+    }
+    break;
+
   case T_EV_SetAutoLoopSaving :
     {
       SetAutoLoopSavingEvent *sev = (SetAutoLoopSavingEvent *) ev;
@@ -2349,6 +2474,37 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     }
     break;
 
+  case T_EV_TriggerSelectedLoops :
+    {
+      TriggerSelectedLoopsEvent *tev = (TriggerSelectedLoopsEvent *) ev;
+
+      if (CRITTERS)
+	printf("CORE: Received TriggerSelectedLoops(set #%d,%.2f)\n", 
+	       tev->setid,tev->vol);
+
+      LoopList **ll = app->getLOOPSEL(tev->setid);
+      if (ll != 0) {
+	// Get all loops from this set
+	LoopList *cur = *ll;
+	while (cur != 0) {
+	  if (IsActive(cur->l_idx)) {
+	    // Overdub/play on this loop
+	    if (tev->toggleloops)
+	      Deactivate(cur->l_idx);
+	  } else {
+	    // Loop idle-- start play
+	    // No overdub/shot/etc, just straight play
+	    Activate(cur->l_idx,0,tev->vol,0,0,0);
+	  }
+
+	  cur = cur->next;
+	}
+      } else 
+	printf("CORE: Invalid set id #%d when triggering selected loops\n",
+	       tev->setid);      
+    }
+    break;
+
   case T_EV_MoveLoop :
     {
       MoveLoopEvent *mev = (MoveLoopEvent *) ev;
@@ -2618,6 +2774,10 @@ int Fweelin::setup()
 
   // Keep all memory inline
   mlockall(MCL_CURRENT | MCL_FUTURE);
+
+  // Initialize vars
+  for (int i = 0; i < NUM_LOOP_SELECTION_SETS; i++)
+    loopsel[i] = 0;
 
 #ifndef __MACOSX__
   if (!XInitThreads()) {
