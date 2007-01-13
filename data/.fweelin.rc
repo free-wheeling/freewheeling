@@ -132,9 +132,10 @@
      faster. FluidSynth default is 4. -->
   <fluidsynth interpolation="1"/>
 
-<!-- MIDI channel for integrated FluidSynth. All unused MIDI events are
-     folded into this channel and fired to FluidSynth. So, currently,
-     the integrated FluidSynth behaves as a single channel synth. -->
+<!-- MIDI channel for integrated FluidSynth. When the FluidSynth patchbank
+     is selected, all unused MIDI events are folded into this channel 
+     and fired to FluidSynth. So, currently, the integrated FluidSynth behaves
+     as a single channel synth. -->
   <fluidsynth channel="0"/>
 
 <!-- Soundfonts to load. Soundfonts without a path load from
@@ -148,7 +149,7 @@
 
   <fluidsynth soundfont="basic.sf2"/>
 
-<!-- Mercury's soundfonts: -->
+<!-- Load some soundfonts: -->
   <fluidsynth soundfont="/usr/local/share/soundfonts/hs_tb303.sf2"/>
   <fluidsynth soundfont="/usr/local/share/soundfonts/Ruckus_Acoustic_Drums.SF2"/>
   <fluidsynth soundfont="/usr/local/share/soundfonts/hs_magic_techno_drums.sf2"/>
@@ -164,11 +165,11 @@
   <fluidsynth soundfont="/usr/local/share/soundfonts/2/hs_boss_dr_550.sf2"/>
 
   <fluidsynth soundfont="/usr/local/share/soundfonts/3/Industromatic.SF2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Alesis_DM5_Industrial_Set.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Industrial_Set.sf2"/>
   <fluidsynth soundfont="/usr/local/share/soundfonts/4/BasementNoise.sf2"/>
   <fluidsynth soundfont="/usr/local/share/soundfonts/3/insane_kit.sf2"/>
 
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Roland_TD10_Woody.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Woody.sf2"/>
   <fluidsynth soundfont="/usr/local/share/soundfonts/4/dbkv21.sf2"/>
 
   <fluidsynth soundfont="/usr/local/share/soundfonts/3/GoldDrums.sf2"/>
@@ -182,6 +183,7 @@
   <fluidsynth soundfont="/usr/local/share/soundfonts/4/bennetng_8850asia.sf2"/>
   <fluidsynth soundfont="/usr/local/share/soundfonts/4/Chris_Percussion2.sf2"/>
 
+  <fluidsynth soundfont="/usr/local/share/soundfonts/5/emu.sf2"/>
 </general>
 
 <events>
@@ -1426,9 +1428,11 @@ will not go to your synth.
   <!-- HELP: __ LEVELS __ -->
   <!-- HELP: -->
 
-  <!-- HELP: shift + 1-4: Toggle inputs for recording -->
+  <!-- HELP: 1-4: Toggle inputs for recording -->
   <!-- HELP: up/down + 1-4: +/- input volumes -->
-  <!-- HELP: 1-4: Select inputs for footpedal volume adjust (CC1) -->
+  
+  <!-- DISABLED-
+       HELP: 1-4: Select inputs for footpedal volume adjust (CC1) -->
  
   <!-- Slide -->
   <binding input="key" conditions="VAR_keyheld_up=1 and
@@ -1443,8 +1447,7 @@ will not go to your synth.
                                         slide=-VAR_slide_speed"/>
 
   <!-- Toggle -->
-  <binding input="key" conditions="VAR_keyheld_shift=1 and
-                                   key=VAR_inputs+VAR_zero_keysym and
+  <binding input="key" conditions="key=VAR_inputs+VAR_zero_keysym and
                                    keydown=1"
    output="toggle-input-record" parameters="input=key-VAR_zero_keysym"/>
 
@@ -1455,21 +1458,21 @@ will not go to your synth.
    output="set-variable" parameters="var=VAR_overdubfeedback and
                                      value=controlval/127"/>
 
-  <!-- Footpedal adjust -->
-  <!-- Sub 2: Footpedal adjust- param1 is parameter to adjust -->
-  <!-- This sub is called whenever a parameter needs to be adjusted by the
-       footpedal -->
+  <!-- DISABLED- Footpedal adjust
+       Sub 2: Footpedal adjust- param1 is parameter to adjust
+       This sub is called whenever a parameter needs to be adjusted by the
+       footpedal
   <binding input="go-sub" conditions="sub=2 and param1=VAR_inputs"
    output1="set-in-volume" parameters1="input=param1 and vol=param2"/>
 
-  <!-- Here is the binding that calls sub 2: -->
+       Here is the binding that calls sub 2:
   <binding input="midicontroller" 
    conditions="controlnum=VAR_footpedal_ctrl_num and VAR_footpedal_ignore=0"
    output="go-sub" parameters="sub=2 and
                                param1=VAR_footpedal_mode and
                                param2=controlval/127*VAR_footpedal_vol_max"/>
 
-  <!-- And here are the input selectors for footpedal adjust: -->
+       And here are the input selectors for footpedal adjust:
   <binding input="key" conditions="key=VAR_inputs+VAR_zero_keysym and
                                    keydown=1"
    output1="set-variable" parameters1="var=VAR_footpedal_ignore and
@@ -1479,7 +1482,9 @@ will not go to your synth.
   <binding input="key" conditions="key=VAR_inputs+VAR_zero_keysym and
                                    keydown=0"
    output="set-variable" parameters="var=VAR_footpedal_ignore and
-	                             value=0"/>					  
+	                             value=0"/>	
+    -->
+
   <!-- HELP: Alt + \: Stop sliding loop volumes -->
   <binding input="key" 
    conditions="VAR_keyheld_alt=1 and key=backslash and keydown=1"
@@ -1773,6 +1778,42 @@ will not go to your synth.
   <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
                                          button=7 and down=1"
    output="toggle-variable" parameters="var=VAR_shotmode and maxvalue=1"/>
+
+  <!-- HELP: shift + trigger/click: Select loop -->
+  <binding input="loop-clicked" 
+   conditions="VAR_keyheld_shift=1 and button=1 and down=1"
+   output="toggle-select-loop" parameters="setid=0 and loopid=loopid"/>
+
+  <!-- HELP: Keypad asterisk: Select playing loops -->
+  <!-- HELP: (shift) Keypad asterisk: Select idle loops -->
+  <!-- HELP: (alt) Keypad asterisk: Unselect all loops -->
+  <binding input="key" 
+   conditions="VAR_laptopkeymode=1 and VAR_keyheld_shift=1 and 
+               key=lessthan and keydown=1"
+   output="select-only-playing-loops" parameters="setid=0 and playing=0"/>
+  <binding input="key" 
+   conditions="VAR_laptopkeymode=1 and VAR_keyheld_alt=1 and 
+               key=lessthan and keydown=1"
+   output="select-all-loops" parameters="setid=0 and select=0"/>
+  <binding input="key" 
+   conditions="VAR_laptopkeymode=1 and key=lessthan and keydown=1"
+   output="select-only-playing-loops" parameters="setid=0 and playing=1"/>
+
+  <binding input="key" 
+   conditions="VAR_keyheld_shift=1 and key=KPasterisk and keydown=1"
+   output="select-only-playing-loops" parameters="setid=0 and playing=0"/>
+  <binding input="key" 
+   conditions="VAR_keyheld_alt=1 and key=KPasterisk and keydown=1"
+   output="select-all-loops" parameters="setid=0 and select=0"/>
+  <binding input="key" 
+   conditions="key=KPasterisk and keydown=1"
+   output="select-only-playing-loops" parameters="setid=0 and playing=1"/>
+
+  <!-- HELP: t: Trigger selected loops -->
+  <binding input="key"
+   conditions="key=t and keydown=1"
+   output="trigger-selected-loops" parameters="setid=0 and vol=1.0 and
+                                               toggleloops=1"/>
 
   <!-- Erase Loops -->
   <!-- HELP: space + trigger/click: Erase loop -->
