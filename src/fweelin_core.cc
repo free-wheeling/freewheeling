@@ -1799,7 +1799,8 @@ void LoopManager::UpdateLoopLists_ItemMoved (int l_idx_old, int l_idx_new) {
       *found = LoopList::Scan(*ll,l_idx_old,&prev);
     
     // Update index
-    found->l_idx = l_idx_new;
+    if (found != 0)
+      found->l_idx = l_idx_new;
   }
 };
 
