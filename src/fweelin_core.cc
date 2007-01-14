@@ -1715,6 +1715,8 @@ int LoopManager::MoveLoop (int src, int tgt) {
 
       if (lastindex == src)
 	lastindex = tgt;
+      
+      UpdateLoopLists_ItemMoved(src,tgt);
     }
     else 
       return 0;
@@ -1775,10 +1777,31 @@ void LoopManager::DeleteLoop (int index) {
 
     delete lp;                   // *** Not RT Safe
     numloops--;
+    
+    // Update looplists/scenes to ensure that loop is removed from them
+    UpdateLoopLists_ItemRemoved(index);
   }
 
   UnlockLoops();
 }
+
+void LoopManager::UpdateLoopLists_ItemRemoved (int l_idx) {
+  for (int i = 0; i < NUM_LOOP_SELECTION_SETS; i++) {
+    LoopList **ll = app->getLOOPSEL(i);
+    *ll = LoopList::Remove(*ll,l_idx);
+  }
+};
+
+void LoopManager::UpdateLoopLists_ItemMoved (int l_idx_old, int l_idx_new) {
+  for (int i = 0; i < NUM_LOOP_SELECTION_SETS; i++) {
+    LoopList **ll = app->getLOOPSEL(i),
+      *prev,
+      *found = LoopList::Scan(*ll,l_idx_old,&prev);
+    
+    // Update index
+    found->l_idx = l_idx_new;
+  }
+};
 
 // Trigger the loop at index within the map
 // The exact behavior varies depending on what is already happening with
@@ -2055,11 +2078,11 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 	  if (exists != 0) {
 	    // printf("REMOVE!\n");
 	    *ll = LoopList::Remove(*ll,exists,prev);
-	    l->selcnt--;
+	    l->ChangeSelectedCount(-1);
 	  } else {
 	    // printf("ADD!\n");
 	    *ll = LoopList::AddBegin(*ll,sev->loopid);
-	    l->selcnt++;
+	    l->ChangeSelectedCount(1);
 	  }
 	}
       } else 
@@ -2090,11 +2113,11 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 	      if (!sev->playing && exists != 0) {
 		// printf("REMOVE!\n");
 		*ll = LoopList::Remove(*ll,exists,prev);
-		l->selcnt--;
+		l->ChangeSelectedCount(-1);
 	      } else if (sev->playing && exists == 0) {
 		// printf("ADD!\n");
 		*ll = LoopList::AddBegin(*ll,i);
-		l->selcnt++;
+		l->ChangeSelectedCount(1);
 	      }
 	    }
 	  } else if (app->getTMAP()->GetMap(i) != 0) {
@@ -2104,11 +2127,11 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 	    if (sev->playing && exists != 0) {
 	      // printf("REMOVE!\n");
 	      *ll = LoopList::Remove(*ll,exists,prev);
-	      l->selcnt--;
+	      l->ChangeSelectedCount(-1);
 	    } else if (!sev->playing && exists == 0) {
 	      // printf("ADD!\n");
 	      *ll = LoopList::AddBegin(*ll,i);
-	      l->selcnt++;
+	      l->ChangeSelectedCount(1);
 	    }
 	  }
 	}

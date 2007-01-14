@@ -268,13 +268,13 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>39</integer>
-									<integer>38</integer>
+									<integer>23</integer>
+									<integer>1</integer>
 									<integer>0</integer>
 								</array>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
-							<string>{{0, 266}, {285, 629}}</string>
+							<string>{{0, 89}, {285, 629}}</string>
 						</dict>
 						<key>PBXTopSmartGroupGIDs</key>
 						<array/>
@@ -311,7 +311,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>.fweelin.rc</string>
+								<string>fweelin_midiio.cc</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -319,11 +319,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>.fweelin.rc</string>
+										<string>fweelin_midiio.cc</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>AC9376190B13BD68004656AA</string>
+										<string>ACF2F7AB0B4C713C005197BB</string>
 										<key>history</key>
 										<array>
 											<string>AC5A56840AC2419A00622F72</string>
@@ -346,7 +346,6 @@
 											<string>ACA2C7910B06F55F00E02DC6</string>
 											<string>ACA2C7CF0B07C82F00E02DC6</string>
 											<string>ACA2C7F10B0823DA00E02DC6</string>
-											<string>ACA2C81E0B0830F900E02DC6</string>
 											<string>ACA2C81F0B0830F900E02DC6</string>
 											<string>ACA2C8380B08335700E02DC6</string>
 											<string>ACA2CB8A0B0AC86600E02DC6</string>
@@ -354,12 +353,13 @@
 											<string>ACA2CB8C0B0AC86600E02DC6</string>
 											<string>ACA2CB8D0B0AC86600E02DC6</string>
 											<string>ACA2CB9E0B0AC89600E02DC6</string>
-											<string>ACA2CCF10B0C270100E02DC6</string>
 											<string>ACA2CCF20B0C270100E02DC6</string>
 											<string>ACA2CCF30B0C270100E02DC6</string>
 											<string>ACA2CDE00B102A0600E02DC6</string>
 											<string>ACA2CE0D0B10369800E02DC6</string>
-											<string>ACA2CE130B103C5E00E02DC6</string>
+											<string>ACF2F7A10B4C70B2005197BB</string>
+											<string>ACF2F7A20B4C70B2005197BB</string>
+											<string>ACF2F7A30B4C70B2005197BB</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -397,6 +397,8 @@
 											<string>AC642A280ADB317200752A08</string>
 											<string>ACA2C5D90B06E0F700E02DC6</string>
 											<string>ACA2CE0E0B10369800E02DC6</string>
+											<string>ACF2F7A40B4C70B2005197BB</string>
+											<string>ACF2F7A50B4C70B2005197BB</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -454,9 +456,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>AC93761A0B13BD68004656AA</string>
+				<string>ACF2F7A70B4C70B2005197BB</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>AC93761B0B13BD68004656AA</string>
+				<string>ACF2F7A80B4C70B2005197BB</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -592,7 +594,7 @@
 	<array>
 		<string>AC5A53180AC098FB00622F72</string>
 		<string>1C0AD2B3069F1EA900FABCE6</string>
-		<string>/Users/mercury/Desktop/port/fweelin-0.5.3/MacOSX/fweelin.xcodeproj</string>
+		<string>/Users/mercury/Desktop/port/freewheeling/MacOSX/fweelin.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
 	<string>163 159 979 688 0 0 1440 878 </string>
@@ -611,12 +613,14 @@
 					<key>Dock</key>
 					<array>
 						<dict>
+							<key>BecomeActive</key>
+							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CD0528F0623707200166675</string>
 								<key>PBXProjectModuleLabel</key>
-								<string></string>
+								<string>fweelin_videoio.cc</string>
 								<key>StatusBarVisibility</key>
 								<true/>
 							</dict>
@@ -633,8 +637,6 @@
 							<string>311pt</string>
 						</dict>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -674,7 +676,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>AC5A53180AC098FB00622F72</string>
-				<string>AC9376160B13BD64004656AA</string>
+				<string>ACF2F79D0B4C709B005197BB</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -1036,9 +1038,9 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1C0AD2B3069F1EA900FABCE6</string>
-				<string>AC9376170B13BD64004656AA</string>
+				<string>ACF2F79E0B4C709B005197BB</string>
 				<string>1CD0528B0623707200166675</string>
-				<string>AC9376180B13BD64004656AA</string>
+				<string>ACF2F79F0B4C709B005197BB</string>
 			</array>
 			<key>ToolbarConfiguration</key>
 			<string>xcode.toolbar.config.run</string>

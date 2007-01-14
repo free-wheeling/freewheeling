@@ -200,6 +200,12 @@ public:
     }
   };
 
+  inline void ChangeSelectedCount (int delta) {
+    selcnt += delta;
+    if (selcnt < 0)
+      selcnt = 0;
+  };
+  
   // Perhaps store the length of the loop...
   // Because right now GetTotalLength is a calculation
   // in AudioBlock
@@ -628,6 +634,12 @@ public:
 
   // Delete the loop at the specified index..
   void DeleteLoop (int index);
+
+  // Remove the given loop index from all loop lists
+  void UpdateLoopLists_ItemRemoved (int l_idx);
+
+  // Update all loop lists to reflect that a loop has moved in the TriggerMap
+  void UpdateLoopLists_ItemMoved (int l_idx_old, int l_idx_new);
 
   // Trigger the loop at index within the map
   // The exact behavior varies depending on what is already happening with
