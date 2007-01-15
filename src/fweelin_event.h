@@ -138,6 +138,7 @@ enum EventType {
   T_EV_SelectAllLoops,
   T_EV_TriggerSelectedLoops,
   T_EV_SetSelectedLoopsTriggerVolume,
+  T_EV_InvertSelection,
 
   T_EV_SetTriggerVolume,
   T_EV_SlideLoopAmp,
@@ -1800,6 +1801,26 @@ class SelectAllLoopsEvent : public Event {
 
   int setid; // ID # of the selection set to work on
   char select; // Nonzero to select/zero to unselect all loops
+};
+
+class InvertSelectionEvent : public Event {
+public:
+  EVT_DEFINE(InvertSelectionEvent,T_EV_InvertSelection);
+  virtual void operator = (const Event &src) {
+    InvertSelectionEvent &s = (InvertSelectionEvent &) src;
+    setid = s.setid;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+      case 0:
+	return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
+    }
+    
+    return EventParameter();
+  };    
+  
+  int setid; // ID # of the selection set to invert (select all other loops)
 };
 
 class TriggerSelectedLoopsEvent : public Event {

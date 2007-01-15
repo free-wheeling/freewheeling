@@ -474,6 +474,7 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_ToggleSelectLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_SelectOnlyPlayingLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_SelectAllLoops);
+  app->getEMG()->ListenEvent(this,0,T_EV_InvertSelection);
   app->getEMG()->ListenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->ListenEvent(this,0,T_EV_SaveLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_SaveNewScene);
@@ -524,6 +525,7 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_ToggleSelectLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SelectOnlyPlayingLoops);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SelectAllLoops);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_InvertSelection);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SaveLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SaveNewScene);
@@ -2167,12 +2169,12 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 	      // Unselect loops- remove loop from list
 	      // printf("REMOVE!\n");
 	      *ll = LoopList::Remove(*ll,exists,prev);
-	      l->selcnt--;
+	      l->ChangeSelectedCount(-1);
 	    } else if (sev->select && exists == 0) {
 	      // Select loops- add loop to list
 	      // printf("ADD!\n");
 	      *ll = LoopList::AddBegin(*ll,i);
-	      l->selcnt++;
+	      l->ChangeSelectedCount(1);
 	    }
 	  }
 	}
@@ -2181,6 +2183,41 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     }
     break;
 
+  case T_EV_InvertSelection :
+    {
+      InvertSelectionEvent *sev = (InvertSelectionEvent *) ev;
+      
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received InvertSelectionEvent: Set %d\n",sev->setid);
+
+      LoopList **ll = app->getLOOPSEL(sev->setid);
+      if (ll != 0) {
+	// Scan all loops
+	for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
+	  Loop *l = app->getTMAP()->GetMap(i);
+	  if (l != 0) {
+	    // Loop exists in map
+	    LoopList *prev;
+	    LoopList *exists = LoopList::Scan(*ll,i,&prev);
+	    if (exists != 0) {
+	      // Loop exists in list- remove
+	      // printf("REMOVE!\n");
+	      *ll = LoopList::Remove(*ll,exists,prev);
+	      l->ChangeSelectedCount(-1);
+	    } else if (exists == 0) {
+	      // Loop not in list- add
+	      // printf("ADD!\n");
+	      *ll = LoopList::AddBegin(*ll,i);
+	      l->ChangeSelectedCount(1);
+	    }
+	  }
+	}
+      } else 
+	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+    }
+    break;
+    
   case T_EV_SetSelectedLoopsTriggerVolume :
     {
       SetSelectedLoopsTriggerVolumeEvent *sev = (SetSelectedLoopsTriggerVolumeEvent *) ev;
