@@ -226,6 +226,9 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
 		     SelectAllLoopsEvent);
       SET_ETYPE_SLOW(T_EV_TriggerSelectedLoops,"trigger-selected-loops",
 		     TriggerSelectedLoopsEvent);
+      SET_ETYPE(T_EV_SetSelectedLoopsTriggerVolume,
+		"set-selected-loops-trigger-volume",
+		SetSelectedLoopsTriggerVolumeEvent);
 
       SET_ETYPE_SLOW(T_EV_BrowserMoveToItem,"browser-move-to-item",
 		     BrowserMoveToItemEvent);
