@@ -502,6 +502,8 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_AdjustLoopAmp);
   app->getEMG()->ListenEvent(this,0,T_EV_TriggerLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_TriggerSelectedLoops);
+  app->getEMG()->ListenEvent(this,0,T_EV_SetSelectedLoopsTriggerVolume);
+
   app->getEMG()->ListenEvent(this,0,T_EV_MoveLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_RenameLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_EraseLoop);
@@ -550,6 +552,8 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_AdjustLoopAmp);
   app->getEMG()->UnlistenEvent(this,0,T_EV_TriggerLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_TriggerSelectedLoops);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_SetSelectedLoopsTriggerVolume);
+
   app->getEMG()->UnlistenEvent(this,0,T_EV_MoveLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_RenameLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_EraseLoop);
@@ -2177,6 +2181,28 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     }
     break;
 
+  case T_EV_SetSelectedLoopsTriggerVolume :
+    {
+      SetSelectedLoopsTriggerVolumeEvent *sev = (SetSelectedLoopsTriggerVolumeEvent *) ev;
+      
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received SetSelectedLoopsTriggerVolumeEvent: Set %d: Volume %f\n",
+	       sev->setid,sev->vol);
+      
+      LoopList **ll = app->getLOOPSEL(sev->setid);
+      if (ll != 0) {
+	LoopList *cur = *ll;
+	while (cur != 0) {
+	  SetTriggerVol(cur->l_idx,sev->vol);
+	  cur = cur->next;
+	}
+	
+      } else 
+	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+    }
+    break;
+    
   case T_EV_SetAutoLoopSaving :
     {
       SetAutoLoopSavingEvent *sev = (SetAutoLoopSavingEvent *) ev;
