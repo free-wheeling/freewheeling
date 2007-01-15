@@ -137,6 +137,7 @@ enum EventType {
   T_EV_SelectOnlyPlayingLoops,
   T_EV_SelectAllLoops,
   T_EV_TriggerSelectedLoops,
+  T_EV_SetSelectedLoopsTriggerVolume,
 
   T_EV_SetTriggerVolume,
   T_EV_SlideLoopAmp,
@@ -1833,6 +1834,37 @@ class TriggerSelectedLoopsEvent : public Event {
   int setid; // ID # of the selection set to work on
   float vol; // Volume at which to trigger selected loops
   char toggleloops; // Nonzero to toggle loops, zero to force active
+};
+
+class SetSelectedLoopsTriggerVolumeEvent : public Event {
+ public:
+  EVT_DEFINE(SetSelectedLoopsTriggerVolumeEvent,
+	     T_EV_SetSelectedLoopsTriggerVolume);
+  virtual void Recycle() {
+    setid = 0;
+    vol = 1.0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    SetSelectedLoopsTriggerVolumeEvent &s = 
+      (SetSelectedLoopsTriggerVolumeEvent &) src;
+    setid = s.setid;
+    vol = s.vol;
+  };
+  virtual int GetNumParams() { return 2; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
+    case 1:
+      return EventParameter("vol",FWEELIN_GETOFS(vol),T_float);
+    }
+
+    return EventParameter();
+  };    
+
+  int setid; // ID # of the selection set to work on
+  float vol; // Trigger volume to set for loops
 };
 
 class EndRecordEvent : public Event {
