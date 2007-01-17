@@ -1367,18 +1367,37 @@ void InputMatrix::ReceiveEvent(Event *ev, EventProducer *from) {
 	if (sv->var == 0 || sv->var->IsSystemVariable())
 	  printf(" SetVariableEvent: Invalid variable!\n");
 	else {
-	  if (CRITTERS) {
-	    printf("CONFIG: SetVariable: ");
-	    sv->var->Print();
-	    printf(" -> ");
-	    
-	    sv->var->SetFrom(sv->value);
-	    
-	    sv->var->Print();
-	    printf("\n");
+	  // Check if variable change is within maxjump
+	  char goset = 1;
+	  if (sv->maxjumpcheck) {
+	    // Maxjump check enabled
+	    // Compute change in variable
+	    UserVariable jump = sv->var->GetDelta(sv->value);
+	    if (jump > sv->maxjump) 
+	      goset = 0;  // Don't set variable
 	  }
-	  else
-	    sv->var->SetFrom(sv->value);
+	  
+	  if (goset) {
+	    if (CRITTERS) {
+	      printf("CONFIG: SetVariable: ");
+	      sv->var->Print();
+	      printf(" -> ");
+	      
+	      sv->var->SetFrom(sv->value);
+	      
+	      sv->var->Print();
+	      printf("\n");
+	    }
+	    else
+	      sv->var->SetFrom(sv->value);
+	  } else {
+	    // Don't set variable
+	    if (CRITTERS) {
+	      printf("CONFIG: SetVariable: ");
+	      sv->var->Print();
+	      printf(" -> [NOT SET- Max jump exceeded!]\n");	      
+	    }
+	  }
 	}
       }
       break;
