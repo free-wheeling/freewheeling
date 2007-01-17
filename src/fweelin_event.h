@@ -607,26 +607,41 @@ class MIDIKeyInputEvent : public Event {
 class SetVariableEvent : public Event {
  public:
   EVT_DEFINE(SetVariableEvent,T_EV_SetVariable);
+  virtual void Recycle() {
+    maxjumpcheck = 0;
+    Event::Recycle();
+  };
   virtual void operator = (const Event &src) {
     SetVariableEvent &s = (SetVariableEvent &) src;
     var = s.var;
     value.type = s.value.type;
     value = s.value;
+    maxjumpcheck = s.maxjumpcheck;
+    maxjump.type = s.maxjump.type;
+    maxjump = s.maxjump;
   };
-  virtual int GetNumParams() { return 2; };
+  virtual int GetNumParams() { return 4; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
       return EventParameter("var",FWEELIN_GETOFS(var),T_variableref);
     case 1:
       return EventParameter("value",FWEELIN_GETOFS(value),T_variable);      
+    case 2:
+      return EventParameter("maxjumpcheck",FWEELIN_GETOFS(maxjumpcheck),T_char);      
+    case 3:
+      return EventParameter("maxjump",FWEELIN_GETOFS(maxjump),T_variable);      
     }
 
     return EventParameter();
   };    
 
   UserVariable *var;  // Variable to set
-  UserVariable value; // Value to set it to
+  UserVariable value, // Value to set it to
+    maxjump;	      // Maximum jump in variable between current value and new value
+		      // Jumps beyond maxjump cause the variable not to be set
+  char maxjumpcheck;  // Nonzero if we should check variable change against maxjump-
+		      // If maxjumpcheck is zero, the variable is always set
 };
 
 class ToggleVariableEvent : public Event {

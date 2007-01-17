@@ -68,6 +68,33 @@ class UserVariable {
     }
   };
 
+  char operator > (UserVariable &cmp) {
+    RaisePrecision(cmp);
+    // Comparing ranges yields undefined results
+    if (type == T_range || cmp.type == T_range)
+      return 0;
+    switch (type) {
+      case T_char : 
+	return (*((char *) value) > (char) cmp);
+      case T_int : 
+	return (*((int *) value) > (int) cmp);
+      case T_long : 
+	return (*((long *) value) > (long) cmp);
+      case T_float : 
+	return (*((float *) value) > (float) cmp);
+      case T_variable :
+      case T_variableref :
+	printf(" UserVariable: WARNING: Compare T_variable or T_variableref "
+	       " not implemented!\n");
+	return 0;      
+      case T_invalid : 
+	printf(" UserVariable: WARNING: Can't compare invalid variable!\n");
+	return 0;
+    }
+    
+    return 0;
+  };
+  
   char operator == (UserVariable &cmp) {
     RaisePrecision(cmp);
     // Special case if one variable is range and one is scalar-- then
@@ -147,6 +174,34 @@ class UserVariable {
     }
   };
 
+  // Return the absolute value of the difference (delta) between this variable and arg
+  UserVariable GetDelta (UserVariable &arg) {
+    UserVariable ret;
+    ret.type = T_char;
+    ret.RaisePrecision(*this);
+    ret.RaisePrecision(arg);
+    
+    switch (ret.type) {
+      case T_char :
+	ret = (char) abs((char) arg - (char) *this);
+	break;
+      case T_int :
+	ret = (int) abs((int) arg - (int) *this);
+	break;
+      case T_long :
+	ret = (long) labs((long) arg - (long) *this);
+	break;
+      case T_float :
+	ret = (float) fabsf((float) arg - (float) *this);
+	break;
+      default :
+	printf(" UserVariable: WARNING: GetDelta() doesn't work on this type of variable!\n");
+	break;
+    }
+    
+    return ret;
+  };
+  
   void operator -= (UserVariable &src) { 
     RaisePrecision(src);
     switch (type) {
