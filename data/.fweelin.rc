@@ -1237,6 +1237,9 @@ will not go to your synth.
   <declare var="VAR_overdubfeedback_midicontrol" type="int" init="87"/>
   <declare var="VAR_overdubfeedback" type="float" init="0.8"/>
 
+<!-- MIDI controller # to fade trigger volume of selected loops -->
+  <declare var="VAR_triggervol_selected_midicontrol" type="int" init="89"/>
+
 <!-- MIDI controller #s for patchbank select -->
   <declare var="VAR_patchbank_midicontrol" type="int" init="88"/>
   <declare var="VAR_patchbank_back_midicontrol" type="int" init="53"/>
@@ -1617,6 +1620,12 @@ will not go to your synth.
                                            and amp=controlval/127*2"/>
 -->
 
+  <!-- HELP: MIDI CC89: Fade trigger volume of selected loops -->
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_triggervol_selected_midicontrol"   
+   output="set-selected-loops-trigger-volume" 
+   parameters="setid=0 and vol=controlval*2.0/127"/>
+
   <!-- HELP: Arrow up/down + click: +/- loop volume -->
   <binding input="loop-clicked"
    conditions="VAR_keyheld_up=1 and button=1 and down=1"
@@ -1780,12 +1789,17 @@ will not go to your synth.
    output="toggle-variable" parameters="var=VAR_shotmode and maxvalue=1"/>
 
   <!-- HELP: shift + trigger/click: Select loop -->
+  <!-- HELP: right click on loop: Select loop -->
   <binding input="loop-clicked" 
    conditions="VAR_keyheld_shift=1 and button=1 and down=1"
+   output="toggle-select-loop" parameters="setid=0 and loopid=loopid"/>
+  <binding input="loop-clicked" 
+   conditions="button=3 and down=1"
    output="toggle-select-loop" parameters="setid=0 and loopid=loopid"/>
 
   <!-- HELP: Keypad asterisk: Select playing loops -->
   <!-- HELP: (shift) Keypad asterisk: Select idle loops -->
+  <!-- HELP: (ctrl) Keypad asterisk: Invert selection of loops -->
   <!-- HELP: (alt) Keypad asterisk: Unselect all loops -->
   <binding input="key" 
    conditions="VAR_laptopkeymode=1 and VAR_keyheld_shift=1 and 
@@ -1796,6 +1810,10 @@ will not go to your synth.
                key=lessthan and keydown=1"
    output="select-all-loops" parameters="setid=0 and select=0"/>
   <binding input="key" 
+   conditions="VAR_laptopkeymode=1 and VAR_keyheld_ctrl=1 and 
+               key=lessthan and keydown=1"
+   output="invert-selection" parameters="setid=0"/>
+  <binding input="key" 
    conditions="VAR_laptopkeymode=1 and key=lessthan and keydown=1"
    output="select-only-playing-loops" parameters="setid=0 and playing=1"/>
 
@@ -1805,6 +1823,9 @@ will not go to your synth.
   <binding input="key" 
    conditions="VAR_keyheld_alt=1 and key=KPasterisk and keydown=1"
    output="select-all-loops" parameters="setid=0 and select=0"/>
+  <binding input="key" 
+   conditions="VAR_keyheld_ctrl=1 and key=KPasterisk and keydown=1"
+   output="invert-selection" parameters="setid=0"/>
   <binding input="key" 
    conditions="key=KPasterisk and keydown=1"
    output="select-only-playing-loops" parameters="setid=0 and playing=1"/>
