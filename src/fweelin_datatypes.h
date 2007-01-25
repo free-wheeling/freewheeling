@@ -87,6 +87,9 @@ class UserVariable {
 	printf(" UserVariable: WARNING: Compare T_variable or T_variableref "
 	       " not implemented!\n");
 	return 0;      
+      case T_range : 
+	printf(" UserVariable: WARNING: Can't compare range variable!\n");
+	return 0;
       case T_invalid : 
 	printf(" UserVariable: WARNING: Can't compare invalid variable!\n");
 	return 0;

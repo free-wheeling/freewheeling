@@ -399,8 +399,8 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
       
       // Check timing of pulse
       float framesperclock = (float) len/clocksperpulse;
-      int oldclock = oldpos/framesperclock,
-	newclock = curpos/framesperclock;
+      int oldclock = (int) ((float) oldpos/framesperclock),
+	newclock = (int) ((float) curpos/framesperclock);
       if ((clockrun == SS_BEAT && newclock != oldclock) || curpos >= len) {
 	// printf("CLOCKY-OO %d!\n",newclock);
 	

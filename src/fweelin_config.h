@@ -744,7 +744,7 @@ class FloConfig {
   // List of MIDI ports to transmit sync info to
   inline int GetNumMIDISyncOuts() { return msnumouts; };
   inline int *GetMIDISyncOuts() { return msouts; };
-  int *msouts, msnumouts;
+  int msnumouts, *msouts;
   
   // Is input/output #n stereo?
   inline char IsStereoInput(int n) { return ms_inputs[n]; };
