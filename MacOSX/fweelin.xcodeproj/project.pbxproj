@@ -416,6 +416,7 @@
 					"-lxml2",
 				);
 				PREBINDING = NO;
+				PRODUCT_NAME = FreeWheeling;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				ZERO_LINK = NO;
 			};
@@ -453,6 +454,7 @@
 					"-lxml2",
 				);
 				PREBINDING = NO;
+				PRODUCT_NAME = FreeWheeling;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				ZERO_LINK = NO;
 			};

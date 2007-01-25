@@ -1588,6 +1588,16 @@ void FloConfig::ConfigureGeneral(xmlDocPtr doc, xmlNode *gen) {
 	if (midiouts < 1)
 	  midiouts = 1;
 	printf("CONFIG: Config sets %d MIDI outputs.\n",midiouts);
+      } else if ((n = xmlGetProp(cur_node,
+				 (const xmlChar *)"midisyncouts")) != 0) {
+	msouts = ExtractArrayInt((char *)n, &msnumouts);
+	printf("CONFIG: Set %d MIDI sync outputs: ",msnumouts);
+	for (int i = 0; i < msnumouts; i++) {
+	  printf("%d ",msouts[i]);
+	  msouts[i]--;	// Adjust so that 0 is the first output
+	}
+	
+	printf("\n");
       } else if ((n = xmlGetProp(cur_node, 
 				 (const xmlChar *)"externalaudioinputs")) != 0) {
 	// # of inputs
@@ -1745,6 +1755,40 @@ float *FloConfig::ExtractArray(char *n, int *size, char delim_char) {
     delim = nd;
   }
 
+  return array;
+};
+
+int *FloConfig::ExtractArrayInt(char *n, int *size, char delim_char) {
+  char buf[255];
+  strncpy(buf,n,254);
+  buf[254] = '\0';
+  
+  char *delim = buf;
+  *size = 0;
+  while (delim != 0) {
+    (*size)++;
+    delim = strchr(delim+1,delim_char);
+  }
+  
+  if (*size == 0)
+    return 0;
+  
+  int *array = new int[*size];
+  
+  delim = buf;
+  int i = 0;
+  while (i < *size) {
+    char *nd = strchr(delim,delim_char);
+    if (nd != 0) {
+      *nd = '\0';
+      nd++;
+    }
+    //printf("%d: %s\n",i,delim);
+    
+    array[i++] = atoi(delim);
+    delim = nd;
+  }
+  
   return array;
 };
 
@@ -2787,7 +2831,7 @@ FloConfig::~FloConfig()
 
 FloConfig::FloConfig(Fweelin *app) : im(app), 
   
-  ev_hook(0), librarypath(0), midiouts(1),
+  ev_hook(0), librarypath(0), midiouts(1), msnumouts(0), msouts(0),
 
   ms_inputs(0), extaudioins(0), 
 
@@ -2881,11 +2925,10 @@ void FloConfig::Parse() {
   }
 
   if (pause) {
-    printf("*** Please review the above change "
-	   "and press <ENTER> to continue.\n");
-    getchar();
+    printf("*** Please review the above change\n");
+    // getchar();
   }
-
+  
   doc = xmlParseFile(buf);
   if (doc == 0) {
     printf("INIT: Error parsing config file.\n");
@@ -2906,12 +2949,36 @@ void FloConfig::Parse() {
       if (ver == 0 || strcmp((char *) ver,VERSION)) {
 	printf("INIT: ERROR: Config file version \"%s\" does not match "
 	       "FreeWheeling version \"%s\"!\n\n",ver,VERSION);
+#if 0
+	// Choice
 	printf("Would you like to override your old config with the new file\n"
 	       "(warning: You'll lose any config changes you've made!) "
 	       "(y/N)? ");
  	char c = getchar();
-
+#endif
+	
+	// Force yes and backup- avoid console-based choice which appears like a crash
+	printf("*** Installing new configuration file. I will make a backup of the old one.\n");
+	
+	char c = 'Y';
 	if (c == 'Y' || c == 'y') {
+	  char tmp2[strlen(buf) + 16];
+	  int bCnt = 1;
+	  char go = 1;
+	  while (go) {
+	    sprintf(tmp2,"%s.backup.%d",buf,bCnt);
+	    if (stat(tmp2,&st) != 0)
+	      go = 0; // Free backup filename
+	    else
+	      bCnt++;
+	  }
+
+	  printf("Backing up your old configuration to: %s\n",tmp2);
+	  char tmp3[strlen(buf) + strlen(tmp2) + 10];
+	  sprintf(tmp3,"cp %s %s",buf,tmp2);
+	  printf("\nINIT: Executing: %s\n",tmp3);
+	  system(tmp3);
+	  
 	  char *homedir = getenv("HOME");
 	  char buf[strlen(FWEELIN_DATADIR) + strlen(homedir) + 
 		   strlen(FWEELIN_CONFIG_FILE) + 
@@ -2936,8 +3003,7 @@ void FloConfig::Parse() {
 		   "Did you run 'make install'?\n");
 	    exit(1);
 	  }
-	}
-	else {
+	} else {
 	  printf("\nYou can manually edit your config file to match the "
 		 "new one-- here is a diff of the two: \n\n");
 

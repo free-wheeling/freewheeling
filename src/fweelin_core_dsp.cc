@@ -276,7 +276,7 @@ Pulse::Pulse(Fweelin *app, nframes_t len, nframes_t startpos) :
   wrapped(0), stopped(0), prev_sync_bb(0), sync_cnt(0), prev_sync_speed(-1),
   prev_sync_type(0), prevbpm(0.0), prevtap(0), metroofs(metrolen), 
   metrolen(METRONOME_HIT_LEN), metroactive(0), metrovol(METRONOME_INIT_VOL),
-  numsyncpos(0) {
+  numsyncpos(0), clockrun(SS_NONE) {
   // Generate metronome data
   metro = new sample_t[metrolen];
   for (nframes_t i = 0; i < metrolen; i++ )
@@ -298,6 +298,22 @@ nframes_t Pulse::QuantizeLength(nframes_t src) {
   return (nframes_t) (round(frac) * len);
 }
 
+void Pulse::SetMIDIClock (char start) {
+  if (app->getMIDI()->GetMIDISyncTransmit()) {  
+    if (start)
+      clockrun = SS_START;
+    else {
+      clockrun = SS_NONE;
+
+      // Send MIDI stop for pulse
+      MIDIStartStopInputEvent *ssevt = 
+	(MIDIStartStopInputEvent *) Event::GetEventByType(T_EV_Input_MIDIStartStop);
+      ssevt->start = 0;
+      app->getEMG()->BroadcastEventNow(ssevt, this);         
+    }
+  }
+};
+
 // Please note that all sync is done with a granularity of the audio period 
 // size. A potential bug exists when loops recorded with one period size
 // are played on a system with another period size... the syncronization
@@ -309,10 +325,12 @@ nframes_t Pulse::QuantizeLength(nframes_t src) {
 // period boundary
 //
 void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
+  // If we're using Jack transport (audio) sync, and we're slave to another app,
+  // adjust pulse to stay in-sync  
   if (app->getAUDIO()->IsTransportRolling() &&
       !app->getAUDIO()->IsTimebaseMaster()) {
-    char sync_type = app->getAUDIO()->GetTransport_SyncType();
-    int sync_speed = app->getAUDIO()->GetTransport_SyncSpeed();
+    char sync_type = app->GetSyncType();
+    int sync_speed = app->GetSyncSpeed();
     if (sync_type != prev_sync_type ||
 	sync_speed != prev_sync_speed) {
       // Make sure we recalculate length / wrap if sync params changed
@@ -366,6 +384,48 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
     wrapped = 0;
     nframes_t oldpos = curpos;
     curpos += MIN(l,remaining);
+    
+    // If we are transmitting MIDI sync, do so now
+    if (clockrun != SS_NONE && app->getMIDI()->GetMIDISyncTransmit()) {
+      char sync_type = app->GetSyncType();
+      int sync_speed = app->GetSyncSpeed();
+      
+      // 1 pulse = how many MIDI clock messages to send?
+      // In sync-beat mode, each pulse is SyncSpeed beats, so MIDI_CLOCK_FREQUENCY*SyncSpeed clocks to send
+      // In sync-bar mode, each pulse is one bar, so MIDI_CLOCK_FREQUENCY*BeatsPerBar*SyncSpeed clocks to send
+      int clocksperpulse = MIDI_CLOCK_FREQUENCY*sync_speed;
+      if (!sync_type)
+	clocksperpulse *= SYNC_BEATS_PER_BAR;
+      
+      // Check timing of pulse
+      float framesperclock = (float) len/clocksperpulse;
+      int oldclock = oldpos/framesperclock,
+	newclock = curpos/framesperclock;
+      if ((clockrun == SS_BEAT && newclock != oldclock) || curpos >= len) {
+	// printf("CLOCKY-OO %d!\n",newclock);
+	
+	if (clockrun == SS_START) {
+	  // Send MIDI start for pulse
+	  MIDIStartStopInputEvent *ssevt = 
+	    (MIDIStartStopInputEvent *) Event::GetEventByType(T_EV_Input_MIDIStartStop);
+	  ssevt->start = 1;
+	  app->getEMG()->BroadcastEventNow(ssevt, this);    
+	}
+	
+	// Time for another clock message
+	MIDIClockInputEvent *clkevt = (MIDIClockInputEvent *) Event::GetEventByType(T_EV_Input_MIDIClock);
+	// *** Broadcast immediately-- this will yield lowest MIDI sync latency, 
+	// but may cause problems if MIDI transmit code blocks/conflicts with RT audio thread
+	// (which it very well might)
+	// _experimental_
+	app->getEMG()->BroadcastEventNow(clkevt, this);    
+	
+	// If this is the first downbeat, start the clock proper
+	clockrun = SS_BEAT;
+      }
+    }
+    
+    // Check pulse wrap
     if (curpos >= len) {
       // Downbeat!!
       wrapped = 1;

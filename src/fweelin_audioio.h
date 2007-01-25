@@ -16,8 +16,7 @@ class Processor;
 
 class AudioIO {
 public:
-  AudioIO(Fweelin *app) : sync_type(0), sync_speed(1), sync_start_frame(0), 
-    timebase_master(0), sync_active(0), app(app) {};
+  AudioIO(Fweelin *app) : sync_start_frame(0), timebase_master(0), sync_active(0), app(app) {};
 
   // Open up system level audio
   int open ();
@@ -73,17 +72,6 @@ public:
   // Get current # of beats per bar in transport mechanism
   inline float GetTransport_BPB() { return jpos.beats_per_bar; };
 
-  inline int GetTransport_SyncSpeed() { return sync_speed; };
-  inline char GetTransport_SyncType() { return sync_type; };
-
-  inline void SetTransport_SyncSpeed(int sspd) { 
-    if (sspd < 1)
-      sync_speed = 1;
-    else
-      sync_speed = sspd; 
-  };
-  inline void SetTransport_SyncType(char stype) { sync_type = stype; };
-
   // Are we sending or receiving sync?
   inline char IsSync() { return sync_active; };
 
@@ -103,10 +91,7 @@ public:
   float timescale; // fragment length/sample rate = length (s) of one fragment
   nframes_t srate; // Sampling rate
 
-  // Variables for sync
-
-  char sync_type; // Nonzero for beat-sync and zero for bar-sync
-  int sync_speed; // Number of beats or bars (external) per pulse (FW)
+  // Variables for audio (Jack transport) sync
 
   // Jack frame where the first bar began in transport
   int32_t sync_start_frame; 

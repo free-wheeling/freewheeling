@@ -129,34 +129,33 @@ void AudioIO::timebase_callback(jack_transport_state_t state,
       }
     }
 
-#define BEATS_PER_BAR 4
 #define TICKS_PER_BEAT 1920
 
     int32_t rel_frame = (int) pos->frame - inst->sync_start_frame;
-    float rel_bar = (float) rel_frame*inst->sync_speed/p->GetLength();
-    if (inst->sync_type != 0)
-      // Beat sync, adjust bar by BEATS_PER_BAR
-      rel_bar /= BEATS_PER_BAR;
+    float rel_bar = (float) rel_frame*inst->app->GetSyncSpeed()/p->GetLength();
+    if (inst->app->GetSyncType() != 0)
+      // Beat sync, adjust bar by SYNC_BEATS_PER_BAR
+      rel_bar /= SYNC_BEATS_PER_BAR;
     pos->valid = JackPositionBBT;
     pos->bar = (int32_t) rel_bar;
     float bar_frac = rel_bar - pos->bar;
-    pos->beat = (int) (bar_frac * BEATS_PER_BAR);
-    pos->beats_per_bar = BEATS_PER_BAR;
-    if (inst->sync_type == 0)
-      pos->beats_per_minute = BEATS_PER_BAR*
+    pos->beat = (int) (bar_frac * SYNC_BEATS_PER_BAR);
+    pos->beats_per_bar = SYNC_BEATS_PER_BAR;
+    if (inst->app->GetSyncType() == 0)
+      pos->beats_per_minute = SYNC_BEATS_PER_BAR*
 	60.0*(double) pos->frame_rate/p->GetLength();
     else
       pos->beats_per_minute = 60.0*(double) pos->frame_rate/p->GetLength();
-    pos->beat_type = BEATS_PER_BAR;
+    pos->beat_type = SYNC_BEATS_PER_BAR;
     pos->ticks_per_beat = TICKS_PER_BEAT;
-    float beat_frac = bar_frac*BEATS_PER_BAR - (float)pos->beat;
+    float beat_frac = bar_frac*SYNC_BEATS_PER_BAR - (float)pos->beat;
     pos->tick = (int) (beat_frac * TICKS_PER_BEAT);
 
     pos->bar++;
     pos->beat++;
     //pos->tick++;
 
-    pos->bar_start_tick = pos->bar * BEATS_PER_BAR * TICKS_PER_BEAT;
+    pos->bar_start_tick = pos->bar * SYNC_BEATS_PER_BAR * TICKS_PER_BEAT;
 
     //printf("ticks per beat: %f\n",pos->ticks_per_beat);
     //printf("rel bar: %f, bar: %d, beat: %d, tick: %d\n",rel_bar, pos->bar,

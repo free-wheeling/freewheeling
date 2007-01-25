@@ -1,9 +1,55 @@
-IN PROGRESS v0.5.4 - SVN
+IN PROGRESS v0.5.5 - SVN
 
-	    01/04/2007
+	    01/24/2007
 	
 	    New Features
 	    ------------
+
+	    * MIDI sync transmit
+ 
+	      - Toggle-able sync transmit on definable output ports
+
+  	      A friend of mine who is an avid Ableton Live user asked me
+              to collaborate with him. I realized that this was a perfect
+              opportunity to develop MIDI sync. Freewheeling already
+              syncs via the Jack transport, but Ableton and other 
+              hardware sequencers are not Jack-aware. 
+
+	      As of this version, 
+              Freewheeling transmits MIDI sync on definable MIDI
+              outs. By default, MIDI clock is sent to the first MIDI
+              output. To send MIDI clock, you must first enable it--
+              Go to the sync panel (shift+F1) and press shift+F2.
+              MIDI Sync Transmit is now enabled (the light glows).
+
+              Now, you can begin playing, and create a pulse. 
+              You can either tap the pulse tempo, or you can record a
+              loop and use it as the pulse tempo.
+ 
+	      Once the pulse begins, Freewheeling starts the external
+              sequencer at bar 1. If you deselect the pulse 
+	      (F6 for free timing), Freewheeling will stop your external
+              sequencer. Any pulse you select will begin transmitting
+              MIDI sync.
+
+              Freewheeling does not yet receive MIDI sync, so you can't
+              yet use Ableton as tempo master.
+
+	    * Selecting and working with multiple loops
+
+	      You can now toggle (t) and fade (MIDI CC89) volume of
+              several loops together. 
+  
+              You can select loops by right clicking on them, or by
+              shift+clicking on them, or by shift+pressing their trigger.
+ 
+              You can select all playing loops by pressing the keypad 
+              asterisk. You can select all idle loops with 
+              shift+kp asterisk. Ctrl+kp asterisk inverts the current
+              selection, and alt+kp asterisk unselects all loops.
+
+              This is the first step towards having multiple scenes
+              of loops that you can trigger/fade between.
 
 	    * New configuration allows MIDI control of:
 
@@ -58,8 +104,11 @@ IN PROGRESS v0.5.4 - SVN
 	
 	    - Fixed crash on repeat loading of scenes/loading of large scenes
 
+	    - No more console-dependent startup questions when a new
+              version is installed.
+ 
             - Library path can now be specified relative to home folder
-	      (for example, ~/fw-lib)
+              (for example, ~/fw-lib)
 
 	    - Stream out now shows size in mb, for less frantic update
 

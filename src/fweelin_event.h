@@ -81,6 +81,8 @@ enum EventType {
   T_EV_Input_MIDIController,
   T_EV_Input_MIDIProgramChange,
   T_EV_Input_MIDIPitchBend,
+  T_EV_Input_MIDIClock,
+  T_EV_Input_MIDIStartStop,
   T_EV_StartSession,
   T_EV_GoSub,
 
@@ -132,7 +134,8 @@ enum EventType {
   T_EV_SwitchMetronome,
   T_EV_SetSyncType,
   T_EV_SetSyncSpeed,
-
+  T_EV_SetMidiSync,
+  
   T_EV_ToggleSelectLoop,
   T_EV_SelectOnlyPlayingLoops,
   T_EV_SelectAllLoops,
@@ -602,6 +605,59 @@ class MIDIKeyInputEvent : public Event {
     channel, // MIDI channel
     notenum,   // note number
     vel;       // velocity
+};
+
+class MIDIClockInputEvent : public Event {
+public:
+  EVT_DEFINE(MIDIClockInputEvent,T_EV_Input_MIDIClock);
+  virtual void Recycle() {
+    outport = 1;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    MIDIClockInputEvent &s = (MIDIClockInputEvent &) src;
+    outport = s.outport;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+      case 0:
+	return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
+    }
+    
+    return EventParameter();
+  };    
+  
+  int outport; // # of MIDI output to send event to
+};
+
+class MIDIStartStopInputEvent : public Event {
+public:
+  EVT_DEFINE(MIDIStartStopInputEvent,T_EV_Input_MIDIStartStop);
+  virtual void Recycle() {
+    outport = 1;
+    start = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    MIDIStartStopInputEvent &s = (MIDIStartStopInputEvent &) src;
+    outport = s.outport;
+    start = s.start;
+  };
+  virtual int GetNumParams() { return 2; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+      case 0:
+	return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
+      case 1:
+	return EventParameter("start",FWEELIN_GETOFS(start),T_char);
+    }
+    
+    return EventParameter();
+  };    
+  
+  int outport; // # of MIDI output to send event to
+  char start;  // 1- MIDI Start, 0- MIDI Stop
 };
 
 class SetVariableEvent : public Event {
@@ -1742,6 +1798,26 @@ class SetSyncSpeedEvent : public Event {
   };    
 
   int sspd; // Number of external transport beats/bars per internal pulse
+};
+
+class SetMidiSyncEvent : public Event {
+public:
+  EVT_DEFINE(SetMidiSyncEvent,T_EV_SetMidiSync);
+  virtual void operator = (const Event &src) {
+    SetMidiSyncEvent &s = (SetMidiSyncEvent &) src;
+    midisync = s.midisync;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+      case 0:
+	return EventParameter("midisync",FWEELIN_GETOFS(midisync),T_int);
+    }
+    
+    return EventParameter();
+  };    
+  
+  int midisync; // Nonzero to transmit MIDI sync, zero for no MIDI sync
 };
 
 class ToggleSelectLoopEvent : public Event {

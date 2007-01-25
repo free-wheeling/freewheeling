@@ -9,6 +9,10 @@
 
 #include "fweelin_block.h"
 
+// Number of beats per bar 
+// (used only to compute sync, since FW does not use the concept of bars/beats internally)
+#define SYNC_BEATS_PER_BAR 4
+
 // Maximum number of time pulses
 #define MAX_PULSES 10 
 
@@ -45,7 +49,7 @@ extern char *FWEELIN_DATADIR;
 
 // On Linux, VERSION is defined within configure.ac
 // For Mac OS, we set it here:
-#define VERSION "0.5.4"
+#define VERSION "0.5.5"
 #endif
 
 #include "fweelin_datatypes.h"
@@ -718,7 +722,10 @@ class FloConfig {
   // Extracts an array of floats (delimited by character delim_char)
   // from the given string- returns size of array in 'size'
   float *ExtractArray(char *n, int *size, char delim_char = ',');
-
+  
+  // Same, with ints
+  int *ExtractArrayInt(char *n, int *size, char delim_char = ',');
+  
   // Library path
   inline char *GetLibraryPath() { 
     if (librarypath != 0)
@@ -734,6 +741,11 @@ class FloConfig {
   inline int GetNumMIDIOuts() { return midiouts; };
   int midiouts;
 
+  // List of MIDI ports to transmit sync info to
+  inline int GetNumMIDISyncOuts() { return msnumouts; };
+  inline int *GetMIDISyncOuts() { return msouts; };
+  int *msouts, msnumouts;
+  
   // Is input/output #n stereo?
   inline char IsStereoInput(int n) { return ms_inputs[n]; };
   inline char IsStereoOutput(int n) { return IsStereoMaster(); };

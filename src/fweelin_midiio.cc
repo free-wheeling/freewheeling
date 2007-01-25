@@ -262,6 +262,25 @@ void MidiIO::OutputNote (int port, int chan, char down, int notenum, int vel) {
 				curPacket,0 /*Now*/,3,msg);
 };
 
+void MidiIO::OutputClock (int port) {
+  unsigned char msg = 0xF8;	  
+  curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
+				curPacket,0 /*Now*/,1,&msg);
+};
+
+
+void MidiIO::OutputStart (int port) {
+  unsigned char msg = 0xFA;	  
+  curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
+				curPacket,0 /*Now*/,1,&msg);
+};
+
+void MidiIO::OutputStop (int port) {
+  unsigned char msg = 0xFC;	  
+  curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
+				curPacket,0 /*Now*/,1,&msg);
+};
+
 void MidiIO::OutputStartOnPort () {
   // Init output packet
   curPacket = MIDIPacketListInit(packetList);
@@ -500,6 +519,36 @@ void MidiIO::OutputNote (int port, int chan, char down, int notenum, int vel) {
   snd_seq_event_output_direct(seq_handle, &outev);
 };
 
+void MidiIO::OutputClock (int port) {
+  snd_seq_event_t outev;
+  snd_seq_ev_set_subs(&outev);
+  snd_seq_ev_set_direct(&outev);
+  snd_seq_ev_set_source(&outev,out_ports[port]);
+  outev.type = SND_SEQ_EVENT_CLOCK;
+  snd_seq_ev_set_fixed(&outev);
+  snd_seq_event_output_direct(seq_handle, &outev);  
+};
+
+void MidiIO::OutputStart (int port) {
+  snd_seq_event_t outev;
+  snd_seq_ev_set_subs(&outev);
+  snd_seq_ev_set_direct(&outev);
+  snd_seq_ev_set_source(&outev,out_ports[port]);
+  outev.type = SND_SEQ_EVENT_START;
+  snd_seq_ev_set_fixed(&outev);
+  snd_seq_event_output_direct(seq_handle, &outev);  
+};
+
+void MidiIO::OutputStop (int port) {
+  snd_seq_event_t outev;
+  snd_seq_ev_set_subs(&outev);
+  snd_seq_ev_set_direct(&outev);
+  snd_seq_ev_set_source(&outev,out_ports[port]);
+  outev.type = SND_SEQ_EVENT_STOP;
+  snd_seq_ev_set_fixed(&outev);
+  snd_seq_event_output_direct(seq_handle, &outev);  
+};
+
 // Events are sent directly- no buffer emptying necessary
 void MidiIO::OutputStartOnPort () {};
 void MidiIO::OutputEndOnPort (int port) {};
@@ -514,11 +563,12 @@ MidiIO::MidiIO (Fweelin *app) : bendertune(0), curbender(0),
 #ifdef __MACOSX__
 				client(0), in_ports(0), out_ports(0), out_sources(0), dest(0), 
 				inputidx(-1), curPacket(0),
-				packetList((MIDIPacketList *) obuf)
+				packetList((MIDIPacketList *) obuf),
 #else
                                 seq_handle(0), in_ports(0), out_ports(0),
-                                midithreadgo(0) 
+                                midithreadgo(0),
 #endif
+				midisyncxmit(0)
 {
   note_def_port = new int[MAX_MIDI_NOTES];
   note_patch = new PatchItem *[MAX_MIDI_NOTES];
@@ -540,6 +590,8 @@ void MidiIO::listen_events () {
 				  T_EV_Input_MIDIProgramChange);
   app->getEMG()->ListenEvent(this,fs->GetInputMatrix(),
 				  T_EV_Input_MIDIPitchBend);
+  app->getEMG()->ListenEvent(this,0,T_EV_Input_MIDIClock);
+  app->getEMG()->ListenEvent(this,0,T_EV_Input_MIDIStartStop);
 }
 
 void MidiIO::unlisten_events () {
@@ -556,6 +608,8 @@ void MidiIO::unlisten_events () {
 				    T_EV_Input_MIDIProgramChange);
   app->getEMG()->UnlistenEvent(this,fs->GetInputMatrix(),
 				    T_EV_Input_MIDIPitchBend);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_Input_MIDIClock);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_Input_MIDIStartStop);
 }
 
 void MidiIO::ReceiveNoteOffEvent (int channel, int notenum, int vel) {
@@ -727,7 +781,7 @@ void MidiIO::ReceiveEvent(Event *ev, EventProducer *from) {
       SetBenderTune(tev->tuning);
     }
     return;
-
+    
 #if 0
   case T_EV_SetMidiEchoPort :
     {
@@ -774,6 +828,23 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
 
   int ret = -1;
   switch (ev->GetType()) {
+  case T_EV_Input_MIDIClock :
+    {
+      // MIDIClockInputEvent *clkevt = (MIDIClockInputEvent *) ev;
+      OutputClock(ret = port);
+    } 
+    break;
+
+  case T_EV_Input_MIDIStartStop :
+    {
+      MIDIStartStopInputEvent *ssevt = (MIDIStartStopInputEvent *) ev;
+      if (ssevt->start) 
+	OutputStart(ret = port);
+      else
+	OutputStop(ret = port);
+    } 
+    break;
+    
   case T_EV_Input_MIDIController :
     {
       MIDIControllerInputEvent *mcev = (MIDIControllerInputEvent *) ev;
@@ -829,7 +900,17 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
 void MidiIO::EchoEvent (Event *ev) {
   // Handle MIDI event echos..
 
-  if (!ev->echo) {
+  if (ev->GetType() == T_EV_Input_MIDIClock ||
+      ev->GetType() == T_EV_Input_MIDIStartStop) {
+    // MIDI sync message- send out to all ports set to transmit MIDI sync
+    int *xmitports = app->getCFG()->GetMIDISyncOuts(),
+      numxmitports = app->getCFG()->GetNumMIDISyncOuts();
+    for (int i = 0; i < numxmitports; i++) {
+      OutputStartOnPort();
+      int port = EchoEventToPortChannel(ev,xmitports[i],-1);
+      OutputEndOnPort(port);
+    }
+  } else if (!ev->echo) {
     // This event is generated from the configuration explicitly- so don't
     // send it through our current patch settings-- send to the exact port
     // and channel specified
