@@ -138,6 +138,8 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
 		MIDIProgramChangeInputEvent);
       SET_ETYPE(T_EV_Input_MIDIPitchBend,"midipitchbend",
 		MIDIPitchBendInputEvent);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIClock,"midiclock",MIDIClockInputEvent,20);
+      SET_ETYPE(T_EV_Input_MIDIStartStop,"midistartstop",MIDIStartStopInputEvent);
 
       SET_ETYPE(T_EV_LoopClicked,"loop-clicked",LoopClickedEvent);
 
@@ -190,7 +192,8 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_SwitchMetronome,"switch-metronome",SwitchMetronomeEvent);
       SET_ETYPE(T_EV_SetSyncType,"set-sync-type",SetSyncTypeEvent);
       SET_ETYPE(T_EV_SetSyncSpeed,"set-sync-speed",SetSyncSpeedEvent);
-
+      SET_ETYPE(T_EV_SetMidiSync,"set-midi-sync",SetMidiSyncEvent);
+      
       SET_ETYPE(T_EV_SetVariable,"set-variable",SetVariableEvent);
       SET_ETYPE(T_EV_ToggleVariable,"toggle-variable",ToggleVariableEvent);
 

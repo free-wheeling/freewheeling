@@ -793,7 +793,7 @@ class Fweelin : public EventProducer, public BrowserCallback {
     mmg(0), bmg(0), emg(0), rp(0), tmap(0), 
     loopmgr(0), browsers(0), abufs(0), iset(0), audio(0), midi(0), sdlio(0), 
     vid(0), scope(0), scope_len(0), audiomem(0), amrec(0),  
-    running(0) {};
+    running(0), sync_type(0), sync_speed(1) {};
   ~Fweelin() {};
 
   char IsRunning() { return running; };
@@ -865,6 +865,19 @@ class Fweelin : public EventProducer, public BrowserCallback {
       return 0;
   };
 
+  // Sync parameters
+  
+  inline int GetSyncSpeed() { return sync_speed; };
+  inline char GetSyncType() { return sync_type; };
+  
+  inline void SetSyncSpeed(int sspd) { 
+    if (sspd < 1)
+      sync_speed = 1;
+    else
+      sync_speed = sspd; 
+  };
+  inline void SetSyncType(char stype) { sync_type = stype; };
+    
   // Patch browser callbacks
   virtual void ItemBrowsed(BrowserItem *i) { ItemSelected(i); };
   virtual void ItemSelected(BrowserItem *i);
@@ -930,6 +943,11 @@ class Fweelin : public EventProducer, public BrowserCallback {
 
   // Control settings 
   FloConfig *cfg;
+  
+  // Variables for sync
+  
+  char sync_type; // Nonzero for beat-sync and zero for bar-sync
+  int sync_speed; // Number of beats or bars (external) per pulse (FW)
   
   char running; // Nonzero if FW is fully started
 };

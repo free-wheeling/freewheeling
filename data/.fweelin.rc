@@ -30,11 +30,11 @@
      from one input. If you can learn how to configure FreeWheeling,
      then you will have a robust performance controller at your fingertips.
 
-     Thanks for Reading, and Happy FreeWheeeling! 
+     Happy FreeWheeeling! 
      Your feedback is appreciated.
 -->
 
-<freewheeling version="0.5.4">
+<freewheeling version="0.5.5">
 <general>
 <!-- In FreeWheeling, the storage of loops is independent from 
      the user interface that was used to capture them. This is important, 
@@ -66,6 +66,12 @@
      FreeWheeling to different soft-synths and FX and control them through
      separate MIDI ports. -->
   <var midiouts="3"/>
+
+<!-- List of MIDI ports to send MIDI sync (MIDI clock) to.
+     When enabled, Freewheeling will send timing sync info to these
+     MIDI ports. This is a comma-separated list of those ports. 
+     1 is the first MIDI port. -->
+  <var midisyncouts="1"/> <!-- Send MIDI sync to first port only -->
 
 <!-- External audio inputs to create into FreeWheeling.
      For each input, you have to specify- do I want a mono or stereo input?
@@ -808,7 +814,7 @@ Event "save-loop"
 
 Event "save-new-scene"
 Event "save-current-scene"
-  Saves a new/overwrites current scene. 
+  Saves a new scene/overwrites current scene. 
   A scene is a snapshot of all loaded loops and levels.
   It is like a save of the complete session.
  
@@ -930,6 +936,84 @@ Event "loop-clicked"
   "loopid": Number of the corresponding loopid clicked on
   "in": Zero if the loop was clicked in the loop tray
         One if the loop was clicked in a layout
+
+Event "set-sync-type"
+  Set the type of sync for syncronizing to an external sequencer/app.
+
+  Freewheeling uses a 'pulse' concept of timing. Instead of dividing time
+  up into bars, beats, and ticks (sequencer style), Freewheeling simply
+  defines time as a rhythmic pulsing. When you create a pulse, Freewheeling
+  can optionally transmit or receive sync information for that pulse.
+  Two syncronization mechanisms are provided- Jack and MIDI. Both represent
+  time as bars, beats, and ticks. The sync type parameter controls
+  whether we are mapping beats to pulses (beat sync) or bars to pulses 
+  (bar sync).
+ 
+  "type": 1 for beat sync, 0 for bar sync
+
+Event "set-sync-speed"
+  Set the number of beats/bars per pulse. This affects the translated speed
+  between Freewheeling's internal clock and the external clock. 
+
+  "speed": Number of beats or bars (depending on sync type) to a single 
+           pulse.
+
+Event "set-midi-sync"
+  Set whether to transmit MIDI sync. 
+  Note that to transmit MIDI sync, you also need to set 'midisyncouts' in
+  the general config section, and you need to have a pulse running.
+
+  "midisync": 1 to transmit MIDI sync. 0 for no MIDI sync.
+
+Event "toggle-select-loop"
+  Freewheeling allows you to select and work with several loops at once.
+  This event toggles one loop as selected/unselected.
+  You can have several selection sets.
+  
+  "setid": Number of the selection set in which to toggle the loop 
+           (usually this will be 0)
+  "loopid": ID of the loop to toggle
+
+Event "select-only-playing-loops"
+  Make the selection include only those loops that are currently playing/
+  currently idle.
+  
+  "setid": Number of the selection set to change
+           (usually this will be 0)
+  "playing": 1 to include only playing loops
+             0 to include only idle loops
+
+Event "select-all-loops"
+  Select/unselect all loops.
+
+  "setid": Number of the selection set to change
+           (usually this will be 0)
+  "select": 1 to select all loops
+ 	    0 to select no loops
+
+Event "invert-selection"
+  Invert the selection- Select all loops not currently selected.
+
+  "setid": Number of the selection set to change
+           (usually this will be 0)
+
+Event "trigger-selected-loops"
+  Trigger the selected loops. You can toggle them for playing/idle,
+  or you can force them to play. 
+
+  "setid": Number of the selection set to use
+           (usually this will be 0)
+  "vol": Volume at which to trigger loops
+  "toggleloops": 1 to toggle loops for playing, 0 to force playing.
+
+Event "set-selected-loops-trigger-volume"
+  Set the volume of all selected loops.
+  This only affects playing loops. 
+  This allows you to fade many loops together.
+
+  "setid": Number of the selection set to use
+           (usually this will be 0)
+  "vol": Volume to set loops to
 
 *****************************************************************************
 
@@ -1121,6 +1205,9 @@ SYSTEM_sync_transmit -
   When the transport starts rolling, FW will transmit sync information.
   If another app is master, FW will receive sync information.
 
+SYSTEM_midisync_transmit -
+  nonzero if Freewheeling is transmitting MIDI sync information.
+
 SYSTEM_fluidsynth_enabled -
   is FluidSynth enabled?
 
@@ -1210,6 +1297,9 @@ will not go to your synth.
 
   <!-- Show sync panel? -->
   <declare var="VAR_syncpanel_show" type="int" init="0"/>
+  <declare var="VAR_numsync_per_pulse" type="int" init="1"/>
+  <declare var="VAR_synctype" type="int" init="0"/>
+  <declare var="VAR_midisync" type="int" init="0"/>
   
   <declare var="VAR_keyheld_up" type="char" init="0"/>
   <declare var="VAR_keyheld_down" type="char" init="0"/>
@@ -1264,9 +1354,6 @@ will not go to your synth.
 
   <declare var="VAR_xferloop" type="char" init="0"/>
   <declare var="VAR_xferidx" type="int" init="0"/>
-
-  <declare var="VAR_numsync_per_pulse" type="int" init="1"/>
-  <declare var="VAR_synctype" type="int" init="0"/>
 
   <!-- Development mode sets options that I use for development, testing, 
        and playing. I don't recommend you use it. -->
@@ -1620,12 +1707,6 @@ will not go to your synth.
                                            and amp=controlval/127*2"/>
 -->
 
-  <!-- HELP: MIDI CC89: Fade trigger volume of selected loops -->
-  <binding input="midicontroller" 
-   conditions="controlnum=VAR_triggervol_selected_midicontrol"   
-   output="set-selected-loops-trigger-volume" 
-   parameters="setid=0 and vol=controlval*2.0/127"/>
-
   <!-- HELP: Arrow up/down + click: +/- loop volume -->
   <binding input="loop-clicked"
    conditions="VAR_keyheld_up=1 and button=1 and down=1"
@@ -1835,6 +1916,12 @@ will not go to your synth.
    conditions="key=t and keydown=1"
    output="trigger-selected-loops" parameters="setid=0 and vol=1.0 and
                                                toggleloops=1"/>
+
+  <!-- HELP: MIDI CC89: Fade volume of selected loops -->
+  <binding input="midicontroller" 
+   conditions="controlnum=VAR_triggervol_selected_midicontrol"   
+   output="set-selected-loops-trigger-volume" 
+   parameters="setid=0 and vol=controlval*2.0/127"/>
 
   <!-- Erase Loops -->
   <!-- HELP: space + trigger/click: Erase loop -->
@@ -2171,7 +2258,7 @@ will not go to your synth.
    output="browser-select-item" parameters="browserid=VAR_cur_browser"/>
 
   <!-- Overdub feedback continuous adjust from MIDI control -->
-  <!-- HELP: MIDI CC50: MIDI shift key (equivalent to holding space) -->
+  <!-- HELP: MIDI CC50: MIDI shift key (like space) -->
   <binding input="midicontroller" 
    conditions="controlnum=VAR_midishift_midicontrol and
                controlval=VAR_switch_on"
@@ -2293,6 +2380,8 @@ will not go to your synth.
    output4="video-show-display" parameters4="displayid=1002 and
                                              show=VAR_syncpanel_show"
    output5="video-show-display" parameters5="displayid=1003 and
+                                             show=VAR_syncpanel_show"
+   output6="video-show-display" parameters6="displayid=1004 and
                                              show=VAR_syncpanel_show"/>
 
   <!-- HELP: (space) F1: (Delete)/create/select pulse -->
@@ -2314,12 +2403,19 @@ will not go to your synth.
    parameters1="var=VAR_numsync_per_pulse and value=VAR_numsync_per_pulse-1"
    output2="set-sync-speed" parameters2="speed=VAR_numsync_per_pulse"/>
    
-  <!-- HELP: Alt-S: Switch between sync-to-bar and sync-to-beat -->
+  <!-- HELP: Alt-S: Switch between bar and beat sync -->
   <binding input="key"
    conditions="VAR_keyheld_alt=1 and key=s and keydown=1"
    output1="toggle-variable"
    parameters1="var=VAR_synctype and maxvalue=1"
    output2="set-sync-type" parameters2="type=VAR_synctype"/>
+
+  <!-- HELP: Shift-F2: Toggle MIDI sync transmit -->
+  <binding input="key"
+   conditions="VAR_keyheld_shift=1 and key=f2 and keydown=1"
+   output1="toggle-variable"
+   parameters1="var=VAR_midisync and maxvalue=1"
+   output2="set-midi-sync" parameters2="midisync=VAR_midisync"/>
 
   <!-- HELP: F2: Tap pulse -->
   <binding input="key" conditions="key=f2 and keydown=1"
@@ -2769,11 +2865,14 @@ will not go to your synth.
    type="text-switch" font="small" pos="0.1,0.87"
    text0="bars per pulse" text1="beats per pulse" show="0"/>
   <display var="SYSTEM_sync_active" id="1002" type="circle-switch" 
-   font="small" title="Sync"
-   pos="0.65,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
+   font="small" title="Jack Sync"
+   pos="0.5,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
   <display var="SYSTEM_sync_transmit" id="1003" type="circle-switch" 
-   font="small" title="XMit"
-   pos="0.75,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
+   font="small" title="Jack Sync XMit"
+   pos="0.66,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
+  <display var="SYSTEM_midisync_transmit" id="1004" type="circle-switch"
+   font="small" title="MIDI Sync Xmit"
+   pos="0.66,0.84" size1="0.012" size0="0.01" flash="0" show="0"/>
 
   <display var="VAR_overdubfeedback" type="bar" font="small"
    title="FB" pos="0.7,0.9" orientation="horizontal" barscale="0.04"

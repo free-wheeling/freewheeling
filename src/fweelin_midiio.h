@@ -11,10 +11,14 @@
 
 #include "fweelin_event.h"
 
+#define MIDI_CLOCK_FREQUENCY 24	  // 24 MIDI clock messages per quarter note (beat) MIDI standard
+
 class Fweelin;
 class PatchItem;
 
 class MidiIO : public EventProducer, public EventListener {
+  friend class Fweelin;
+  
 public:
   MidiIO (Fweelin *app);
   virtual ~MidiIO ();
@@ -54,6 +58,10 @@ public:
   // Switch MIDI inputs (which system MIDI input source feeds Fweelin?)
   void SetMIDIInput (int idx);
 #endif
+  
+  // MIDI Sync
+  inline int GetMIDISyncTransmit() { return midisyncxmit; };
+  inline void SetMIDISyncTransmit(int midisyncxmit) { this->midisyncxmit = midisyncxmit; };
   
   // Value to offset bender amounts by-- used to do tuning from
   // bender
@@ -95,6 +103,13 @@ protected:
   void OutputProgramChange (int port, int chan, int val);
   void OutputPitchBend (int port, int chan, int val);
   void OutputNote (int port, int chan, char down, int notenum, int vel);
+
+  // MIDI Sync messages
+  void OutputClock (int port);
+  void OutputStart (int port);
+  void OutputStop (int port);
+  
+  // Start/End pass messages
   void OutputStartOnPort ();       // First message for this port in this pass
   void OutputEndOnPort (int port); // Last message for this port in this pass
 
@@ -143,8 +158,11 @@ protected:
   // For each MIDI note on the scale, what default port and patch was the note
   // played with? This allows us to send note off(s) to the right place(s), 
   // even when the patch is changed while notes are held
-  int *note_def_port;
+  int *note_def_port; 
   PatchItem **note_patch;
+  
+  // MIDI Sync
+  int midisyncxmit;  // Nonzero if we should transmit MIDI sync messages
 };
 
 #endif

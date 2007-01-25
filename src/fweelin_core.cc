@@ -496,6 +496,7 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_SwitchMetronome);
   app->getEMG()->ListenEvent(this,0,T_EV_SetSyncType);
   app->getEMG()->ListenEvent(this,0,T_EV_SetSyncSpeed);
+  app->getEMG()->ListenEvent(this,0,T_EV_SetMidiSync);
 
   app->getEMG()->ListenEvent(this,0,T_EV_SetTriggerVolume);
   app->getEMG()->ListenEvent(this,0,T_EV_SlideLoopAmp);
@@ -547,6 +548,7 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_SwitchMetronome);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetSyncType);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetSyncSpeed);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_SetMidiSync);
 
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetTriggerVolume);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SlideLoopAmp);
@@ -756,10 +758,13 @@ float LoopManager::GetLoopdVolume(int index) {
     return 1.0;
 }
 
-void LoopManager::SelectPulse(int pulseindex) {
+void LoopManager::SelectPulse (int pulseindex) {
   if (pulseindex == -1) {
+    if (GetCurPulse() != 0) 
+      GetCurPulse()->SetMIDIClock(0); // Stop MIDI clock
+    
     //printf("**Select: No pulse\n");
-    curpulseindex = -1;
+    curpulseindex = -1;    
   } else if (pulseindex < 0 || pulseindex >= MAX_PULSES) {
     printf("CORE: Invalid pulse #%d, ignoring.\n",pulseindex);
     return;
@@ -770,6 +775,9 @@ void LoopManager::SelectPulse(int pulseindex) {
     //printf("Select pulse[%d]\n", pulseindex);
     curpulseindex = pulseindex;
     StripePulseOn(pulses[pulseindex]);
+    
+    // Select pulse, send MIDI start
+    GetCurPulse()->SetMIDIClock(1);
   }
 }
 
@@ -1535,6 +1543,9 @@ Pulse *LoopManager::CreatePulse(nframes_t len) {
       StripePulseOn(pulses[i]);
       curpulseindex = i;
 
+      // Send MIDI start for pulse
+      GetCurPulse()->SetMIDIClock(1);
+      
       return pulses[i];
     } else
       // No space for a new pulse!
@@ -1571,6 +1582,9 @@ void LoopManager::CreatePulse(int index, int pulseindex, int sub) {
       curpulseindex = pulseindex;
       cur->nbeats = sub; // Set # of beats in the loop
 
+      // Send MIDI start for pulse
+      GetCurPulse()->SetMIDIClock(1);
+      
       // Now reconfigure processor on this index to be synced to the new pulse
       if (status[index] == T_LS_Playing) 
 	((PlayProcessor *) plist[index])->SyncUp();
@@ -2434,7 +2448,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       // OK!
       if (CRITTERS)
 	printf("CORE: Received SetSyncType(%d)\n", sev->stype);
-      app->getAUDIO()->SetTransport_SyncType(sev->stype);
+      app->SetSyncType(sev->stype);
     }
     break;
 
@@ -2445,10 +2459,21 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       // OK!
       if (CRITTERS)
 	printf("CORE: Received SetSyncSpeed(%d)\n", sev->sspd);
-      app->getAUDIO()->SetTransport_SyncSpeed(sev->sspd);
+      app->SetSyncSpeed(sev->sspd);
     }
     break;
 
+  case T_EV_SetMidiSync :
+    {
+      SetMidiSyncEvent *sev = (SetMidiSyncEvent *) ev;
+      
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received SetMidiSync(%d)\n", sev->midisync);
+      app->getMIDI()->SetMIDISyncTransmit(sev->midisync);
+    }
+    break;
+    
   case T_EV_SetTriggerVolume :
     {
       SetTriggerVolumeEvent *laev = (SetTriggerVolumeEvent *) ev;
@@ -2918,6 +2943,7 @@ int Fweelin::setup()
   cfg->AddEmptyVariable("SYSTEM_audio_cpu_load");
   cfg->AddEmptyVariable("SYSTEM_sync_active");
   cfg->AddEmptyVariable("SYSTEM_sync_transmit");
+  cfg->AddEmptyVariable("SYSTEM_midisync_transmit");
 #if USE_FLUIDSYNTH
   cfg->AddEmptyVariable("SYSTEM_fluidsynth_enabled");
 #endif
@@ -3135,6 +3161,8 @@ int Fweelin::setup()
 			  (char *) &(audio->sync_active));
   cfg->LinkSystemVariable("SYSTEM_sync_transmit",T_char,
 			  (char *) &(audio->timebase_master));
+  cfg->LinkSystemVariable("SYSTEM_midisync_transmit",T_char,
+			  (char *) &(midi->midisyncxmit));
 #if USE_FLUIDSYNTH
   cfg->LinkSystemVariable("SYSTEM_fluidsynth_enabled",T_char,
 			  (char *) &(fluidp->enable));

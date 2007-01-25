@@ -296,6 +296,9 @@ public:
   inline char IsMetronomeActive() { return metroactive; };
   inline void SwitchMetronome(char active) { metroactive = active; };
 
+  // Start/stop sending MIDI clock for this pulse
+  void SetMIDIClock (char start);
+  
   // Quantizes src length to fit to this pulse length 
   nframes_t QuantizeLength(nframes_t src);
 
@@ -401,6 +404,8 @@ public:
 
   nframes_t syncpos[MAX_SYNC_POS]; // Sync positions
   int numsyncpos; // Current number of sync positions
+  
+  SyncStateType clockrun;  // Status of MIDI clock
 };
 
 // This is the base of signal processing tree- it connects to system level audio
