@@ -793,7 +793,7 @@ class Fweelin : public EventProducer, public BrowserCallback {
     mmg(0), bmg(0), emg(0), rp(0), tmap(0), 
     loopmgr(0), browsers(0), abufs(0), iset(0), audio(0), midi(0), sdlio(0), 
     vid(0), scope(0), scope_len(0), audiomem(0), amrec(0),  
-    running(0), sync_type(0), sync_speed(1) {};
+    sync_type(0), sync_speed(1), running(0) {};
   ~Fweelin() {};
 
   char IsRunning() { return running; };
