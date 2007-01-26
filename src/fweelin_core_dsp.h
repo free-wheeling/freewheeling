@@ -707,13 +707,14 @@ class FileStreamer : public Processor, public EventListener {
   virtual void ReceiveEvent(Event *ev, EventProducer *from);
   // virtual int ProcessorCall(void *trigger, int data);
 
-  // Starts writing to a new vorbis audio stream
+  // Starts writing to a new audio stream
   // Note all the heavy work is done in the encode thread!
   int StartWriting(char *filename, char *timingname, codec type) {
     if (outname != 0) 
       return -1; // Already writing!
 
     outname = filename;
+    outputsize = 0;
     filetype = type;
     this->timingname = timingname;
     writerstatus = STATUS_START_PENDING;
@@ -728,6 +729,9 @@ class FileStreamer : public Processor, public EventListener {
   };
 
   char GetStatus() { return writerstatus; };
+
+  // Returns the number of *frames* written so far-- not bytes
+  // The actual file size will vary depending on the codec used
   long int GetOutputSize() { return outputsize; };
 
   static void *run_encode_thread (void *ptr);
@@ -748,19 +752,19 @@ class FileStreamer : public Processor, public EventListener {
   codec filetype;
 
   // File
-  FILE *outfd,   // Current output filedescriptor (OGG)
-    *timingfd;   // Current timing output filedescriptor (USX)
+  FILE *outfd,   // Current output filedescriptor (audio)
+    *timingfd;   // Current timing output filedescriptor (data- USX)
   char *outname, // Current output filename
     *timingname; // Current timing output filename
 
-  // Time markers for storing downbeat points along with OGG
+  // Time markers for storing downbeat points along with audio
   TimeMarker *marks;
   int mkwriteidx,
     mkreadidx;
 
-  // Number of beat triggers passed in this vorbis recording 
+  // Number of beat triggers passed in this recording 
   long nbeats;
-  // Global sample count at start of OGG file
+  // Global sample count at start of stream file
   nframes_t startcnt;
 
   // Output buffers
@@ -773,11 +777,11 @@ class FileStreamer : public Processor, public EventListener {
   // Number of bytes written to output file
   long int outputsize;
 
-  // Vorbis encode/disk write thread
+  // Disk encode/disk write thread
   pthread_t encode_thread;
   int threadgo;
 
-  // Vorbis encoder
+  // Encoder
   iFileEncoder *enc;
 };
 
