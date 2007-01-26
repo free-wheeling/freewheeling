@@ -44,7 +44,6 @@
 		ACE0E9180ACA15B4007E3ED2 /* SDL_gfx.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC5A53250AC099C900622F72 /* SDL_gfx.framework */; };
 		ACE0E9190ACA15B4007E3ED2 /* SDL_ttf.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC5A53260AC099C900622F72 /* SDL_ttf.framework */; };
 		ACE0E91A0ACA15B4007E3ED2 /* Vorbis.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC5A53270AC099C900622F72 /* Vorbis.framework */; };
-		ACE0E97A0ACA1B5D007E3ED2 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = ACE0E9790ACA1B5D007E3ED2 /* main.c */; };
 		ACFC0A9C0AC99CDF00DAC478 /* FweelinMac.mm in Sources */ = {isa = PBXBuildFile; fileRef = ACFC0A9A0AC99CDF00DAC478 /* FweelinMac.mm */; };
 /* End PBXBuildFile section */
 
@@ -119,7 +118,6 @@
 		AC6429D80AD9C85700752A08 /* Sndfile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sndfile.framework; path = /Library/Frameworks/Sndfile.framework; sourceTree = "<absolute>"; };
 		ACA2C53E0B06DCB600E02DC6 /* SDLMain.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = SDLMain.nib; sourceTree = "<group>"; };
 		ACA2C7B60B07C73900E02DC6 /* patches-channels.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = "patches-channels.xml"; path = "../data/patches-channels.xml"; sourceTree = SOURCE_ROOT; };
-		ACE0E9790ACA1B5D007E3ED2 /* main.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		ACFC0A990AC99CDF00DAC478 /* FweelinMac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FweelinMac.h; sourceTree = "<group>"; };
 		ACFC0A9A0AC99CDF00DAC478 /* FweelinMac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = FweelinMac.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -179,7 +177,6 @@
 				ACFC0A9A0AC99CDF00DAC478 /* FweelinMac.mm */,
 				002F3A2B09D0888800EBEB88 /* SDLMain.h */,
 				002F3A2C09D0888800EBEB88 /* SDLMain.mm */,
-				ACE0E9790ACA1B5D007E3ED2 /* main.c */,
 				ACA2C53E0B06DCB600E02DC6 /* SDLMain.nib */,
 			);
 			name = Classes;
@@ -334,7 +331,6 @@
 				AC5A54080AC09A6400622F72 /* fweelin_videoio.cc in Sources */,
 				AC5A540A0AC09A6400622F72 /* fweelin.cc in Sources */,
 				ACFC0A9C0AC99CDF00DAC478 /* FweelinMac.mm in Sources */,
-				ACE0E97A0ACA1B5D007E3ED2 /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
