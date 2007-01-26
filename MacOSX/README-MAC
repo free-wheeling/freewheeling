@@ -68,14 +68,22 @@ MIDI outputs. You can also create combination patches that split your
 MIDI input into a variety of keyboard zones, playing different outputs
 together.
 
-For more help, please refer to the video tutorials at:
+For a crash-course in Freewheeling, 
+please refer to the video tutorials at:
 http://freewheeling.sourceforge.net/
 
-And read the configuration file:
+If you'd like to configure Freewheeling,
+please read the configuration file:
 ~/.fweelin/.fweelin.rc
 (once you've run FreeWheeling, this file appears)
 
-Browse or sign on to the mailing-list for help.
+To find this file through the Finder, 
+you must have hidden files enabled in your Finder.
+If you don't, run 'fweelin-edit-config' 
+(in the Freewheeling distribution DMG). 
+The file should then load up in an editor.
+
+For more help, you can browse or sign on to the mailing-list.
 
 Happy Looping!
 -JP Mercury.

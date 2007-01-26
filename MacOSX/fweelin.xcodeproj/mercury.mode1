@@ -263,7 +263,6 @@
 								<string>19C28FACFE9D520D11CA2CBB</string>
 								<string>8D1107320486CEB800E47090</string>
 								<string>1C37FBAC04509CD000000102</string>
-								<string>AC776D5E0B69B290005E3D84</string>
 								<string>1C37FABC05509CD000000102</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
@@ -294,7 +293,7 @@
 							<real>285</real>
 						</array>
 						<key>RubberWindowFrame</key>
-						<string>381 124 979 688 0 0 1440 878 </string>
+						<string>140 149 979 688 0 0 1440 878 </string>
 					</dict>
 					<key>Module</key>
 					<string>PBXSmartGroupTreeModule</string>
@@ -324,7 +323,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>AC776D660B69B290005E3D84</string>
+										<string>AC2AECA80B6A9FA200AFA3A9</string>
 										<key>history</key>
 										<array>
 											<string>AC5A56880AC2419A00622F72</string>
@@ -363,7 +362,7 @@
 											<string>AC034B900B69AB2B00AF5CD6</string>
 											<string>AC776D5F0B69B290005E3D84</string>
 											<string>AC776D600B69B290005E3D84</string>
-											<string>AC776D610B69B290005E3D84</string>
+											<string>AC2AEC9D0B6A9E6F00AFA3A9</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -402,7 +401,6 @@
 											<string>ACA2C5D90B06E0F700E02DC6</string>
 											<string>ACA2CE0E0B10369800E02DC6</string>
 											<string>AC776D620B69B290005E3D84</string>
-											<string>AC776D630B69B290005E3D84</string>
 											<string>AC776D640B69B290005E3D84</string>
 											<string>AC776D650B69B290005E3D84</string>
 										</array>
@@ -418,7 +416,7 @@
 								<key>Frame</key>
 								<string>{{0, 0}, {672, 449}}</string>
 								<key>RubberWindowFrame</key>
-								<string>381 124 979 688 0 0 1440 878 </string>
+								<string>140 149 979 688 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
@@ -438,7 +436,7 @@
 								<key>Frame</key>
 								<string>{{0, 454}, {672, 193}}</string>
 								<key>RubberWindowFrame</key>
-								<string>381 124 979 688 0 0 1440 878 </string>
+								<string>140 149 979 688 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
@@ -462,9 +460,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>AC776D670B69B290005E3D84</string>
+				<string>AC2AECA90B6A9FA200AFA3A9</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>AC776D680B69B290005E3D84</string>
+				<string>AC2AECAA0B6A9FA200AFA3A9</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -603,7 +601,7 @@
 		<string>/Users/mercury/Desktop/port/freewheeling/MacOSX/fweelin.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
-	<string>381 124 979 688 0 0 1440 878 </string>
+	<string>140 149 979 688 0 0 1440 878 </string>
 	<key>WindowTools</key>
 	<array>
 		<dict>
@@ -680,7 +678,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>AC5A53180AC098FB00622F72</string>
-				<string>AC776D690B69B290005E3D84</string>
+				<string>AC2AECAB0B6A9FA200AFA3A9</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -1042,9 +1040,9 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1C0AD2B3069F1EA900FABCE6</string>
-				<string>AC776D6A0B69B290005E3D84</string>
+				<string>AC2AECAC0B6A9FA200AFA3A9</string>
 				<string>1CD0528B0623707200166675</string>
-				<string>AC776D6B0B69B290005E3D84</string>
+				<string>AC2AECAD0B6A9FA200AFA3A9</string>
 			</array>
 			<key>ToolbarConfiguration</key>
 			<string>xcode.toolbar.config.run</string>

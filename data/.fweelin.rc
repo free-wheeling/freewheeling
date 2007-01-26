@@ -3,8 +3,8 @@
 
      If you know XML, no problem.
      Otherwise, please try to follow along.
-     It's not a piece of cake to edit,
-     but it sure is flexible!
+     There's definitely a learning curve here,
+     but what you get is great flexibility.
 
      Here, you can set up FreeWheeling to look and feel 
      the way that is most intuitive for you. 
@@ -144,7 +144,9 @@
      as a single channel synth. -->
   <fluidsynth channel="0"/>
 
-<!-- Soundfonts to load. Soundfonts without a path load from
+<!-- LINUX ONLY
+
+     Soundfonts to load. Soundfonts without a path load from
      /usr/local/share/fweelin/.
 
      Two good places to find free Soundfonts:
