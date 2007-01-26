@@ -301,18 +301,18 @@
 								<string>AC5A53270AC099C900622F72</string>
 								<string>19C28FACFE9D520D11CA2CBB</string>
 								<string>8D1107320486CEB800E47090</string>
-								<string>1C37FBAC04509CD000000102</string>
 								<string>1C37FABC05509CD000000102</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>1</integer>
+									<integer>43</integer>
+									<integer>37</integer>
 									<integer>0</integer>
 								</array>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
-							<string>{{0, 0}, {285, 629}}</string>
+							<string>{{0, 559}, {285, 629}}</string>
 						</dict>
 						<key>PBXTopSmartGroupGIDs</key>
 						<array/>
@@ -331,7 +331,7 @@
 							<real>285</real>
 						</array>
 						<key>RubberWindowFrame</key>
-						<string>304 166 979 688 0 0 1440 878 </string>
+						<string>267 125 979 688 0 0 1440 878 </string>
 					</dict>
 					<key>Module</key>
 					<string>PBXSmartGroupTreeModule</string>
@@ -347,7 +347,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>fweelin_videoio.cc</string>
+								<string>freewheeling.png</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -355,11 +355,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>fweelin_videoio.cc</string>
+										<string>freewheeling.png</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>AC034B830B69969F00AF5CD6</string>
+										<string>AC034BC30B69AC0500AF5CD6</string>
 										<key>history</key>
 										<array>
 											<string>AC5A56880AC2419A00622F72</string>
@@ -379,7 +379,6 @@
 											<string>ACA2CB9E0B0AC89600E02DC6</string>
 											<string>ACA2CE0D0B10369800E02DC6</string>
 											<string>ACF2F7A10B4C70B2005197BB</string>
-											<string>ACABFCB50B5F436C00CA3C21</string>
 											<string>ACABFD0E0B6178C500CA3C21</string>
 											<string>ACABFD120B6178C500CA3C21</string>
 											<string>ACABFDBC0B61895200CA3C21</string>
@@ -396,7 +395,9 @@
 											<string>ACF227F30B689BAA005CFC14</string>
 											<string>ACF227F40B689BAA005CFC14</string>
 											<string>ACF227F50B689BAA005CFC14</string>
-											<string>AC034B810B69969E00AF5CD6</string>
+											<string>AC034B900B69AB2B00AF5CD6</string>
+											<string>AC034BBF0B69ABD300AF5CD6</string>
+											<string>AC034BC00B69ABD300AF5CD6</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -435,6 +436,8 @@
 											<string>ACA2C5D90B06E0F700E02DC6</string>
 											<string>ACA2CE0E0B10369800E02DC6</string>
 											<string>ACABFCB90B5F436C00CA3C21</string>
+											<string>AC034B910B69AB2B00AF5CD6</string>
+											<string>AC034BC10B69ABD300AF5CD6</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -448,7 +451,7 @@
 								<key>Frame</key>
 								<string>{{0, 0}, {672, 449}}</string>
 								<key>RubberWindowFrame</key>
-								<string>304 166 979 688 0 0 1440 878 </string>
+								<string>267 125 979 688 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
@@ -468,7 +471,7 @@
 								<key>Frame</key>
 								<string>{{0, 454}, {672, 193}}</string>
 								<key>RubberWindowFrame</key>
-								<string>304 166 979 688 0 0 1440 878 </string>
+								<string>267 125 979 688 0 0 1440 878 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
@@ -629,11 +632,11 @@
 	<key>WindowOrderList</key>
 	<array>
 		<string>AC5A53180AC098FB00622F72</string>
-		<string>1C0AD2B3069F1EA900FABCE6</string>
 		<string>/Users/mercury/Desktop/port/freewheeling/MacOSX/fweelin.xcodeproj</string>
+		<string>1C0AD2B3069F1EA900FABCE6</string>
 	</array>
 	<key>WindowString</key>
-	<string>304 166 979 688 0 0 1440 878 </string>
+	<string>267 125 979 688 0 0 1440 878 </string>
 	<key>WindowTools</key>
 	<array>
 		<dict>

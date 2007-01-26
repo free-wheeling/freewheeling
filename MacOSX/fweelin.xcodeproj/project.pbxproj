@@ -37,6 +37,7 @@
 		AC5A540A0AC09A6400622F72 /* fweelin.cc in Sources */ = {isa = PBXBuildFile; fileRef = AC5A53EE0AC09A6400622F72 /* fweelin.cc */; };
 		AC6429D90AD9C85700752A08 /* Sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC6429D80AD9C85700752A08 /* Sndfile.framework */; };
 		AC6429DC0AD9C85C00752A08 /* Sndfile.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC6429D80AD9C85700752A08 /* Sndfile.framework */; };
+		AC776D470B69B161005E3D84 /* freewheeling.icns in Resources */ = {isa = PBXBuildFile; fileRef = AC776D460B69B161005E3D84 /* freewheeling.icns */; };
 		ACA2C53F0B06DCB600E02DC6 /* SDLMain.nib in Resources */ = {isa = PBXBuildFile; fileRef = ACA2C53E0B06DCB600E02DC6 /* SDLMain.nib */; };
 		ACA2C7B70B07C73900E02DC6 /* patches-channels.xml in Resources */ = {isa = PBXBuildFile; fileRef = ACA2C7B60B07C73900E02DC6 /* patches-channels.xml */; };
 		ACE0E9160ACA15B4007E3ED2 /* Jack.framework in Copy Frameworks into .app bundle */ = {isa = PBXBuildFile; fileRef = AC5A53220AC099C900622F72 /* Jack.framework */; };
@@ -116,6 +117,7 @@
 		AC5A53ED0AC09A6400622F72 /* fweelin_videoio.h */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.c.h; name = fweelin_videoio.h; path = ../src/fweelin_videoio.h; sourceTree = SOURCE_ROOT; tabWidth = 8; };
 		AC5A53EE0AC09A6400622F72 /* fweelin.cc */ = {isa = PBXFileReference; fileEncoding = 30; indentWidth = 2; lastKnownFileType = sourcecode.cpp.cpp; name = fweelin.cc; path = ../src/fweelin.cc; sourceTree = SOURCE_ROOT; tabWidth = 8; };
 		AC6429D80AD9C85700752A08 /* Sndfile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sndfile.framework; path = /Library/Frameworks/Sndfile.framework; sourceTree = "<absolute>"; };
+		AC776D460B69B161005E3D84 /* freewheeling.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = freewheeling.icns; sourceTree = "<group>"; };
 		ACA2C53E0B06DCB600E02DC6 /* SDLMain.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; path = SDLMain.nib; sourceTree = "<group>"; };
 		ACA2C7B60B07C73900E02DC6 /* patches-channels.xml */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.xml; name = "patches-channels.xml"; path = "../data/patches-channels.xml"; sourceTree = SOURCE_ROOT; };
 		ACFC0A990AC99CDF00DAC478 /* FweelinMac.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FweelinMac.h; sourceTree = "<group>"; };
@@ -238,6 +240,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				AC776D460B69B161005E3D84 /* freewheeling.icns */,
 				AC126C3E0AC8EED400FE916E /* .fweelin.rc */,
 				ACA2C7B60B07C73900E02DC6 /* patches-channels.xml */,
 				AC126C420AC8EF4000FE916E /* verabd.ttf */,
@@ -305,6 +308,7 @@
 				AC126C450AC8EF4000FE916E /* vera.ttf in Resources */,
 				ACA2C53F0B06DCB600E02DC6 /* SDLMain.nib in Resources */,
 				ACA2C7B70B07C73900E02DC6 /* patches-channels.xml in Resources */,
+				AC776D470B69B161005E3D84 /* freewheeling.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
