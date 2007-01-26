@@ -44,7 +44,7 @@ Setup for Mac OS X
 4. If you wish to debug the console output of FreeWheeling for
    troubleshooting, start 'Applications/Utilities/Console' now.
 
-5. Run 'fweelin'. The main window should appear. If it does not,
+5. Run 'FreeWheeling'. The main window should appear. If it does not,
    consult the Console log (step 4), or try running from a Terminal.
 
 Using FreeWheeling for Mac OS X
