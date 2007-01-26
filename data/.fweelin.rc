@@ -1361,7 +1361,7 @@ will not go to your synth.
 
   <!-- Mercury mode sets options that I use for performance.
        You can also roll your own special options. -->
-  <declare var="VAR_mercurymode" type="char" init="1"/>
+  <declare var="VAR_mercurymode" type="char" init="0"/>
 
   <declare var="VAR_auto_loop_save" type="char" init="0"/>
 
