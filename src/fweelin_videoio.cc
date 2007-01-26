@@ -1815,6 +1815,12 @@ void VideoIO::video_event_loop ()
   numhelppages++; // 1 is considered first help page
   helpx2 = helpx + helpmaxcol1 + helpmaxcol2;
 
+  const static int CHECK_SIZE_FRAMES = 20;
+  int checksizecnt = CHECK_SIZE_FRAMES;
+  nframes_t streamoutsize = 0;
+  char streamoutstatfailed = 0;
+  double streamoutfloatsize = 0.0;
+
   video_time = 0;
   double video_start = mygettime();
   while (videothreadgo) {
@@ -2016,12 +2022,32 @@ void VideoIO::video_event_loop ()
 
     // Stream output status
     char *writename = app->getSTREAMOUTNAME();
-    if (strlen(writename) == 0)
+    if (strlen(writename) == 0) {
       strcpy(tmp,"stream off"); // No output
-    else
-      sprintf(tmp,"%s   %.1f mb",
-	      writename,
-	      app->getSTREAMER()->GetOutputSize()/(1024.*1024));
+      checksizecnt = CHECK_SIZE_FRAMES;
+    } else {
+      if (++checksizecnt >= CHECK_SIZE_FRAMES) {
+	// Stat for size of file
+	checksizecnt = 0;
+	
+	struct stat st;
+	if (stat(app->getSTREAMOUTNAME(),&st) == 0) {
+	  streamoutstatfailed = 0;
+	  streamoutsize = st.st_size;
+	  streamoutfloatsize = streamoutsize / (1024.*1024);
+	} else {
+	  streamoutstatfailed = 1;
+	  streamoutsize = app->getSTREAMER()->GetOutputSize();
+	}
+      }
+
+      if (streamoutstatfailed) 
+	sprintf(tmp,"%s   %d frames",
+		writename,streamoutsize);
+      else
+	sprintf(tmp,"%s   %.1f mb",
+		writename,streamoutfloatsize);
+    }
     draw_text(screen,mainfont,tmp,patchx,patchy-OCY(22),gray);
 
     // Scene name

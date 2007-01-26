@@ -213,14 +213,14 @@ long int SndFileEncoder::WriteSamplesToDisk (sample_t **ibuf,
       tbuf[2*i+1] = ibuf[1][startframe+i];
     }
     if (filetype == FLAC)
-      //FIXME: purhaps some error checking
+      // FIXME: perhaps some error checking
       sf_write_float(sndoutfd, tbuf, numframes*sfinfo.channels); 
     else
       sf_write_raw(sndoutfd, static_cast<void *>(tbuf),
 		   numframes*samplesize*sfinfo.channels);
   } else {
     if (filetype == FLAC)
-      //FIXME: purhaps some error checking
+      // FIXME: perhaps some error checking
       sf_write_float(sndoutfd, ibuf[0], numframes); 
     else
       sf_write_raw(sndoutfd, ibuf[0], numframes*samplesize);
@@ -288,9 +288,11 @@ int VorbisEncoder::SetupFileForWriting(FILE *out) {
 };
 
 
-long int VorbisEncoder::WriteSamplesToDisk (sample_t **ibuf, nframes_t startframe, nframes_t numframes) {
+long int VorbisEncoder::WriteSamplesToDisk (sample_t **ibuf, 
+					    nframes_t startframe, 
+					    nframes_t numframes) {
   // Here we make assumption that sample_t is equivalent to float
-  // And that there is only 1 channel of data
+  // And that there is only 1 vorbis channel of data
   float **obuf = GetAnalysisBuffer(numframes);
     
   if (stereo)  { 
