@@ -4,6 +4,10 @@
 #include <pthread.h>
 
 #include <SDL/SDL.h>
+extern "C"
+{
+#include <jack/ringbuffer.h>
+}
 
 class Loop;
 class Event;
@@ -231,7 +235,8 @@ class Event : public Preallocated {
     from = 0;
     to = 0;
     next = 0;
-    time = 0;
+    time.tv_sec = 0;
+    time.tv_nsec = 0;
     echo = 0;
   };
 
@@ -270,8 +275,8 @@ class Event : public Preallocated {
   EventListener *to;
   // In an event queue, this stores pointer to next event
   Event *next;
-  // Timing of event (s)
-  double time;
+  // Time to send event
+  struct timespec time;
   // Event is an echo of an unhandled event?
   char echo;
 };
@@ -2315,6 +2320,8 @@ class EventManager {
   pthread_cond_t  dispatch_ready;
 
   int threadgo;
+  
+  jack_ringbuffer_data_t asd;
 };
 
 #endif
