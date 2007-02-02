@@ -2871,7 +2871,7 @@ void FloConfig::Parse() {
   xmlDocPtr doc;
   char *homedir = getenv("HOME");
   char buf[strlen(FWEELIN_DATADIR) + 2*strlen(homedir) + 
-	   strlen(FWEELIN_CONFIG_DIR) + strlen(FWEELIN_CONFIG_FILE) + 11];
+	   strlen(FWEELIN_CONFIG_DIR) + strlen(FWEELIN_CONFIG_FILE) + 15];
   sprintf(buf,"%s/%s/%s",homedir,FWEELIN_CONFIG_DIR,FWEELIN_CONFIG_FILE);
 
   // Look for config file
@@ -2895,7 +2895,7 @@ void FloConfig::Parse() {
 
     // Look in home dir (old placement)
     printf("INIT: Checking home folder (old place).\n");
-    sprintf(buf,"mv %s/%s %s/%s",
+    sprintf(buf,"mv \"%s/%s\" \"%s/%s\"",
 	    homedir,FWEELIN_CONFIG_FILE,
 	    homedir,FWEELIN_CONFIG_DIR);
     printf("INIT: Executing: %s\n",buf);
@@ -2906,7 +2906,7 @@ void FloConfig::Parse() {
       // Still can't find config file-
       printf("INIT: Checking shared folder (install place).\n");
       
-      sprintf(buf,"cp %s/%s %s/%s",
+      sprintf(buf,"cp \"%s/%s\" \"%s/%s\"",
 	      FWEELIN_DATADIR,FWEELIN_CONFIG_FILE,
 	      homedir,FWEELIN_CONFIG_DIR);
       printf("INIT: Executing: %s\n",buf);
@@ -2974,16 +2974,16 @@ void FloConfig::Parse() {
 	  }
 
 	  printf("Backing up your old configuration to: %s\n",tmp2);
-	  char tmp3[strlen(buf) + strlen(tmp2) + 10];
-	  sprintf(tmp3,"cp %s %s",buf,tmp2);
+	  char tmp3[strlen(buf) + strlen(tmp2) + 14];
+	  sprintf(tmp3,"cp \"%s\" \"%s\"",buf,tmp2);
 	  printf("\nINIT: Executing: %s\n",tmp3);
 	  system(tmp3);
 	  
 	  char *homedir = getenv("HOME");
 	  char buf[strlen(FWEELIN_DATADIR) + strlen(homedir) + 
 		   strlen(FWEELIN_CONFIG_FILE) + 
-		   strlen(FWEELIN_CONFIG_DIR) + 11];
-	  sprintf(buf,"cp %s/%s %s/%s",FWEELIN_DATADIR,FWEELIN_CONFIG_FILE,
+		   strlen(FWEELIN_CONFIG_DIR) + 15];
+	  sprintf(buf,"cp \"%s/%s\" \"%s/%s\"",FWEELIN_DATADIR,FWEELIN_CONFIG_FILE,
 		  homedir,FWEELIN_CONFIG_DIR);
 	  printf("\nINIT: Executing: %s\n",buf);
 	  system(buf);
@@ -3010,8 +3010,8 @@ void FloConfig::Parse() {
 	  char *homedir = getenv("HOME");
 	  char buf[strlen(FWEELIN_DATADIR) + strlen(homedir) + 
 		   2*strlen(FWEELIN_CONFIG_FILE) + 
-		   strlen(FWEELIN_CONFIG_DIR) + 11];
-	  sprintf(buf,"diff %s/%s %s/%s/%s",
+		   strlen(FWEELIN_CONFIG_DIR) + 15];
+	  sprintf(buf,"diff \"%s/%s\" \"%s/%s/%s\"",
 		  FWEELIN_DATADIR,FWEELIN_CONFIG_FILE,
 		  homedir,FWEELIN_CONFIG_DIR,FWEELIN_CONFIG_FILE);
 	  printf("INIT: Executing: %s\n",buf);

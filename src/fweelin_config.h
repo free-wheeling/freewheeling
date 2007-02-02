@@ -171,17 +171,12 @@ class DynamicToken {
 // controls basic user interface
 class EventBinding {
  public:
-  EventBinding(char all = 0) : 
-    boundproto(0), heldprereq(0), all(all), echo(0), 
+  EventBinding() : 
+    boundproto(0), echo(0), 
     tokenconds(0), paramsets(0), continued(0), next(0) {};
   virtual ~EventBinding();
 
   Event *boundproto; // Prototype instance of the output event
-
-  // We can specify that for the event to be triggered, a set of
-  // keyboard keys must be held down.
-  SDLKeyList *heldprereq; // These keys must be held
-  char all; // Nonzero if all keys must be held, zero if any one is enough
 
   // Nonzero if input events should be rebroadcast even
   // if they are consumed in this binding
