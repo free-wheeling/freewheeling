@@ -274,7 +274,7 @@
 								</array>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
-							<string>{{0, 51}, {285, 629}}</string>
+							<string>{{0, 0}, {285, 629}}</string>
 						</dict>
 						<key>PBXTopSmartGroupGIDs</key>
 						<array/>
@@ -311,7 +311,7 @@
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>fweelin_config.cc</string>
+								<string>fweelin_event.h</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -319,11 +319,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>fweelin_config.cc</string>
+										<string>fweelin_event.h</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>ACBF6FE90B72C07D004A69E7</string>
+										<string>AC19AECE0B77E57400AEC16F</string>
 										<key>history</key>
 										<array>
 											<string>AC5A56880AC2419A00622F72</string>
@@ -351,20 +351,21 @@
 											<string>ACF227730B6826DC005CFC14</string>
 											<string>ACF227B50B682D68005CFC14</string>
 											<string>ACF227B70B682D68005CFC14</string>
-											<string>ACF227EF0B689BAA005CFC14</string>
 											<string>ACF227F10B689BAA005CFC14</string>
 											<string>ACF227F20B689BAA005CFC14</string>
 											<string>AC776D5F0B69B290005E3D84</string>
 											<string>AC776D600B69B290005E3D84</string>
 											<string>AC2AECD60B6AD6CE00AFA3A9</string>
-											<string>AC2AECD70B6AD6CE00AFA3A9</string>
 											<string>AC2AECD90B6AD6CE00AFA3A9</string>
-											<string>AC2AECDA0B6AD6CE00AFA3A9</string>
 											<string>AC2080220B6EDC4A002A78E8</string>
 											<string>AC2080240B6EDC4A002A78E8</string>
 											<string>AC20802E0B6F09C5002A78E8</string>
-											<string>ACBF6FE70B72C07D004A69E7</string>
-											<string>AC2AECD80B6AD6CE00AFA3A9</string>
+											<string>ACBF6FEF0B7326D6004A69E7</string>
+											<string>AC19AEB60B77E01400AEC16F</string>
+											<string>AC19AEC20B77E09D00AEC16F</string>
+											<string>AC19AEC30B77E09D00AEC16F</string>
+											<string>AC19AECB0B77E57400AEC16F</string>
+											<string>AC19AECC0B77E57400AEC16F</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -407,7 +408,12 @@
 											<string>AC776D650B69B290005E3D84</string>
 											<string>AC2080280B6EDC4A002A78E8</string>
 											<string>AC20802A0B6EDC4A002A78E8</string>
-											<string>ACBF6FE80B72C07D004A69E7</string>
+											<string>AC19AEB80B77E01400AEC16F</string>
+											<string>AC19AEB90B77E01400AEC16F</string>
+											<string>AC19AEC50B77E09D00AEC16F</string>
+											<string>AC19AEC60B77E09D00AEC16F</string>
+											<string>AC19AEC70B77E09D00AEC16F</string>
+											<string>AC19AECD0B77E57400AEC16F</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -465,9 +471,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>ACBF6FEA0B72C07D004A69E7</string>
+				<string>AC19AEBB0B77E01400AEC16F</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>ACBF6FEB0B72C07D004A69E7</string>
+				<string>AC19AEBC0B77E01400AEC16F</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -602,7 +608,6 @@
 	<key>WindowOrderList</key>
 	<array>
 		<string>AC5A53180AC098FB00622F72</string>
-		<string>1C530D57069F1CE1000CFCEE</string>
 		<string>1C0AD2B3069F1EA900FABCE6</string>
 		<string>/Users/mercury/Desktop/port/freewheeling/MacOSX/fweelin.xcodeproj</string>
 	</array>
@@ -645,8 +650,6 @@
 							<string>311pt</string>
 						</dict>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
@@ -686,7 +689,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>AC5A53180AC098FB00622F72</string>
-				<string>ACBF6FD60B72BFDF004A69E7</string>
+				<string>AC19AEBD0B77E01400AEC16F</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
@@ -1048,9 +1051,9 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>1C0AD2B3069F1EA900FABCE6</string>
-				<string>ACBF6FDC0B72BFDF004A69E7</string>
+				<string>AC19AEBE0B77E01400AEC16F</string>
 				<string>1CD0528B0623707200166675</string>
-				<string>ACBF6FDD0B72BFDF004A69E7</string>
+				<string>AC19AEBF0B77E01400AEC16F</string>
 			</array>
 			<key>ToolbarConfiguration</key>
 			<string>xcode.toolbar.config.run</string>

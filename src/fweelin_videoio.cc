@@ -2325,6 +2325,7 @@ void *VideoIO::run_video_thread(void *ptr)
   VideoIO *inst = static_cast<VideoIO *>(ptr);
 
   printf("VIDEO: Thread start..\n");
+  printf("*** THREAD: %p\n",pthread_self());
 
 #ifdef __MACOSX__
   inst->cocoa.SetupCocoaThread();
