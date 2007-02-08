@@ -2191,6 +2191,8 @@ class EventManager {
   // RT safe! -- so long as you allocate your event with RTNew()
   void BroadcastEvent(Event *ev, 
 		      EventProducer *source) {
+    printf("*** THREAD (BROADCAST): %p\n",pthread_self());
+    
     ev->from = source;
     //ev->time = mygettime();
 
