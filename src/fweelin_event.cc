@@ -136,6 +136,9 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_Input_MIDIProgramChange,
 		"midiprogramchange",
 		MIDIProgramChangeInputEvent);
+      SET_ETYPE(T_EV_Input_MIDIChannelPressure,
+		"midichannelpressure",
+		MIDIChannelPressureInputEvent);
       SET_ETYPE(T_EV_Input_MIDIPitchBend,"midipitchbend",
 		MIDIPitchBendInputEvent);
       SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIClock,"midiclock",MIDIClockInputEvent,20);

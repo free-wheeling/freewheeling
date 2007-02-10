@@ -205,6 +205,10 @@ void MidiIO::MidiInputProc (const MIDIPacketList *pktlist, void *refCon, void *c
       // Program Change
       inst->ReceiveProgramChangeEvent(packet->data[0] - 0xC0,
 				      packet->data[1]);
+    } else if (packet->data[0] >= 0xD0 && packet->data[0] <= 0xDF) {
+      // Channel Pressure
+      inst->ReceiveChannelPressureEvent(packet->data[0] - 0xD0,
+					packet->data[1]);
     } else if (packet->data[0] >= 0xE0 && packet->data[0] <= 0xEF) {
       // Pitch Bend
       int lsb = packet->data[1],
@@ -224,6 +228,10 @@ void MidiIO::OutputController (int port, int chan, int ctrl, int val) {
   unsigned char msg[3];	
   msg[0] = 0xB0 + chan;
   msg[1] = (unsigned char) ctrl;
+  if (val > 127)
+    val = 127;
+  else if (val < 0)
+    val = 0;
   msg[2] = (unsigned char) val;
   
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
@@ -233,6 +241,23 @@ void MidiIO::OutputController (int port, int chan, int ctrl, int val) {
 void MidiIO::OutputProgramChange (int port, int chan, int val) {
   unsigned char msg[2];	
   msg[0] = 0xC0 + chan;
+  if (val > 127)
+    val = 127;
+  else if (val < 0)
+    val = 0;
+  msg[1] = (unsigned char) val;
+  
+  curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
+				curPacket,0 /*Now*/,2,msg);
+};
+
+void MidiIO::OutputChannelPressure (int port, int chan, int val) {
+  unsigned char msg[2];	
+  msg[0] = 0xD0 + chan;
+  if (val > 127)
+    val = 127;
+  else if (val < 0)
+    val = 0;
   msg[1] = (unsigned char) val;
   
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
@@ -441,7 +466,13 @@ void *MidiIO::run_midi_thread(void *ptr)
 					    ev->data.control.param,
 					    ev->data.control.value);
 	    break;
-	    
+
+	  case SND_SEQ_EVENT_CHANPRESS:
+	    // Channel aftertouch 
+	    inst->ReceiveChannelPressureEvent(ev->data.control.channel,
+					      ev->data.control.value);
+	    break;
+
 	  case SND_SEQ_EVENT_PGMCHANGE:
 	    // Program Change
 	    inst->ReceiveProgramChangeEvent(ev->data.control.channel,
@@ -495,6 +526,15 @@ void MidiIO::OutputProgramChange (int port, int chan, int val) {
   snd_seq_ev_set_direct(&outev);
   snd_seq_ev_set_source(&outev,out_ports[port]);
   snd_seq_ev_set_pgmchange(&outev,chan,val);
+  snd_seq_event_output_direct(seq_handle, &outev);
+};
+
+void MidiIO::OutputChannelPressure (int port, int chan, int val) {
+  snd_seq_event_t outev;
+  snd_seq_ev_set_subs(&outev);
+  snd_seq_ev_set_direct(&outev);
+  snd_seq_ev_set_source(&outev,out_ports[port]);
+  snd_seq_ev_set_chanpress(&outev,chan,val);
   snd_seq_event_output_direct(seq_handle, &outev);
 };
 
@@ -670,6 +710,18 @@ void MidiIO::ReceivePitchBendEvent (int channel, int value) {
   mevt->val = value;
   if (app->getCFG()->IsDebugInfo())
     printf("MIDI: Pitchbend channel %d value %d\n",
+	   mevt->channel,mevt->val);
+  app->getEMG()->BroadcastEventNow(mevt, this);
+}	  
+
+void MidiIO::ReceiveChannelPressureEvent (int channel, int value) {
+  MIDIChannelPressureInputEvent *mevt = (MIDIChannelPressureInputEvent *)
+    Event::GetEventByType(T_EV_Input_MIDIChannelPressure);
+  mevt->outport = echoport;
+  mevt->channel = channel;
+  mevt->val = value;
+  if (app->getCFG()->IsDebugInfo())
+    printf("MIDI: Channel pressure channel %d value %d\n",
 	   mevt->channel,mevt->val);
   app->getEMG()->BroadcastEventNow(mevt, this);
 }	  
@@ -863,6 +915,16 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
 			  mpev->val);
     } 
     break;
+
+  case T_EV_Input_MIDIChannelPressure :
+    {
+      MIDIChannelPressureInputEvent *mpev = 
+	(MIDIChannelPressureInputEvent *) ev;
+      OutputChannelPressure(ret = (port == -1 ? mpev->outport-1 : port),
+			    (channel == -1 ? mpev->channel : channel),
+			    mpev->val);
+    }
+    break;
     
   case T_EV_Input_MIDIPitchBend :
     {
@@ -889,7 +951,7 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
 		   mkev->vel);
     }
     break;
-    
+
   default:
     break;
   }
@@ -909,11 +971,12 @@ void MidiIO::EchoEvent (Event *ev) {
       OutputStartOnPort();
       int port = EchoEventToPortChannel(ev,xmitports[i],-1);
       OutputEndOnPort(port);
-    }
+    } 
   } else if (!ev->echo) {
-    // This event is generated from the configuration explicitly- so don't
-    // send it through our current patch settings-- send to the exact port
-    // and channel specified
+    // This event is generated from the configuration explicitly- not
+    // an automatic echo of an unhandled MIDI event--
+    // So don't send it through our current patch settings.
+    // Send to the exact port and channel specified
 
     OutputStartOnPort();
     int port = EchoEventToPortChannel(ev,-1,-1);

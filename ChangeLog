@@ -1,5 +1,26 @@
 IN PROGRESS v0.5.6 - SVN
 
+            Friday February 9th, 2007
+        
+            New Features
+            ------------
+
+            * Receive and transmit MIDI channel pressure (aftertouch) messages
+
+            * New 'routethroughpatch' configuration option for MIDI 
+              events allows you to send deliberate MIDI messages to the 
+              port(s) and channel(s) for the current patch. 
+              
+              An example configuration is provided that changes the behavior 
+              of the modwheel (CC #1). When enabled, the modwheel value is 
+              modulated by aftertouch. This allows me to control vibrato 
+              (CC #1) on my softsynths with pressure on the keys. 
+              The modwheel and pressure values are summed together and 
+              sent out as a control change message.
+
+              If I am playing several softsynth channels from my one keyboard,
+              the aftertouch then affects all the channels seamlessly.
+                
             Fixes
             -----
 

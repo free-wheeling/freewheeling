@@ -101,6 +101,7 @@ protected:
   // Methods that send one MIDI message to one system MIDI out
   void OutputController (int port, int chan, int ctrl, int val);
   void OutputProgramChange (int port, int chan, int val);
+  void OutputChannelPressure (int port, int chan, int val);
   void OutputPitchBend (int port, int chan, int val);
   void OutputNote (int port, int chan, char down, int notenum, int vel);
 
@@ -125,6 +126,7 @@ protected:
   void ReceiveNoteOffEvent (int channel, int notenum, int vel);
   void ReceiveNoteOnEvent (int channel, int notenum, int vel);
   void ReceivePitchBendEvent (int channel, int value);
+  void ReceiveChannelPressureEvent (int channel, int value);
   void ReceiveProgramChangeEvent (int channel, int value);
   void ReceiveControlChangeEvent (int channel, int ctrl, int value);
 
