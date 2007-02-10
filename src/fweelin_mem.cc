@@ -155,7 +155,7 @@ void MemoryManager::DelType(PreallocatedType *t) {
 void *MemoryManager::run_mgr_thread (void *ptr) {
   MemoryManager *inst = static_cast<MemoryManager *>(ptr);
 
-  printf("*** THREAD: %p\n",pthread_self());
+  // printf("*** THREAD: %p\n",pthread_self());
   
   pthread_mutex_lock(&inst->mgr_thread_lock);
   while (inst->threadgo) {

@@ -84,6 +84,7 @@ enum EventType {
   T_EV_Input_MIDIKey,
   T_EV_Input_MIDIController,
   T_EV_Input_MIDIProgramChange,
+  T_EV_Input_MIDIChannelPressure,
   T_EV_Input_MIDIPitchBend,
   T_EV_Input_MIDIClock,
   T_EV_Input_MIDIStartStop,
@@ -277,7 +278,11 @@ class Event : public Preallocated {
   Event *next;
   // Time to send event
   struct timespec time;
-  // Event is an echo of an unhandled event?
+  // Event is being echoed to MIDI outputs?
+  // If echo is nonzero, the event is sent through the patch routing
+  // for the currently selected patch- affecting the port(s) and channel(s)
+  // where the event is sent. If echo is 0, the event is sent out as described
+  // in the event (ie via outport and midichannel parameters).
   char echo;
 };
 
@@ -480,8 +485,9 @@ class MIDIControllerInputEvent : public Event {
     channel = s.channel;
     ctrl = s.ctrl;
     val = s.val;
+    echo = s.echo;
   };
-  virtual int GetNumParams() { return 4; };
+  virtual int GetNumParams() { return 5; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
@@ -493,6 +499,8 @@ class MIDIControllerInputEvent : public Event {
 			    MAX_MIDI_CONTROLLERS);
     case 3:
       return EventParameter("controlval",FWEELIN_GETOFS(val),T_int);
+    case 4:
+      return EventParameter("routethroughpatch",FWEELIN_GETOFS(echo),T_char);
     }
 
     return EventParameter();
@@ -502,6 +510,43 @@ class MIDIControllerInputEvent : public Event {
     channel,   // MIDI channel
     ctrl,      // controller #
     val;       // value
+};
+
+class MIDIChannelPressureInputEvent : public Event {
+ public:   
+  EVT_DEFINE(MIDIChannelPressureInputEvent,
+	     T_EV_Input_MIDIChannelPressure);
+  virtual void Recycle() {
+    outport = 1;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    MIDIChannelPressureInputEvent &s = (MIDIChannelPressureInputEvent &) src;
+    outport = s.outport;
+    channel = s.channel;
+    val = s.val;
+    echo = s.echo;
+  };
+  virtual int GetNumParams() { return 4; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
+    case 1:
+      return EventParameter("midichannel",FWEELIN_GETOFS(channel),T_int,
+			    MAX_MIDI_CHANNELS);
+    case 2:
+      return EventParameter("pressureval",FWEELIN_GETOFS(val),T_int);
+    case 3:
+      return EventParameter("routethroughpatch",FWEELIN_GETOFS(echo),T_char);
+    }
+
+    return EventParameter();
+  };    
+
+  int outport, // # of MIDI output to send event to
+      channel, // MIDI channel
+      val;     // Channel pressure value
 };
 
 class MIDIProgramChangeInputEvent : public Event {
@@ -517,8 +562,9 @@ class MIDIProgramChangeInputEvent : public Event {
     outport = s.outport;
     channel = s.channel;
     val = s.val;
+    echo = s.echo;
   };
-  virtual int GetNumParams() { return 3; };
+  virtual int GetNumParams() { return 4; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
@@ -528,6 +574,8 @@ class MIDIProgramChangeInputEvent : public Event {
 			    MAX_MIDI_CHANNELS);
     case 2:
       return EventParameter("programval",FWEELIN_GETOFS(val),T_int);
+    case 3:
+      return EventParameter("routethroughpatch",FWEELIN_GETOFS(echo),T_char);
     }
 
     return EventParameter();
@@ -550,8 +598,9 @@ class MIDIPitchBendInputEvent : public Event {
     outport = s.outport;
     channel = s.channel;
     val = s.val;
+    echo = s.echo;
   };
-  virtual int GetNumParams() { return 3; };
+  virtual int GetNumParams() { return 4; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
@@ -561,13 +610,15 @@ class MIDIPitchBendInputEvent : public Event {
 			    MAX_MIDI_CHANNELS);
     case 2:
       return EventParameter("pitchval",FWEELIN_GETOFS(val),T_int);
+    case 3:
+      return EventParameter("routethroughpatch",FWEELIN_GETOFS(echo),T_char);
     }
 
     return EventParameter();
   };    
 
   int outport, // # of MIDI output to send event to
-    channel, // MIDI channel
+    channel,   // MIDI channel
     val;       // pitch bend value
 };
 
@@ -585,8 +636,9 @@ class MIDIKeyInputEvent : public Event {
     channel = s.channel;
     notenum = s.notenum;
     vel = s.vel;
+    echo = s.echo;
   };
-  virtual int GetNumParams() { return 5; };
+  virtual int GetNumParams() { return 6; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
@@ -600,6 +652,8 @@ class MIDIKeyInputEvent : public Event {
       return EventParameter("notenum",FWEELIN_GETOFS(notenum),T_int);
     case 4:
       return EventParameter("velocity",FWEELIN_GETOFS(vel),T_int);
+    case 5:
+      return EventParameter("routethroughpatch",FWEELIN_GETOFS(echo),T_char);
     }
 
     return EventParameter();
@@ -2191,7 +2245,7 @@ class EventManager {
   // RT safe! -- so long as you allocate your event with RTNew()
   void BroadcastEvent(Event *ev, 
 		      EventProducer *source) {
-    printf("*** THREAD (BROADCAST): %p\n",pthread_self());
+    // printf("*** THREAD (BROADCAST): %p\n",pthread_self());
     
     ev->from = source;
     //ev->time = mygettime();
