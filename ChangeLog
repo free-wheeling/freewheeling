@@ -10,10 +10,10 @@ IN PROGRESS v0.5.6 - SVN
 	      By tagging patch banks, you can change the way Freewheeling
 	      responds depending on which patches you have selected. 
 
-	      For example, I use Freewheeling with a B3 organ soft-synth. 
+	      For example, I use Freewheeling with a B3 organ softsynth. 
 	      My organ patches are arranged in a patch bank. I've tagged that
 	      patch bank, and configured Freewheeling to respond differently
-	      when that patchbank is active. So, when I am on an organ patch,
+	      when that patch bank is active. So, when I am on an organ patch,
 	      my faders control the B3 drawbars instead of their usual
 	      Freewheeling functions.
 	
