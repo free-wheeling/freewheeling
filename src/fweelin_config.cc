@@ -1958,6 +1958,14 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
 	xmlFree(n);
       }
 
+      // Patchbank tag
+      // Get MIDI port
+      int pb_tag = -1;
+      if ((n = xmlGetProp(cur_node, (const xmlChar *)"tag")) != 0) {
+	pb_tag = atoi((char *) n);
+	xmlFree(n);
+      }
+
       // Separate channels into distinct patchbanks?
       char sepchan = 0;
       if ((n = xmlGetProp(cur_node, 
@@ -2043,7 +2051,7 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
 		if (pcnt == 0) {
 		  // First patch
 		  // Create new PatchBank
-		  br->PB_Add(new PatchBank(pb_mport,suppresschg));
+		  br->PB_Add(new PatchBank(pb_mport,pb_tag,suppresschg));
 		}
 		  
 		PatchItem *pi = 
@@ -2152,7 +2160,7 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
 		    // or first patch 
 
 		    // Create new PatchBank
-		    br->PB_Add(new PatchBank(pb_mport,suppresschg));
+		    br->PB_Add(new PatchBank(pb_mport,pb_tag,suppresschg));
 		    p_curchan = chan;
 		    pcnt = 0;
 		    //printf("new patchbank: mport: %d chan: %d\n",

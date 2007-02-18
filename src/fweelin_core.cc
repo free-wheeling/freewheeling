@@ -2951,6 +2951,7 @@ int Fweelin::setup()
   cfg->AddEmptyVariable("SYSTEM_num_loops_in_map");
   cfg->AddEmptyVariable("SYSTEM_num_recording_loops_in_map");
   cfg->AddEmptyVariable("SYSTEM_num_patchbanks");
+  cfg->AddEmptyVariable("SYSTEM_cur_patchbank_tag");
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
     cfg->AddEmptyVariable(tmp);
@@ -3175,10 +3176,14 @@ int Fweelin::setup()
 			  (char *) &(loopmgr->numrecordingloops));
   cfg->LinkSystemVariable("SYSTEM_num_recording_loops_in_map",T_int,
 			  (char *) &(loopmgr->numrecordingloops));
-  if (browsers[B_Patch] != 0) 
+  if (browsers[B_Patch] != 0) {
     cfg->LinkSystemVariable("SYSTEM_num_patchbanks",T_int,
 			  (char *) &(((PatchBrowser *) browsers[B_Patch])->
 				     num_pb));
+    cfg->LinkSystemVariable("SYSTEM_cur_patchbank_tag",T_int,
+			  (char *) &(((PatchBrowser *) browsers[B_Patch])->
+				     pb_cur_tag));
+  }
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
     cfg->LinkSystemVariable(tmp,T_int,

@@ -132,7 +132,7 @@ void FluidSynthProcessor::SetupPatches() {
   if (br != 0) {
     // Add FluidSynth patch bank
     int fluidchan = app->getCFG()->GetFluidChannel();
-    br->PB_AddBegin(new PatchBank(0,0)); // Use port 0 for FluidSynth
+    br->PB_AddBegin(new PatchBank(0,-1,0)); // Use port 0 for FluidSynth
     
     // Store patches
     int sfcnt = fluid_synth_sfcount(synth);
