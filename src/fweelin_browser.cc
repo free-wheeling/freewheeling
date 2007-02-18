@@ -954,8 +954,11 @@ void PatchBrowser::PB_MoveTo (int direction) {
     first = pb_cur->first;
     cur = pb_cur->cur;
 
+    pb_cur_tag = pb_cur->tag;
     SetMIDIEcho();
-  }
+  } else
+    pb_cur_tag = -1;
+
 
   UnlockBrowser();
 };
@@ -988,6 +991,11 @@ void PatchBrowser::PB_MoveToIndex (int index) {
 
     SetMIDIEcho();
   }
+
+  if (pb_cur != 0)
+    pb_cur_tag = pb_cur->tag;
+  else
+    pb_cur_tag = -1;
 
   UnlockBrowser();
 };

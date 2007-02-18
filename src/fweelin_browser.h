@@ -427,12 +427,16 @@ public:
 #define MIDI_BANKCHANGE_LSB 32
 class PatchBank {
  public:
-  PatchBank (int port, char suppresschg) : port(port), 
-    suppresschg(suppresschg),
+  PatchBank (int port, int tag, char suppresschg) : port(port), 
+    tag(tag), suppresschg(suppresschg),
     first(0), cur(0), next(0) {};
 
-  int port;           // MIDI output port for this patch bank
+  int port,           // MIDI output port for this patch bank
                       // (or -1 for internal FluidSynth patch bank)
+    tag;              // Tag for identifying patchbank- can be 
+                      // used by the user config to change FW behavior when
+                      // a given patchbank is active
+  
   char suppresschg;   // Suppress program/bank change messages being sent 
                       // for this patch bank?
 
@@ -452,7 +456,7 @@ class PatchBrowser : public Browser {
   PatchBrowser(BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
 	       int xpand_x2, int xpand_y2, float xpand_delay) : 
     Browser(btype,xpand,xpand_x1,xpand_y1,xpand_x2,xpand_y2,xpand_delay),
-    pb_first(0), pb_cur(0), num_pb(0) {};
+    pb_first(0), pb_cur(0), pb_cur_tag(-1), num_pb(0) {};
   virtual ~PatchBrowser();
 
   virtual void ClearAllItems();
@@ -484,6 +488,7 @@ class PatchBrowser : public Browser {
     cur = pb->cur;
     first = pb->first;
 
+    pb_cur_tag = pb->tag;
     SetMIDIEcho();
 
     UnlockBrowser();
@@ -508,6 +513,7 @@ class PatchBrowser : public Browser {
     cur = pb->cur;
     first = pb->first;
 
+    pb_cur_tag = pb->tag;
     SetMIDIEcho();
 
     UnlockBrowser();
@@ -533,7 +539,8 @@ class PatchBrowser : public Browser {
 
   PatchBank *pb_first, // List of patchbanks
     *pb_cur;           // Current patchbank
-  int num_pb;          // Number of patchbanks defined
+  int pb_cur_tag,      // Tag from current patchbank 
+    num_pb;            // Number of patchbanks defined
 };
 
 #endif

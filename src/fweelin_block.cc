@@ -1419,75 +1419,194 @@ int AudioBlockIterator::PutFragment (sample_t *frag_l, sample_t *frag_r,
 // nextblock and nextblkofs become the new block pointer and offset
 // for the next fragment
 void AudioBlockIterator::GetFragment(sample_t **frag_l, sample_t **frag_r) {
-  nframes_t fragofs = 0;
-  nframes_t n = fragmentsize;
-  
   // Keep local track of pointers
   // Since we have to be threadsafe
   BED_ExtraChannel *lclrightblock = currightblock;
   AudioBlock *lclblock = curblock;
   nframes_t lclblkofs = curblkofs,
     lclcnt = curcnt;
-  
-  nframes_t nextbit;
-  do {
-    nextbit = MIN((nframes_t) n, lclblock->len - lclblkofs);
-      
-    if (nextbit) {
-      // Left
-      memcpy(&fragment[0][fragofs],
-	     &lclblock->buf[lclblkofs],
-	     sizeof(sample_t)*nextbit);
 
-      // If right channel is given and we don't know the right block, find it
-      if (frag_r != 0) {
-	if (lclrightblock == 0) {
-	  lclrightblock = (BED_ExtraChannel *) 
-	    lclblock->GetExtendedData(T_BED_ExtraChannel);
+  // Need to have double curblkofs_f retained in class
+  
+  char ratescale = 0;
+  float rate = 1.25;
+
+  if (ratescale) {
+    double n = fragmentsize*rate,
+      lclblkofs_f = lclblkofs;
+      
+    if (lclblkofs + (nframes_t) n + 1 >= lclblock->len) {
+      // Wrap happens here- check bounds in loop
+
+      for (nframes_t cnt = 0; cnt < fragmentsize; cnt++) {
+	// Linear interpolation rate scale
+	nframes_t decofs = (nframes_t) lclblkofs_f;
+	float fracofs = lclblkofs_f - decofs;
+
+	if (frag_r != 0) {
 	  if (lclrightblock == 0) {
-	    // No right channel exists but we are being told to get data--
-	    printf("BLOCK: ERROR: Iterator asked for right channel but none "
-		   "exists!\n");
-	    return;
+	    lclrightblock = (BED_ExtraChannel *) 
+	      lclblock->GetExtendedData(T_BED_ExtraChannel);
+	    if (lclrightblock == 0) {
+	      // No right channel exists but we are being told to get data--
+	      printf("BLOCK: ERROR: Iterator asked for right channel but none "
+		     "exists!\n");
+	      return;
+	    }
+	  }
+	}
+       
+	sample_t s1 = lclblock->buf[decofs],
+	  s2,
+	  s1r,
+	  s2r;
+	if (frag_r != 0)
+	  s1r = lclrightblock->buf[decofs];
+
+	nframes_t decofs_p1 = decofs+1;
+	if (decofs_p1 < lclblock->len) {
+	  s2 = lclblock->buf[decofs_p1];
+	  if (frag_r != 0)
+	    s2r = lclrightblock->buf[decofs_p1];
+	} else {
+	  AudioBlock *next_b;
+	  if (lclblock->next != 0)
+	    next_b = lclblock->next;
+	  else
+	    next_b = lclblock->first;
+
+	  s2 = next_b->buf[0];
+	  if (frag_r != 0) {
+	    BED_ExtraChannel *tmp_r = (BED_ExtraChannel *) 
+	      next_b->GetExtendedData(T_BED_ExtraChannel);
+	    if (tmp_r != 0)
+	      s2r = tmp_r->buf[0];
+	    else
+	      s2r = s1r;
+	  }
+	}
+
+	float fracofs_om = 1.0-fracofs;
+	fragment[0][cnt] = fracofs*s2 + fracofs_om*s1;
+	if (frag_r != 0)
+	  fragment[1][cnt] = fracofs*s2r + fracofs_om*s1r;
+
+	lclblkofs_f += rate;
+	if ((nframes_t) lclblkofs_f >= lclblock->len) {
+	  // If we get here, it means this block is at an end
+	  // so we need the next block  
+	  lclblkofs_f -= lclblock->len;
+
+	  if (lclblock->next == 0) {
+	    // END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
+	    lclblock = lclblock->first;
+	    lclrightblock = 0;
+	  } else {
+	    lclblock = lclblock->next;
+	    lclrightblock = 0;
+	  }
+	}
+      }
+    } else {
+      // No wrap- no check bounds in loop
+
+      for (nframes_t cnt = 0; cnt < fragmentsize; cnt++, lclblkofs_f += rate) {
+	// Linear interpolation rate scale
+	nframes_t decofs = (nframes_t) lclblkofs_f;
+	float fracofs = lclblkofs_f - decofs;
+
+	if (frag_r != 0) {
+	  if (lclrightblock == 0) {
+	    lclrightblock = (BED_ExtraChannel *) 
+	      lclblock->GetExtendedData(T_BED_ExtraChannel);
+	    if (lclrightblock == 0) {
+	      // No right channel exists but we are being told to get data--
+	      printf("BLOCK: ERROR: Iterator asked for right channel but none "
+		     "exists!\n");
+	      return;
+	    }
 	  }
 	}
 	
-	// Right
-	memcpy(&fragment[1][fragofs],
-	       &lclrightblock->buf[lclblkofs],
-	       sizeof(sample_t)*nextbit);
-      } else
-	// Make -sure- we don't jump blocks and keep old rightblock
-	lclrightblock = 0;
+	nframes_t decofs_p1 = decofs+1;
+	sample_t s1 = lclblock->buf[decofs],
+	  s2 = lclblock->buf[decofs_p1];
 
-      fragofs += nextbit;
-      lclblkofs += nextbit;
-      lclcnt += nextbit;
-      n -= nextbit;
-    }
-      
-    if (lclblkofs >= lclblock->len) {
-      // If we get here, it means this block is at an end
-      // so we need the next block  
-      if (lclblock->next == 0) {
-	// END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
-	lclblock = lclblock->first;
-	lclblkofs = 0;
-	lclcnt = lclblkofs;
-        lclrightblock = 0;
-      } else {
-	lclblock = lclblock->next;
-	lclblkofs = 0; // Beginning of next block
-        lclrightblock = 0;
+	float fracofs_om = 1.0-fracofs;
+	fragment[0][cnt] = fracofs*s2 + fracofs_om*s1;
+
+	if (frag_r != 0) {
+	  sample_t s1r = lclrightblock->buf[decofs],
+	    s2r = lclrightblock->buf[decofs_p1];
+
+	  fragment[1][cnt] = fracofs*s2r + fracofs_om*s1r;
+	}
       }
     }
-  } while (n);
+  } else {
+    nframes_t fragofs = 0;
+    nframes_t n = fragmentsize;
+        
+    nframes_t nextbit;
+    do {
+      nextbit = MIN((nframes_t) n, lclblock->len - lclblkofs);
+      
+      if (nextbit) {
+	// Left
+	memcpy(&fragment[0][fragofs],
+	       &lclblock->buf[lclblkofs],
+	       sizeof(sample_t)*nextbit);
+	
+	// If right channel is given and we don't know the right block, find it
+	if (frag_r != 0) {
+	  if (lclrightblock == 0) {
+	    lclrightblock = (BED_ExtraChannel *) 
+	      lclblock->GetExtendedData(T_BED_ExtraChannel);
+	    if (lclrightblock == 0) {
+	      // No right channel exists but we are being told to get data--
+	      printf("BLOCK: ERROR: Iterator asked for right channel but none "
+		     "exists!\n");
+	      return;
+	    }
+	  }
+	  
+	  // Right
+	  memcpy(&fragment[1][fragofs],
+		 &lclrightblock->buf[lclblkofs],
+		 sizeof(sample_t)*nextbit);
+	} else
+	  // Make -sure- we don't jump blocks and keep old rightblock
+	  lclrightblock = 0;
+	
+	fragofs += nextbit;
+	lclblkofs += nextbit;
+	lclcnt += nextbit;
+	n -= nextbit;
+      }
+      
+      if (lclblkofs >= lclblock->len) {
+	// If we get here, it means this block is at an end
+	// so we need the next block  
+	if (lclblock->next == 0) {
+	  // END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
+	  lclblock = lclblock->first;
+	  lclblkofs = 0;
+	  lclcnt = lclblkofs;
+	  lclrightblock = 0;
+	} else {
+	  lclblock = lclblock->next;
+	  lclblkofs = 0; // Beginning of next block
+	  lclrightblock = 0;
+	}
+      }
+    } while (n);
+  }
+    
+  nextblock = lclblock;
+  nextrightblock = lclrightblock;
+  nextblkofs = lclblkofs;
+  nextcnt = lclcnt;
   
-  nextblock = lclblock,
-    nextrightblock = lclrightblock,
-    nextblkofs = lclblkofs,
-    nextcnt = lclcnt;
-
   // Return fragment buffers
   if (frag_l != 0)
     *frag_l = fragment[0];

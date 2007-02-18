@@ -65,7 +65,7 @@
      specific MIDI events to specific ports. This allows you to connect 
      FreeWheeling to different soft-synths and FX and control them through
      separate MIDI ports. -->
-  <var midiouts="3"/>
+  <var midiouts="4"/>
 
 <!-- List of MIDI ports to send MIDI sync (MIDI clock) to.
      When enabled, Freewheeling will send timing sync info to these
@@ -467,6 +467,10 @@ Event "midicontroller"
     "midichannel": Channel of event
     "controlnum": Number of control change
     "controlval": Value of control change
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
 
 Event "midikey"
   binding input="midikey" conditions="keydown=1 and midichannel=0 and 
@@ -478,6 +482,23 @@ Event "midikey"
     "midichannel": Channel of event
     "notenum": Number of note
     "velocity": Velocity of noteon/noteoff
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
+
+Event "midichannelpressure"
+  binding input="midichannelpressure" conditions="midichannel=0 and 
+				                  pressureval=64"
+    A MIDI channel pressure (channel aftertouch) message.
+
+    "outport": # of MIDI output to echo event to
+    "midichannel": Channel of event
+    "pressureval": Pressure of keys
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
 
 Event "midiprogramchange"
   binding input="midiprogramchange" conditions="midichannel=0 and 
@@ -487,6 +508,10 @@ Event "midiprogramchange"
     "outport": # of MIDI output to echo event to
     "midichannel": Channel of event
     "programval": Program change #
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
 
 Event "midipitchbend"
   binding input="midipitchbend" conditions="midichannel=0 and 
@@ -496,6 +521,10 @@ Event "midipitchbend"
     "outport": # of MIDI output to echo event to
     "midichannel": Channel of event
     "pitchval": Pitch bender value
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
 
 Event "joybutton"
   binding input="joybutton" conditions="joystick=1 and 
@@ -1223,6 +1252,14 @@ SYSTEM_num_recording_loops_in_map -
   total number of loops currently recording or overdubbing in map
   watch this to see if you have runaway loops recording
 
+SYSTEM_num_patchbanks -
+  total number of patch banks defined in configuration
+
+SYSTEM_cur_patchbank_tag -
+  tag for currently selected patchbank-
+  You can use this to change Freewheeling's behavior depending on
+  which patchbank is selected.
+
 SYSTEM_loopid_lastrecord_0
 SYSTEM_loopid_lastrecord_1
 SYSTEM_loopid_lastrecord_2 ... -
@@ -1297,6 +1334,12 @@ will not go to your synth.
   <!-- Last received MIDI program change -->
   <declare var="VAR_cur_program" type="int" init="0"/>
 
+  <!-- Variables for aftertouch translation to mod wheel- 
+       for Mercury's setup -->
+  <declare var="VAR_midi_modwheel" type="int" init="1"/>
+  <declare var="VAR_midi_modwheel_val" type="int" init="0"/>
+  <declare var="VAR_midi_channelpressure" type="int" init="0"/>
+
   <!-- Show sync panel? -->
   <declare var="VAR_syncpanel_show" type="int" init="0"/>
   <declare var="VAR_numsync_per_pulse" type="int" init="1"/>
@@ -1316,6 +1359,10 @@ will not go to your synth.
   <declare var="VAR_overdubmode" type="char" init="0"/>
 
   <declare var="VAR_midi_suspend" type="int" init="95"/>
+
+<!-- Patch bank tag for B3 instrument. When this instrument is selected,
+     we configure Freewheeling to remap several controllers to drawbars. -->
+  <declare var="VAR_b3_patchbank_tag" type="int" init="999"/>
 
 <!-- Footswitch controller # used to grab loops initially -->
   <declare var="VAR_midi_footswitch" type="int" init="64"/>
@@ -1363,7 +1410,7 @@ will not go to your synth.
 
   <!-- Mercury mode sets options that I use for performance.
        You can also roll your own special options. -->
-  <declare var="VAR_mercurymode" type="char" init="0"/>
+  <declare var="VAR_mercurymode" type="char" init="1"/>
 
   <declare var="VAR_auto_loop_save" type="char" init="0"/>
 
@@ -1458,6 +1505,97 @@ will not go to your synth.
    conditions="VAR_pianocapture_set=1 and keydown=1"
    output1="set-variable" parameters1="var=VAR_pianocapture and value=notenum"
    output2="set-variable" parameters2="var=VAR_pianocapture_set and value=0"/>
+
+  <!-- B3 mode MIDI controller remaps -->
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=80"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=70 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=82"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=71 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=83"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=72 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=84"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=73 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=85"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=74 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=81"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=75 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=86"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=76 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=88"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=77 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=89"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=78 and
+				       controlval=controlval"/>
+
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=70"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=92 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=71"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=91 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=72"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=80 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=73"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=81 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=74"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=82 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=75"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=21 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=76"
+   output="midicontroller" parameters="routethroughpatch=1 and
+	                               controlnum=22 and
+				       controlval=controlval"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=77 and controlval=VAR_switch_on"
+   output="midiprogramchange" parameters="routethroughpatch=1 and
+			                  programval=40"/>
+  <binding input="midicontroller" 
+   conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=77"
+   output="midiprogramchange" parameters="routethroughpatch=1 and
+			                  programval=39"/>
 
   <!-- HELP: Esc: Exit -->
   <binding input="key" conditions="key=escape and keydown=1"
@@ -1815,6 +1953,27 @@ will not go to your synth.
   <!-- HELP: -->
   <!-- HELP: __ MIDI __ -->
   <!-- HELP: -->
+
+  <!-- For my setup, I translate channel aftertouch messages to modwheel 
+       messages, adding the pressure to the current modwheel value. 
+       This allows me to use aftertouch expressively in conjunction with the
+       mod wheel. -->
+  <!-- Also, transmit Channel Pressure messages for MIDI -->
+  <binding input="midichannelpressure" conditions="VAR_mercurymode=1"
+   output1="set-variable" parameters1="var=VAR_midi_channelpressure and
+                                       value=pressureval"
+   output2="midicontroller" parameters2="routethroughpatch=1 and
+	                                 controlnum=VAR_midi_modwheel and
+                                         controlval=VAR_midi_channelpressure+
+                                                    VAR_midi_modwheel_val"/>
+  <binding input="midicontroller" conditions="VAR_mercurymode=1 and
+                                              controlnum=VAR_midi_modwheel"
+   output1="set-variable" parameters1="var=VAR_midi_modwheel_val and
+                                       value=controlval"
+   output2="midicontroller" parameters2="routethroughpatch=1 and
+	                                 controlnum=VAR_midi_modwheel and
+                                         controlval=VAR_midi_channelpressure+
+                                                    VAR_midi_modwheel_val"/>
 
   <!-- HELP: [,.] KP Ins/Del: Transpose MIDI output -->
   <binding input="key" conditions="VAR_laptopkeymode=1 and key=comma and 
@@ -2955,8 +3114,9 @@ will not go to your synth.
 
      <!-- Mercury's patchbanks: -->
      <patchbank midiport="2" separatechannels="1" patches="patches2.xml"/>
-     <patchbank midiport="1" suppressprogramchanges="1" separatechannels="0" patches="patches-piano-strings-big.xml"/>
+     <patchbank midiport="1" suppressprogramchanges="1" separatechannels="0" patches="patches-piano-strings-small.xml"/>
      <patchbank midiport="3" patches="patches3.xml"/>
+     <patchbank midiport="4" patches="patches-b3.xml" tag="999"/>
 
      <!-- Patch file with all channels available: This is a basic template
           for allowing the user to simply switch between MIDI output channels
