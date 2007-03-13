@@ -157,6 +157,7 @@ enum EventType {
   T_EV_RenameLoop,
   T_EV_EraseLoop,
   T_EV_EraseAllLoops,
+  T_EV_EraseSelectedLoops,
   T_EV_SlideLoopAmpStopAll,
 
   T_EV_ToggleDiskOutput,
@@ -1409,6 +1410,31 @@ class EraseLoopEvent : public Event {
 class EraseAllLoopsEvent : public Event {
  public:
   EVT_DEFINE(EraseAllLoopsEvent,T_EV_EraseAllLoops);
+};
+
+class EraseSelectedLoopsEvent : public Event {
+ public:
+  EVT_DEFINE(EraseSelectedLoopsEvent,T_EV_EraseSelectedLoops);
+  virtual void Recycle() {
+    setid = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    EraseSelectedLoopsEvent &s = 
+      (EraseSelectedLoopsEvent &) src;
+    setid = s.setid;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
+    }
+
+    return EventParameter();
+  };    
+
+  int setid; // ID # of the selection set to work on
 };
 
 class SlideLoopAmpStopAllEvent : public Event {
