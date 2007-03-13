@@ -5,10 +5,10 @@ IN PROGRESS v0.5.6 - SVN
             New Features
             ------------
 
-	    * Erase-selected-loops command
+            * Erase-selected-loops command
 
-	      Shift+Space now erases all selected loops.
-	      
+              Shift+Space now erases all selected loops.
+              
             * New ability to tag patch banks
 
               By tagging patch banks, you can change the way Freewheeling
