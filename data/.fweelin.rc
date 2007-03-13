@@ -627,6 +627,12 @@ Event "set-trigger-volume"
   "loopid": the ID of the loop
   "vol": the volume to set it to
 
+Event "erase-selected-loops"
+  Erase selected loops that are in the given selection set.
+
+  "setid": Number of the selection set to use
+           (usually this will be 0)
+
 Event "erase-all-loops"
   Erases all loops and time meters.
 
@@ -2278,6 +2284,11 @@ will not go to your synth.
                key=u and keydown=1" 
    output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
    output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+  <!-- HELP: Shift-Space: Erase selected loops -->
+  <binding input="key"
+   conditions="VAR_keyheld_shift=1 and key=space and keydown=1"
+   output="erase-selected-loops" parameters="setid=0"/>
 
   <!-- HELP: Alt-Space: Erase all loops -->
   <binding input="key"

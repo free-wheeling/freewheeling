@@ -186,6 +186,8 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE_SLOW(T_EV_RenameLoop,"rename-loop",RenameLoopEvent);
       SET_ETYPE_SLOW(T_EV_EraseLoop,"erase-loop",EraseLoopEvent);
       SET_ETYPE_SLOW(T_EV_EraseAllLoops,"erase-all-loops",EraseAllLoopsEvent);
+      SET_ETYPE_SLOW(T_EV_EraseSelectedLoops,"erase-selected-loops",
+		     EraseSelectedLoopsEvent);
       SET_ETYPE(T_EV_SlideLoopAmpStopAll,"slide-loop-amplifier-stop-all",
 		SlideLoopAmpStopAllEvent);
 

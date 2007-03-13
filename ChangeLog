@@ -1,10 +1,14 @@
 IN PROGRESS v0.5.6 - SVN
 
-            Saturday February 17th, 2007
+            Tuesday March 13th, 2007
         
             New Features
             ------------
 
+	    * Erase-selected-loops command
+
+	      Shift+Space now erases all selected loops.
+	      
             * New ability to tag patch banks
 
               By tagging patch banks, you can change the way Freewheeling

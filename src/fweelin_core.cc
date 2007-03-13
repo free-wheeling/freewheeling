@@ -510,6 +510,7 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_RenameLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_EraseLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_EraseAllLoops);
+  app->getEMG()->ListenEvent(this,0,T_EV_EraseSelectedLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_SlideLoopAmpStopAll);
 };
 
@@ -562,6 +563,7 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_RenameLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_EraseLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_EraseAllLoops);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_EraseSelectedLoops);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SlideLoopAmpStopAll);
 
   EventManager::DeleteQueue(savequeue);
@@ -2251,6 +2253,27 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 	
       } else 
 	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+    }
+    break;
+
+  case T_EV_EraseSelectedLoops :
+    {
+      EraseSelectedLoopsEvent *sev = (EraseSelectedLoopsEvent *) ev;
+      
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received EraseSelectedLoopsEvent: Set: %d\n",sev->setid);
+      
+      LoopList **ll = app->getLOOPSEL(sev->setid);
+      if (ll != 0) {
+	LoopList *cur = *ll;
+	while (cur != 0) {
+	  DeleteLoop(cur->l_idx);
+	  cur = cur->next;
+	}	
+      } else 
+	printf("CORE: Invalid set id #%d when erasing selected loops\n",
+	       sev->setid);
     }
     break;
     
