@@ -226,7 +226,7 @@ Processor::~Processor() {
 void Processor::dopreprocess() {
   if (prewriting) {
     printf("Caught ourselves writing PREPROCESS!\n");
-    exit(1);
+    return;
   }
   
   if (!prewritten && !prewriting) {
@@ -440,7 +440,7 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
       // Trigger management of any RT work on blocks
       // (currently PulseSync event handles loop points, but
       //  BMG handles striping through StripeBlockManager)
-      // to be consolidated into EMG?
+      // *** To be consolidated into EMG?
       app->getBMG()->HiPriTrigger(this);
 
       // Metronome sound on
@@ -1846,8 +1846,7 @@ PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
       stopped = 1; 
       sync_state = SS_START;
       app->getEMG()->ListenEvent(this,sync,T_EV_PulseSync);
-    }
-    else {
+    } else {
       // Either we are close to a previous downbeat,
       // or we've been set to start at a specific place.
       
@@ -1938,38 +1937,6 @@ void PlayProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
     break;
   }
 };
-
-#if 0
-int PlayProcessor::ProcessorCall(void *trigger, int data) {
-  if (trigger == playloop->pulse) {
-    // Called because of downbeat
-    switch (data) {
-    case PC_START:
-      // Start play now
-      dopreprocess(); // Fade to start
-      i->Jump(playloop->pulse->GetPos());
-      stopped = 0;
-      
-      // Notify Pulse to call us every beat
-      return PC_BEAT;
-
-    case PC_BEAT:
-      curbeat++;
-      if (curbeat >= playloop->nbeats) {
-	// Quantize loop by restarting
-	dopreprocess(); // Fade to loop point
-	i->Jump(playloop->pulse->GetPos());
-	curbeat = 0;
-      }
-
-      // Call us on further beats
-      return PC_BEAT;
-    }
-  }
-
-  return PC_NONE;
-};
-#endif
 
 void PlayProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
   nframes_t fragmentsize = app->getBUFSZ();
@@ -2198,6 +2165,8 @@ void *FileStreamer::run_encode_thread (void *ptr) {
   FileStreamer *inst = static_cast<FileStreamer *>(ptr);
   nframes_t curpos;
 
+  // *** Could FileStreamer be rewritten as a BlockManager, using the
+  // BMG manage thread? It could still be a core DSP processor, no?
   while (inst->threadgo || inst->writerstatus != STATUS_STOPPED) {
     switch (inst->writerstatus) {
     case STATUS_RUNNING:

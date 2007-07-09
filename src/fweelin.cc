@@ -10,7 +10,7 @@
 
    THANKS & PRAISE
 
-   (c) Jan P Mercury 2000-2006
+   (c) Jan P Mercury 2000-2007
 */
 
 #include <sys/time.h>
@@ -40,7 +40,8 @@ int main (int argc, char *argv[]) {
   Fweelin flo;
   
   printf("FreeWheeling %s\n",VERSION);
-  printf("Brought to you by a grant from Mother Earth.\n\n");
+  printf("Brought to you by a loan from Mother Earth.\n");
+  printf("May we return many fold what we have taken.\n\n");
 
   if (!flo.setup())
     flo.go();

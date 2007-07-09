@@ -1681,6 +1681,9 @@ void FloConfig::ConfigureGeneral(xmlDocPtr doc, xmlNode *gen) {
 				 (const xmlChar *)"interpolation")) != 0) {
 	fsinterp = atoi((char *)n);
       } else if ((n = xmlGetProp(cur_node, 
+				 (const xmlChar *)"tuning")) != 0) {
+	fstuning = atof((char *)n);
+      } else if ((n = xmlGetProp(cur_node, 
 				 (const xmlChar *)"channel")) != 0) {
 	fschannel = atoi((char *)n);
       } else if ((n = xmlGetProp(cur_node, 
@@ -2853,7 +2856,7 @@ FloConfig::FloConfig(Fweelin *app) : im(app),
   layouts(0), fonts(0), displays(0), help(0),
 		
 #if USE_FLUIDSYNTH
-  fsinterp(4), fschannel(0), fsstereo(1), fsparam(0), fsfont(0),
+  fsinterp(4), fschannel(0), fsstereo(1), fstuning(0.0), fsparam(0), fsfont(0),
 #endif
 				     
   transpose(0), 
@@ -2936,7 +2939,8 @@ void FloConfig::Parse() {
     printf("*** Please review the above change\n");
     // getchar();
   }
-  
+ 
+  xmlSubstituteEntitiesDefault(1);
   doc = xmlParseFile(buf);
   if (doc == 0) {
     printf("INIT: Error parsing config file.\n");

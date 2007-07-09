@@ -571,6 +571,19 @@ class FloDisplayBarSwitch : public FloDisplayBar
   float cval; // Calibration value
 };
 
+class FloDisplaySquares : public FloDisplay 
+{
+ public:
+  FloDisplaySquares() : orient(O_Horizontal) {};
+
+  virtual void Draw(SDL_Surface *screen);
+
+  CfgOrientation orient; // Orientation of bar
+  float v1, v2,          // Value corresponding to first and last square
+    sinterval;           // 1 square for every 'sinterval' change in value
+  int sx, sy;            // Square size
+};
+
 // FluidSynth config
 #include "fweelin_fluidsynth.h"
 
@@ -898,6 +911,8 @@ class FloConfig {
   int GetFluidChannel() { return fschannel; };
   char fsstereo;
   char GetFluidStereo() { return fsstereo; };
+  float fstuning;
+  float GetFluidTuning() { return fstuning; };
   FluidSynthParam *fsparam;
   FluidSynthParam *GetFluidParam() { return fsparam; };
   void AddFluidParam(FluidSynthParam *nw) {

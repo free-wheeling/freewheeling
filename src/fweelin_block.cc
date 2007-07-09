@@ -1233,9 +1233,15 @@ AudioBlock *AudioBlock::InsertFirst(AudioBlock *nw) {
 AudioBlockIterator::AudioBlockIterator(AudioBlock *firstblock,  
 				       nframes_t fragmentsize,
 				       PreallocatedType *pre_extrachannel) :
-  pre_extrachannel(pre_extrachannel), currightblock(0), nextrightblock(0),
-  curblock(firstblock), nextblock(0), curblkofs(0), nextblkofs(0), curcnt(0),
-  nextcnt(0), fragmentsize(fragmentsize), stopped(0) {
+  pre_extrachannel(pre_extrachannel), 
+
+  currightblock(0), nextrightblock(0), curblock(firstblock), nextblock(0), 
+  curblkofs(0), nextblkofs(0), curcnt(0), nextcnt(0), 
+
+  currightblock_w(0), nextrightblock_w(0), curblock_w(0 /*???*/), nextblock_w(0), 
+  curblkofs_w(0), nextblkofs_w(0), curcnt_w(0), nextcnt_w(0), 
+
+  fragmentsize(fragmentsize), stopped(0) {
   fragment[0] = new sample_t[fragmentsize];
   fragment[1] = new sample_t[fragmentsize];
 }
@@ -1272,7 +1278,9 @@ void AudioBlockIterator::Jump(nframes_t ofs) {
   // Quantize the specified offset to within the limits of the blockchain
   ofs = ofs % curblock->GetTotalLen();
 
-  curblock->SetPtrsFromAbsOffset(&curblock,&curblkofs,ofs);
+  nframes_t cb_ofs = 0;
+  curblock->SetPtrsFromAbsOffset(&curblock,&cb_ofs,ofs);
+  curblkofs = cb_ofs;
   if (curblock == 0) {
     printf("Err: AudioBlockIterator::Jump- Pointer/size mismatch\n");
     exit(1);
@@ -1287,8 +1295,11 @@ void AudioBlockIterator::Jump(nframes_t ofs) {
 
 void AudioBlockIterator::GenConstants() {
   // Need to recompute curcnt to account for extra blocks?
-  GenCnt(curblock,curblkofs,&curcnt);
-  GenCnt(nextblock,nextblkofs,&nextcnt);
+  nframes_t tmp;
+  GenCnt(curblock,(nframes_t) curblkofs,&tmp);
+  curcnt = tmp;
+  GenCnt(nextblock,(nframes_t) nextblkofs,&tmp);
+  nextcnt = tmp;
 }
 
 // Moves iterator to start position
@@ -1308,18 +1319,28 @@ void AudioBlockIterator::NextFragment() {
     // We must first get a fragment before advancing
     if (nextblock == 0)
       GetFragment(0,0);
-    
+ 
     currightblock = nextrightblock;
     nextrightblock = 0;
     curblock = nextblock;
     curblkofs = nextblkofs;
     curcnt = nextcnt;
-    
     nextblock = 0;
+
+    // Also advance write block (if rate scaling)
+    char ratescale = 0;    
+    if (ratescale) {
+      currightblock_w = nextrightblock_w;
+      nextrightblock_w = 0;
+      curblock_w = nextblock_w;
+      curblkofs_w = nextblkofs_w;
+      curcnt_w = nextcnt_w;
+      nextblock_w = 0;
+    }    
   }
 }
 
-// PutFragment puts the specified fragment back into this AudioBlock
+// PutFragment stores the specified fragment into this AudioBlock
 // returns nonzero if the end of the block is reached, and we wrap to next
 int AudioBlockIterator::PutFragment (sample_t *frag_l, sample_t *frag_r,
 				     nframes_t size_override, 
@@ -1327,22 +1348,39 @@ int AudioBlockIterator::PutFragment (sample_t *frag_l, sample_t *frag_r,
   nframes_t fragofs = 0;
   nframes_t n = (size_override == 0 ? fragmentsize : size_override);
   int wrap = 0;
+
+  char ratescale = 0;
   
   // Keep local track of pointers
   // Since we have to be threadsafe
-  BED_ExtraChannel *lclrightblock = currightblock;
-  AudioBlock *lclblock = curblock;
-  nframes_t lclblkofs = curblkofs,
+  BED_ExtraChannel *lclrightblock;
+  AudioBlock *lclblock;
+  double lclblkofs, lclcnt;
+
+  if (ratescale) {
+    // Use write block
+    lclrightblock = currightblock_w;
+    lclblock = curblock_w;
+    lclblkofs = curblkofs_w;
+    lclcnt = curcnt_w;
+  } else {
+    // Write to read block (no scaling on read, 
+    // so same buffers can be used)
+    lclrightblock = currightblock;
+    lclblock = curblock;
+    lclblkofs = curblkofs;
     lclcnt = curcnt;
+  }
 
   nframes_t nextbit;
   do {
-    nextbit = MIN((nframes_t) n, lclblock->len - lclblkofs);
+    nframes_t lclblkofs_d = (nframes_t) lclblkofs;
+    nextbit = MIN((nframes_t) n, lclblock->len - lclblkofs_d);
 
-    // Copy back into our block
+    // Copy into block
 
     // Left
-    memcpy(&lclblock->buf[lclblkofs],
+    memcpy(&lclblock->buf[lclblkofs_d],
 	   &frag_l[fragofs],
 	   sizeof(sample_t)*nextbit);
 
@@ -1377,7 +1415,7 @@ int AudioBlockIterator::PutFragment (sample_t *frag_l, sample_t *frag_r,
       }
       
       // Right
-      memcpy(&lclrightblock->buf[lclblkofs],
+      memcpy(&lclrightblock->buf[lclblkofs_d],
 	     &frag_r[fragofs],
 	     sizeof(sample_t)*nextbit);
     }
@@ -1387,7 +1425,7 @@ int AudioBlockIterator::PutFragment (sample_t *frag_l, sample_t *frag_r,
     lclcnt += nextbit;
     n -= nextbit;
     
-    if (lclblkofs >= lclblock->len) { // if (n) is wrong
+    if (lclblkofs >= lclblock->len) {
       // If we get here, it means this block has been fully dumped
       // so we need the next block
       
@@ -1407,11 +1445,18 @@ int AudioBlockIterator::PutFragment (sample_t *frag_l, sample_t *frag_r,
     }
   } while (n);
   
-  nextblock = lclblock,
-    nextrightblock = lclrightblock,
-    nextblkofs = lclblkofs,
+  if (ratescale) {
+    nextblock_w = lclblock;
+    nextrightblock_w = lclrightblock;
+    nextblkofs_w = lclblkofs;
+    nextcnt_w = lclcnt;
+  } else {
+    nextblock = lclblock;
+    nextrightblock = lclrightblock;
+    nextblkofs = lclblkofs;
     nextcnt = lclcnt;
-  
+  } 
+
   return wrap;
 }
 
@@ -1423,25 +1468,22 @@ void AudioBlockIterator::GetFragment(sample_t **frag_l, sample_t **frag_r) {
   // Since we have to be threadsafe
   BED_ExtraChannel *lclrightblock = currightblock;
   AudioBlock *lclblock = curblock;
-  nframes_t lclblkofs = curblkofs,
+  double lclblkofs = curblkofs,
     lclcnt = curcnt;
 
-  // Need to have double curblkofs_f retained in class
-  
   char ratescale = 0;
-  float rate = 1.25;
+  float rate = 2.0;
 
   if (ratescale) {
-    double n = fragmentsize*rate,
-      lclblkofs_f = lclblkofs;
+    double n = fragmentsize*rate;
       
-    if (lclblkofs + (nframes_t) n + 1 >= lclblock->len) {
+    if (lclblkofs + n + 1 >= lclblock->len) {
       // Wrap happens here- check bounds in loop
 
       for (nframes_t cnt = 0; cnt < fragmentsize; cnt++) {
 	// Linear interpolation rate scale
-	nframes_t decofs = (nframes_t) lclblkofs_f;
-	float fracofs = lclblkofs_f - decofs;
+	nframes_t decofs = (nframes_t) lclblkofs;
+	float fracofs = lclblkofs - decofs;
 
 	if (frag_r != 0) {
 	  if (lclrightblock == 0) {
@@ -1491,14 +1533,16 @@ void AudioBlockIterator::GetFragment(sample_t **frag_l, sample_t **frag_r) {
 	if (frag_r != 0)
 	  fragment[1][cnt] = fracofs*s2r + fracofs_om*s1r;
 
-	lclblkofs_f += rate;
-	if ((nframes_t) lclblkofs_f >= lclblock->len) {
+	lclblkofs += rate;
+	lclcnt += rate;
+	if (lclblkofs >= lclblock->len) {
 	  // If we get here, it means this block is at an end
 	  // so we need the next block  
-	  lclblkofs_f -= lclblock->len;
-
+	  lclblkofs -= lclblock->len;
+	  
 	  if (lclblock->next == 0) {
 	    // END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
+	    lclcnt = lclblkofs;
 	    lclblock = lclblock->first;
 	    lclrightblock = 0;
 	  } else {
@@ -1508,12 +1552,13 @@ void AudioBlockIterator::GetFragment(sample_t **frag_l, sample_t **frag_r) {
 	}
       }
     } else {
-      // No wrap- no check bounds in loop
+      // No wrap- don't check bounds
 
-      for (nframes_t cnt = 0; cnt < fragmentsize; cnt++, lclblkofs_f += rate) {
+      for (nframes_t cnt = 0; cnt < fragmentsize; cnt++, lclblkofs += rate,
+	   lclcnt += rate) {
 	// Linear interpolation rate scale
-	nframes_t decofs = (nframes_t) lclblkofs_f;
-	float fracofs = lclblkofs_f - decofs;
+	nframes_t decofs = (nframes_t) lclblkofs;
+	float fracofs = lclblkofs - decofs;
 
 	if (frag_r != 0) {
 	  if (lclrightblock == 0) {
@@ -1544,17 +1589,19 @@ void AudioBlockIterator::GetFragment(sample_t **frag_l, sample_t **frag_r) {
       }
     }
   } else {
+    // No rate scale
     nframes_t fragofs = 0;
     nframes_t n = fragmentsize;
         
     nframes_t nextbit;
     do {
-      nextbit = MIN((nframes_t) n, lclblock->len - lclblkofs);
+      nframes_t lclblkofs_d = (nframes_t) lclblkofs;
+      nextbit = MIN((nframes_t) n, lclblock->len - lclblkofs_d);
       
       if (nextbit) {
 	// Left
 	memcpy(&fragment[0][fragofs],
-	       &lclblock->buf[lclblkofs],
+	       &lclblock->buf[lclblkofs_d],
 	       sizeof(sample_t)*nextbit);
 	
 	// If right channel is given and we don't know the right block, find it
@@ -1572,7 +1619,7 @@ void AudioBlockIterator::GetFragment(sample_t **frag_l, sample_t **frag_r) {
 	  
 	  // Right
 	  memcpy(&fragment[1][fragofs],
-		 &lclrightblock->buf[lclblkofs],
+		 &lclrightblock->buf[lclblkofs_d],
 		 sizeof(sample_t)*nextbit);
 	} else
 	  // Make -sure- we don't jump blocks and keep old rightblock
@@ -1625,7 +1672,7 @@ void AudioBlockIterator::EndChain() {
     curblock->len = fragmentsize;
   }
   else
-    curblock->len = curblkofs;    
+    curblock->len = (nframes_t) curblkofs;    
   
   // Stop the chain at this place
   curblock->ChopChain();
@@ -1881,22 +1928,6 @@ int StripeBlockManager::Manage() {
   return 0;
 };
 
-int DelayProcessorCallManager::Manage() {
-  // OK, we've been triggered!
-  //printf("Call processor %ld- %d\n",(long) p, data);
-
-  // Call processor
-  data = p->ProcessorCall(trigger,data);
-
-  if (data == -1) {
-    // Now remove this manager
-    return 1; 
-  } else {
-    // Save this manager
-    return 0;
-  }
-};
-
 BlockManager::BlockManager (Fweelin *app) : 
   manageblocks(0), himanageblocks(0), threadgo(1), app(app) {
   pre_growchain = new PreallocatedType(app->getMMG(),
@@ -1911,10 +1942,6 @@ BlockManager::BlockManager (Fweelin *app) :
   pre_stripeblock = new PreallocatedType(app->getMMG(),
 					 ::new StripeBlockManager(),
 					 sizeof(StripeBlockManager));
-  pre_delayprocessorcall = 
-    new PreallocatedType(app->getMMG(),
-			 ::new DelayProcessorCallManager(),
-			 sizeof(DelayProcessorCallManager));
 
   const static size_t STACKSIZE = 1024*128;
   pthread_attr_t attr;
@@ -1951,7 +1978,6 @@ BlockManager::~BlockManager () {
   delete pre_peaksavgs;
   delete pre_hipri;
   delete pre_stripeblock;
-  delete pre_delayprocessorcall;
 }
 
 // Turns on automatic allocation of new blocks at the end of the
@@ -2014,47 +2040,6 @@ void BlockManager::StripeBlockOn (void *trigger, AudioBlock *b,
 void BlockManager::StripeBlockOff (void *trigger, AudioBlock *b) {
   DelHiManager(&himanageblocks,b,T_MC_StripeBlock,trigger);
 }
-
-// Removes all delayprocessorcallmanagers on the given trigger
-// that call the given processor
-void BlockManager::FlushDelayProcessorCall (void *trigger, Processor *p) {
-  HiPriManagedChain *cur = himanageblocks,
-    *prev = 0; 
-  while (cur != 0) {
-    if (cur->GetType() == T_MC_DelayProcessorCall &&
-	(cur->trigger == 0 || cur->trigger == trigger) &&
-	((DelayProcessorCallManager *) cur)->p == p) {
-      // Remove chain
-      HiPriManagedChain *tmp = (HiPriManagedChain *) cur->next;
-      if (prev != 0) 
-	prev->next = tmp;
-      else 
-	himanageblocks = tmp;
-      cur->RTDelete();
-      
-      // Next chain
-      cur = himanageblocks; // Start again!
-    } else {
-      // Next chain
-      prev = cur;
-      cur = (HiPriManagedChain *) cur->next;
-    }
-  }
-};
-
-void BlockManager::AddDelayProcessorCall (void *trigger, Processor *p, 
-					  int data) {
-  DelayProcessorCallManager *nw = (DelayProcessorCallManager *)
-    pre_delayprocessorcall->RTNew();
-  nw->trigger = trigger;
-  nw->p = p;
-  nw->data = data;
-  AddManager((ManagedChain **) &himanageblocks,nw);
-};
-
-void BlockManager::DelDelayProcessorCall (DelayProcessorCallManager *m) {
-  DelManager((ManagedChain **) &himanageblocks,m);
-};
 
 // Generic delete/add functions for managers (not hipri)
 void BlockManager::DelManager (ManagedChain *m) {

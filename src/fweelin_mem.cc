@@ -228,6 +228,7 @@ PreallocatedType::PreallocatedType(MemoryManager *mmgr,
     }
 
     // Put base block in free (doesn't go in use until all are used)
+    this->prealloc_base = prealloc_base;
     prealloc_free = prealloc_base;
     prealloc_inuse = 0;
   } else {
@@ -236,6 +237,7 @@ PreallocatedType::PreallocatedType(MemoryManager *mmgr,
       SetupPreallocated(this,Preallocated::PREALLOC_BASE_INSTANCE);
 
     // Put base instance in use
+    this->prealloc_base = prealloc_base;
     prealloc_free = 0;
     prealloc_inuse = prealloc_base;
   }
@@ -460,6 +462,13 @@ void PreallocatedType::UpdateLists() {
 
     if (movecur) {
       // This block/instance needs to move to the in use list
+
+      // Insert at beginning of list
+      //
+      // *** Note that this will move the base instance so it is 
+      // *** no longer at the beginning of the in use list
+      // *** For this reason, a separate 'prealloc_base' pointer has been
+      // *** created
       Preallocated *tmp = cur->predata.prealloc_next;
       cur->predata.prealloc_next = prealloc_inuse;
       prealloc_inuse = cur;
@@ -485,6 +494,7 @@ void PreallocatedType::UpdateLists() {
 	// printf("MEM: Move block %p (inuse->free)\n",cur);
 
 	// This block needs to move to the free list
+	// Insert at beginning of list
 	Preallocated *tmp = cur->predata.prealloc_next;
 	cur->predata.prealloc_next = prealloc_free;  
 	prealloc_free = cur;
@@ -542,12 +552,7 @@ void PreallocatedType::GoPreallocate() {
       // OK, allocate a new block
       // * NewInstance must create an array of the right size for block
       //   mode to work *
-      Preallocated *nw_b;
-      if (prealloc_inuse == 0)
-	nw_b = prealloc_free->NewInstance();
-      else
-	nw_b = prealloc_inuse->NewInstance();
-
+      Preallocated *nw_b = prealloc_base->NewInstance();
       // printf("MEM: NEW BLOCK: %p!\n",nw_b);
 
       // Setup new block
@@ -569,26 +574,28 @@ void PreallocatedType::GoPreallocate() {
     Preallocated *cur = prealloc_free,
       *prev = 0;
     
-    while (cnt>0 && cur!=0) {
+    while (cnt > 0 && cur != 0) {
       cnt--;
       prev = cur;
       cur = cur->predata.prealloc_next;
     }
     
-    if (cnt>0) {
+    if (cnt > 0) {
       // We need more free instances, so let's make em
-      if (prev==0) {
-	// First new block
-	prealloc_free = prev = prealloc_inuse->NewInstance();
-	prev->SetupPreallocated(this,Preallocated::PREALLOC_BASE_INSTANCE);
-	//printf("firstnew\n");
+      if (prev == 0) {
+	// First new instance
+	prealloc_free = prev = prealloc_base->NewInstance();
+	prev->SetupPreallocated(this,
+				/*Preallocated::PREALLOC_BASE_INSTANCE*/
+				Preallocated::PREALLOC_PENDING_USE);
+	printf("MEM: First new instance in free list!\n");
 	cnt--;
       }
       
-      while (cnt>0) {
-	// More new blocks
-	//printf("new instance- typ: %p inuse: %p\n",this,prealloc_inuse);
-	prev->predata.prealloc_next = cur = prealloc_inuse->NewInstance();
+      while (cnt > 0) {
+	// More new instances
+	// printf("MEM: new instance- typ: %p inuse: %p\n",this,prealloc_inuse);
+	prev->predata.prealloc_next = cur = prealloc_base->NewInstance();
 	cur->SetupPreallocated(this,Preallocated::PREALLOC_PENDING_USE);
 	prev = cur;
 	cnt--;
