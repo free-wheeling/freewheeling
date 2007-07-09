@@ -1,5 +1,27 @@
 IN PROGRESS v0.5.6 - SVN
 
+            Sunday July 8th, 2007
+
+            New Features
+            ------------
+
+            * Working on real-time pitch and time stretching- 
+              not yet usable!
+                
+            Fixes
+            -----
+
+            * Fixed a bug where some non-critical events (such as loading
+              or selecting loops) could be missed.
+
+            * Fixed glitch in memory manager that could cause 
+              spontaneous exits, usually when erasing loops
+        
+            * Better clipping of out-of-range MIDI values
+
+            * Removed old 'DelayProcess' code for dealing with real-time
+              events. New code uses real-time event manager.
+
             Tuesday March 13th, 2007
         
             New Features

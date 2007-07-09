@@ -192,6 +192,8 @@ enum SyncStateType {
 };
 
 // Handles realtime DSP from a signal chain
+// *** Consider making this an RT allocated type--
+// because right now, triggering loops actually allocates memory
 class Processor : public EventProducer {
 public:
   const static float MIN_VOL;
@@ -207,14 +209,6 @@ public:
   virtual void process(char pre, nframes_t len, AudioBuffers *ab) = 0;
 
   Fweelin *getAPP() { return app; };
-
-  // This method provides communication between hi priority block
-  // managers and processors- when triggered,
-  // (not type specific, so that pointer is left void)
-  // Through BlockManager, DelayProcessorCallManager then calls
-  // this method in real-time
-  // Used for syncronizing to later events such as downbeats
-  virtual int ProcessorCall(void *trigger, int data) { return -1; };
 
   // This is called by RootProcessor when a processor is flagged-
   // pending delete and should no longer perform any processing
@@ -544,7 +538,6 @@ public:
   virtual void Halt() { sync_state = SS_ENDED; };
 
   virtual void ReceiveEvent(Event *ev, EventProducer *from);
-  // virtual int ProcessorCall(void *trigger, int data);
 
   // Sync up overdubbing of the loop to a newly created pulse
   void SyncUp();
@@ -675,7 +668,6 @@ public:
   virtual void Halt() { sync_state = SS_ENDED; };
 
   virtual void ReceiveEvent(Event *ev, EventProducer *from);
-  // virtual int ProcessorCall(void *trigger, int data);
 
   SyncStateType sync_state; // Are we waiting for a downbeat, running, ended?
 
@@ -705,7 +697,6 @@ class FileStreamer : public Processor, public EventListener {
 
   virtual void process(char pre, nframes_t len, AudioBuffers *ab);
   virtual void ReceiveEvent(Event *ev, EventProducer *from);
-  // virtual int ProcessorCall(void *trigger, int data);
 
   // Starts writing to a new audio stream
   // Note all the heavy work is done in the encode thread!

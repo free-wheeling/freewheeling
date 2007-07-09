@@ -64,6 +64,24 @@ FluidSynthProcessor::FluidSynthProcessor(Fweelin *app, char stereo) :
   fluid_synth_set_interp_method(synth,-1,
 				app->getCFG()->GetFluidInterpolation());
 
+  // User-specified global fluidsynth tuning
+  float tuning = app->getCFG()->GetFluidTuning();
+  if (tuning != 0.0) {
+    printf("FLUID: Setting pitch tuning: %.2f cents\n",
+	   tuning);
+
+    // Create tuning for each key in octave
+    double pitches[12];
+    for (int i = 0; i < 12; i++)
+      pitches[i] = tuning;
+    fluid_synth_create_octave_tuning(synth, 0, 0, "DETUNE", pitches);
+
+    // Select tuning
+    for (int i = 0; i < MAX_MIDI_CHANNELS; i++) 
+      fluid_synth_select_tuning(synth, i, 0, 0);
+  } else 
+    printf("FLUID: Using default tuning\n");
+
   // Load soundfonts
   {
     FluidSynthSoundFont *cur = app->getCFG()->GetFluidFont();

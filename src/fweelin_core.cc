@@ -2685,11 +2685,14 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       app->setCURSCENE(0);
 
       // Erase all loops!
+      // printf("DEBUG: ERASE LOOPS!\n");
       for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) 
 	DeleteLoop(i);
       // And all pulses!
+      // printf("DEBUG: ERASE PULSES!\n");
       for (int i = 0; i < MAX_PULSES; i++)
 	DeletePulse(i);
+      // printf("DEBUG: DONE!\n\n");
     }
     break;
 

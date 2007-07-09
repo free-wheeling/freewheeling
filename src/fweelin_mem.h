@@ -75,6 +75,8 @@ class PreallocatedType {
   Preallocated *prealloc_free; 
   // List of instances in use
   Preallocated *prealloc_inuse;
+  // Base instance-- always available to use to create more instances
+  Preallocated *prealloc_base;
 
   MemoryManager *mmgr;
   // MemoryManager maintains 2 lists of PreallocatedTypes

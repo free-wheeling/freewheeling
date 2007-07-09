@@ -219,8 +219,19 @@ class BED_ExtraChannel : public Preallocated, public BlockExtendedData {
     *origbuf;    // Original unmodified sample pointer
 };
 
-// Iterates through a list of audio blocks, given the first,
-// and produces & stores n-sized fragments on demand
+// Iterator for storing/extracting data in audio blocks.
+// Freewheeling stores audio in small blocks, which are linked together
+// in a chain. 
+//
+// The main functions for iteration are GetFragment (retrieves an audio
+// fragment from block(s)), PutFragment (stores an audio fragment into
+// block(s)), and NextFragment (advances the iterator).
+//
+// The iterator can also perform rate scaling.
+//
+// When rate scaling, the iterator writes to a different block chain than
+// it reads from. The chain can then grow/shrink as the rate scaling 
+// changes.
 class AudioBlockIterator {
 public:
   // Optionally pass preallocatedtype for extrachannel if you want
@@ -251,13 +262,19 @@ public:
   // Jumps to an absolute offset within the blockchain
   void Jump(nframes_t ofs);
 
-  // PutFragment puts the specified fragment back into this AudioBlock
+  // PutFragment stores the specified fragment back into this AudioBlock
   // (optional right channel)
   // Returns nonzero if the end of the block is reached, and we wrap to next  
   // Optional size_override puts a different size fragment into the block-
   // any size can be put so long as the chain is long enough
   // Optional wait_alloc waits for allocation of new extra channels if needed
   // (don't use this flag in RT!)
+  
+  // If rate scaling is active, the iterator always writes to a new
+  // block, because the length of the newly stored sample may be
+  // different than the length of the original (see 'write block' 
+  // variables). No scaling is done in PutFragment, just a choice of
+  // which block chain to write to
   int PutFragment (sample_t *frag_l, sample_t *frag_r, 
 		   nframes_t size_override = 0, char wait_alloc = 0);
 
@@ -272,24 +289,40 @@ public:
   // becomes the new end of the chain
   void EndChain();
 
-  inline nframes_t GetTotalLength2Cur() { return curcnt; }
+  inline nframes_t GetTotalLength2Cur() { return (nframes_t) curcnt; }
   inline char IsStopped() { return stopped; };
   inline void Stop() { stopped = 1; };
 
   // Returns the block currently being iterated through
   inline AudioBlock *GetCurBlock() { return curblock; };
 
-  // Optional right channel for the block we are iterating
+  // Optional right audio channel for the block we are iterating
   PreallocatedType *pre_extrachannel; // Preallocator for 2nd channel blocks
   BED_ExtraChannel *currightblock,
-    *nextrightblock;
+    *nextrightblock,
+
+    // Values for write block
+    *currightblock_w,
+    *nextrightblock_w;
 
   AudioBlock *curblock,
-    *nextblock;
-  nframes_t curblkofs,
+    *nextblock,
+
+    // Values for write block
+    *curblock_w,
+    *nextblock_w;
+
+  double curblkofs, // Use doubles for position (rate scale needs them)
     nextblkofs,
     curcnt,
-    nextcnt;
+    nextcnt,
+
+    // Values for write block
+    curblkofs_w,
+    nextblkofs_w,
+    curcnt_w,
+    nextcnt_w;
+
 
   // Buffers for storing smaller fragments from within AudioBlocks
   nframes_t fragmentsize;
@@ -306,8 +339,7 @@ enum ManagedChainType {
   T_MC_BlockRead,
   T_MC_BlockWrite,
   T_MC_HiPri,
-  T_MC_StripeBlock,
-  T_MC_DelayProcessorCall
+  T_MC_StripeBlock
 };
 
 // Generic class specifying a chain of blocks & iterator to manage
@@ -838,38 +870,6 @@ class StripeBlockManager : public HiPriManagedChain {
   PreallocatedType *pre_tm;
 };
 
-// This manager calls processor method p::ProcessorCall when 
-// BlockManager is called with the specified trigger pointer
-// ProcessorCall returns the new data value to be passed to it
-// next time- or -1 to stop this manager!
-class DelayProcessorCallManager : public HiPriManagedChain {
- public:
-  DelayProcessorCallManager(void *trigger = 0, Processor *p = 0,
-			    int data = 0) :
-    HiPriManagedChain(trigger,0,0), p(p), data(data) {};
-
-  virtual Preallocated *NewInstance() { 
-    return ::new DelayProcessorCallManager();
-  };
-
-  virtual ManagedChainType GetType() { return T_MC_DelayProcessorCall; };
-
-  virtual int Manage();
-
-  virtual int RefDeleted(void *ref) { 
-    if (ref == b || ref == i || ref == p) 
-      // Block, iterator, or processor gone! End this manager!
-      return 1;
-    else
-      return 0;
-  };
-
-  // Processor to call
-  Processor *p;
-  // Data to pass it
-  int data;
-};
-
 // BlockManager handles different maintenance tasks related to
 // audio blocks. 
 //
@@ -908,13 +908,6 @@ public:
 		      AudioBlockIterator *i);
   // Removes striping from the specified trigger on blockchain b
   void StripeBlockOff (void *trigger, AudioBlock *b);
-
-  // Removes all delayprocessorcallmanagers on the given trigger
-  // that call the given processor
-  void FlushDelayProcessorCall (void *trigger, Processor *p);
-
-  void AddDelayProcessorCall (void *trigger, Processor *p, int data);
-  void DelDelayProcessorCall (DelayProcessorCallManager *m);
 
   // Notify all Managers that the object pointed to has been deleted-
   // To avoid broken dependencies
@@ -968,8 +961,7 @@ public:
   PreallocatedType *pre_growchain,
     *pre_peaksavgs,
     *pre_hipri,
-    *pre_stripeblock,
-    *pre_delayprocessorcall;
+    *pre_stripeblock;
 
   // Parent app
   Fweelin *app;

@@ -2228,6 +2228,7 @@ class EventManager {
     else {
       while (cur->next != 0)
 	cur = cur->next;
+
       cur->next = nw;
     }
   };
@@ -2245,7 +2246,8 @@ class EventManager {
   // Broadcast immediately!
   inline void BroadcastEventNow(Event *ev, 
 				EventProducer *source,
-				char allowslowdelivery = 1) {
+				char allowslowdelivery = 1,
+				char deleteonsend = 1) {
     int evnum = (int) ev->GetType();
     
     // Check if this event is slow-delivery only
@@ -2263,7 +2265,8 @@ class EventManager {
       }
       
       // This event has been broadcast.. erase it!.. use RTDelete()
-      ev->RTDelete();
+      if (deleteonsend)
+	ev->RTDelete();
     }
   };
 
@@ -2362,8 +2365,12 @@ class EventManager {
 	  printf("EVENT: WARNING: Broadcast from RT nonRT event!!\n");
 
 	// printf("EVENT: DISPATCH: %s!\n",Event::ett[(int) cur->GetType()].name);
-	inst->BroadcastEventNow(cur,cur->from,0); // Force delivery now
-	cur = cur->next;
+	inst->BroadcastEventNow(cur,cur->from,0,0); // Force delivery now,
+                                                    // don't erase til we 
+	                                            // advance
+	Event *tmp = cur->next;
+	cur->RTDelete();
+	cur = tmp;
       }
 
       // Potentially a problem right here-- 
@@ -2378,6 +2385,7 @@ class EventManager {
 
       // Empty queue!
       inst->events = 0;
+      // printf("EVENT: empty queue\n");
 
       // Wait for wakeup
       pthread_cond_wait (&inst->dispatch_ready, &inst->dispatch_thread_lock);

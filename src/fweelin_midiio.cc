@@ -512,6 +512,11 @@ void *MidiIO::run_midi_thread(void *ptr)
 }
 
 void MidiIO::OutputController (int port, int chan, int ctrl, int val) {
+  if (val > 127)
+    val = 127;
+  else if (val < 0)
+    val = 0;
+
   snd_seq_event_t outev;
   snd_seq_ev_set_subs(&outev);
   snd_seq_ev_set_direct(&outev);
@@ -521,6 +526,11 @@ void MidiIO::OutputController (int port, int chan, int ctrl, int val) {
 };
 
 void MidiIO::OutputProgramChange (int port, int chan, int val) {
+  if (val > 127)
+    val = 127;
+  else if (val < 0)
+    val = 0;
+
   snd_seq_event_t outev;
   snd_seq_ev_set_subs(&outev);
   snd_seq_ev_set_direct(&outev);
@@ -530,6 +540,11 @@ void MidiIO::OutputProgramChange (int port, int chan, int val) {
 };
 
 void MidiIO::OutputChannelPressure (int port, int chan, int val) {
+  if (val > 127)
+    val = 127;
+  else if (val < 0)
+    val = 0;
+
   snd_seq_event_t outev;
   snd_seq_ev_set_subs(&outev);
   snd_seq_ev_set_direct(&outev);
