@@ -2728,6 +2728,9 @@ int Fweelin::go()
       emg->BroadcastEventNow(cpy, this);
   }
 
+  // Broadcast events for starting all interfaces!
+  cfg->StartInterfaces();
+
   // Encourage the user!
   printf("\n-- ** OKIE DOKIE, KIDDO! ** --\n");
 
@@ -2978,6 +2981,7 @@ int Fweelin::setup()
   cfg->AddEmptyVariable("SYSTEM_num_recording_loops_in_map");
   cfg->AddEmptyVariable("SYSTEM_num_patchbanks");
   cfg->AddEmptyVariable("SYSTEM_cur_patchbank_tag");
+  cfg->AddEmptyVariable("SYSTEM_num_switchable_interfaces");
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
     cfg->AddEmptyVariable(tmp);
@@ -3052,7 +3056,9 @@ int Fweelin::setup()
   else 
     pre_extrachannel = 0;
   pre_timemarker = new PreallocatedType(mmg,::new TimeMarker(),
-					sizeof(TimeMarker));
+					sizeof(TimeMarker),
+					FloConfig::
+					NUM_PREALLOCATED_TIME_MARKERS);
 
   rp = new RootProcessor(this,iset);
   // Add monitor mix
@@ -3210,6 +3216,8 @@ int Fweelin::setup()
 			  (char *) &(((PatchBrowser *) browsers[B_Patch])->
 				     pb_cur_tag));
   }
+  cfg->LinkSystemVariable("SYSTEM_num_switchable_interfaces",T_int,
+			  (char *) &(cfg->numinterfaces));
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
     cfg->LinkSystemVariable(tmp,T_int,

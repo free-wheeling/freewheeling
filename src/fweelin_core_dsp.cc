@@ -1273,9 +1273,9 @@ void RecordProcessor::EndNow() {
       // Smooth beginning into end, shorten loop-
       if (sync == 0)
 	recblk->Smooth();
-      else
+      /* else
 	printf("reclen: %d, synclen: %d\n",recblk->GetTotalLen(),
-	       sync->GetLength());
+	sync->GetLength()); */
     }
 
     // End peaks avgs compute now

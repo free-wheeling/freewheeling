@@ -8,7 +8,7 @@ if ((RUNNING_MERCURY != 0))
 then 
   echo Running with Mercury config.
   cd ~/audio
-  cp ~/.fweelin/.fweelin.rc ~/.fweelin/.fweelin.rc.2
+  cp ~/.fweelin/fweelin.xml ~/.fweelin/fweelin.xml.2
   ~/gokeys-std
 fi
 

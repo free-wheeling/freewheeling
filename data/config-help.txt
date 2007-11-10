@@ -1,0 +1,1125 @@
+Keyboard Keys
+*************
+
+For your reference, here is a table that lists keyboard key #s and 
+the corresponding key name (keysym).
+
+When referring to keys in the XML config files, use the name given in the
+second column. 
+
+008 - backspace
+009 - tab
+012 - clear
+013 - return
+019 - pause
+027 - escape
+032 - space
+033 - exclamation
+034 - dblquote
+035 - numbersign
+036 - dollarsign
+038 - ampersand
+039 - backquote
+040 - openparen
+041 - closeparen
+042 - asterisk
+043 - plus
+044 - comma
+045 - minus
+046 - period
+047 - slash
+048 - zero
+049 - one
+050 - two
+051 - three
+052 - four
+053 - five
+054 - six
+055 - seven
+056 - eight
+057 - nine
+058 - colon
+059 - semicolon
+060 - lessthan
+061 - equal
+062 - greaterthan
+063 - questionmark
+064 - at
+091 - squarebracketopen
+092 - backslash
+093 - squarebracketclose
+094 - caret
+095 - underscore
+096 - tilde
+097 - a
+098 - b
+099 - c
+100 - d
+101 - e
+102 - f
+103 - g
+104 - h
+105 - i
+106 - j
+107 - k
+108 - l
+109 - m
+110 - n
+111 - o
+112 - p
+113 - q
+114 - r
+115 - s
+116 - t
+117 - u
+118 - v
+119 - w
+120 - x
+121 - y
+122 - z
+127 - delete
+160 - world0
+161 - world1
+162 - world2
+163 - world3
+164 - world4
+165 - world5
+166 - world6
+167 - world7
+168 - world8
+169 - world9
+170 - world10
+171 - world11
+172 - world12
+173 - world13
+174 - world14
+175 - world15
+176 - world16
+177 - world17
+178 - world18
+179 - world19
+180 - world20
+181 - world21
+182 - world22
+183 - world23
+184 - world24
+185 - world25
+186 - world26
+187 - world27
+188 - world28
+189 - world29
+190 - world30
+191 - world31
+192 - world32
+193 - world33
+194 - world34
+195 - world35
+196 - world36
+197 - world37
+198 - world38
+199 - world39
+200 - world40
+201 - world41
+202 - world42
+203 - world43
+204 - world44
+205 - world45
+206 - world46
+207 - world47
+208 - world48
+209 - world49
+210 - world50
+211 - world51
+212 - world52
+213 - world53
+214 - world54
+215 - world55
+216 - world56
+217 - world57
+218 - world58
+219 - world59
+220 - world60
+221 - world61
+222 - world62
+223 - world63
+224 - world64
+225 - world65
+226 - world66
+227 - world67
+228 - world68
+229 - world69
+230 - world70
+231 - world71
+232 - world72
+233 - world73
+234 - world74
+235 - world75
+236 - world76
+237 - world77
+238 - world78
+239 - world79
+240 - world80
+241 - world81
+242 - world82
+243 - world83
+244 - world84
+245 - world85
+246 - world86
+247 - world87
+248 - world88
+249 - world89
+250 - world90
+251 - world91
+252 - world92
+253 - world93
+254 - world94
+255 - world95
+256 - KP0
+257 - KP1
+258 - KP2
+259 - KP3
+260 - KP4
+261 - KP5
+262 - KP6
+263 - KP7
+264 - KP8
+265 - KP9
+266 - KPperiod
+267 - KPslash
+268 - KPasterisk
+269 - KPminus
+270 - KPplus
+271 - enter
+272 - equals
+273 - up
+274 - down
+275 - right
+276 - left
+277 - insert
+278 - home
+279 - end
+280 - pageup
+281 - pagedown
+282 - f1
+283 - f2
+284 - f3
+285 - f4
+286 - f5
+287 - f6
+288 - f7
+289 - f8
+290 - f9
+291 - f10
+292 - f11
+293 - f12
+294 - f13
+295 - f14
+296 - f15
+300 - numlock
+301 - capslock
+302 - scrolllock
+303 - rightshift
+304 - leftshift
+305 - rightctrl
+306 - leftctrl
+307 - rightalt
+308 - leftalt
+309 - rightmeta
+310 - leftmeta
+311 - leftsuper
+312 - rightsuper
+313 - altgr
+314 - compose
+315 - help
+316 - printscreen
+317 - sysreq
+318 - break
+319 - menu
+320 - power
+321 - euro
+322 - undo
+
+Input Events
+************
+
+Here is a table of recognized input events. 
+The input matrix is flexible in that different types of input events
+can be routed to different output events. There is also a parameter routing
+that connects input parameters like MIDI note velocity to control parameters
+within FreeWheeling. For example, you can specify that the number of the note
+pressed controls which loop is triggered.
+
+Event "key"
+  binding input="key" conditions="keydown=1 and key=space"
+    A keyboard key is pressed or released.
+
+    "keydown": 1 if key was pressed, otherwise 0
+    "key": Name or number of the key (see above table)
+
+Event "midicontroller"
+  binding input="midicontroller" conditions="controlnum=64 and midichannel=0 
+                                             and controlval=64>127"
+    A MIDI controller is changed.
+
+    "outport": # of MIDI output to echo event to
+    "midichannel": Channel of event
+    "controlnum": Number of control change
+    "controlval": Value of control change
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
+
+Event "midikey"
+  binding input="midikey" conditions="keydown=1 and midichannel=0 and 
+                                      notenum=VAR_noterange and velocity=1>127"
+    A MIDI note is pressed or released.
+
+    "outport": # of MIDI output to echo event to
+    "keydown": 1 if note is pressed, 0 if note is released
+    "midichannel": Channel of event
+    "notenum": Number of note
+    "velocity": Velocity of noteon/noteoff
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
+
+Event "midichannelpressure"
+  binding input="midichannelpressure" conditions="midichannel=0 and 
+				                  pressureval=64"
+    A MIDI channel pressure (channel aftertouch) message.
+
+    "outport": # of MIDI output to echo event to
+    "midichannel": Channel of event
+    "pressureval": Pressure of keys
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
+
+Event "midiprogramchange"
+  binding input="midiprogramchange" conditions="midichannel=0 and 
+				                programval=64"
+    A MIDI program change message.
+
+    "outport": # of MIDI output to echo event to
+    "midichannel": Channel of event
+    "programval": Program change #
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
+
+Event "midipitchbend"
+  binding input="midipitchbend" conditions="midichannel=0 and 
+				            pitchval=6000"
+    A MIDI pitch bend message.
+
+    "outport": # of MIDI output to echo event to
+    "midichannel": Channel of event
+    "pitchval": Pitch bender value
+    "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
+                         given by the current patch. 
+			 0 sends this message
+                         as described by outport/midichannel.
+
+Event "joybutton"
+  binding input="joybutton" conditions="joystick=1 and 
+                                        button=3 and
+                                        down=1"
+
+    A joystick button has been moved.
+
+    "joystick": # of the joystick
+    "button":   # of the button
+    "down":     1 if button is down, 0 if button is up
+
+Event "start-freewheeling"
+  binding input="start-freewheeling"
+    FreeWheeling has just been started.
+
+Event "go-sub"
+  binding input="go-sub"
+    Subroutine is being invoked- see "go-sub" in output events.
+
+The above input events can also be used as output events.
+For example, we can trigger a series of MIDI controller changes
+when a QWERTY key is pressed.
+
+Output Events
+*************
+
+Here is a table of recognized output events, what they do and
+what parameters they accept:
+
+Event "exit-freewheeling"
+  Quit!
+
+Event "slide-loop-amplifier-stop-all"
+  Stops sliding amplitudes for all loops. 
+  
+Event "slide-loop-amplifier"
+  Slides the amplitude of a given loop, like a fade.
+  
+  "loopid": the ID of the loop
+  "slide": the speed at which to slide the amplitude. Successive events 
+           accelerate the sliding, until you reverse the speed or call
+           set-loop-amplifier
+
+Event "set-loop-amplifier"
+  Sets the amplitude of a given loop, and stops any sliding
+  
+  "loopid": the ID of the loop
+  "amp": the amplitude to set it to 
+
+Event "trigger-loop"
+  Triggers a given loop-
+
+  if no loop exists at that loopid, 
+  begins recording a new loop..
+
+  if a new loop is recording, the behavior depends:
+  if overdub="1", switches to overdub.. 
+  if overdub="0", switches to play..
+
+  if a loop is playing, the behavior depends:
+  if overdub="1", switches to overdub..
+  if overdub="0", switches off..
+
+  if a loop is overdubbing, switches to play.
+
+  This is similar to an EDP style tapin-tapout-play/overdub.
+  When recording a new loop, the length grows until we trigger-loop again.
+  When overdubbing into an existing loop, the existing loop is blended with
+  new input material.
+
+  You can modify this behavior with the "engage" option. 
+  When "engage" is set to 1, the loop will -always- start.
+  When "engage" is set to 0, the loop will -always- stop.
+  If engage is not set, the behavior depends on the current state of the loop,
+  as described above.
+
+  You can modify the looping behavior with the "shot" option.
+  When "shot" is set to 1, the loop will play through only once.
+  When "shot" is not set, the loop will repeat indefinitely.
+
+  "loopid": the ID of the loop
+  "vol": the volume to trigger with- this combined with the loop amplitude
+         determine the overall amplitude of the playing loop
+  "shot": shot mode
+  "engage": force on or off?
+  "overdub": 1 or 0 determine whether to overdub or just play
+  "overdubfeedback": Variable that holds the value of feedback to
+                     apply during overdub. Variable must be of type 
+		     float (from 0.0 to 1.0). Variable can be continuously
+		     varied. 
+
+Event "set-trigger-volume"
+  Sets the volume of a given loop trigger. If you have a loop playing, you
+  can change the volume with this event. It is different than the
+  loop amplifier, because each time you trigger the loop you can have a 
+  different trigger volume, whereas the loop amplifier changes the volume
+  of the loop once-and-for-all.
+  
+  "loopid": the ID of the loop
+  "vol": the volume to set it to
+
+Event "erase-selected-loops"
+  Erase selected loops that are in the given selection set.
+
+  "setid": Number of the selection set to use
+           (usually this will be 0)
+
+Event "erase-all-loops"
+  Erases all loops and time meters.
+
+Event "erase-loop"
+  Erases a given loop- if recording is happening on the given id,
+  stops and erases recording. 
+
+  "loopid": the ID of the loop
+
+Event "move-loop"
+  Moves a loop from "oldloopid" to "newloopid", if a loop exists there.
+  This can be done at any time- when recording or playing a loop,
+  or when it is inactive.
+ 
+  "oldloopid": old loop ID
+  "newloopid": new loop ID
+
+Event "slide-master-in-volume"
+  Slides the master input volume at the speed given. A positive value
+  increases volume. Actually, if you call slide-master-in-volume 
+  several times you cumulatively increase the speed of sliding. It is
+  like a fade. This applies for other slide events too.
+
+  "slide": speed of slide
+
+Event "slide-in-volume"
+  Slides one input volume at the speed given. A positive value
+  increases volume.
+	
+  "input": number of input to slide volume for
+  "slide": speed of slide
+
+Event "slide-master-out-volume"
+  Slides the master output volume at the speed given. A positive value
+  increases volume.
+
+  "slide": speed of slide
+
+Event "set-master-in-volume"
+  Sets the master input volume to 'vol'. 1.0 is 100% volume. 
+  Stops sliding.
+
+  "vol": new volume
+
+Event "set-master-out-volume"
+  Sets the master output volume to 'vol'. 1.0 is 100% volume. 
+  Stops sliding.
+
+  "vol": new volume
+
+Event "set-in-volume"
+  Sets one input volume to 'vol'. 1.0 is 100% volume.
+  Stops sliding.
+	
+  "input": number of input to set volume for
+  "vol": new volume
+
+Event "toggle-input-record"
+  Toggles recording of one input. Does not change monitoring for this input,
+  only whether loops are recorded from the input.
+	
+  "input": number of input to toggle recording for
+
+Event "adjust-midi-transpose"
+  Adjusts the pitch transpose for MIDI out. MIDI events that aren't used in
+  an event are echoed back out the MIDI out and to the internal FluidSynth
+  synthesizer. This parameter adjusts the transpose that is applied to MIDI
+  notes before they are echoed. It does not affect the note numbers coming
+  into FreeWheeling events.
+
+  "adjust": amount to shift transpose (semitones)
+
+Event "fluidsynth-enable"
+  Enables or disables processing for the integrated FluidSynth. When
+  FluidSynth is disabled, the real-time DSP for FluidSynth is not active,
+  so FreeWheeling runs faster. By default, this is done by the patch browser.
+  When you select FluidSynth patches, FluidSynth is enabled. When you select
+  other patches, FluidSynth is automatically disabled.
+
+  "enable": 1 for enable or 0 for disable
+
+Event "set-midi-tuning"
+  Retunes MIDI by the current value of the pitchbender. What this does is 
+  offset the zero position of pitchbender to a given value. You can
+  easily tune to outside instruments by sweeping the pitchbender until you are
+  in tune and then calling set-midi-tuning with the current value of the
+  pitchbender (see system variables).
+
+  "tuning": new zero position for MIDI pitchbender
+
+Event "set-midi-echo-port"
+  DEPRECATED- FreeWheeling now sends to ports/channels as specified by
+  the patch browser.
+
+  Sets the MIDI port where incoming MIDI events are echoed. The only events
+  echoed are those that do not trigger something in FreeWheeling.
+
+  "echoport": new MIDI out port number to echo MIDI events
+              (0 disables) 
+
+Event "set-variable"
+  Sets the user variable named "var" to the value "val". The value
+  given must be convertible into the type of variable "var".
+
+  "var": variable to set
+  "value": what to set it to
+
+Event "toggle-variable"
+  Toggles (increments) the user variable named "var" through an integer
+  range of values, with a maximum of "maxvalue". Wraps to "minvalue" when 
+  maxvalue is exceeded. 
+
+  "var": variable to toggle
+  "maxvalue": maximum value of variable
+  "minvalue": minimum value of variable
+
+Event "video-show-loop"
+  Change the range of loops shown onscreen-
+
+  In the onscreen layout given by "layoutid", shows loops in the range
+  "loopid". For example, if you specify layoutid 0 and loopid 15>30,
+  then layout 0 will show the loop at id 15 in its first element
+  (element id 0), up to loopid 30 in element 15. 
+
+  You will see these changes only if the layout is set to show onscreen,
+  and when there are loops stored in the loopids given.
+
+  "interfaceid": interface where layout is defined
+  "layoutid": which layout to change the range of shown loops
+  "loopid": new range of shown loops
+
+Event "video-show-layout"
+  Shows or hides the layout given by "layoutid". 
+  If hideothers is "1", all other layouts are made hidden.
+
+  "interfaceid": interface where layout is defined
+  "layoutid": layout to show/hide
+  "show": "1" for show and "0" for hide
+  "hideothers": "1" to hide all other layouts
+
+Event "video-switch-interface"
+  Switches to (shows) the interface given by "interfaceid".
+  All displays and layouts defined in that interface are shown.
+  All displays and layouts defined in other interfaces are hidden,
+  EXCEPT those in non-switchable interfaces.
+
+  "interfaceid": interface to switch to
+
+Event "video-show-help"
+  Shows or hides help.
+  FreeWheeling has an online help that can be overlaid on the screen while
+  you are playing. This event shows a given page of that help (or hides it).
+
+  The help text is user defined. Throughout this config file, you'll see
+  comments which begin in "HELP:". Any comments that begin in this way become
+  a part of the help text. If you have a second ":" in the help comment, it
+  becomes a second column in the help text.
+
+  "page": Help page number to show or "0" for hide
+
+Event "video-full-screen"
+  Put FreeWheeling in a window, or let 'er hog the whole screen
+
+  "fullscreen": "1" for hog fullscreen and "0" for window
+
+Event "select-pulse"
+  Selects time pulse #pulse. If no pulse exists at the given #,
+  creates a new one. The length and downbeat of a new pulse are taken from the
+  last recorded loop. 
+
+  Once a pulse is created, it is automatically selected. The selected pulse
+  determines the timing of all newly recorded loops. If a new pulse is
+  selected, only those loops recorded from that point on are affected.
+
+  To deselect all pulses and return to free time, set pulse="-1".
+
+  "pulse": Number of the time pulse to create/select
+
+Event "delete-pulse"
+  Delete time pulse #pulse. All loops attached to that pulse are also deleted.
+
+  "pulse": Number of the time pulse to delete
+
+Event "show-debug-info"
+  Shows or hides debugging information.
+  The information is printed to the console. It includes input events like
+  MIDI and keyboard keys, and information from bound events. 
+
+  It can help track down problems in your configuration, 
+  if FreeWheeling is not working as you imagined. 
+  But it introduces some performance latency, so I recommend leaving it off!
+
+  "show": "1" for show debug info and "0" for hide
+
+Event "toggle-disk-output"
+  Toggles output of the master outs to disk. This includes the input mix.
+  OGG files are created in the library folder with the name 'live1.ogg', 
+  'live2.ogg', etc.. The live mix is exactly what you hear from 
+  FreeWheeling's outputs.
+
+  Accompanying each OGG file is a timing file named live.wav.usx,
+  to be used in the GnuSound editor for doing precise splice edits on loop 
+  downbeats. Run oggdec on the OGG files and then load into GnuSound.
+  You can also import timing information into Ardour from this .wav.usx file-
+  see the file scripts/go-import-markers.
+
+  If FreeWheeling is already writing to disk, this shuts the record off.
+  The next write starts in a new folder.
+
+  FreeWheeling no longer overwrites old files and folders. Existing save
+  folders are skipped.
+
+Event "set-auto-loop-saving"
+  Turns on/off auto loop saving. This saves all new loops to disk. 
+  The loops are saved in the current "save" folder (see toggle-disk-output),
+  with the name 'loop???.ogg'. The loopID is given in the filename.
+  Loop files are not overwritten- subsequent writes of 55, for example,
+  will yield filenames 'loop55-0.ogg', 'loop55-1.ogg', etc.
+
+  "save": "1" to turn on auto loop saving and "0" for off
+
+Event "save-loop"
+  Saves the loop with given index. The file is named and saved as described
+  above.
+ 
+  "loopid": ID of loop to save
+
+Event "save-new-scene"
+Event "save-current-scene"
+  Saves a new scene/overwrites current scene. 
+  A scene is a snapshot of all loaded loops and levels.
+  It is like a save of the complete session.
+ 
+Event "switch-metronome"
+  Switches an audible metronome on or off for the given pulse. The metronome
+  sounds on the downbeat of the pulse.
+ 
+  "pulse": Number of the pulse
+  "metronome": 1 for metronome on, 0 for off
+
+Event "tap-pulse"
+  Taps a pulse- each tap gives a new downbeat.
+
+  This allows you to tap tempo, instead of creating a pulse around an 
+  existing loop. If you tap a tempo and switch-metronome to on, it is
+  like playing along with a click track. 
+
+  If you already have loops playing on a pulse, the effect is to change the
+  timing when they loop to their start. The loops themselves do not change
+  speed (yet).
+
+  "pulse": Number of the pulse
+  "newlen": 1 for change tempo, 0 for just hit downbeat
+
+Event "go-sub"
+  Triggers event "go-sub", which you can bind to. The effect is like
+  creating a subroutine of several event triggers. You can then trigger
+  go-sub from many places, and have the same subroutine of events triggered.
+
+  This allows you to have FreeWheeling do several predefined things in 
+  response to one input, like changing loop volumes and moving loops,
+  or repeating some operation on several loops.
+  
+  You can have many subroutines, and each subroutine can accept parameters.
+  Search for go-sub to find examples in this config.
+
+  "sub": Number of the subroutine
+  "param1": Integer parameter 1
+  "param2": Integer parameter 2
+  "param3": Integer parameter 3
+
+Event "browser-move-to-item"
+  Moves forward or back in a browser
+
+  "browserid": Browser ID- as you have defined in 'display' section
+  "adjust": Number of individual items to move by (+ is forward - is back)
+  "jumpadjust": number of divisions to jump by
+                divisions are placed depending on the type of browser-
+                for example, for Fluidsynth patches, there are divisions
+                between soundfonts
+
+Event "browser-select-item"
+  Choose or select the current item in a browser.
+  Different browser types behave differently when an item is selected
+  For example, the loop browser loads the selected loop
+
+  "browserid": Browser ID- as you have defined in 'display' section
+
+Event "browser-rename-item"
+  Rename the current item in a browser.
+  This is an interactive process where the user can make changes to the item
+  name. Many of the regular keyboard bindings become disabled during renaming.
+
+  During renaming, you can type a new name with the keyboard. 
+  ESC aborts renaming, and ENTER accepts the new name.
+
+  "browserid": Browser ID- as you have defined in 'display' section
+
+Event "patchbrowser-move-to-bank"
+  Switch patch browser banks.
+
+  "direction": -1 or 1 to move backward or forward
+
+Event "patchbrowser-move-to-bank-by-index"
+  Switch patch browser banks, choosing by index.
+
+  "index": Index of patchbank to select
+           Must be in the range of 0 to SYSTEM_num_patchbanks-1
+
+Event "browser-item-browsed"
+  This event is sent out by Freewheeling's browsers whenever a browser item
+  is changed. This is useful in the patch browser- you can bind to
+  browser-item-browsed and send out control changes or change MIDI echo ports
+  whenever a new item is browsed.
+
+  "browserid": Browser ID- as you have defined in 'display' section.
+               Identifies which browser has had a change in item.
+
+Event "video-show-display"
+  Show or hide a video display with the given ID- you define the displays and
+  IDs in the video section below, and then you can turn them on or off as
+  needed through this event.
+
+  "interfaceid": interface where layout is defined
+  "displayid": Display ID
+  "show": 1 or 0 is show or hide display
+
+Event "set-load-loop-id"
+  Sets the loop ID where to put a loop when it is loaded from disk.
+  Loops are loaded by the loop browser when an item is selected
+  (browser-select-item).
+  Whenever a single loop is loaded from disk, it will appear in this 
+  loop ID.
+
+  "loopid": ID to load loops into
+
+Event "set-default-loop-placement"
+  Sets the range of loop IDs to be used by default.
+  For example when loading external loops, FW can place them here if 
+  the requested IDs are not available.
+
+  "looprange": Range of IDs to use as default
+
+Event "loop-clicked"
+  This event is generated whenever the user clicks a mouse button on
+  a loop slot on-screen. It allows you to respond to clicks on loops.
+
+  "down": Mouse button down or up? (1 or 0)
+  "button": Number of mouse button pressed/released
+  "loopid": Number of the corresponding loopid clicked on
+  "in": Zero if the loop was clicked in the loop tray
+        One if the loop was clicked in a layout
+
+Event "set-sync-type"
+  Set the type of sync for syncronizing to an external sequencer/app.
+
+  Freewheeling uses a 'pulse' concept of timing. Instead of dividing time
+  up into bars, beats, and ticks (sequencer style), Freewheeling simply
+  defines time as a rhythmic pulsing. When you create a pulse, Freewheeling
+  can optionally transmit or receive sync information for that pulse.
+  Two syncronization mechanisms are provided- Jack and MIDI. Both represent
+  time as bars, beats, and ticks. The sync type parameter controls
+  whether we are mapping beats to pulses (beat sync) or bars to pulses 
+  (bar sync).
+ 
+  "type": 1 for beat sync, 0 for bar sync
+
+Event "set-sync-speed"
+  Set the number of beats/bars per pulse. This affects the translated speed
+  between Freewheeling's internal clock and the external clock. 
+
+  "speed": Number of beats or bars (depending on sync type) to a single 
+           pulse.
+
+Event "set-midi-sync"
+  Set whether to transmit MIDI sync. 
+  Note that to transmit MIDI sync, you also need to set 'midisyncouts' in
+  the general config section, and you need to have a pulse running.
+
+  "midisync": 1 to transmit MIDI sync. 0 for no MIDI sync.
+
+Event "toggle-select-loop"
+  Freewheeling allows you to select and work with several loops at once.
+  This event toggles one loop as selected/unselected.
+  You can have several selection sets.
+  
+  "setid": Number of the selection set in which to toggle the loop 
+           (usually this will be 0)
+  "loopid": ID of the loop to toggle
+
+Event "select-only-playing-loops"
+  Make the selection include only those loops that are currently playing/
+  currently idle.
+  
+  "setid": Number of the selection set to change
+           (usually this will be 0)
+  "playing": 1 to include only playing loops
+             0 to include only idle loops
+
+Event "select-all-loops"
+  Select/unselect all loops.
+
+  "setid": Number of the selection set to change
+           (usually this will be 0)
+  "select": 1 to select all loops
+ 	    0 to select no loops
+
+Event "invert-selection"
+  Invert the selection- Select all loops not currently selected.
+
+  "setid": Number of the selection set to change
+           (usually this will be 0)
+
+Event "trigger-selected-loops"
+  Trigger the selected loops. You can toggle them for playing/idle,
+  or you can force them to play. 
+
+  "setid": Number of the selection set to use
+           (usually this will be 0)
+  "vol": Volume at which to trigger loops
+  "toggleloops": 1 to toggle loops for playing, 0 to force playing.
+
+Event "set-selected-loops-trigger-volume"
+  Set the volume of all selected loops.
+  This only affects playing loops. 
+  This allows you to fade many loops together.
+
+  "setid": Number of the selection set to use
+           (usually this will be 0)
+  "vol": Volume to set loops to
+  
+*****************************************************************************
+
+Creating Bindings
+*****************
+
+Each binding has two parts-
+
+1) What input event and conditions trigger the binding?
+2) What output event(s) are generated and what parameters are set for those
+   events?
+
+For example-
+binding: input="key" conditions="key=escape and keydown=1"
+         output="exit-freewheeling"
+Is triggered when the escape key is pressed. The key must match "escape"
+and keydown must match "1" (the key is pressed, not released). 
+The event generated under these conditions is "exit-freewheeling".
+No parameters are set.
+
+Dynamic Parameters
+******************
+
+In the above table of input events, you can see that there are different
+input types that can trigger events. It's possible to use simple expressions
+in your bindings to dynamically check conditions and assign parameters. 
+
+For example- This binding is for a MIDI keyboard with volume faders that 
+transmit on different MIDI channels. Here, the volume faders are being 
+used to fade loop levels:
+
+binding input="midicontroller" conditions="controlnum=7 and
+                                           midichannel=0>15"
+        output="set-loop-amplifier" parameters="loopid=midichannel+36 and
+                                                amp=controlval/127*2"
+
+This binding is triggered when MIDI controller 7 (volume) changes are
+received on channels 0-15. Event "set-loop-amplifier" is generated
+(to change the volume of a given loop). The loop given is "midichannel+36".
+The volume to set the loop to is "controlval/127*2". So, a MIDI controller 7
+input on channel 2 with controller value 127 will set loop #38 to
+volume 2.0 (200%). 
+
+The example shows how input parameters, such as MIDI channel and controller 
+value, can be referenced in your bindings along with simple 
+algebra (+ - / *). 
+
+Order of Operations
+*******************
+
+When entering algebraic expressions, note that
+FreeWheeling does not evaluate with standard order of operations. 
+The order of evaluation is always left to right. So:
+
+amp="3+3/6" will evaluate to 1 and not 3 and not 3.5.
+
+Algebra is evaluated conservatively with respect to type 
+(I'm such a conservative!) That means that the expression:
+
+amp="1/2" will evaluate to 0 and not 0.5. 
+
+For explicit floating point, use:
+
+amp="1.0/2" which evaluates to 0.5.
+
+Algebra on Ranges
+*****************
+
+value="0>12 + 10" evaluates to "10>22". Both ends of the range are worked on.
+
+or
+
+value="0>5 + 1>5" evaluates to "1>10". Note that the types of each end of a 
+range are always integers, so:
+
+value="0.5>1.5 + 0.5>1.5" evaluates to "0>2"
+
+User Variables
+**************
+
+It is also possible to create your own user variables. These can then be
+referenced in your bindings, or changed during runtime, for a much more
+dynamic user interface. 
+
+For example, the binding below will set trigger volume for loops across 
+a range of notes. The binding checks to see that the MIDI note number 
+matches the user variable "VAR_noterange". Since "VAR_noterange" is a 
+range variable, this means that the binding will only trigger event
+"set-trigger-volume" if the note number is within the range specified
+by "VAR_noterange". 
+
+binding input="midikey" conditions="VAR_cutmode=1 and notenum=VAR_noterange
+                                    and keydown=1"
+        output="set-trigger-volume" parameters="loopid=notenum and 
+                                                vol=velocity/127"
+
+****
+Note that as of version 0.5pre3, FreeWheeling automatically indexes your
+bindings based on a hash key, so there is no need to specify wildcard cases
+(previously done with midikey="*").
+****
+
+Another example... The binding:
+
+binding input="midikey" conditions="VAR_xferloop=1 and notenum=VAR_noterange
+                                    adn keydown=1"
+        output="move-loop" parameters="oldloopid=VAR_xferidx and 
+                                       newloopid=notenum+VAR_loopid_pianostart"
+
+Checks these conditions:
+
+Input event is a MIDI Key
+Variable 'VAR_xferloop' equals 1?
+Input parameter notenum is within range of variable 'VAR_noterange'
+  (When comparing against a range, a condition is true when the value is
+   within the bounds of the range)
+Input parameter keydown equals 1
+
+This binding is used to move a loop onto a piano key. Presumably, this is
+a special case where we have a loop in a holding place (such as a loop grabbed
+by a footswitch), and we want to move from that holding place onto the
+MIDI keyboard. 
+
+Using a combination of user variables and careful configuration of bindings,
+a highly tailored user interface can be created. 
+
+Order of Bindings
+*****************
+
+The order in which we declare bindings in this file is important.
+Bindings are checked from top to bottom, so you will need to put special
+case bindings first. For example, if you want to modify the behavior of a
+binding when a certain variable is set or key is held, you will have to
+put the special case before the general case.
+
+The first matching binding is the only binding that is triggered.
+
+For an example, look under comment -Erase Loops-, and see that holding
+space while pressing a loop trigger key erases a loop, whereas if space is
+not held, it triggers the loop.
+
+System Variables
+****************
+
+The following system variables may also be used in configuration.
+They are internal to FreeWheeling and are always available.
+
+You can not change the value of these variables with events like
+'set-variable' and 'toggle-variable'.System variables have special events 
+like 'set-master-in-volume' for control. 
+
+Variables:
+
+SYSTEM_midi_transpose - 
+  semitones of current MIDI transpose - 
+  affects all outgoing MIDI events to FluidSynth and the 
+  external MIDI output port
+                    
+SYSTEM_master_in_volume -
+  master input volume - 1.0 is full scale
+
+SYSTEM_master_out_volume
+  master output volume - 1.0 is full scale
+
+SYSTEM_cur_pitchbend
+  current value of MIDI pitchbender before offset
+
+SYSTEM_bender_tune -
+  current offset of MIDI pitchbender (see set-midi-tuning)
+
+SYSTEM_cur_limiter_gain -
+  current autolimiter gain - changes as audio levels change
+  it's actually more of a soft compressor
+
+SYSTEM_audio_cpu_load -
+  current audio CPU load
+
+SYSTEM_sync_active -
+  nonzero if transport sync is sending or receiving beats/bars/ticks
+  This will happen whenever you have a pulse, or if another audio app
+  is transmitting sync information.
+
+SYSTEM_sync_transmit -
+  nonzero if Freewheeling is transmitting sync information
+  By default, Freewheeling tries to become timebase master.
+  When the transport starts rolling, FW will transmit sync information.
+  If another app is master, FW will receive sync information.
+
+SYSTEM_midisync_transmit -
+  nonzero if Freewheeling is transmitting MIDI sync information.
+
+SYSTEM_fluidsynth_enabled -
+  is FluidSynth enabled?
+
+SYSTEM_num_help_pages - 
+  number of help pages available
+  
+SYSTEM_num_loops_in_map -
+  total number of loops in the whole map
+
+SYSTEM_num_recording_loops_in_map -
+  total number of loops currently recording or overdubbing in map
+  watch this to see if you have runaway loops recording
+
+SYSTEM_num_patchbanks -
+  total number of patch banks defined in configuration
+
+SYSTEM_cur_patchbank_tag -
+  tag for currently selected patchbank-
+  You can use this to change Freewheeling's behavior depending on
+  which patchbank is selected.
+
+SYSTEM_loopid_lastrecord_0
+SYSTEM_loopid_lastrecord_1
+SYSTEM_loopid_lastrecord_2 ... -
+  loop ids for those loops last recorded -
+  lastrecord_0 is the most recently recorded loop, and so on..
+  the number of last record appears under loops, so you can see
+  which loops were recorded more recently
+
+SYSTEM_in_1_volume
+SYSTEM_in_2_volume ... -
+  current volumes for given inputs - up to the number of inputs you have
+  defined
+
+SYSTEM_in_1_record 
+SYSTEM_in_2_record ... -
+  flag for each input that tells us whether the input is set to record
+
+SYSTEM_num_midi_outs
+  number of MIDI outputs you have defined
+
+Browser types:
+
+BROWSE_patch
+  Patch browser
+BROWSE_loop
+  Loop browser- loads loops from disk
+BROWSE_scene
+  Scene browser- loads scenes from disk
+
+Triggering Multiple Outputs
+***************************
+
+You can set up one event input to trigger many output events. To do this,
+specify your output events and parameters for each in a list. Have a look
+at the binding for input="start-freewheeling", which triggers a bunch of
+events when FreeWheeling is first started.
+
+**
+Note that as of version 0.5pre3, this new syntax replaces the old start="1"
+and continued="1" syntax for startup and multiple output events.
+**
+
+MIDI Echo
+*********
+
+FreeWheeling echos incoming MIDI events to MIDI output. However, events 
+that trigger a binding are not echoed. This allows you to connect a 
+softsynth or other MIDI device to one of FreeWheeling's MIDI outputs.
+Then MIDI inputs which trigger your event bindings, such as triggering loops,
+will not go to your synth.

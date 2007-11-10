@@ -20,11 +20,11 @@
 
 bin_PROGRAMS = fweelin
 
-fweelin_SOURCES = fweelin.cc fweelin_datatypes.cc fweelin_event.cc fweelin_config.cc fweelin_browser.cc fweelin_audioio.cc fweelin_sdlio.cc fweelin_midiio.cc fweelin_videoio.cc fweelin_core.cc fweelin_mem.cc fweelin_block.cc fweelin_core_dsp.cc fweelin_fluidsynth.cc
+fweelin_SOURCES = elastin/elastin.cc fweelin.cc fweelin_datatypes.cc fweelin_event.cc fweelin_config.cc fweelin_browser.cc fweelin_audioio.cc fweelin_sdlio.cc fweelin_midiio.cc fweelin_videoio.cc fweelin_core.cc fweelin_mem.cc fweelin_block.cc fweelin_core_dsp.cc fweelin_fluidsynth.cc 
 
 fweelindir = $(datadir)/fweelin
 
-FWEELIN_CFLAGS = -I. -g -Wall -Wno-non-virtual-dtor -D_REENTRANT -DPTHREADS -DNDEBUG -DVERSION=\"$(VERSION)\" -DFWEELIN_DATADIR=\"$(fweelindir)\" -DADDON_DIR=\"/usr/local/lib/jack\" -I/usr/include/freetype2 -I/usr/include/libxml2 -funroll-loops -finline-functions -fomit-frame-pointer -ffast-math -fexpensive-optimizations -fstrict-aliasing -falign-loops=2 -falign-jumps=2 -falign-functions=2
+FWEELIN_CFLAGS = -I. -g -Wall -Wno-non-virtual-dtor -D_REENTRANT -DPTHREADS -DNDEBUG -DVERSION=\"$(VERSION)\" -DFWEELIN_DATADIR=\"$(fweelindir)\" -DADDON_DIR=\"/usr/local/lib/jack\" -I/usr/include/freetype2 -I/usr/include/libxml2 -funroll-loops -finline-functions -fomit-frame-pointer -ffast-math -fexpensive-optimizations -fstrict-aliasing -falign-loops=2 -falign-jumps=2 -falign-functions=2 -O9
 
 AM_CFLAGS = $(CFLAGS) $(FWEELIN_CFLAGS)
 AM_CXXFLAGS = $(CFLAGS) $(CXXFLAGS) $(FWEELIN_CFLAGS)

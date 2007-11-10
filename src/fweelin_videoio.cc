@@ -846,6 +846,7 @@ int VideoIO::activate() {
   app->getEMG()->ListenEvent(this,0,T_EV_VideoShowLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_VideoShowDisplay);
   app->getEMG()->ListenEvent(this,0,T_EV_VideoShowLayout);
+  app->getEMG()->ListenEvent(this,0,T_EV_VideoSwitchInterface);
   app->getEMG()->ListenEvent(this,0,T_EV_VideoShowHelp);
   app->getEMG()->ListenEvent(this,0,T_EV_VideoFullScreen);
 
@@ -860,6 +861,7 @@ void VideoIO::close() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_VideoShowLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_VideoShowDisplay);
   app->getEMG()->UnlistenEvent(this,0,T_EV_VideoShowLayout);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_VideoSwitchInterface);
   app->getEMG()->UnlistenEvent(this,0,T_EV_VideoShowHelp);
   app->getEMG()->UnlistenEvent(this,0,T_EV_VideoFullScreen);
 
@@ -954,7 +956,8 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       VideoShowLoopEvent *vev = (VideoShowLoopEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: Show loop (layout %d): %d>%d\n",
+	printf("VIDEO: Show loop (interface %d layout %d): %d>%d\n",
+	       vev->interfaceid,
 	       vev->layoutid,vev->loopid.lo,vev->loopid.hi);
 
       // Error check range
@@ -962,15 +965,18 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
 	  vev->loopid.lo >= app->getCFG()->GetNumTriggers() ||
 	  vev->loopid.hi >= app->getCFG()->GetNumTriggers() ||
 	  vev->loopid.hi < vev->loopid.lo) {
-	printf("VIDEO: Invalid loopid range for layout %d: %d>%d\n",
+	printf("VIDEO: Invalid loopid range for interface %d "
+	       "layout %d: %d>%d\n",
+	       vev->interfaceid,
 	       vev->layoutid,vev->loopid.lo,vev->loopid.hi);
       } else {
 	// Find the right layout
-	int id = vev->layoutid;
+	int id = vev->layoutid,
+	  iid = vev->interfaceid;
 	FloLayout *cur = app->getCFG()->GetLayouts();
 	char found = 0;
 	while (cur != 0) {
-	  if (id == cur->id) {
+	  if (iid == cur->iid && id == cur->id) {
 	    // Match-- change the range of displayed loops for
 	    // this layout
 	    cur->loopids = vev->loopid;
@@ -981,7 +987,8 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
 	}
 
 	if (!found)
-	  printf("VIDEO: Invalid layoutid %d.\n",vev->layoutid);
+	  printf("VIDEO: Invalid layoutid %d in interface %d.\n",
+		 vev->layoutid,vev->interfaceid);
       }
     }
     break;
@@ -990,16 +997,18 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       VideoShowDisplayEvent *vev = (VideoShowDisplayEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: %s display (id %d)\n",
+	printf("VIDEO: %s display (interface id %d, display id %d)\n",
 	       (vev->show ? "show" : "hide"),
-	       vev->displayid);
+	       vev->interfaceid,vev->displayid);
       
       // Find the right display
-      FloDisplay *cur = app->getCFG()->GetDisplayById(vev->displayid);
+      FloDisplay *cur = app->getCFG()->GetDisplayById(vev->interfaceid,
+						      vev->displayid);
       if (cur != 0)
 	cur->show = vev->show;
       else
-	printf("VIDEO: Invalid display (id %d).\n",vev->displayid);
+	printf("VIDEO: Invalid display (interface id %d, display id %d)\n",
+	       vev->interfaceid,vev->displayid);
     }
     break;
 
@@ -1007,17 +1016,18 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       VideoShowLayoutEvent *vev = (VideoShowLayoutEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: %s layout (i%d) %s\n",
+	printf("VIDEO: %s layout (interface id %d, layout id %d) %s\n",
 	       (vev->show ? "show" : "hide"),
-	       vev->layoutid,
+	       vev->interfaceid,vev->layoutid,
 	       (vev->hideothers ? "(hide others)" : ""));
       
       // Find the right layout
-      int id = vev->layoutid;
+      int iid = vev->interfaceid,
+	id = vev->layoutid;
       FloLayout *cur = app->getCFG()->GetLayouts();
       char found = 0;
       while (cur != 0) {
-	if (id == cur->id) {
+	if (iid == cur->iid && id == cur->id) {
 	  // Match!
 	  // Set show or hide
 	  cur->show = vev->show;
@@ -1031,7 +1041,57 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
       }
 
       if (!found)
-	printf("VIDEO: Invalid layoutid %d.\n",vev->layoutid);
+	printf("VIDEO: Invalid layoutid %d in interface %d.\n",
+	       vev->layoutid,vev->interfaceid);
+    }
+    break;
+
+  case T_EV_VideoSwitchInterface :
+    {
+      // Here, we show all layouts & displays that belong to the given 
+      // interface
+      // All other layouts & displays are hidden, unless they belong to a 
+      // non-switchable interface
+      VideoSwitchInterfaceEvent *vev = (VideoSwitchInterfaceEvent *) ev;
+      if (CRITTERS)
+	printf("VIDEO: Switch to interface %d\n",vev->interfaceid);
+      
+      // Show/hide layouts
+      int iid = vev->interfaceid;
+
+      {
+	FloLayout *cur = app->getCFG()->GetLayouts();
+	while (cur != 0) {
+	  if (cur->iid != 0 &&
+	      cur->iid < NS_INTERFACE_START_ID) { // Switchable interface?
+	    if (cur->iid == iid) 
+	      // Layout in matching interface- show
+	      cur->show = 1;
+	    else
+	      // Layout in unmatching interface- hide
+	      cur->show = 0;
+	  }
+	  
+	  cur = cur->next;
+	}
+      }
+
+      {
+	FloDisplay *cur = app->getCFG()->GetDisplays();
+	while (cur != 0) {
+	  if (cur->iid != 0 &&
+	      cur->iid < NS_INTERFACE_START_ID) { // Switchable interface?
+	    if (cur->iid == iid) 
+	      // Display in matching interface- show
+	      cur->show = 1;
+	    else
+	      // Display in unmatching interface- hide
+	      cur->show = 0;
+	  }
+
+	  cur = cur->next;
+	}
+      }
     }
     break;
 

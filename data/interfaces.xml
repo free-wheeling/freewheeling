@@ -1,0 +1,35 @@
+<interfaces>
+  <!-- Interfaces to load. Each interface defines visuals and behavior for
+       how Freewheeling responds to different hardware controllers. -->
+
+  <!-- Each interface is automatically assigned an ID when loaded.
+
+       An interface can contain displays (such as meters)
+       and layouts (visual mappings of loops), as well as bindings
+       that define how Freewheeling responds to different 
+       buttons/sliders/keys/etc.
+
+       Interfaces defined as 'switchable=0' have displays and layouts
+       that are always visible- never switched. For example, the
+       MIDI footswitch interface is always visible at the bottom right
+       of Freewheeling's window for quick capturing of loops. -->
+
+  <!-- Interfaces are loaded in this order. Add your own! -->
+
+  <!-- Bare minimum -->
+  <interface setup="coreinterface.xml" switchable="0"/>
+
+  <!-- Customization -->
+  <!-- <interface setup="mercury.xml" switchable="0"/> -->
+
+  <!-- Bare minimum -->
+  <interface setup="browsers.xml" switchable="0"/>
+
+  <!-- Added user interfaces -->
+  <interface setup="midifootswitch.xml" switchable="0"/>
+  <interface setup="pckeyboard.xml"/>
+  <interface setup="midikeyboard.xml"/>
+  <!-- <interface setup="bcf2000.xml"/> -->
+  <interface setup="pcr-m1.xml" switchable="0"/>
+  <interface setup="dancemat.xml"/>
+</interfaces>

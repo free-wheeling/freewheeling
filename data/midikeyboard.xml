@@ -1,0 +1,229 @@
+<interface>
+  <bindings>
+    <!-- Variables -->
+
+    <!-- Last received MIDI program change -->
+    <declare var="VAR_cur_program" type="int" init="0"/>
+
+    <declare var="VAR_loopid_pianostart" type="int" init="350"/>
+    <declare var="VAR_piano_looppage" type="int" init="0"/>
+
+    <declare var="VAR_pianocapture" type="int" init="0"/>
+    <declare var="VAR_pianocapture_set" type="char" init="0"/>
+
+    <!-- Range of MIDI notes used to capture loops -->
+    <declare var="VAR_noterange" type="range" init="36>47"/>
+    <!-- MIDI channel used to capture loops -->
+    <declare var="VAR_notechan" type="int" init="0"/>
+    <!-- Shift in 'noterange' used to select loops. Defaults to one
+	 octave above the key range used to capture loops. 
+	 *only enabled in Mercury mode* -->
+    <declare var="VAR_selectoctave" type="int" init="12"/>
+    <declare var="VAR_noterangechange" type="int" init="12"/>
+
+    <!-- Startup -->
+    <binding input="start-interface" 
+     output1="video-show-loop" 
+     parameters1="layoutid=0 and
+		  loopid=VAR_noterange+VAR_loopid_pianostart"/>
+
+    <!-- Rest of the bindings... -->
+
+    <!-- Piano capture -
+	 this allows you to specify any piano key for capturing loops.
+
+	 First, you hit 'C' and then you hit the piano key.
+	 From then on, that key triggers loops. -->
+    <!-- DISABLED-
+    <binding input="key" conditions="VAR_keyheld_space=1 and VAR_mercurymode=1 
+				     and key=c"
+     output1="set-variable" parameters1="var=VAR_pianocapture_set and value=0"
+     output2="set-variable" parameters2="var=VAR_pianocapture and value=0"/>
+
+    <binding input="key" conditions="VAR_mercurymode=1 and key=c"
+     output="set-variable" parameters="var=VAR_pianocapture_set and value=1"/>
+      -->
+
+    <binding input="midikey" 
+     conditions="VAR_pianocapture_set=1 and keydown=1"
+     output1="set-variable" parameters1="var=VAR_pianocapture and value=notenum"
+     output2="set-variable" parameters2="var=VAR_pianocapture_set and value=0"/>
+
+    <!-- Slide Loop Volumes -->
+    <binding input="midikey"
+     conditions="VAR_keyheld_up=1 and midichannel=VAR_notechan and 
+		 notenum=VAR_noterange"
+     output="slide-loop-amplifier"
+     parameters="loopid=notenum+VAR_loopid_pianostart and 
+		 slide=keydown*VAR_slide_speed/2"/> 
+    <binding input="midikey"
+     conditions="VAR_keyheld_down=1 and midichannel=VAR_notechan and 
+		 notenum=VAR_noterange"
+     output="slide-loop-amplifier"
+     parameters="loopid=notenum+VAR_loopid_pianostart and 
+		 slide=-keydown*VAR_slide_speed/2"/> 
+
+    <!-- Set Trigger Volume (play volume) for Loops -->
+    <binding input="midikey"
+     conditions="VAR_cutmode=1 and midichannel=VAR_notechan and 
+		 notenum=VAR_noterange and keydown=1"
+     output="set-trigger-volume" 
+     parameters="loopid=notenum+VAR_loopid_pianostart and vol=velocity/127"/> 
+    <binding input="midikey"
+     conditions="VAR_cutmode=1 and midichannel=VAR_notechan and 
+		 notenum=VAR_noterange and keydown=0"
+     output="set-trigger-volume"
+     parameters="loopid=notenum+VAR_loopid_pianostart and vol=0"/>
+
+    <!-- Erase Loops -->
+    <binding input="midikey" 
+     conditions="VAR_keyheld_space=1 and notenum=VAR_pianocapture and keydown=1" 
+     output1="erase-loop" parameters1="loopid=VAR_loopid_footswitch"
+     output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+    <binding input="midikey" 
+     conditions="VAR_keyheld_space=1 and midichannel=VAR_notechan and 
+		 notenum=VAR_noterange and keydown=1" 
+     output="erase-loop" parameters="loopid=notenum+VAR_loopid_pianostart"/> 
+    <!-- Move Loops -->
+    <binding input="midikey"
+     conditions="VAR_xferloop=1 and midichannel=VAR_notechan and
+		 notenum=VAR_noterange and keydown=1"
+     output1="move-loop"
+     parameters1="oldloopid=VAR_xferidx and 
+		  newloopid=notenum+VAR_loopid_pianostart"
+     output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+    <!-- Overdub Loops -->
+    <binding input="midikey"
+     conditions="VAR_overdubmode=1 and notenum=VAR_pianocapture and keydown=1"
+     output1="trigger-loop"
+     parameters1="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+		  loopid=VAR_loopid_footswitch and vol=velocity/127"
+     output2="set-variable" parameters2="var=VAR_xferloop and value=1"
+     output3="set-variable" parameters3="var=VAR_xferidx and
+					 value=VAR_loopid_footswitch"/>
+
+    <binding input="midikey"
+     conditions="VAR_overdubmode=1 and midichannel=VAR_notechan and 
+		 notenum=VAR_noterange and keydown=1"
+     output="trigger-loop"
+     parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+		 loopid=notenum+VAR_loopid_pianostart and vol=velocity/127"/> 
+
+    <!-- Trigger Loops -->
+    <binding input="midikey"
+     conditions="notenum=VAR_pianocapture and keydown=1"
+     output1="trigger-loop"
+     parameters1="loopid=VAR_loopid_footswitch and vol=velocity/127"
+     output2="set-variable" parameters2="var=VAR_xferloop and value=1"
+     output3="set-variable" parameters3="var=VAR_xferidx and
+					 value=VAR_loopid_footswitch"/>
+
+    <binding input="midikey"
+     conditions="midichannel=VAR_notechan and notenum=VAR_noterange and 
+		 keydown=1"
+     output="trigger-loop"
+     parameters="loopid=notenum+VAR_loopid_pianostart and vol=velocity/127"/>
+
+    <!-- z/x: Prev/Next page of loops on piano keyboard -->
+    <binding input="key" conditions="key=x and keydown=1" 
+     output1="set-variable" parameters1="var=VAR_loopid_pianostart and 
+					 value=VAR_loopid_pianostart+
+					       VAR_noterangechange"
+     output2="set-variable" parameters2="var=VAR_piano_looppage and
+					 value=VAR_piano_looppage+1"
+     output3="video-show-loop"
+     parameters3="layoutid=0 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+
+    <binding input="key" conditions="key=z and keydown=1" 
+     output1="set-variable" 
+     parameters1="var=VAR_loopid_pianostart and 
+		  value=VAR_loopid_pianostart-VAR_noterangechange"
+     output2="set-variable" parameters2="var=VAR_piano_looppage and
+					 value=VAR_piano_looppage-1"
+     output3="video-show-loop"
+     parameters3="layoutid=0 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+
+    <!-- DEPRECATED HELP: z/x: Change keyboard octave used for loops
+    <binding input="key" conditions="key=x and keydown=1" 
+     output1="set-variable" parameters1="var=VAR_noterange and 
+					 value=VAR_noterange+VAR_noterangechange"
+     output2="video-show-loop"
+     parameters2="layoutid=0 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+
+    <binding input="key" conditions="key=z and keydown=1" 
+     output1="set-variable" 
+     parameters1="var=VAR_noterange and value=VAR_noterange-VAR_noterangechange"
+     output2="video-show-loop"
+     parameters2="layoutid=0 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+     -->
+  </bindings>
+
+  <graphics>
+    <layout id="0" name="Piano Keyboard" scale="0.35,0.55" pos="0.00,0.00"
+     label="0" elabel="0" namepos="0.02,0.02" show="1">
+      <element id="0" name="C" base="0.0,0.0" looppos="0.20,0.85" loopsize="0.5"
+       namepos="0.15,1.10">
+	<box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+	<box outline="T LR" pos="0.00,0.00, 0.15,0.60"/>
+      </element>
+      <element id="1" name="C#" base="0.0,0.0" looppos="0.35,0.25" loopsize="0.5"
+       namepos="0.25,0.50">
+	<box outline="TBLR" pos="0.15,0.00, 0.55,0.60"/>
+      </element>
+      <element id="2" name="D" base="0.4,0.0" looppos="0.20,0.85" loopsize="0.5"
+       namepos="0.15,1.10">
+	<box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+	<box outline="T LR" pos="0.15,0.00, 0.25,0.60"/>
+      </element>
+      <element id="3" name="D#" base="0.4,0.0" looppos="0.45,0.25" loopsize="0.5"
+       namepos="0.35,0.50">
+	<box outline="TBLR" pos="0.25,0.00, 0.65,0.60"/>
+      </element>
+      <element id="4" name="E" base="0.8,0.0" looppos="0.20,0.85" loopsize="0.5"
+       namepos="0.15,1.10">
+	<box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+	<box outline="T LR" pos="0.25,0.00, 0.40,0.60"/>
+      </element>
+      <element id="5" name="F" base="1.2,0.0" looppos="0.20,0.85" loopsize="0.5"
+       namepos="0.15,1.10">
+	<box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+	<box outline="T LR" pos="0.00,0.00, 0.15,0.60"/>
+      </element>
+      <element id="6" name="F#" base="1.2,0.0" looppos="0.35,0.25" loopsize="0.5"
+       namepos="0.25,0.50">
+	<box outline="TBLR" pos="0.15,0.00, 0.55,0.60"/>
+      </element>
+      <element id="7" name="G" base="1.6,0.0" looppos="0.20,0.85" loopsize="0.5"
+       namepos="0.15,1.10">
+	<box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+	<box outline="T LR" pos="0.15,0.00, 0.20,0.60"/>
+      </element>
+      <element id="8" name="G#" base="1.6,0.0" looppos="0.40,0.25" loopsize="0.5"
+       namepos="0.30,0.50">
+	<box outline="TBLR" pos="0.20,0.00, 0.60,0.60"/>
+      </element>
+      <element id="9" name="A" base="2.0,0.0" looppos="0.20,0.85" loopsize="0.5"
+       namepos="0.15,1.10">
+	<box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+	<box outline="T LR" pos="0.20,0.00, 0.25,0.60"/>
+      </element>
+      <element id="10" name="A#" base="2.0,0.0" looppos="0.45,0.25" 
+       loopsize="0.5" namepos="0.35,0.50">
+	<box outline="TBLR" pos="0.25,0.00, 0.65,0.60"/>
+      </element>
+      <element id="11" name="B" base="2.4,0.0" looppos="0.20,0.85" loopsize="0.5"
+       namepos="0.15,1.10">
+	<box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
+	<box outline="T LR" pos="0.25,0.00, 0.40,0.60"/>
+      </element>
+    </layout>
+
+    <display var="VAR_piano_looppage" type="squares" font="small"
+     title="Page" pos="0.9,0.9"
+     orientation="horizontal" 
+     firstsquareval="-2" lastsquareval="2" squareinterval="1.0"
+     squaresize="0.05,0.05"/>
+  </graphics>
+</interface>

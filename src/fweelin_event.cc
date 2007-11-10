@@ -148,6 +148,7 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
 
       SET_ETYPE(T_EV_GoSub,"go-sub",GoSubEvent);
       SET_ETYPE(T_EV_StartSession,"start-freewheeling",StartSessionEvent);
+      SET_ETYPE(T_EV_StartInterface,"start-interface",StartInterfaceEvent);
       SET_ETYPE_SLOW(T_EV_ExitSession,"exit-freewheeling",ExitSessionEvent);
 
       SET_ETYPE(T_EV_SlideMasterInVolume,"slide-master-in-volume",
@@ -205,6 +206,8 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_VideoShowLoop,"video-show-loop",VideoShowLoopEvent);
       SET_ETYPE(T_EV_VideoShowLayout,"video-show-layout",
 		VideoShowLayoutEvent);
+      SET_ETYPE(T_EV_VideoSwitchInterface,"video-switch-interface",
+		VideoSwitchInterfaceEvent);
       SET_ETYPE(T_EV_VideoShowDisplay,"video-show-display",
 		VideoShowDisplayEvent);
       SET_ETYPE(T_EV_VideoShowHelp,"video-show-help",

@@ -124,6 +124,16 @@ class Preallocated {
       return prealloc_mgr->RTNew();
   };
 
+  Preallocated *RTNewWithWait() {
+    if (prealloc_mgr == 0) { // No mgr, so allocate nonRT way!
+      //printf("WARNING: nonRT Prealloc in RTNew\n");
+      return NewInstance();
+    }
+    else 
+      return prealloc_mgr->RTNewWithWait();
+  };
+
+
   // Realtime-safe function to delete this instance of this class
   void RTDelete() {
     if (prealloc_mgr == 0) { // No mgr, nonRT delete!
@@ -135,7 +145,7 @@ class Preallocated {
   };
 
   // Returns the PreallocatedType manager associated with this type
-  PreallocatedType *GetMgr() { return prealloc_mgr; };
+  inline PreallocatedType *GetMgr() { return prealloc_mgr; };
 
   // Status values
   const static char PREALLOC_BASE_INSTANCE = 0, // Base instance, never deleted

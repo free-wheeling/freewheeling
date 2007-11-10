@@ -1,0 +1,111 @@
+<graphics>
+<!-- Here in this graphics section, we define the way FreeWheeling looks onscreen.
+     The aim is to create a visual layout that is simple and functional.
+     
+     So, key areas are highly configurable. For example, FreeWheeling is
+     designed to show you where your loops are mapped. One user may be a 
+     drummer with a MIDI kit and footswitches, where another might be sitting
+     at the keyboard of a laptop. The graphics section for each of these users
+     can be configured with the geometry of the places where loops go. We 
+     can say how our laptop keyboard looks, so that the loops will appear
+     onscreen inside pictures of the keys to which they are assigned. Or we 
+     could configure visuals for our drumkit layout.
+
+     The section is divided into a number of layouts. Each layout is a
+     collection of elements. Each element is a collection of geometries that
+     tell FreeWheeling how to draw that element. For example, a MIDI piano
+     keyboard is composed of all the white and black notes. Each note is
+     made up of rectangles. 
+   
+     Elements also specify where loops should be drawn, and at what size.
+     For the E key on the PC keyboard, we can specify where the loop will
+     show and at what size. For a footswitch, we can do the same.
+
+     Layouts do not define how loops are captured and triggered- only
+     how they look onscreen. -->
+
+<!-- Screen resolution. This must be set first! -->
+  <var resolution="640,480"/>
+
+<!-- Video update delay (ms). Delay for this many milliseconds between
+     video draws. On a slow system you will want a higher number to conserve
+     CPU. -->
+  <var videodelay="40"/>
+
+<!-- Fonts to load -
+
+     name="main" is the main font for all onscreen text displays 
+     name="help" is the font for help text 
+ 
+     Font files must live in /usr/share/fonts/truetype/ -->
+
+  <font name="main" file="verabd.ttf" size="20"/>
+  <font name="small" file="verabd.ttf" size="14"/>
+  <font name="tiny" file="vera.ttf" size="10"/>
+  <font name="help" file="vera.ttf" size="16"/>
+
+<!-- All positions on screen follow a coordinate system with (0,0) at the 
+     top left and (1,1) at the bottom right of the screen.
+    
+     So if the screen resolution changes, no problem. -->
+
+<!-- Here are some examples:
+
+     <layout id="0" name="PC Keyboard" scale="1.0,1.0" pos="0.00,0.00"
+      label="0" elabel="1" show="1">
+
+     This defines a visual layout "PC Keyboard":
+     
+     The ID is used later in the event bindings to refer to a layout. 
+     The name will show up onscreen if label="1" is set. 
+
+     Scale specifies scaling for the whole layout. It is
+     an easy way to make the whole layout bigger or smaller. 
+
+     Pos specifies the top left position for the whole layout- an easy way 
+     to move the whole layout onscreen. 
+
+     If elabel="1" is set, the elements will have their names showing. 
+
+     If show="0", this layout will remain hidden until an 
+     video-show-layout event is received.
+
+       <element id="113" name="Q" base="0.0,0.0" looppos="0.05,0.05" 
+        loopsize="0.1" namepos="0.01,0.00">
+
+     Inside this layout, we have defined one element named "Q".
+     This is the Q key on the PC keyboard. It is not associated with the
+     keypress of Q, but only the way the Q key looks.
+
+     ID is the identifier for the element within the layout. It is 
+     important to choose IDs carefully, because visual layouts will
+     be matched with loopids based on this ID. For example, an event binding
+     (specified later) assigns loops to keys pressed on the keyboard. 
+     The loopid is assigned based on the keysym (key symbol) for the key 
+     pressed, so that when Q is pressed, the loop is stored in loopid 113. 
+     Then, the visuals will correctly draw the loop in id 113.
+
+     Base specifies the base location of the element in the layout.
+     All coordinates for loop and name position, as well as the geometries
+     of the element, are relative to this base.
+
+     The name of the element is shown at namepos (relative to the base),
+     if elabel="1" is set in the layout.
+
+     An animated graphical loop scope is shown at looppos and
+     loopsize. The loop shown is stored at baseloopid + element ID.
+     Baseloopid is set with the video-show-loop event, which allows
+     a layout to show a range of loop ids.
+
+          <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+       </element> 
+
+     In each element, we have a number of geometries. Right now there is only
+     one type of geometry and that is box. An element is made of boxes.
+     Each box has position left,top,right,bottom given in pos. The box
+     is outlined as given in outline (letters T B L and R for top, bottom,
+     left and right).
+-->     
+
+  <!-- Different layouts are defined in the interface XMLs -->
+</graphics>

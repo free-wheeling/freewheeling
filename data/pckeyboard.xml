@@ -1,0 +1,173 @@
+<interface>
+  <bindings>
+    <!-- Variables -->
+
+    <declare var="VAR_loopid_pckeystart" type="int" init="0"/>
+    <declare var="VAR_pckeyfullrange" type="range" init="0>322"/>
+    <declare var="VAR_pckeyrange" type="range" init="97>122"/>
+
+    <!-- Startup -->
+    <binding input="start-interface" 
+     output1="video-show-loop" 
+     parameters1="layoutid=0 and
+		  loopid=VAR_pckeyfullrange+VAR_loopid_pckeystart"/>
+
+    <!-- Rest of the bindings... -->   
+
+    <!-- Slide Loop Volumes -->
+    <binding input="key"
+     conditions="VAR_keyheld_up=1 and key=VAR_pckeyrange" 
+     output="slide-loop-amplifier"
+     parameters="loopid=key+VAR_loopid_pckeystart and 
+		 slide=keydown*VAR_slide_speed/2"/> 
+    <binding input="key"
+     conditions="VAR_keyheld_down=1 and key=VAR_pckeyrange" 
+     output="slide-loop-amplifier"
+     parameters="loopid=key+VAR_loopid_pckeystart and 
+		 slide=-keydown*VAR_slide_speed/2"/> 
+
+    <!-- Set Trigger Volume (play volume) for Loops -->
+    <binding input="key"
+     conditions="VAR_cutmode=1 and key=VAR_pckeyrange"
+     output="set-trigger-volume"
+     parameters="loopid=key+VAR_loopid_pckeystart and vol=1.0*keydown"/> 
+
+    <!-- Erase Loops -->
+    <binding input="key" 
+     conditions="VAR_keyheld_space=1 and key=VAR_pckeyrange and keydown=1" 
+     output="erase-loop" parameters="loopid=key+VAR_loopid_pckeystart"/> 
+
+    <!-- Move Loops -->
+    <binding input="key"
+     conditions="VAR_xferloop=1 and key=VAR_pckeyrange and keydown=1"
+     output1="move-loop"
+     parameters1="oldloopid=VAR_xferidx and
+		 newloopid=key+VAR_loopid_pckeystart"
+     output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+    <!-- Overdub Loops -->
+    <binding input="key"
+     conditions="VAR_overdubmode=1 and key=VAR_pckeyrange and keydown=1"
+     output="trigger-loop"
+     parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+		 loopid=key+VAR_loopid_pckeystart and vol=1.0"/> 
+
+    <!-- Trigger Loops -->
+    <binding input="key" conditions="key=VAR_pckeyrange and keydown=1"
+     output="trigger-loop"
+     parameters="loopid=key+VAR_loopid_pckeystart and vol=1.0"/>
+
+  </bindings>
+
+  <graphics>
+    <layout id="0" name="PC Keyboard" scale="1.0,1.0" pos="0.00,0.00"
+     label="0" elabel="1" show="0">
+      <element id="113" name="Q" base="0.0,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="119" name="W" base="0.1,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="101" name="E" base="0.2,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="114" name="R" base="0.3,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="116" name="T" base="0.4,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="121" name="Y" base="0.5,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="117" name="U" base="0.6,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="105" name="I" base="0.7,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="111" name="O" base="0.8,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="112" name="P" base="0.9,0.0" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+
+      <element id="97" name="A" base="0.03,0.1" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="115" name="S" base="0.13,0.1" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="100" name="D" base="0.23,0.1" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="102" name="F" base="0.33,0.1" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="103" name="G" base="0.43,0.1" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="104" name="H" base="0.53,0.1" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="106" name="J" base="0.63,0.1" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="107" name="K" base="0.73,0.1" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="108" name="L" base="0.83,0.1" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+
+      <element id="122" name="Z" base="0.06,0.2" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="120" name="X" base="0.16,0.2" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="99" name="C" base="0.26,0.2" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="118" name="V" base="0.36,0.2" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="98" name="B" base="0.46,0.2" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="110" name="N" base="0.56,0.2" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+      <element id="109" name="M" base="0.66,0.2" looppos="0.05,0.05" 
+       loopsize="0.1" namepos="0.01,0.00">
+	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+      </element> 
+    </layout>
+  </graphics>
+</interface>

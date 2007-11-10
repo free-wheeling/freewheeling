@@ -588,7 +588,7 @@ void PreallocatedType::GoPreallocate() {
 	prev->SetupPreallocated(this,
 				/*Preallocated::PREALLOC_BASE_INSTANCE*/
 				Preallocated::PREALLOC_PENDING_USE);
-	printf("MEM: First new instance in free list!\n");
+	// printf("MEM: First new instance in free list!\n");
 	cnt--;
       }
       

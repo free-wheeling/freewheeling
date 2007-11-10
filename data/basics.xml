@@ -1,0 +1,162 @@
+<basics>
+<!-- In FreeWheeling, the storage of loops is independent from 
+     the user interface that was used to capture them. This is important, 
+     because it opens up doors for collaboration: loops captured by a PC 
+     keyboard can be triggered by a footswitch. In future, perhaps loops will
+     be downloaded from the Net as part of collaborative improvisation rooms.
+     These will then be available on any user interface.
+
+     This parameter establishes the number of loop ids or places to put loops.
+     FreeWheeling starts with a map of empty placeholders.
+     As the user captures loops, they are assigned to different
+     places in this map. Different user interfaces, such as keyboard keys,
+     drum triggers, footpedals, switches, or piano keys- can refer to
+     different loopids for capturing and triggering loops. And visually, 
+     you can define different onscreen layouts to show loops.
+
+     This variable determines the total number of loopids.
+     Note that even a very large map is memory efficient, because space for 
+     a loop sample is not allocated until that loop is recorded. -->
+  <var numloopids="1024"/>
+
+<!-- Path to FreeWheeling library. The library stores loops, scenes and
+     other data that persists between FreeWheeling sessions. -->
+  <var librarypath="fw-lib/"/>
+
+<!-- Number of MIDI output ports. 
+     You can echo MIDI events to different MIDI out ports, and direct 
+     specific MIDI events to specific ports. This allows you to connect 
+     FreeWheeling to different soft-synths and FX and control them through
+     separate MIDI ports. -->
+  <var midiouts="4"/>
+
+<!-- List of MIDI ports to send MIDI sync (MIDI clock) to.
+     When enabled, Freewheeling will send timing sync info to these
+     MIDI ports. This is a comma-separated list of those ports. 
+     1 is the first MIDI port. -->
+  <var midisyncouts="1"/> <!-- Send MIDI sync to first port only -->
+
+<!-- External audio inputs to create into FreeWheeling.
+     For each input, you have to specify- do I want a mono or stereo input?
+     Each audio input in the string is one letter- M for mono or S for stereo.
+     A stereo input creates two ports- input2L and input2R, for example.
+     If you create any stereo ports, or if FluidSynth is set to run in
+     stereo, FreeWheeling runs in stereo, which means larger buffers
+     and more memory usage.
+
+     You can capture loops from different combinations of inputs, and you
+     can control their levels. FreeWheeling may add its own internal audio
+     inputs- for example, from its integrated softsynth. 
+     You don't need to account for those here. -->
+
+<!-- Create inputs- one input per letter- M is mono and S is stereo! -->
+  <var externalaudioinputs="MMS"/>
+
+<!-- Limit the maximum play amplification to protect your sound system-
+     this prevents us from accidentally ramping up the volume of a loop
+     to ridiculous levels. 1.0 is 100% (0 dB) volume. -->
+  <var maxplayvol="5.0"/>
+
+<!-- Maximum gain for limiter. When this is above 1.0 (100% amplitude), the
+     limiter acts like a compressor, gently rising in gain until it reaches 
+     this max. -->
+  <var maxlimitergain="1.0"/>
+
+<!-- Threshhold for limiter. When audio out goes above this threshold (1.0 is
+     100% amplitude or 0 db), the limiter kicks in. 
+     Since the limiter does not look ahead, it is a good idea to set the 
+     threshhold slightly below max to avoid clipping. -->
+  <var limiterthreshhold="0.9"/>
+
+<!-- Limiter release rate. A higher number is a faster release. -->
+  <var limiterreleaserate="0.000020"/>
+
+<!-- File formats for saving loops and streaming audio. 
+
+     Choose from the following options:
+
+     OGG
+     WAV
+     AU
+     FLAC
+
+     -->
+  <var loopoutformat="OGG"/>
+  <var streamoutformat="WAV"/>
+
+<!-- Quality setting for OGG encoding -->
+  <var oggquality="0.5"/>
+
+<!-- FreeWheeling compiles with FluidSynth, a SoundFont-based 
+     soft synthesizer (Linux only, as of v0.5.3) -->
+
+<!-- Run FluidSynth in stereo? This increases the size of audio memory. -->
+  <fluidsynth stereo="1"/>
+
+<!-- Parameters for FluidSynth integrated softsynth.
+     See www.fluidsynth.org for details.
+     See www.hammersound.net for free soundfonts.  -->
+  <fluidsynth param="synth.polyphony" setint="64"/>
+ 
+<!-- Interpolation setting for FluidSynth- lower setting, lower quality, 
+     faster. FluidSynth default is 4. -->
+  <fluidsynth interpolation="1"/>
+
+<!-- MIDI channel for integrated FluidSynth. When the FluidSynth patchbank
+     is selected, all unused MIDI events are folded into this channel 
+     and fired to FluidSynth. So, currently, the integrated FluidSynth behaves
+     as a single channel synth. -->
+  <fluidsynth channel="0"/>
+
+<!-- Global pitch tuning for FluidSynth, specified in cents deviation. -->
+  <fluidsynth tuning="-31.76"/>
+
+<!-- LINUX ONLY
+
+     Soundfonts to load. Soundfonts without a path load from
+     /usr/local/share/fweelin/.
+
+     Two good places to find free Soundfonts:
+
+     http://www.hammersound.net/
+     http://www.sf2midi.com/
+-->
+
+  <fluidsynth soundfont="basic.sf2"/>
+
+<!-- Load some soundfonts: -->
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_tb303.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/Ruckus_Acoustic_Drums.SF2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_magic_techno_drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_acoustic_perc.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_african_perc.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_linn_drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_m1_drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_r8_drums.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/2/vintage-drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/tr-808-drums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/StomperSet.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/2/hs_boss_dr_550.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/3/Industromatic.SF2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Industrial_Set.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/BasementNoise.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/3/insane_kit.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Woody.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/dbkv21.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/3/GoldDrums.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/3/PremierKit.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Ellade.SF2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/2/Tabla.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Talking_Drum.SF2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/RCubero_Percusion_Flamenca.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/bennetng_8850asia.sf2"/>
+  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Chris_Percussion2.sf2"/>
+
+  <fluidsynth soundfont="/usr/local/share/soundfonts/5/emu.sf2"/>
+</basics>

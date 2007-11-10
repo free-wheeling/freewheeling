@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!DOCTYPE freewheeling [
+<!ENTITY basics SYSTEM "basics.xml">
+<!ENTITY interfaces SYSTEM "interfaces.xml">
+<!ENTITY graphics SYSTEM "graphics.xml">
+]>
+
+<!-- Welcome to FreeWheeling's configuration system.
+
+     If you know XML, no problem.
+     There's definitely a learning curve here,
+     but what you get is great flexibility.
+
+     Here, you can set up FreeWheeling to look and feel 
+     the way that is most intuitive for you. 
+
+     FreeWheeling is especially configurable where it comes to
+     different input controllers, such as QWERTY and piano keyboards,
+     MIDI control boxes, footswitches and pedalboards, etc. 
+
+     In the graphics section, you can define a graphical layout so that your 
+     control surfaces will appear onscreen as they do at your feet or 
+     fingertips. This is important, because you will be grabbing and 
+     controlling loops from different MIDI/keyboard controllers.
+
+     In the events section, you can tell FreeWheeling how you want it to
+     respond to the physical buttons and switches you press,
+     sliders you move, and movements you make. Most of FreeWheeling's 
+     important functions can be controlled from any input. 
+
+     Underlying the configuration system is a robust language. 
+     You can do things like map velocity of a MIDI note to a 
+     certain parameter in FreeWheeling; Scale, map and transform MIDI
+     events; Create your own toggles and modes; And trigger several events
+     from one input. If you can learn how to configure FreeWheeling,
+     then you will have a robust performance controller at your fingertips.
+
+     Happy FreeWheeeling! 
+     Your feedback is appreciated.
+-->
+
+<freewheeling version="0.5.6">
+
+&basics;
+&graphics;
+&interfaces;
+
+</freewheeling>

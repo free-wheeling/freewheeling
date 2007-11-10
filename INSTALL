@@ -8,7 +8,7 @@ For more help, please refer to the video tutorials at:
 http://freewheeling.sourceforge.net/
 
 And read the configuration file:
-~/.fweelin/.fweelin.rc
+~/.fweelin/fweelin.xml
 (once you've run FreeWheeling, this file appears)
 
 Browse or sign on to the mailing-list for help.

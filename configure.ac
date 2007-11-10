@@ -17,7 +17,7 @@
 
 # Process this file with autoconf to produce a configure script.
 AC_INIT(src/fweelin.cc)
-AM_INIT_AUTOMAKE(fweelin,0.5.5)
+AM_INIT_AUTOMAKE(fweelin,0.5.6)
 AC_CONFIG_SRCDIR([src/fweelin.cc])
 #AM_CONFIG_HEADER(config.h)
 

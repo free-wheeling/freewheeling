@@ -1,0 +1,87 @@
+<interface>
+  <graphics>
+    <!-- Browsers are defined in the main config (interface ID 0), so
+         they can be accessed easily from any interface. -->
+    <display interfaceid="0" 
+     id="DISPLAY_browser_patch" type="browser" font="main" 
+     browsetype="BROWSE_patch" pos="0.0,0.96" 
+     xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="1">
+  <!-- Load the given patch bank for patch browsing. Link this bank of patches
+       to the given MIDI output port. You can have several of these statements,
+       each controlling patches for a different MIDI output port. 
+
+       You can also have combination patches, where one MIDI controller is routed
+       to several MIDI ports and channels, depending on keyboard zones. 
+       See examples/README for more information.
+
+       Patch browsing allows the user to browse through meaningful patch names
+       for external synthesizers. It allows a single MIDI control source to
+       control multiple sound sources. 
+
+       You can define the patches and program numbers
+       in the 'patches' file (see examples/patches1.xml).
+
+       You can automatically generate patch names for DSSI synth plugins 
+       by using a patched version of Ghostess, which saves patch names 
+       in the right XML format for Freewheeling to load (see examples/README).
+
+       Each patches.xml file contains data for all channels. You can have 
+       different patches available on each MIDI channel.
+
+       By default, FreeWheeling looks in the folder ~/.fweelin/ for your
+       XML patch files. FreeWheeling also checks /usr/local/share/fweelin/ for
+       XML patch files.
+
+       Each patch file has optional settings as follows:
+
+		  With suppressprogramchanges=1, no MIDI bank and program change
+		  messages are sent when patches are changed within a patch bank.
+		  This is useful when you have a softsynth loaded with patches on
+		  different channels and you merely want to switch channels-
+		  each patch is mapped to a different channel, but you don't want
+		  program change messages being sent to mess up your patches. 
+
+		  Use this for banks of Linuxsampler channels.
+
+		  With separatechannels=0, patches mapped to different channels
+		  appear in the same patch bank. With this option, you can have a
+		  collection of several patches on different channels that appear
+		  together in one list for browsing. This is useful for sampling
+		  synths where your patches are pre-loaded onto channels.
+
+		  With separatechannels=1, the old behavior is used. 
+		  The old behavior splits each channel into a separate bank.
+		  This works well for DSSI softsynths, where many synths run on
+		  the same port, but each channel accesses a different synth and
+		  different set of patches.
+
+       -->
+
+       <!-- Uncomment to load ~/.fweelin/patches1.xml and make patches available
+	    on MIDI output 1. 
+
+	   <patchbank midiport="1" separatechannels="1" patches="patches1.xml"/>
+       -->
+
+       <!-- Patch file with all channels available: This is a basic template
+	    for allowing the user to simply switch between MIDI output channels
+	    without sending MIDI program/bank changes. -->
+       <patchbank midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-channels.xml"/>
+    </display>
+
+    <display interfaceid="0" 
+     id="DISPLAY_browser_loop" type="browser" font="small"
+     browsetype="BROWSE_loop" pos="0.0,0.96"
+     xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="0"/>
+
+    <display interfaceid="0" 
+     id="DISPLAY_browser_scene" type="browser" font="small"
+     browsetype="BROWSE_scene" pos="0.0,0.96" 
+     xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="0"/>
+
+    <display interfaceid="0" 
+     id="DISPLAY_loop_tray" type="browser" font="tiny"
+     browsetype="BROWSE_loop_tray" pos="0.015,0.92"
+     xpand="0" xbox="0.05,0.6, 0.95,0.9" loopsize="0.05" show="1"/>
+  </graphics>
+</interface>
