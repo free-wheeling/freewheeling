@@ -144,8 +144,10 @@ class ItemRenamer : public EventHook {
 class Browser : public FloDisplay, public EventListener, public EventProducer,
 		public RenameCallback {
  public:
-  Browser(BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
-	  int xpand_x2, int xpand_y2, float xpand_delay) : 
+  Browser (int iid, 
+	   BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
+	   int xpand_x2, int xpand_y2, float xpand_delay) : 
+    FloDisplay(iid),
     renamer(0), app(0), btype(btype), callback(0), first(0), cur(0),
     xpand_x1(xpand_x1), xpand_y1(xpand_y1), 
     xpand_x2(xpand_x2), xpand_y2(xpand_y2), xpand_centery(-1), 
@@ -308,9 +310,10 @@ class Browser : public FloDisplay, public EventListener, public EventProducer,
 
 class LoopTray : public Browser {
  public:
-  LoopTray(BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
-	   int xpand_x2, int xpand_y2, int loopsize) : 
-    Browser(btype,xpand,xpand_x1,xpand_y1,xpand_x2,xpand_y2,0.0),
+  LoopTray (int iid,
+	    BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
+	    int xpand_x2, int xpand_y2, int loopsize) : 
+    Browser(iid,btype,xpand,xpand_x1,xpand_y1,xpand_x2,xpand_y2,0.0),
     loopsize(loopsize), basepos(0), iconsize(0), 
     resize_win(RS_Off), touchtray(0), loopmap(0) {};
   virtual ~LoopTray();
@@ -453,9 +456,10 @@ class PatchBrowser : public Browser {
   // Every DIV_SPACING patches, we insert a divider in the browser
   const static int DIV_SPACING = 10;
   
-  PatchBrowser(BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
-	       int xpand_x2, int xpand_y2, float xpand_delay) : 
-    Browser(btype,xpand,xpand_x1,xpand_y1,xpand_x2,xpand_y2,xpand_delay),
+  PatchBrowser (int iid,
+		BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
+		int xpand_x2, int xpand_y2, float xpand_delay) : 
+    Browser(iid,btype,xpand,xpand_x1,xpand_y1,xpand_x2,xpand_y2,xpand_delay),
     pb_first(0), pb_cur(0), pb_cur_tag(-1), num_pb(0) {};
   virtual ~PatchBrowser();
 

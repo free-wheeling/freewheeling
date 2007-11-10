@@ -27,7 +27,8 @@
 #define FWEELIN_FILE_BROWSER_DIVISION_TIME 3600
 
 #define FWEELIN_CONFIG_DIR  ".fweelin"
-#define FWEELIN_CONFIG_FILE ".fweelin.rc"
+#define FWEELIN_CONFIG_FILE "fweelin.xml"
+#define FWEELIN_CONFIG_EXT  ".xml"
 #define FWEELIN_CONFIG_HELP_TOKEN "HELP:"
 
 #define FWEELIN_OUTPUT_STREAM_NAME "live"
@@ -40,6 +41,9 @@
 #define FWEELIN_ERROR_COLOR_ON "\033[31;1m"
 #define FWEELIN_ERROR_COLOR_OFF "\033[0m"
 
+// Interface ID assigned to first non-switchable interface
+#define NS_INTERFACE_START_ID 1000
+
 #ifdef __MACOSX__
 // On Linux, FWEELIN_DATADIR refers to /usr/local/share/fweelin as set by autoconf
 // On Mac, we store our data in the Resource directory of the fweelin.app bundle. 
@@ -49,7 +53,7 @@ extern char *FWEELIN_DATADIR;
 
 // On Linux, VERSION is defined within configure.ac
 // For Mac OS, we set it here:
-#define VERSION "0.5.5"
+#define VERSION "0.5.6"
 #endif
 
 #include "fweelin_datatypes.h"
@@ -207,7 +211,7 @@ class InputMatrix : public EventProducer, public EventListener {
 
   InputMatrix(Fweelin *app);
   virtual ~InputMatrix();
-  
+
   // Sets the given variable to the given value- string is interpreted
   // based on variable type
   void SetVariable (UserVariable *var, char *value);
@@ -216,7 +220,7 @@ class InputMatrix : public EventProducer, public EventListener {
   void CreateVariable (xmlNode *declare);
 
   // Called during configuration to bind input controllers to events
-  void CreateBinding (xmlNode *binding);
+  void CreateBinding (int interfaceid, xmlNode *binding);
 
   // Are the conditions in the EventBinding bind matched by the
   // given input event and user variables?
@@ -271,15 +275,16 @@ class InputMatrix : public EventProducer, public EventListener {
 
   // Scans in the given binding for settings for output event parameters
   // and sets us up to handle those
-  void CreateParameterSets (EventBinding *bind, xmlNode *binding, 
+  void CreateParameterSets (int interfaceid,
+			    EventBinding *bind, xmlNode *binding, 
 			    Event *input, int contnum);
 
   // Scans in the given binding for conditions on input event parameters 
   // or user variables, and sets us up to handle those
   // Returns the hash index for this binding, based on an indexed parameter,
   // or 0 if this binding is not indexed
-  int CreateConditions (EventBinding *bind, xmlNode *binding, 
-			Event *input, int paramidx);
+  int CreateConditions (int interfaceid, EventBinding *bind, 
+			xmlNode *binding, Event *input, int paramidx);
 
   // Traverses through the list of event bindings beginning at 'start'
   // looking for a binding that matches current user variables and input
@@ -373,7 +378,7 @@ class FloLayoutElement {
   int loopx, loopy, // Position of loop graphic for the element
     loopsize; // Size of loop graphic (diameter)
 
-  // Geo describes how to draw this interface element
+  // Geo describes how to draw this element
   FloLayoutElementGeometry *geo;
 
   // Next element 
@@ -383,7 +388,7 @@ class FloLayoutElement {
 // The user can define the onscreen layout for loops-- see config file!
 class FloLayout {
  public:
-  FloLayout() : id(0), xpos(0), ypos(0), loopids(0,0),
+  FloLayout() : id(0), iid(0), xpos(0), ypos(0), loopids(0,0),
     name(0), nxpos(0), nypos(0), elems(0), show(1), showlabel(1),
     showelabel(1), next(0) {};
   ~FloLayout() {
@@ -398,7 +403,9 @@ class FloLayout {
     }
   };
   
-  int id, // User refers to a layout by ID
+  int id, // User refers to a layout by layout ID
+    iid,  // Interface id. Interface id + layout id uniquely identify 
+          // a layout
     xpos, ypos; // Base location on screen for this layout
   Range loopids; // Range of loopids that map to interface elements
   char *name; // ex PC Keyboard, MIDI Footpedal
@@ -457,7 +464,8 @@ enum FloDisplayType {
 // There are different types of displays, this is a base class
 class FloDisplay {
  public:
-  FloDisplay() : id(-1), exp(0), font(0), title(0), xpos(0), ypos(0), show(1),
+  FloDisplay (int iid) : iid(iid), 
+    id(-1), exp(0), font(0), title(0), xpos(0), ypos(0), show(1),
     next(0) {};
   virtual ~FloDisplay() {
     if (title != 0)
@@ -472,7 +480,9 @@ class FloDisplay {
 
   virtual FloDisplayType GetFloDisplayType() { return FD_Unknown; };
 
-  int id;                // Way to refer to this display from events
+  int iid,  // Interface id. Interface id + display id uniquely identify 
+            // a display
+    id;     // Display ID
 
   ParsedExpression *exp; // Expression which evaluates to a value to display
   FloFont *font;         // Font for text
@@ -487,6 +497,7 @@ class FloDisplay {
 class FloDisplayText : public FloDisplay 
 {
  public:
+  FloDisplayText (int iid) : FloDisplay(iid) {};
 
   virtual void Draw(SDL_Surface *screen);
 };
@@ -496,6 +507,7 @@ class FloDisplayText : public FloDisplay
 class FloDisplaySwitch : public FloDisplay 
 {
  public:
+  FloDisplaySwitch (int iid) : FloDisplay(iid) {};
 
   virtual void Draw(SDL_Surface *screen);
 };
@@ -505,7 +517,7 @@ class FloDisplaySwitch : public FloDisplay
 class FloDisplayCircleSwitch : public FloDisplay 
 {
  public:
-  FloDisplayCircleSwitch() : rad1(0), rad0(0), flash(0), prevnonz(0), 
+  FloDisplayCircleSwitch (int iid) : FloDisplay(iid), rad1(0), rad0(0), flash(0), prevnonz(0), 
     nonztime(0.) {};
 
   virtual void Draw(SDL_Surface *screen);
@@ -523,7 +535,7 @@ class FloDisplayCircleSwitch : public FloDisplay
 class FloDisplayTextSwitch : public FloDisplay 
 {
  public:
-  FloDisplayTextSwitch() : text1(0), text0(0) {};
+  FloDisplayTextSwitch (int iid) : FloDisplay(iid), text1(0), text0(0) {};
 
   virtual void Draw(SDL_Surface *screen);
 
@@ -540,7 +552,8 @@ enum CfgOrientation {
 class FloDisplayBar : public FloDisplay 
 {
  public:
-  FloDisplayBar() : orient(O_Vertical), barscale(1.0), thickness(10) {};
+  FloDisplayBar (int iid) : FloDisplay(iid), 
+    orient(O_Vertical), barscale(1.0), thickness(10) {};
 
   virtual void Draw(SDL_Surface *screen);
 
@@ -554,8 +567,8 @@ class FloDisplayBar : public FloDisplay
 class FloDisplayBarSwitch : public FloDisplayBar
 {
  public:
-  FloDisplayBarSwitch() : switchexp(0), color(1), calibrate(0),
-    cval(0.0) {};
+  FloDisplayBarSwitch (int iid) : FloDisplayBar(iid), 
+    switchexp(0), color(1), calibrate(0), cval(0.0) {};
   virtual ~FloDisplayBarSwitch() {
     if (switchexp != 0)
       delete switchexp;
@@ -574,7 +587,7 @@ class FloDisplayBarSwitch : public FloDisplayBar
 class FloDisplaySquares : public FloDisplay 
 {
  public:
-  FloDisplaySquares() : orient(O_Horizontal) {};
+  FloDisplaySquares (int iid) : FloDisplay(iid), orient(O_Horizontal) {};
 
   virtual void Draw(SDL_Surface *screen);
 
@@ -673,16 +686,32 @@ class FloConfig {
   // Start function, called shortly before Fweelin begins running
   void Start() { im.Start(); };
 
+  // Send start-interface event to all interfaces
+  void StartInterfaces ();
+
+  // Copy config file from shared folder
+  // Optionally copy all config files
+  void CopyConfigFile (char *cfgname, char copyall);
+
+  // Prepare to load configuration file 'cfgname' 
+  // Finds the file in one of several places, and copies it to
+  // the config folder. Returns the path name if found, or null if not found
+  char *PrepareLoadConfigFile (char *cfgname, char basecfg);
+  
   // Configure bindings between events and their triggers
-  void ConfigureEventBindings(xmlDocPtr doc, xmlNode *events);
+  void ConfigureEventBindings(xmlDocPtr doc, xmlNode *events, 
+			      int interfaceid = 0, char firstpass = 0);
 
   void ConfigureElement(xmlDocPtr doc, xmlNode *elemn, 
 			FloLayoutElement *elem, float xscale, float yscale);
   void ConfigureLayout(xmlDocPtr doc, xmlNode *layn, 
 		       FloLayout *lay, float xscale, float yscale);
   void ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br);
-  void ConfigureVideo(xmlDocPtr doc, xmlNode *vid);
-  void ConfigureGeneral(xmlDocPtr doc, xmlNode *gen);
+  void ConfigureGraphics(xmlDocPtr doc, xmlNode *vid, int interfaceid = 0);
+  void ConfigureBasics(xmlDocPtr doc, xmlNode *gen);
+  void ConfigureInterfaces (xmlDocPtr doc, xmlNode *ifs, char firstpass);
+  void ConfigureRoot (xmlDocPtr doc, xmlNode *root, int interfaceid = 0,
+		      char firstpass = 0);
   
   // Is node 'n' a comment with help information? If so, add to our
   // internal help list
@@ -866,10 +895,10 @@ class FloConfig {
 
   // Graphical displays
   inline FloDisplay *GetDisplays() { return displays; };
-  inline FloDisplay *GetDisplayById(int id) {
+  inline FloDisplay *GetDisplayById (int iid, int id) {
     FloDisplay *cur = displays;
     while (cur != 0) {
-      if (cur->id == id)
+      if (cur->iid == iid && cur->id == id)
 	return cur;
       cur = cur->next;
     }
@@ -948,12 +977,18 @@ class FloConfig {
 
   int status_report;
 #define FS_REPORT_BLOCKMANAGER 1
-  
+
+  // Total number of interfaces defined in config 
+  int numinterfaces, // Switchable interfaces
+                     // (range 1<=i<=numinterfaces) 
+    numnsinterfaces; // Nonswitchable interfaces
+
   // Seconds of fixed audio history 
   const static float AUDIO_MEMORY_LEN;
   // # of audio blocks to preallocate
   const static int NUM_PREALLOCATED_AUDIO_BLOCKS;
-
+  // # of time markers to preallocate
+  const static int NUM_PREALLOCATED_TIME_MARKERS;
 };
 
 #endif

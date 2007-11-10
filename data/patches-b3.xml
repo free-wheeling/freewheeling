@@ -1,0 +1,16 @@
+<patchlist>
+<patch channel="0" name="B3 Upper"/>
+
+<combi name="B3 Pedal/Lower/Upper">
+  <zone keyrange="0>127" channel="0"/>
+  <zone keyrange="0>127" channel="1"/>
+  <zone keyrange="0>127" channel="2"/>
+</combi>
+<combi name="B3 Pedal/Upper">
+  <zone keyrange="0>127" channel="0"/>
+  <zone keyrange="0>127" channel="2"/>
+</combi>
+
+<patch channel="1" name="B3 Lower"/>
+<patch channel="2" name="B3 Pedal"/>
+</patchlist>

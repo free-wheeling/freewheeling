@@ -1,211 +1,17 @@
-<?xml version="1.0"?>
-<!-- Welcome to FreeWheeling's configuration system.
-
-     If you know XML, no problem.
-     Otherwise, please try to follow along.
-     There's definitely a learning curve here,
-     but what you get is great flexibility.
-
-     Here, you can set up FreeWheeling to look and feel 
-     the way that is most intuitive for you. 
-
-     FreeWheeling is especially configurable where it comes to
-     different input controllers, such as QWERTY and piano keyboards,
-     MIDI footswitches and pedalboards, etc. 
-
-     In the video section, you can define a graphical layout so that your 
-     control surfaces will appear onscreen as they do at your feet or 
-     fingertips. This is important, because you will be grabbing and 
-     controlling loops from different MIDI/keyboard controllers.
-
-     In the events section, you can tell FreeWheeling how you want it to
-     respond to the physical buttons and switches you press,
-     sliders you move, and movements you make. Most of FreeWheeling's 
-     important functions can be controlled from any input. 
-
-     Underlying the configuration system is a robust language. 
-     You can do things like map velocity of a MIDI note to a 
-     certain parameter in FreeWheeling; Scale, map and transform MIDI
-     events; Create your own toggles and modes; And trigger several events
-     from one input. If you can learn how to configure FreeWheeling,
-     then you will have a robust performance controller at your fingertips.
-
-     Happy FreeWheeeling! 
-     Your feedback is appreciated.
--->
-
-<freewheeling version="0.5.5">
-<general>
-<!-- In FreeWheeling, the storage of loops is independent from 
-     the user interface that was used to capture them. This is important, 
-     because it opens up doors for collaboration: loops captured by a PC 
-     keyboard can be triggered by a footswitch. In future, perhaps loops will
-     be downloaded from the Net as part of collaborative improvisation rooms.
-     These will then be available on any user interface.
-
-     This parameter establishes the number of loop ids or places to put loops.
-     FreeWheeling starts with a map of empty placeholders.
-     As the user captures loops, they are assigned to different
-     places in this map. Different user interfaces, such as keyboard keys,
-     drum triggers, footpedals, switches, or piano keys- can refer to
-     different loopids for capturing and triggering loops. And visually, 
-     you can define different onscreen layouts to show loops.
-
-     This variable determines the total number of loopids.
-     Note that even a very large map is memory efficient, because space for 
-     a loop sample is not allocated until that loop is recorded. -->
-  <var numloopids="1024"/>
-
-<!-- Path to FreeWheeling library. The library stores loops, scenes and
-     other data that persists between FreeWheeling sessions. -->
-  <var librarypath="fw-lib/"/>
-
-<!-- Number of MIDI output ports. 
-     You can echo MIDI events to different MIDI out ports, and direct 
-     specific MIDI events to specific ports. This allows you to connect 
-     FreeWheeling to different soft-synths and FX and control them through
-     separate MIDI ports. -->
-  <var midiouts="4"/>
-
-<!-- List of MIDI ports to send MIDI sync (MIDI clock) to.
-     When enabled, Freewheeling will send timing sync info to these
-     MIDI ports. This is a comma-separated list of those ports. 
-     1 is the first MIDI port. -->
-  <var midisyncouts="1"/> <!-- Send MIDI sync to first port only -->
-
-<!-- External audio inputs to create into FreeWheeling.
-     For each input, you have to specify- do I want a mono or stereo input?
-     Each audio input in the string is one letter- M for mono or S for stereo.
-     A stereo input creates two ports- input2L and input2R, for example.
-     If you create any stereo ports, or if FluidSynth is set to run in
-     stereo, FreeWheeling runs in stereo, which means larger buffers.
-
-     You can capture loops from different combinations of inputs, and you
-     can control their levels. FreeWheeling may add its own internal audio
-     inputs- for example, from its integrated softsynth. 
-     You don't need to account for those here. -->
-
-<!-- Create inputs- one input per letter- M is mono and S is stereo! -->
-  <var externalaudioinputs="MMS"/>
-
-<!-- Limit the maximum play amplification to protect your sound system-
-     this prevents us from accidentally ramping up the volume of a loop
-     to ridiculous levels. 1.0 is 100% (0 dB) volume. -->
-  <var maxplayvol="5.0"/>
-
-<!-- Maximum gain for limiter. When this is above 1.0 (100% amplitude), the
-     limiter acts like a compressor, gently rising in gain until it reaches 
-     this max. -->
-  <var maxlimitergain="1.0"/>
-
-<!-- Threshhold for limiter. When audio out goes above this threshold (1.0 is
-     100% amplitude), the limiter kicks in. Since the limiter does not look 
-     ahead, it is a good idea to set the threshhold slightly below max to
-     avoid clipping. -->
-  <var limiterthreshhold="0.9"/>
-
-<!-- Limiter release rate. A higher number is a faster release. -->
-  <var limiterreleaserate="0.000020"/>
-
-<!-- File formats for saving loops and streaming audio. 
-
-     Choose from the following options:
-
-     OGG
-     WAV
-     AU
-     FLAC
-
-     -->
-  <var loopoutformat="OGG"/>
-  <var streamoutformat="WAV"/>
-
-<!-- Quality setting for OGG encoding -->
-  <var oggquality="0.5"/>
-
-<!-- FreeWheeling compiles with FluidSynth, a SoundFont-based 
-     soft synthesizer (Linux only, as of v0.5.3) -->
-
-<!-- Run FluidSynth in stereo? This increases the size of audio memory. -->
-  <fluidsynth stereo="1"/>
-
-<!-- Parameters for FluidSynth integrated softsynth.
-     See www.fluidsynth.org for details.
-     See www.hammersound.net for free soundfonts.  -->
-  <fluidsynth param="synth.polyphony" setint="64"/>
- 
-<!-- Interpolation setting for FluidSynth- lower setting, lower quality, 
-     faster. FluidSynth default is 4. -->
-  <fluidsynth interpolation="1"/>
-
-<!-- MIDI channel for integrated FluidSynth. When the FluidSynth patchbank
-     is selected, all unused MIDI events are folded into this channel 
-     and fired to FluidSynth. So, currently, the integrated FluidSynth behaves
-     as a single channel synth. -->
-  <fluidsynth channel="0"/>
-
-<!-- LINUX ONLY
-
-     Soundfonts to load. Soundfonts without a path load from
-     /usr/local/share/fweelin/.
-
-     Two good places to find free Soundfonts:
-
-     http://www.hammersound.net/
-     http://www.sf2midi.com/
--->
-
-  <fluidsynth soundfont="basic.sf2"/>
-
-<!-- Load some soundfonts: -->
-  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_tb303.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/Ruckus_Acoustic_Drums.SF2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_magic_techno_drums.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_acoustic_perc.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_african_perc.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_linn_drums.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_m1_drums.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/hs_r8_drums.sf2"/>
-
-  <fluidsynth soundfont="/usr/local/share/soundfonts/2/vintage-drums.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/tr-808-drums.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/StomperSet.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/2/hs_boss_dr_550.sf2"/>
-
-  <fluidsynth soundfont="/usr/local/share/soundfonts/3/Industromatic.SF2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Industrial_Set.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/BasementNoise.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/3/insane_kit.sf2"/>
-
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Woody.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/dbkv21.sf2"/>
-
-  <fluidsynth soundfont="/usr/local/share/soundfonts/3/GoldDrums.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/3/PremierKit.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Ellade.SF2"/>
-
-  <fluidsynth soundfont="/usr/local/share/soundfonts/2/Tabla.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Talking_Drum.SF2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/RCubero_Percusion_Flamenca.sf2"/>
-
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/bennetng_8850asia.sf2"/>
-  <fluidsynth soundfont="/usr/local/share/soundfonts/4/Chris_Percussion2.sf2"/>
-
-  <fluidsynth soundfont="/usr/local/share/soundfonts/5/emu.sf2"/>
-</general>
-
-<events>
+<bindings>
 <!--
 
 *********************** EVENTS ***********************
 
-This is the events part of the configuration file. Here you can 
+This is the bindings part of the configuration file. Here you can 
 specify how FreeWheeling responds to the input commands you give it.
 
 Keyboard Keys
 *************
 
-Here is a table that lists keyboard keys and corresponding keysym.
+For your reference, here is a table that lists keyboard keys and 
+corresponding keysym.
+
 When referring to keys in this config file, use the name given in the
 second column. 
 
@@ -1218,9 +1024,6 @@ SYSTEM_master_out_volume
 SYSTEM_cur_pitchbend
   current value of MIDI pitchbender before offset
 
-SYSTEM_cur_patch_midiport
-  current patch is set to which MIDI output port?
-
 SYSTEM_bender_tune -
   current offset of MIDI pitchbender (see set-midi-tuning)
 
@@ -1346,6 +1149,14 @@ will not go to your synth.
   <declare var="VAR_midi_modwheel_val" type="int" init="0"/>
   <declare var="VAR_midi_channelpressure" type="int" init="0"/>
 
+  <!-- Variables for breath controller summing with expression pedal -->
+  <declare var="VAR_midi_breathcontrol" type="int" init="2"/>
+  <declare var="VAR_midi_breathcontrol_val" type="int" init="0"/>
+  <declare var="VAR_midi_breathcontrol_hold" type="int" init="0"/>
+  <declare var="VAR_midi_holdpedal" type="int" init="64"/>
+  <declare var="VAR_midi_exppedal" type="int" init="11"/>
+  <declare var="VAR_midi_exppedal_val" type="int" init="0"/>
+
   <!-- Show sync panel? -->
   <declare var="VAR_syncpanel_show" type="int" init="0"/>
   <declare var="VAR_numsync_per_pulse" type="int" init="1"/>
@@ -1434,26 +1245,34 @@ will not go to your synth.
   <declare var="VAR_loopid_pckeystart" type="int" init="0"/>
   <declare var="VAR_loopid_pianostart" type="int" init="350"/>
   <declare var="VAR_loopid_dancemat" type="int" init="500"/>
+  <declare var="VAR_loopid_bcf2000" type="int" init="350"/>
   <declare var="VAR_loopid_footswitch" type="int" init="340"/>
   <declare var="VAR_loopid_default_range" type="range" init="600>1000"/>
-
+  <declare var="VAR_piano_looppage" type="int" init="0"/>
+  
   <declare var="VAR_slide_speed" type="float" init="0.3"/>
 
   <declare var="VAR_pianocapture" type="int" init="0"/>
   <declare var="VAR_pianocapture_set" type="char" init="0"/>
 
+<!-- Range of MIDI notes used to capture loops -->
   <declare var="VAR_noterange" type="range" init="36>47"/>
+<!-- MIDI channel used to capture loops -->
   <declare var="VAR_notechan" type="int" init="0"/>
+<!-- Shift in 'noterange' used to select loops. Defaults to one
+     octave above the key range used to capture loops. 
+     *only enabled in Mercury mode* -->
+  <declare var="VAR_selectoctave" type="int" init="12"/>
   <declare var="VAR_noterangechange" type="int" init="12"/>
 
+  <declare var="VAR_bcf2000range" type="range" init="0>15"/>
   <declare var="VAR_dancematrange" type="range" init="0>15"/>
   <declare var="VAR_dancemat_joystick" type="int" init="0"/>
 
   <declare var="VAR_pckeyfullrange" type="range" init="0>322"/>
   <declare var="VAR_pckeyrange" type="range" init="97>122"/>
-  <declare var="VAR_channelrange" type="range" init="0>15"/>
 
-  <!-- Sub 0: Startup - do startup stuff -->
+  <!-- Subroutine 0: Startup -->
   <binding input="go-sub" conditions="sub=0"
    output1="video-show-loop" 
    parameters1="layoutid=0 and
@@ -1463,13 +1282,15 @@ will not go to your synth.
    output3="video-show-loop" 
    parameters3="layoutid=2 and loopid=VAR_dancematrange+VAR_loopid_dancemat"
    output4="video-show-loop" 
-   parameters4="layoutid=3 and loopid=VAR_loopid_footswitch"
-   output5="set-auto-loop-saving"
-   parameters5="save=VAR_auto_loop_save"
-   output6="set-load-loop-id"
-   parameters6="loopid=VAR_loopid_footswitch"
-   output7="set-default-loop-placement"
-   parameters7="looprange=VAR_loopid_default_range"/>
+   parameters4="layoutid=3 and loopid=VAR_bcf2000range+VAR_loopid_bcf2000"
+   output5="video-show-loop" 
+   parameters5="layoutid=100 and loopid=VAR_loopid_footswitch"
+   output6="set-auto-loop-saving"
+   parameters6="save=VAR_auto_loop_save"
+   output7="set-load-loop-id"
+   parameters7="loopid=VAR_loopid_footswitch"
+   output8="set-default-loop-placement"
+   parameters8="looprange=VAR_loopid_default_range"/>
 
   <!-- Startup -->
   
@@ -1758,6 +1579,40 @@ will not go to your synth.
   <binding input="midicontroller" conditions="controlnum=85" 
    output="set-in-volume" parameters="input=4 and vol=controlval/127.0*2.0"/>
 
+  <!-- Knobs: Loop trigger levels -->
+  <binding input="midicontroller" conditions="controlnum=100" 
+   output="set-trigger-volume" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_0 and 
+               vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=101" 
+   output="set-trigger-volume" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_1 and 
+               vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=102" 
+   output="set-trigger-volume" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_2 and 
+               vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=103" 
+   output="set-trigger-volume" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_3 and 
+               vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=104" 
+   output="set-trigger-volume" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_4 and 
+               vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=105" 
+   output="set-trigger-volume" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_5 and 
+               vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=106" 
+   output="set-trigger-volume" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_6 and 
+               vol=controlval/127.0*2.0"/>
+  <binding input="midicontroller" conditions="controlnum=107" 
+   output="set-trigger-volume" 
+   parameters="loopid=SYSTEM_loopid_lastrecord_7 and 
+               vol=controlval/127.0*2.0"/>
+
   <!-- Knobs: Loop volumes -->
   <binding input="midicontroller" conditions="controlnum=90" 
    output="set-loop-amplifier" 
@@ -1883,6 +1738,8 @@ will not go to your synth.
    
   <!-- Slide Loop Volumes -->
   <!-- HELP: up/down + trigger: +/- loop volume -->
+  <!-- See definitions in different interfaces -->
+
   <binding input="midikey"
    conditions="VAR_keyheld_up=1 and midichannel=VAR_notechan and 
                notenum=VAR_noterange"
@@ -1964,7 +1821,6 @@ will not go to your synth.
        messages, adding the pressure to the current modwheel value. 
        This allows me to use aftertouch expressively in conjunction with the
        mod wheel. -->
-  <!-- Also, transmit Channel Pressure messages for MIDI -->
   <binding input="midichannelpressure" conditions="VAR_mercurymode=1"
    output1="set-variable" parameters1="var=VAR_midi_channelpressure and
                                        value=pressureval"
@@ -1980,6 +1836,44 @@ will not go to your synth.
 	                                 controlnum=VAR_midi_modwheel and
                                          controlval=VAR_midi_channelpressure+
                                                     VAR_midi_modwheel_val"/>
+
+  <!-- DISABLED
+
+       For my setup, I press the hold pedal to hold breath controller values
+       constant. I can take a breath without my keyboard playing being
+       affected.
+
+  <binding input="midicontroller" 
+   conditions="VAR_mercurymode=1 and controlnum=VAR_midi_holdpedal"
+   output1="set-variable" parameters1="var=VAR_midi_breathcontrol_hold and
+                                       value=controlval"
+   output2="midicontroller" 
+   parameters2="routethroughpatch=1 and
+	        controlnum=VAR_midi_holdpedal and controlval=controlval"/>
+
+    -->
+
+  <!-- For my setup, I sum breath control (CC2) on top of expression pedal 
+       (CC11) values. This allows me to set a baseline with my pedal, and
+       'breathe' expression on top of it. -->
+  <binding input="midicontroller" 
+   conditions="VAR_mercurymode=1 and VAR_midi_breathcontrol_hold=0 and
+               controlnum=VAR_midi_breathcontrol"
+   output1="set-variable" parameters1="var=VAR_midi_breathcontrol_val and
+                                       value=controlval"
+   output2="midicontroller" 
+   parameters2="routethroughpatch=1 and
+	        controlnum=VAR_midi_exppedal and
+                controlval=VAR_midi_exppedal_val+VAR_midi_breathcontrol_val"/>
+
+  <binding input="midicontroller" conditions="VAR_mercurymode=1 and
+                                              controlnum=VAR_midi_exppedal"
+   output1="set-variable" parameters1="var=VAR_midi_exppedal_val and
+                                       value=controlval"
+   output2="midicontroller" 
+   parameters2="routethroughpatch=1 and
+	        controlnum=VAR_midi_exppedal and
+                controlval=VAR_midi_exppedal_val+VAR_midi_breathcontrol_val"/>
 
   <!-- HELP: [,.] KP Ins/Del: Transpose MIDI output -->
   <binding input="key" conditions="VAR_laptopkeymode=1 and key=comma and 
@@ -2036,7 +1930,7 @@ will not go to your synth.
                                          button=7 and down=1"
    output="toggle-variable" parameters="var=VAR_shotmode and maxvalue=1"/>
 
-  <!-- HELP: shift + trigger/click: Select loop -->
+  <!-- HELP: shift + click on loop: Select loop -->
   <!-- HELP: right click on loop: Select loop -->
   <binding input="loop-clicked" 
    conditions="VAR_keyheld_shift=1 and button=1 and down=1"
@@ -2044,6 +1938,17 @@ will not go to your synth.
   <binding input="loop-clicked" 
    conditions="button=3 and down=1"
    output="toggle-select-loop" parameters="setid=0 and loopid=loopid"/>
+
+  <!-- In my setup, I use a second octave of keys to select loops.
+       This allows me to fluidly select a group of loops for fade, stop, start,
+       etc -->
+  <binding input="midikey"
+   conditions="VAR_mercurymode=1 and midichannel=VAR_notechan and 
+               notenum=VAR_noterange+VAR_selectoctave and 
+               keydown=1"
+   output="toggle-select-loop"
+   parameters="setid=0 and 
+               loopid=notenum-VAR_selectoctave+VAR_loopid_pianostart"/>
 
   <!-- HELP: Keypad asterisk: Select playing loops -->
   <!-- HELP: (shift) Keypad asterisk: Select idle loops -->
@@ -2258,13 +2163,13 @@ will not go to your synth.
    output="trigger-loop"
    parameters="loopid=notenum+VAR_loopid_pianostart and vol=velocity/127"/>
 
-  <!-- HELP: Tab: Switch layouts -->
-  <!-- Always show footswitch layout.. -->
+  <!-- HELP: Tab: Switch interfaces on screen -->
+  <!-- Always show footswitch interface.. -->
   <binding input="key" conditions="key=tab and keydown=1"
-   output1="toggle-variable" parameters1="var=VAR_showlayout and maxvalue=2"
+   output1="toggle-variable" parameters1="var=VAR_showlayout and maxvalue=3"
    output2="video-show-layout" parameters2="layoutid=VAR_showlayout and show=1
                                             and hideothers=1"      
-   output3="video-show-layout" parameters3="layoutid=3 and show=1 and 
+   output3="video-show-layout" parameters3="layoutid=100 and show=1 and 
                                             hideothers=0"/>      
 
   <!-- HELP: ctrl + click on loop: Rename loop -->
@@ -2307,20 +2212,24 @@ will not go to your synth.
   <binding input="key" conditions="key=tilde and keydown=1"
    output="toggle-variable" parameters="var=VAR_cutmode and maxvalue=1"/>
 
-  <!-- HELP: z/x: Change keyboard loop bank -->
+  <!-- HELP: z/x: Prev/Next page of loops on piano keyboard -->
   <binding input="key" conditions="key=x and keydown=1" 
    output1="set-variable" parameters1="var=VAR_loopid_pianostart and 
                                        value=VAR_loopid_pianostart+
                                              VAR_noterangechange"
-   output2="video-show-loop"
-   parameters2="layoutid=1 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+   output2="set-variable" parameters2="var=VAR_piano_looppage and
+                                       value=VAR_piano_looppage+1"
+   output3="video-show-loop"
+   parameters3="layoutid=1 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
 
   <binding input="key" conditions="key=z and keydown=1" 
    output1="set-variable" 
    parameters1="var=VAR_loopid_pianostart and 
                 value=VAR_loopid_pianostart-VAR_noterangechange"
-   output2="video-show-loop"
-   parameters2="layoutid=1 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
+   output2="set-variable" parameters2="var=VAR_piano_looppage and
+                                       value=VAR_piano_looppage-1"
+   output3="video-show-loop"
+   parameters3="layoutid=1 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
 
   <!-- DEPRECATED HELP: z/x: Change keyboard octave used for loops
   <binding input="key" conditions="key=x and keydown=1" 
@@ -2652,499 +2561,4 @@ will not go to your synth.
   <binding input="key" conditions="key=rightalt"
    output="set-variable" parameters="var=VAR_keyheld_alt and 
                                      value=keydown"/>
-</events>
-
-<video>
-<!-- Here in this video section, we define the way FreeWheeling looks onscreen.
-     The aim is to create a visual layout that is simple and functional.
-     
-     So, key areas are highly configurable. For example, FreeWheeling is
-     designed to show you where your loops are mapped. One user may be a 
-     drummer with a MIDI kit and footswitches, where another might be sitting
-     at the keyboard of a laptop. The video section for each of these users
-     can be configured with the geometry of the places where loops go. We 
-     can say how our laptop keyboard looks, so that the loops will appear
-     onscreen inside pictures of the keys to which they are assigned. Or we 
-     could configure visuals for our drumkit layout.
-
-     The section is divided into a number of layouts. Each layout is a
-     collection of elements. Each element is a collection of geometries that
-     tell FreeWheeling how to draw that element. For example, a MIDI piano
-     keyboard is composed of all the white and black notes. Each note is
-     made up of rectangles. 
-   
-     Elements also specify where loops should be drawn, and at what size.
-     For the E key on the PC keyboard, we can specify where the loop will
-     show and at what size. For a footswitch, we can do the same.
-
-     Layouts do not define how loops are captured and triggered- only
-     how they look onscreen. -->
-
-<!-- Screen resolution. This must be set first! -->
-  <var resolution="640,480"/>
-
-<!-- Video update delay (ms). Delay for this many milliseconds between
-     video draws. On a slow system you will want a higher number to conserve
-     CPU. -->
-  <var videodelay="40"/>
-
-<!-- Fonts to load -
-
-     name="main" is the main font for all onscreen text displays 
-     name="help" is the font for help text 
- 
-     Font files must live in /usr/share/fonts/truetype/ -->
-
-  <font name="main" file="verabd.ttf" size="20"/>
-  <font name="small" file="verabd.ttf" size="14"/>
-  <font name="tiny" file="vera.ttf" size="10"/>
-  <font name="help" file="vera.ttf" size="16"/>
-
-<!-- All positions on screen follow a coordinate system with (0,0) at the 
-     top left and (1,1) at the bottom right of the screen.
-    
-     So if the screen resolution changes, no problem. -->
-
-<!-- Here are some examples:
-
-     <layout id="0" name="PC Keyboard" scale="1.0,1.0" pos="0.00,0.00"
-      label="0" elabel="1" show="1">
-
-     This defines a visual layout "PC Keyboard":
-     
-     The ID is used later in the event bindings to refer to a layout. 
-     The name will show up onscreen if label="1" is set. 
-
-     Scale specifies scaling for the whole layout. It is
-     an easy way to make the whole layout bigger or smaller. 
-
-     Pos specifies the top left position for the whole layout- an easy way 
-     to move the whole layout onscreen. 
-
-     If elabel="1" is set, the elements will have their names showing. 
-
-     If show="0", this layout will remain hidden until an 
-     video-show-layout event is received.
-
-       <element id="113" name="Q" base="0.0,0.0" looppos="0.05,0.05" 
-        loopsize="0.1" namepos="0.01,0.00">
-
-     Inside this layout, we have defined one element named "Q".
-     This is the Q key on the PC keyboard. It is not associated with the
-     keypress of Q, but only the way the Q key looks.
-
-     ID is the identifier for the element within the layout. It is 
-     important to choose IDs carefully, because visual layouts will
-     be matched with loopids based on this ID. For example, an event binding
-     (specified later) assigns loops to keys pressed on the keyboard. 
-     The loopid is assigned based on the keysym (key symbol) for the key 
-     pressed, so that when Q is pressed, the loop is stored in loopid 113. 
-     Then, the visuals will correctly draw the loop in id 113.
-
-     Base specifies the base location of the element in the layout.
-     All coordinates for loop and name position, as well as the geometries
-     of the element, are relative to this base.
-
-     The name of the element is shown at namepos (relative to the base),
-     if elabel="1" is set in the layout.
-
-     An animated graphical loop scope is shown at looppos and
-     loopsize. The loop shown is stored at baseloopid + element ID.
-     Baseloopid is set with the video-show-loop event, which allows
-     a layout to show a range of loop ids.
-
-          <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-       </element> 
-
-     In each element, we have a number of geometries. Right now there is only
-     one type of geometry and that is box. An element is made of boxes.
-     Each box has position left,top,right,bottom given in pos. The box
-     is outlined as given in outline (letters T B L and R for top, bottom,
-     left and right).
--->     
-
-  <layout id="0" name="PC Keyboard" scale="1.0,1.0" pos="0.00,0.00"
-   label="0" elabel="1" show="0">
-    <element id="113" name="Q" base="0.0,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="119" name="W" base="0.1,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="101" name="E" base="0.2,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="114" name="R" base="0.3,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="116" name="T" base="0.4,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="121" name="Y" base="0.5,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="117" name="U" base="0.6,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="105" name="I" base="0.7,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="111" name="O" base="0.8,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="112" name="P" base="0.9,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-
-    <element id="97" name="A" base="0.03,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="115" name="S" base="0.13,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="100" name="D" base="0.23,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="102" name="F" base="0.33,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="103" name="G" base="0.43,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="104" name="H" base="0.53,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="106" name="J" base="0.63,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="107" name="K" base="0.73,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="108" name="L" base="0.83,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-
-    <element id="122" name="Z" base="0.06,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="120" name="X" base="0.16,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="99" name="C" base="0.26,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="118" name="V" base="0.36,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="98" name="B" base="0.46,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="110" name="N" base="0.56,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="109" name="M" base="0.66,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-  </layout>
-
-  <layout id="1" name="Piano Keyboard" scale="0.35,0.55" pos="0.00,0.00"
-   label="0" elabel="0" namepos="0.02,0.02" show="1">
-    <element id="0" name="C" base="0.0,0.0" looppos="0.20,0.85" loopsize="0.5"
-     namepos="0.15,1.10">
-      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
-      <box outline="T LR" pos="0.00,0.00, 0.15,0.60"/>
-    </element>
-    <element id="1" name="C#" base="0.0,0.0" looppos="0.35,0.25" loopsize="0.5"
-     namepos="0.25,0.50">
-      <box outline="TBLR" pos="0.15,0.00, 0.55,0.60"/>
-    </element>
-    <element id="2" name="D" base="0.4,0.0" looppos="0.20,0.85" loopsize="0.5"
-     namepos="0.15,1.10">
-      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
-      <box outline="T LR" pos="0.15,0.00, 0.25,0.60"/>
-    </element>
-    <element id="3" name="D#" base="0.4,0.0" looppos="0.45,0.25" loopsize="0.5"
-     namepos="0.35,0.50">
-      <box outline="TBLR" pos="0.25,0.00, 0.65,0.60"/>
-    </element>
-    <element id="4" name="E" base="0.8,0.0" looppos="0.20,0.85" loopsize="0.5"
-     namepos="0.15,1.10">
-      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
-      <box outline="T LR" pos="0.25,0.00, 0.40,0.60"/>
-    </element>
-    <element id="5" name="F" base="1.2,0.0" looppos="0.20,0.85" loopsize="0.5"
-     namepos="0.15,1.10">
-      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
-      <box outline="T LR" pos="0.00,0.00, 0.15,0.60"/>
-    </element>
-    <element id="6" name="F#" base="1.2,0.0" looppos="0.35,0.25" loopsize="0.5"
-     namepos="0.25,0.50">
-      <box outline="TBLR" pos="0.15,0.00, 0.55,0.60"/>
-    </element>
-    <element id="7" name="G" base="1.6,0.0" looppos="0.20,0.85" loopsize="0.5"
-     namepos="0.15,1.10">
-      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
-      <box outline="T LR" pos="0.15,0.00, 0.20,0.60"/>
-    </element>
-    <element id="8" name="G#" base="1.6,0.0" looppos="0.40,0.25" loopsize="0.5"
-     namepos="0.30,0.50">
-      <box outline="TBLR" pos="0.20,0.00, 0.60,0.60"/>
-    </element>
-    <element id="9" name="A" base="2.0,0.0" looppos="0.20,0.85" loopsize="0.5"
-     namepos="0.15,1.10">
-      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
-      <box outline="T LR" pos="0.20,0.00, 0.25,0.60"/>
-    </element>
-    <element id="10" name="A#" base="2.0,0.0" looppos="0.45,0.25" 
-     loopsize="0.5" namepos="0.35,0.50">
-      <box outline="TBLR" pos="0.25,0.00, 0.65,0.60"/>
-    </element>
-    <element id="11" name="B" base="2.4,0.0" looppos="0.20,0.85" loopsize="0.5"
-     namepos="0.15,1.10">
-      <box outline="TBLR" pos="0.00,0.60, 0.40,1.20"/>
-      <box outline="T LR" pos="0.25,0.00, 0.40,0.60"/>
-    </element>
-  </layout>
-
-  <!-- Layout for 'Competition Pro' PS2 dancemat thru EMSUSB2 PS2->USB
-       adaptor. Button indexes are given in 'id'. They may be different
-       for another dance mat or adaptor. -->
-  <layout id="2" name="DANCEMAT" scale="2.0,2.0" pos="0.02,0.02"
-   label="0" elabel="1" namepos="0.02,0.02" show="0">
-    <element id="2" name="TL" base="0.0,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="12" name="T" base="0.1,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="1" name="TR" base="0.2,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-
-    <element id="15" name="L" base="0.0,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="13" name="R" base="0.2,0.1" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-
-    <element id="0" name="BL" base="0.0,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="14" name="B" base="0.1,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-    <element id="3" name="BR" base="0.2,0.2" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-  </layout>
-
-  <layout id="3" name="Footswitch" scale="1.0,1.3" pos="0.90,0.85"
-   label="0" elabel="1" namepos="0.02,0.02" show="1">
-    <element id="0" name="SW" base="0.0,0.0" looppos="0.05,0.05" 
-     loopsize="0.1" namepos="0.01,0.00">
-      <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
-    </element> 
-  </layout>
-
-<!-- You can also have FreeWheeling display system and user-defined variables
-     such as midi transposition, or the last pressed midi key. This is done
-     by defining 'display' sections: -->
- 
-  <display var="SYSTEM_midi_transpose" type="text" font="small"
-   title="poze " pos="0.0,0.9"/>
-  <display var="SYSTEM_audio_cpu_load/100" type="bar" font="main"
-   title="CPU" pos="0.05,0.8" 
-   orientation="vertical" barscale="0.2" thickness="0.03"/>
-  <display var="SYSTEM_master_in_volume" type="bar" font="main"
-   title="IN" pos="0.245,0.8" 
-   orientation="vertical" barscale="0.2" thickness="0.07"/>
-
-  <display var="SYSTEM_in_1_volume" type="bar-switch" 
-   switchvar="SYSTEM_in_1_record"
-   orientation="vertical" pos="0.20,0.8" barscale="0.2" thickness="0.025"/>
-  <display var="SYSTEM_in_2_volume" type="bar-switch" 
-   switchvar="SYSTEM_in_2_record"
-   orientation="vertical" pos="0.23,0.8" barscale="0.2" thickness="0.025"/>
-  <display var="SYSTEM_in_3_volume" type="bar-switch" 
-   switchvar="SYSTEM_in_3_record" 
-   orientation="vertical" pos="0.26,0.8" barscale="0.2" thickness="0.025"/>
-  <display var="SYSTEM_in_4_volume" type="bar-switch" 
-   switchvar="SYSTEM_in_4_record" 
-   orientation="vertical" pos="0.29,0.8" barscale="0.2" thickness="0.025"/>
-  
-  <display var="SYSTEM_in_1_peak" type="bar-switch"
-   switchvar="SYSTEM_in_1_record"
-   orientation="vertical" pos="0.20,0.8" barscale="0.2" thickness="0.015"
-   color="2" calibrate="1.0"/>
-  <display var="SYSTEM_in_2_peak" type="bar-switch"
-   switchvar="SYSTEM_in_2_record"
-   orientation="vertical" pos="0.23,0.8" barscale="0.2" thickness="0.015"
-   color="2" calibrate="1.0"/>
-  <display var="SYSTEM_in_3_peak" type="bar-switch"
-   switchvar="SYSTEM_in_3_record"
-   orientation="vertical" pos="0.26,0.8" barscale="0.2" thickness="0.015"
-   color="2" calibrate="1.0"/>
-  <display var="SYSTEM_in_4_peak" type="bar-switch"
-   switchvar="SYSTEM_in_4_record"
-   orientation="vertical" pos="0.29,0.8" barscale="0.2" thickness="0.015"
-   color="2" calibrate="1.0"/>
-
-  <display var="SYSTEM_master_out_volume" type="bar" font="main"
-   title="OUT" pos="0.45,0.8" 
-   orientation="vertical" barscale="0.2" thickness="0.03"/>
-  <display var="SYSTEM_cur_limiter_gain" type="bar" font="main"
-   title="LMT" pos="0.6,0.8" 
-   orientation="vertical" barscale="0.2" thickness="0.03"/>
-
-  <display var="VAR_numsync_per_pulse" id="1000" type="text" font="small"
-   title="sync " pos="0.0,0.87" show="0"/>
-  <display var="VAR_synctype" id="1001" 
-   type="text-switch" font="small" pos="0.1,0.87"
-   text0="bars per pulse" text1="beats per pulse" show="0"/>
-  <display var="SYSTEM_sync_active" id="1002" type="circle-switch" 
-   font="small" title="Jack Sync"
-   pos="0.5,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
-  <display var="SYSTEM_sync_transmit" id="1003" type="circle-switch" 
-   font="small" title="Jack Sync XMit"
-   pos="0.66,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
-  <display var="SYSTEM_midisync_transmit" id="1004" type="circle-switch"
-   font="small" title="MIDI Sync Xmit"
-   pos="0.66,0.84" size1="0.012" size0="0.01" flash="0" show="0"/>
-
-  <display var="VAR_overdubfeedback" type="bar" font="small"
-   title="FB" pos="0.7,0.9" orientation="horizontal" barscale="0.04"
-   thickness="0.01"/>
-
-  <display var="SYSTEM_num_recording_loops_in_map" type="circle-switch" 
-   pos="0.61,0.96" size1="0.02" size0="0.01" flash="0"/>
-  <display var="SYSTEM_fluidsynth_enabled" type="switch" font="small" 
-   pos="0.54,0.9" title="SYNTH"/> 
-  <display var="VAR_auto_loop_save" type="switch" font="small" pos="0.42,0.9" 
-   title="SAVE"/> 
-  <display var="VAR_xferloop" type="switch" font="small" pos="0.36,0.9" 
-   title="X"/> 
-  <display var="VAR_overdubmode" type="switch" font="small" pos="0.26,0.9" 
-   title="DUB"/> 
-  <display var="VAR_cutmode" type="switch" font="small" pos="0.16,0.9" 
-   title="CUT"/> 
-
-  <display id="DISPLAY_browser_patch" type="browser" font="main" 
-   browsetype="BROWSE_patch" pos="0.0,0.96" 
-   xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="1">
-<!-- Load the given patch bank for patch browsing. Link this bank of patches
-     to the given MIDI output port. You can have several of these statements,
-     each controlling patches for a different MIDI output port. 
-
-     You can also have combination patches, where one MIDI controller is routed
-     to several MIDI ports and channels, depending on keyboard zones. 
-     See examples/README for more information.
-
-     Patch browsing allows the user to browse through meaningful patch names
-     for external synthesizers. It allows a single MIDI control source to
-     control multiple sound sources. 
-
-     You can define the patches and program numbers
-     in the 'patches' file (see examples/patches1.xml).
-     
-     You can automatically generate patch names for DSSI synth plugins 
-     by using a patched version of Ghostess, which saves patch names 
-     in the right XML format for Freewheeling to load (see examples/README).
-
-     Each patches.xml file contains data for all channels. You can have 
-     different patches available on each MIDI channel.
-
-     By default, FreeWheeling looks in the folder ~/.fweelin/ for your
-     XML patch files. FreeWheeling also checks /usr/local/share/fweelin/ for
-     XML patch files.
-
-     Each patch file has optional settings as follows:
-
-	        With suppressprogramchanges=1, no MIDI bank and program change
-	        messages are sent when patches are changed within a patch bank.
-	        This is useful when you have a softsynth loaded with patches on
-  	        different channels and you merely want to switch channels-
-	        each patch is mapped to a different channel, but you don't want
-	        program change messages being sent to mess up your patches. 
-
-	        Use this for banks of Linuxsampler channels.
-	
-	        With separatechannels=0, patches mapped to different channels
-		appear in the same patch bank. With this option, you can have a
-		collection of several patches on different channels that appear
-		together in one list for browsing. This is useful for sampling
-		synths where your patches are pre-loaded onto channels.
-	
-                With separatechannels=1, the old behavior is used. 
-	        The old behavior splits each channel into a separate bank.
-	        This works well for DSSI softsynths, where many synths run on
-	        the same port, but each channel accesses a different synth and
-	        different set of patches.
-
-     -->
-
-     <!-- Uncomment to load ~/.fweelin/patches1.xml and make patches available
-          on MIDI output 1. 
-
-         <patchbank midiport="1" separatechannels="1" patches="patches1.xml"/>
-     -->
-
-     <!-- Mercury's patchbanks: -->
-     <patchbank midiport="2" separatechannels="1" patches="patches2.xml"/>
-     <patchbank midiport="1" suppressprogramchanges="1" separatechannels="0" patches="patches-piano-strings-small.xml"/>
-     <patchbank midiport="3" patches="patches3.xml"/>
-     <patchbank midiport="4" patches="patches-b3.xml" tag="999"/>
-
-     <!-- Patch file with all channels available: This is a basic template
-          for allowing the user to simply switch between MIDI output channels
-	  without sending MIDI program/bank changes. -->
-     <patchbank midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-channels.xml"/>
-  </display>
-
-  <display id="DISPLAY_browser_loop" type="browser" font="small"
-   browsetype="BROWSE_loop" pos="0.0,0.96"
-   xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="0"/>
-  <display id="DISPLAY_browser_scene" type="browser" font="small"
-   browsetype="BROWSE_scene" pos="0.0,0.96" 
-   xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="0"/>
-
-  <display id="DISPLAY_loop_tray" type="browser" font="tiny"
-   browsetype="BROWSE_loop_tray" pos="0.015,0.92"
-   xpand="0" xbox="0.05,0.6, 0.95,0.9" loopsize="0.05" show="1"/>
-</video>
-
-</freewheeling>
+</bindings>

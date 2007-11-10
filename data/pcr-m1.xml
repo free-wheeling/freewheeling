@@ -1,0 +1,291 @@
+<interface>
+  <bindings>
+    <!-- Variables -->
+
+    <!-- Which MIDI controller # controls fast scroll switch in browser.
+	 This switch also doubles for the space key. -->
+    <declare var="VAR_midishift_midicontrol" type="int" init="50"/>
+    <declare var="VAR_keyheld_midishift" type="char" init="0"/>
+
+    <!-- Which MIDI controller # controls overdub feedback. -->
+    <declare var="VAR_overdubfeedback_midicontrol" type="int" init="87"/>
+
+    <!-- MIDI controller # to fade trigger volume of selected loops -->
+    <declare var="VAR_triggervol_selected_midicontrol" type="int" init="89"/>
+
+    <!-- MIDI controller #s for patchbank select -->
+    <declare var="VAR_patchbank_midicontrol" type="int" init="88"/>
+    <declare var="VAR_patchbank_back_midicontrol" type="int" init="53"/>
+    <declare var="VAR_patchbank_forward_midicontrol" type="int" init="54"/>
+
+    <!-- MIDI controller # for undo -->
+    <declare var="VAR_undo_midicontrol" type="int" init="51"/>
+
+    <!-- Startup -->
+
+    <!-- Rest of the bindings... -->
+
+    <!-- Knob 1: Master in volume -->
+    <binding input="midicontroller" conditions="controlnum=80" 
+     output="set-master-in-volume" parameters="vol=controlval/127.0*2.0"/>
+
+    <!-- Knob 2: Master out volume -->
+    <binding input="midicontroller" conditions="controlnum=81" 
+     output="set-master-out-volume" parameters="vol=controlval/127.0*2.0"/>
+
+    <!-- Knobs: Input volumes -->
+    <binding input="midicontroller" conditions="controlnum=82" 
+     output="set-in-volume" parameters="input=1 and vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=83" 
+     output="set-in-volume" parameters="input=2 and vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=84" 
+     output="set-in-volume" parameters="input=3 and vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=85" 
+     output="set-in-volume" parameters="input=4 and vol=controlval/127.0*2.0"/>
+
+    <!-- Knobs: Loop trigger levels -->
+    <binding input="midicontroller" conditions="controlnum=100" 
+     output="set-trigger-volume" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_0 and 
+		 vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=101" 
+     output="set-trigger-volume" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_1 and 
+		 vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=102" 
+     output="set-trigger-volume" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_2 and 
+		 vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=103" 
+     output="set-trigger-volume" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_3 and 
+		 vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=104" 
+     output="set-trigger-volume" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_4 and 
+		 vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=105" 
+     output="set-trigger-volume" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_5 and 
+		 vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=106" 
+     output="set-trigger-volume" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_6 and 
+		 vol=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=107" 
+     output="set-trigger-volume" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_7 and 
+		 vol=controlval/127.0*2.0"/>
+
+    <!-- Knobs: Loop volumes -->
+    <binding input="midicontroller" conditions="controlnum=90" 
+     output="set-loop-amplifier" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_0 and 
+		 amp=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=91" 
+     output="set-loop-amplifier" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_1 and 
+		 amp=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=92" 
+     output="set-loop-amplifier" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_2 and 
+		 amp=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=93" 
+     output="set-loop-amplifier" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_3 and 
+		 amp=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=94" 
+     output="set-loop-amplifier" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_4 and 
+		 amp=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=95" 
+     output="set-loop-amplifier" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_5 and 
+		 amp=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=96" 
+     output="set-loop-amplifier" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_6 and 
+		 amp=controlval/127.0*2.0"/>
+    <binding input="midicontroller" conditions="controlnum=97" 
+     output="set-loop-amplifier" 
+     parameters="loopid=SYSTEM_loopid_lastrecord_7 and 
+		 amp=controlval/127.0*2.0"/>
+
+  <!-- Loops on buttons mode-
+
+    <binding input="midicontroller" conditions="controlnum=91" 
+     output="set-loop-amplifier" 
+     parameters="loopid=1+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+    <binding input="midicontroller" conditions="controlnum=92" 
+     output="set-loop-amplifier" 
+     parameters="loopid=2+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+    <binding input="midicontroller" conditions="controlnum=93" 
+     output="set-loop-amplifier" 
+     parameters="loopid=3+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+    <binding input="midicontroller" conditions="controlnum=94" 
+     output="set-loop-amplifier" 
+     parameters="loopid=4+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+    <binding input="midicontroller" conditions="controlnum=95" 
+     output="set-loop-amplifier" 
+     parameters="loopid=5+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
+  -->
+
+  <!-- MIDI faders: Set loop volumes
+    <binding input="midicontroller" conditions="controlnum=7 and midichannel=0" 
+     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_0
+					     and amp=controlval/127*2"/>
+    <binding input="midicontroller" conditions="controlnum=7 and midichannel=1" 
+     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_1
+					     and amp=controlval/127*2"/>
+    <binding input="midicontroller" conditions="controlnum=7 and midichannel=2" 
+     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_2
+					     and amp=controlval/127*2"/>
+    <binding input="midicontroller" conditions="controlnum=7 and midichannel=3" 
+     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_3
+					     and amp=controlval/127*2"/>
+    <binding input="midicontroller" conditions="controlnum=7 and midichannel=4" 
+     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_4
+					     and amp=controlval/127*2"/>
+    <binding input="midicontroller" conditions="controlnum=7 and midichannel=5" 
+     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_5
+					     and amp=controlval/127*2"/>
+    <binding input="midicontroller" conditions="controlnum=7 and midichannel=6" 
+     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_6
+					     and amp=controlval/127*2"/>
+    <binding input="midicontroller" conditions="controlnum=7 and midichannel=7" 
+     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_7
+					     and amp=controlval/127*2"/>
+  -->
+
+    <!-- Overdub feedback continuous adjust from MIDI control -->
+    <!-- MIDI CC87: Overdub feedback continuous adjust -->
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_overdubfeedback_midicontrol"
+     output="set-variable" parameters="var=VAR_overdubfeedback and
+				       value=controlval/127"/>
+
+    <!-- MIDI CC89: Fade volume of selected loops -->
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_triggervol_selected_midicontrol"   
+     output="set-selected-loops-trigger-volume" 
+     parameters="setid=0 and vol=controlval*2.0/127"/>
+
+    <!-- MIDI CC51: Undo last loop record -->
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_undo_midicontrol and
+		 controlval=VAR_switch_on"
+     output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
+     output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+    <!-- MIDI CC88: Change patch bank by MIDI fader -->
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_patchbank_midicontrol"   
+     output1="video-show-display" parameters1="interfaceid=0 and
+                                               displayid=VAR_cur_browser and
+					       show=0"
+     output2="set-variable" parameters2="var=VAR_cur_browser and 
+					 value=DISPLAY_browser_patch"
+     output3="video-show-display" parameters3="interfaceid=0 and
+                                               displayid=VAR_cur_browser and
+					       show=1"
+     output4="patchbrowser-move-to-bank-by-index" 
+     parameters4="index=controlval*SYSTEM_num_patchbanks/128"/>
+
+    <!-- MIDI CC53/54: Change patch bank by MIDI buttons -->
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_patchbank_back_midicontrol and
+		 controlval=VAR_switch_on"   
+     output1="video-show-display" parameters1="interfaceid=0 and 
+                                               displayid=VAR_cur_browser and
+					       show=0"
+     output2="set-variable" parameters2="var=VAR_cur_browser and 
+					 value=DISPLAY_browser_patch"
+     output3="video-show-display" parameters3="interfaceid=0 and 
+                                               displayid=VAR_cur_browser and
+					       show=1"
+     output4="patchbrowser-move-to-bank" parameters4="direction=-1"/>
+
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_patchbank_forward_midicontrol and
+		 controlval=VAR_switch_on"
+     output1="video-show-display" parameters1="interfaceid=0 and 
+                                               displayid=VAR_cur_browser and
+					       show=0"
+     output2="set-variable" parameters2="var=VAR_cur_browser and 
+					 value=DISPLAY_browser_patch"
+     output3="video-show-display" parameters3="interfaceid=0 and 
+                                               displayid=VAR_cur_browser and
+					       show=1"
+     output4="patchbrowser-move-to-bank" parameters4="direction=1"/>
+
+    <!-- Overdub feedback continuous adjust from MIDI control -->
+    <!-- HELP: MIDI CC50: MIDI shift key (like space) -->
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_midishift_midicontrol and
+		 controlval=VAR_switch_on"
+     output1="set-variable" parameters1="var=VAR_keyheld_midishift and
+					 value=1"
+     output2="set-variable" parameters2="var=VAR_keyheld_space and
+					 value=1"/>
+
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_midishift_midicontrol and
+		 controlval=VAR_switch_off"
+     output1="set-variable" parameters1="var=VAR_keyheld_midishift and
+					 value=0"
+     output2="set-variable" parameters2="var=VAR_keyheld_space and
+					 value=0"/>
+
+    <!-- (midishift) + MIDI Program Change: (Jump)/Change browser item -->
+    <binding input="midiprogramchange" 
+     conditions="programval=VAR_cur_program+1 and VAR_keyheld_midishift=0"
+     output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+     output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+						 adjust=1 and jumpadjust=0"/>
+
+    <binding input="midiprogramchange" 
+     conditions="VAR_keyheld_midishift=0 and VAR_cur_program=127 and programval=0"
+     output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+     output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+						 adjust=1 and jumpadjust=0"/>
+
+    <binding input="midiprogramchange"
+     conditions="programval=VAR_cur_program-1 and VAR_keyheld_midishift=0"
+     output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+     output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+						 adjust=-1 and jumpadjust=0"/>
+
+    <binding input="midiprogramchange"
+     conditions="VAR_keyheld_midishift=0 and VAR_cur_program=0 and programval=127"
+     output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+     output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+						 adjust=-1 and jumpadjust=0"/>
+
+    <binding input="midiprogramchange" 
+     conditions="programval=VAR_cur_program+1 and VAR_keyheld_midishift=1"
+     output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+     output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+						 adjust=0 and jumpadjust=1"/>
+
+    <binding input="midiprogramchange" 
+     conditions="VAR_keyheld_midishift=1 and VAR_cur_program=127 and programval=0"
+     output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+     output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+						 adjust=0 and jumpadjust=1"/>
+
+    <binding input="midiprogramchange"
+     conditions="programval=VAR_cur_program-1 and VAR_keyheld_midishift=1"
+     output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+     output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+						 adjust=0 and jumpadjust=-1"/>
+
+    <binding input="midiprogramchange"
+     conditions="VAR_keyheld_midishift=1 and VAR_cur_program=0 and programval=127"
+     output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
+     output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
+						 adjust=0 and jumpadjust=-1"/>
+
+    <binding input="midiprogramchange"
+     output="set-variable" parameters="var=VAR_cur_program and value=programval"/>
+  </bindings>
+</interface>

@@ -9,6 +9,9 @@ extern "C"
 #include <jack/ringbuffer.h>
 }
 
+// Event parameter name for interface ID
+#define INTERFACEID "interfaceid"
+
 class Loop;
 class Event;
 
@@ -89,6 +92,7 @@ enum EventType {
   T_EV_Input_MIDIClock,
   T_EV_Input_MIDIStartStop,
   T_EV_StartSession,
+  T_EV_StartInterface,
   T_EV_GoSub,
 
   T_EV_LoopClicked,
@@ -112,6 +116,7 @@ enum EventType {
 
   T_EV_VideoShowLoop,
   T_EV_VideoShowLayout,
+  T_EV_VideoSwitchInterface,
   T_EV_VideoShowDisplay,
   T_EV_VideoShowHelp,
   T_EV_VideoFullScreen,
@@ -763,25 +768,34 @@ class SetVariableEvent : public Event {
 class ToggleVariableEvent : public Event {
  public:
   EVT_DEFINE(ToggleVariableEvent,T_EV_ToggleVariable);
+  virtual void Recycle() {
+    maxvalue = 1;
+    minvalue = 0;
+    Event::Recycle();
+  };
   virtual void operator = (const Event &src) {
     ToggleVariableEvent &s = (ToggleVariableEvent &) src;
     var = s.var;
     maxvalue = s.maxvalue;
+    minvalue = s.minvalue;
   };
-  virtual int GetNumParams() { return 2; };
+  virtual int GetNumParams() { return 3; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
       return EventParameter("var",FWEELIN_GETOFS(var),T_variableref);
     case 1:
       return EventParameter("maxvalue",FWEELIN_GETOFS(maxvalue),T_int);      
+    case 2:
+      return EventParameter("minvalue",FWEELIN_GETOFS(minvalue),T_int);      
     }
 
     return EventParameter();
   };    
 
   UserVariable *var;  // Variable to increment (toggle)
-  int maxvalue;       // Maximum value of variable before wraparound to 0
+  int maxvalue,       // Maximum value of variable before wraparound
+    minvalue;         // Value to wrap to
 };
 
 class VideoShowLoopEvent : public Event {
@@ -789,28 +803,33 @@ class VideoShowLoopEvent : public Event {
   EVT_DEFINE_NO_CONSTR(VideoShowLoopEvent,T_EV_VideoShowLoop);
   VideoShowLoopEvent() : loopid(0,0) { Recycle(); };
   virtual void Recycle() {
+    interfaceid = -1;
     layoutid = 0;
     loopid = Range(0,0);
     Event::Recycle();
   };
   virtual void operator = (const Event &src) {
     VideoShowLoopEvent &s = (VideoShowLoopEvent &) src;
+    interfaceid = s.interfaceid;
     layoutid = s.layoutid;
     loopid = s.loopid;
   };
-  virtual int GetNumParams() { return 2; };
+  virtual int GetNumParams() { return 3; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
-      return EventParameter("layoutid",FWEELIN_GETOFS(layoutid),T_int);
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
     case 1:
+      return EventParameter("layoutid",FWEELIN_GETOFS(layoutid),T_int);
+    case 2:
       return EventParameter("loopid",FWEELIN_GETOFS(loopid),T_range);
     }
 
     return EventParameter();
   };    
 
-  int layoutid;    // Layout in which to show loops
+  int interfaceid, // Interface in which layout is defined
+    layoutid;      // Layout in which to show loops
   Range loopid;    // Range of loop IDs that will be set to correspond to 
                    // elements in layout
 };
@@ -819,6 +838,7 @@ class VideoShowLayoutEvent : public Event {
  public:
   EVT_DEFINE(VideoShowLayoutEvent,T_EV_VideoShowLayout);
   virtual void Recycle() {
+    interfaceid = -1;
     layoutid = 0;
     show = 0;
     hideothers = 0;
@@ -826,55 +846,88 @@ class VideoShowLayoutEvent : public Event {
   };
   virtual void operator = (const Event &src) {
     VideoShowLayoutEvent &s = (VideoShowLayoutEvent &) src;
+    interfaceid = s.interfaceid;
     layoutid = s.layoutid;
     show = s.show;
     hideothers = s.hideothers;
   };
-  virtual int GetNumParams() { return 3; };
+  virtual int GetNumParams() { return 4; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
-      return EventParameter("layoutid",FWEELIN_GETOFS(layoutid),T_int);
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
     case 1:
-      return EventParameter("show",FWEELIN_GETOFS(show),T_char);
+      return EventParameter("layoutid",FWEELIN_GETOFS(layoutid),T_int);
     case 2:
+      return EventParameter("show",FWEELIN_GETOFS(show),T_char);
+    case 3:
       return EventParameter("hideothers",FWEELIN_GETOFS(hideothers),T_char);
     }
 
     return EventParameter();
   };    
 
-  int layoutid;    // Layout to show
+  int interfaceid, // Interface in which layout is defined
+    layoutid;      // Layout to show
   char show,       // Show it or hide it?
     hideothers;    // Hide other layouts?
+};
+
+class VideoSwitchInterfaceEvent : public Event {
+ public:
+  EVT_DEFINE(VideoSwitchInterfaceEvent,T_EV_VideoSwitchInterface);
+  virtual void Recycle() {
+    interfaceid = -1;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    VideoSwitchInterfaceEvent &s = (VideoSwitchInterfaceEvent &) src;
+    interfaceid = s.interfaceid;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
+    }
+
+    return EventParameter();
+  };    
+
+  int interfaceid; // Interface to switch to
 };
 
 class VideoShowDisplayEvent : public Event {
  public:
   EVT_DEFINE(VideoShowDisplayEvent,T_EV_VideoShowDisplay);
   virtual void Recycle() {
+    interfaceid = -1;
     displayid = 0;
     show = 0;
     Event::Recycle();
   };
   virtual void operator = (const Event &src) {
     VideoShowDisplayEvent &s = (VideoShowDisplayEvent &) src;
+    interfaceid = s.interfaceid;
     displayid = s.displayid;
     show = s.show;
   };
-  virtual int GetNumParams() { return 2; };
+  virtual int GetNumParams() { return 3; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
-      return EventParameter("displayid",FWEELIN_GETOFS(displayid),T_int);
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
     case 1:
+      return EventParameter("displayid",FWEELIN_GETOFS(displayid),T_int);
+    case 2:
       return EventParameter("show",FWEELIN_GETOFS(show),T_char);
     }
 
     return EventParameter();
   };    
 
-  int displayid;   // Display to show
+  int interfaceid, // Interface in which display is defined
+    displayid;     // Display to show
   char show;       // Show it or hide it?
 };
 
@@ -954,6 +1007,30 @@ class VideoFullScreenEvent : public Event {
 class StartSessionEvent : public Event {
  public:
   EVT_DEFINE(StartSessionEvent,T_EV_StartSession);
+};
+
+class StartInterfaceEvent : public Event {
+ public:
+  EVT_DEFINE(StartInterfaceEvent,T_EV_StartInterface);
+  virtual void Recycle() {
+    interfaceid = -1;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    StartInterfaceEvent &s = (StartInterfaceEvent &) src;
+    interfaceid = s.interfaceid;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
+    }
+
+    return EventParameter();
+  };    
+
+  int interfaceid; // Interface to start
 };
 
 class ExitSessionEvent : public Event {

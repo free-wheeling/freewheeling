@@ -1,0 +1,143 @@
+<patchlist>
+<combi name="Strings">
+  <!-- Note overlap- several ranges map across -->
+  <zone keyrange="12>55" channel="0"/>
+  <zone keyrange="46>64" channel="1"/>
+  <zone keyrange="55>76" channel="2"/>
+  <zone keyrange="60>76" channel="3"/>
+  <zone keyrange="77>127" channel="12" bank="32" program="18"/>
+</combi>
+
+<combi name="Strings + Flute">
+  <!-- Note overlap- several ranges map across -->
+  <zone keyrange="12>55" channel="0"/>
+  <zone keyrange="46>64" channel="1"/>
+  <zone keyrange="55>76" channel="2"/>
+  <zone keyrange="60>127" channel="12" bank="0" program="73"/>
+</combi>
+
+<patch channel="12" name="Viola" bank="0" program="41"/>
+<patch channel="12" name="Cello" bank="0" program="42"/>
+<patch channel="12" name="Cellos" bank="32" program="13"/>
+<patch channel="12" name="Bass" bank="0" program="43"/>
+
+<patch channel="12" name="Flute" bank="0" program="73"/>
+<patch channel="12" name="2 Clarinet" bank="32" program="19"/>
+<patch channel="12" name="Oboe" bank="0" program="68"/>
+<patch channel="12" name="Bassoon" bank="0" program="70"/>
+<combi name="Bassoon/Oboe">
+  <zone keyrange="12>59" channel="12" bank="0" program="70"/>
+  <zone keyrange="53>127" channel="13" bank="0" program="68"/>
+</combi>
+
+<patch channel="12" name="Big Ol Flutes" bank="32" program="0"/>
+<patch channel="12" name="Big Ol Clarinets" bank="32" program="10"/>
+<patch channel="12" name="Hybrid Flute" bank="32" program="14"/>
+
+<combi name="Flutes/Clarinets">
+  <zone keyrange="0>127" channel="12" bank="32" program="11"/>
+  <zone keyrange="0>127" channel="13" bank="32" program="12"/>
+</combi>
+
+<combi name="Woods">
+  <zone keyrange="12>55" channel="8"/>
+  <zone keyrange="46>64" channel="9"/>
+  <zone keyrange="55>76" channel="10"/>
+  <zone keyrange="60>127" channel="11"/>
+</combi>
+
+<patch channel="12" name="Trumpet (NO MOD)" bank="0" program="56"/>
+<patch channel="12" name="Trombone (NO MOD)" bank="0" program="57"/>
+<patch channel="12" name="English Horn (NO MOD)" bank="0" program="69"/>
+<patch channel="12" name="Horn (NO MOD)" bank="32" program="9"/>
+
+<combi name="Brass (NO MOD)">
+<!-- Need to send CC1 value 0 -->
+  <zone keyrange="33>55" channel="6"/>
+  <zone keyrange="46>64" channel="4"/>
+  <zone keyrange="55>76" channel="5"/>
+  <zone keyrange="60>127" channel="7"/>
+</combi>
+
+<combi name="Trumpet/Trombone (NO MOD)">
+  <zone keyrange="0>72" channel="12" bank="0" program="57"/>
+  <zone keyrange="60>127" channel="13" bank="0" program="56"/>
+</combi>
+
+<combi name="Trumpet/Horns (NO MOD)">
+  <zone keyrange="0>127" channel="12" bank="32" program="15"/>
+  <zone keyrange="0>127" channel="13" bank="32" program="16"/>
+</combi>
+
+<combi name="Soft Bassoon/Horns (NO MOD)">
+  <zone keyrange="0>127" channel="12" bank="32" program="17"/>
+  <zone keyrange="0>127" channel="13" bank="32" program="16"/>
+</combi>
+
+<combi name="Strings/Piano Split">
+  <!-- Note overlap- several ranges map across -->
+  <!-- Upper octaves- LS piano -->
+  <zone keyrange="60>127" midiport="1" channel="0"/>
+
+  <!-- Lower octaves- strings -->
+  <zone keyrange="12>55" channel="0"/>
+  <zone keyrange="46>64" channel="1"/>
+  <zone keyrange="55>67" channel="2"/>
+  <!-- <zone keyrange="60>67" channel="3"/> -->
+</combi>
+
+<combi name="Strings/Sordino Split">
+  <!-- Note overlap- several ranges map across -->
+  <!-- Lower octaves- LS sordino -->
+  <zone keyrange="0>60" midiport="1" channel="1"/>
+
+  <!-- Upper octaves- strings -->
+  <zone keyrange="55>64" channel="1"/>
+  <zone keyrange="55>76" channel="2"/>
+  <zone keyrange="60>127" channel="3"/>
+</combi>
+
+<combi name="Strings/Piano Layer">
+  <!-- LS piano -->
+  <zone keyrange="0>127" midiport="1" channel="0"/>
+
+  <!-- Strings -->
+  <zone keyrange="12>55" channel="0"/>
+  <zone keyrange="46>64" channel="1"/>
+  <zone keyrange="55>76" channel="2"/>
+  <zone keyrange="60>127" channel="3"/>
+</combi>
+
+<combi name="Cellos/Piano Layer">
+  <!-- LS piano -->
+  <zone keyrange="0>127" midiport="1" channel="0"/>
+
+  <!-- Cello -->
+  <zone keyrange="0>127" channel="14" bank="32" program="13"/>
+</combi>
+
+<combi name="Bassoon/Piano Layer">
+  <!-- LS piano -->
+  <zone keyrange="0>127" midiport="1" channel="0"/>
+
+  <!-- Bassoon -->
+  <zone keyrange="0>127" channel="14" bank="0" program="70"/>
+</combi>
+
+<combi name="Piano/DX7">
+  <!-- LS piano -->
+  <zone keyrange="0>127" midiport="1" channel="0"/>
+
+  <!-- DX7 current patch -->
+  <zone keyrange="0>127" midiport="2" channel="1"/>
+</combi>
+
+<combi name="Piano/WhySynth">
+  <!-- LS piano -->
+  <zone keyrange="0>127" midiport="1" channel="0"/>
+
+  <!-- WhySynth current patch -->
+  <zone keyrange="0>127" midiport="2" channel="0"/>
+</combi>
+
+</patchlist>

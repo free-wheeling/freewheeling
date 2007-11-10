@@ -14,15 +14,18 @@
 #include "fweelin_audioio.h"
 #include "fweelin_mem.h"
 #include "fweelin_event.h"
+#include "elastin/elastin.h"
 
 // Types of audio codecs supported
-typedef enum {UNKNOWN = -1,
-              FIRST_FORMAT = 0, 
-	      VORBIS = 0,
-	      WAV = 1,
-	      FLAC = 2,
-	      AU = 3,
-	      END_OF_FORMATS = 4} codec;
+typedef enum {
+  UNKNOWN = -1,
+  FIRST_FORMAT = 0, 
+  VORBIS = 0,
+  WAV = 1,
+  FLAC = 2,
+  AU = 3,
+  END_OF_FORMATS = 4
+} codec;
 
 #ifndef MIN
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
@@ -87,7 +90,19 @@ class TimeMarker : public Preallocated {
  public:
   TimeMarker(nframes_t markofs = 0, long data = 0) : markofs(markofs), 
     data(data), next(0) {};
+  // FWMEM_DEFINE_DELBLOCK;
+  
+  virtual void Recycle() {
+    markofs = 0;
+    data = 0;
+    next = 0;
+  };
 
+  // Block mode allocate
+  /* virtual Preallocated *NewInstance() { 
+    return ::new TimeMarker[GetMgr()->GetBlockSize()]; 
+    }; */
+  
   virtual Preallocated *NewInstance() { return ::new TimeMarker(); };
 
   nframes_t markofs; // Marker position measured in samples
@@ -232,7 +247,7 @@ class BED_ExtraChannel : public Preallocated, public BlockExtendedData {
 // When rate scaling, the iterator writes to a different block chain than
 // it reads from. The chain can then grow/shrink as the rate scaling 
 // changes.
-class AudioBlockIterator {
+class AudioBlockIterator /*: public Elastin_SampleFeed*/ {
 public:
   // Optionally pass preallocatedtype for extrachannel if you want
   // extra channels to be added as needed when putting fragments
@@ -295,6 +310,8 @@ public:
 
   // Returns the block currently being iterated through
   inline AudioBlock *GetCurBlock() { return curblock; };
+
+ private:
 
   // Optional right audio channel for the block we are iterating
   PreallocatedType *pre_extrachannel; // Preallocator for 2nd channel blocks

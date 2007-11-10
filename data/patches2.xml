@@ -1,0 +1,390 @@
+<patchlist>
+<patch channel="0" name="String Thingy" bank="0" program="0"/>
+<patch channel="0" name="Hydrangia" bank="0" program="1"/>
+<patch channel="0" name="Hydrogenous" bank="0" program="2"/>
+<patch channel="0" name="Ice Chorus" bank="0" program="3"/>
+<patch channel="0" name="Bristol Mini 99" bank="0" program="4"/>
+<patch channel="0" name="amSynth Sweet Bass" bank="0" program="5"/>
+<patch channel="0" name="DragonPurr" bank="0" program="6"/>
+<patch channel="0" name="Lush Bells" bank="0" program="7"/>
+<patch channel="0" name="Soft Synth Strings" bank="0" program="8"/>
+<patch channel="0" name="Simulated Wood Grain" bank="0" program="9"/>
+<patch channel="0" name="Mighty Synchronoton" bank="0" program="10"/>
+<patch channel="0" name="FM E.Piano 3" bank="0" program="11"/>
+<patch channel="0" name="FM E.Piano 1" bank="0" program="12"/>
+<patch channel="0" name="FM E.Piano 2" bank="0" program="13"/>
+<patch channel="0" name="Early Semisolid Bass" bank="0" program="14"/>
+<patch channel="0" name="SpaceBass" bank="0" program="15"/>
+<patch channel="0" name="Glass Organ" bank="0" program="16"/>
+<patch channel="0" name="Bernoulli Choir" bank="0" program="17"/>
+<patch channel="0" name="Waveshaper Bass" bank="0" program="18"/>
+<patch channel="0" name="Waveshaper Clav" bank="0" program="19"/>
+<patch channel="0" name="PADsynth Strings" bank="0" program="20"/>
+<patch channel="0" name="PADsynth Choir A" bank="0" program="21"/>
+<patch channel="0" name="PADsynth Choir B" bank="0" program="22"/>
+<patch channel="0" name="Simulated Wood Grain Bass" bank="0" program="23"/>
+<patch channel="0" name="Malarky" bank="0" program="24"/>
+<patch channel="0" name="Wide Load" bank="0" program="25"/>
+<patch channel="0" name="Double Lush Bells" bank="0" program="26"/>
+<patch channel="0" name="Helianthus" bank="0" program="27"/>
+<patch channel="0" name="Moose Invasion" bank="0" program="28"/>
+<patch channel="0" name="pseudo steel drums" bank="0" program="29"/>
+<patch channel="0" name="more pseudo steel drums" bank="0" program="30"/>
+<patch channel="0" name="Spooky Bell" bank="0" program="31"/>
+<patch channel="0" name="Sync Leslie" bank="0" program="32"/>
+<patch channel="0" name="Mighty Synchronoton Delayed" bank="0" program="33"/>
+<patch channel="0" name="amSynth Derren 1" bank="0" program="34"/>
+<patch channel="0" name="amSynth Sexy Boy" bank="0" program="35"/>
+<patch channel="0" name="amSynth Flangey Bass 1" bank="0" program="36"/>
+<patch channel="0" name="amSynth Lazy Moon Lead" bank="0" program="37"/>
+<patch channel="0" name="amSynth Encounter" bank="0" program="38"/>
+<patch channel="0" name="amSynth Artic" bank="0" program="39"/>
+<patch channel="0" name="Bristol Mini 0" bank="0" program="40"/>
+<patch channel="0" name="Bristol Explorer 0" bank="0" program="41"/>
+<patch channel="0" name="Circuit" bank="0" program="42"/>
+<patch channel="0" name="Headache" bank="0" program="43"/>
+<patch channel="0" name="LFO Madness" bank="0" program="44"/>
+<patch channel="0" name="Swarmed!" bank="0" program="45"/>
+<patch channel="0" name="Wind Cliche" bank="0" program="46"/>
+<patch channel="0" name="============= Conversions from" bank="0" program="47"/>
+<patch channel="0" name="Raspy Strings" bank="0" program="48"/>
+<patch channel="0" name="JP Organ" bank="0" program="49"/>
+<patch channel="0" name="JP Organ Squeaky" bank="0" program="50"/>
+<patch channel="0" name="JP Organ Squeaky 5" bank="0" program="51"/>
+<patch channel="0" name="Rasp Lead" bank="0" program="52"/>
+<patch channel="0" name="MercAZoid" bank="0" program="53"/>
+<patch channel="0" name="X: A-ha VS" bank="0" program="54"/>
+<patch channel="0" name="X: Brass" bank="0" program="55"/>
+<patch channel="0" name="X2: Brass" bank="0" program="56"/>
+<patch channel="0" name="X: Xylophone" bank="0" program="57"/>
+<patch channel="0" name="X: Shimmer Pad" bank="0" program="58"/>
+<patch channel="0" name="X2: Shimmer Pad" bank="0" program="59"/>
+<patch channel="0" name="X: Sun Dog" bank="0" program="60"/>
+<patch channel="0" name="X2: Sun Dog" bank="0" program="61"/>
+<patch channel="0" name="X: Organ 2" bank="0" program="62"/>
+<patch channel="0" name="X2: Organ 2" bank="0" program="63"/>
+<patch channel="0" name="X: French Horn" bank="0" program="64"/>
+<patch channel="0" name="X: plucked" bank="0" program="65"/>
+<patch channel="0" name="X: bell" bank="0" program="66"/>
+<patch channel="0" name="X: bell VS" bank="0" program="67"/>
+<patch channel="0" name="X: sync_bass" bank="0" program="68"/>
+<patch channel="0" name="X: sync_sweep" bank="0" program="69"/>
+<patch channel="0" name="X2: sync_sweep" bank="0" program="70"/>
+<patch channel="0" name="X: Gramma's Organ" bank="0" program="71"/>
+<patch channel="0" name="X: Long Portamento" bank="0" program="72"/>
+<patch channel="0" name="X: Owww!" bank="0" program="73"/>
+<patch channel="0" name="X: Tube Growl" bank="0" program="74"/>
+<patch channel="0" name="X2: Tube Growl" bank="0" program="75"/>
+<patch channel="0" name="X: squelchy_bass" bank="0" program="76"/>
+<patch channel="0" name="X: reso_sweep" bank="0" program="77"/>
+<patch channel="0" name="X2: reso_sweep" bank="0" program="78"/>
+<patch channel="0" name="X: theremin" bank="0" program="79"/>
+<patch channel="0" name="X: Twub" bank="0" program="80"/>
+<patch channel="0" name="X: Wavey" bank="0" program="81"/>
+<patch channel="0" name="X2: Wavey" bank="0" program="82"/>
+<patch channel="0" name="X: heart_beat" bank="0" program="83"/>
+<patch channel="0" name="X: voice" bank="0" program="84"/>
+<patch channel="0" name="X: VS Bass 1" bank="0" program="85"/>
+<patch channel="0" name="X: VS Bass 2" bank="0" program="86"/>
+<patch channel="0" name="X: Klaxon" bank="0" program="87"/>
+<patch channel="0" name="X2: Klaxon" bank="0" program="88"/>
+<patch channel="0" name="X: Hammond pedals" bank="0" program="89"/>
+<patch channel="0" name="X: space race" bank="0" program="90"/>
+<patch channel="0" name="X: Night Sweats 2" bank="0" program="91"/>
+<patch channel="0" name="X: Tweetie" bank="0" program="92"/>
+<patch channel="0" name="X: Vitreous Humor" bank="0" program="93"/>
+<patch channel="0" name="X: Vibrothingie" bank="0" program="94"/>
+<patch channel="0" name="X: Vibrato Hammond" bank="0" program="95"/>
+<patch channel="0" name="X2: Music Box" bank="0" program="96"/>
+<patch channel="0" name="X: Ploink Box" bank="0" program="97"/>
+<patch channel="0" name="X2: Polkenstein" bank="0" program="98"/>
+<patch channel="0" name="====== Rudimentary conversions" bank="0" program="99"/>
+<patch channel="0" name="====== from Kawai K4 patches:" bank="0" program="100"/>
+<patch channel="0" name="K4oid: Lue" bank="0" program="101"/>
+<patch channel="0" name="K4oid: Monocultur" bank="0" program="102"/>
+<patch channel="0" name="K4oid: BreezeGame" bank="0" program="103"/>
+<patch channel="0" name="K4oid: E.Piano S1" bank="0" program="104"/>
+<patch channel="0" name="K4oid: FletchLead" bank="0" program="105"/>
+<patch channel="0" name="K4oid: jaBBazyntx" bank="0" program="106"/>
+<patch channel="0" name="K4oid: MICROwave" bank="0" program="107"/>
+<patch channel="0" name="K4oid: OBIErezPAD" bank="0" program="108"/>
+<patch channel="0" name="K4oid: van halen" bank="0" program="109"/>
+<patch channel="0" name="K4oid: Glaschords" bank="0" program="110"/>
+<patch channel="0" name="K4oid: Harmonics" bank="0" program="111"/>
+<patch channel="0" name="K4oid: Polysynth" bank="0" program="112"/>
+<patch channel="0" name="K4oid: Pyeipzz" bank="0" program="113"/>
+<patch channel="0" name="K4oid: Reedy Synt" bank="0" program="114"/>
+<patch channel="0" name="K4oid: Return" bank="0" program="115"/>
+<patch channel="0" name="K4oid: TechnoTube" bank="0" program="116"/>
+<patch channel="0" name="K4oid: Thin Keys" bank="0" program="117"/>
+<patch channel="0" name="K4oid: Vectory !" bank="0" program="118"/>
+<patch channel="0" name="K4oid: Warm Synpi" bank="0" program="119"/>
+<patch channel="0" name="K4oid: Woodpecker" bank="0" program="120"/>
+<patch channel="0" name="K4oid: Zippoline" bank="0" program="121"/>
+<patch channel="0" name="K4oid: Double Wha" bank="0" program="122"/>
+<patch channel="0" name="K4oid: Lurkerer" bank="0" program="123"/>
+<patch channel="0" name="K4oid: Remember?" bank="0" program="124"/>
+<patch channel="0" name="K4oid: Talkochord" bank="0" program="125"/>
+<patch channel="0" name="K4oid: Cla Bell" bank="0" program="126"/>
+<patch channel="0" name="K4oid: Euro*Dig" bank="0" program="127"/>
+<patch channel="0" name="K4oid: FINE FINE" bank="1" program="0"/>
+<patch channel="0" name="K4oid: Spring Sky" bank="1" program="1"/>
+<patch channel="0" name="K4oid: AmbientHrp" bank="1" program="2"/>
+<patch channel="0" name="K4oid: BitterStrg" bank="1" program="3"/>
+<patch channel="0" name="K4oid: LylesStrng" bank="1" program="4"/>
+<patch channel="0" name="K4oid: OB Strings" bank="1" program="5"/>
+<patch channel="0" name="K4oid: EnglishHrn" bank="1" program="6"/>
+<patch channel="0" name="K4oid: emphasizer" bank="1" program="7"/>
+<patch channel="0" name="K4oid: UnderAtack" bank="1" program="8"/>
+<patch channel="0" name="K4oid: Soundtrack" bank="1" program="9"/>
+<patch channel="0" name="K4oid: Sync Wail" bank="1" program="10"/>
+<patch channel="0" name="K4oid: VeryHiVocs" bank="1" program="11"/>
+<patch channel="0" name="K4oid: CleanOrgn1" bank="1" program="12"/>
+<patch channel="0" name="K4oid: IndoProOne" bank="1" program="13"/>
+<patch channel="0" name="K4oid: Moog+ChDly" bank="1" program="14"/>
+<patch channel="0" name="K4oid: PPG/VelRes" bank="1" program="15"/>
+<patch channel="0" name="K4oid: RememberMe" bank="1" program="16"/>
+<patch channel="0" name="K4oid: RichRhodes" bank="1" program="17"/>
+<patch channel="0" name="K4oid: CleanOrgn3" bank="1" program="18"/>
+<patch channel="0" name="K4oid: Bob'sBass" bank="1" program="19"/>
+<patch channel="0" name="K4oid: digitaSYNT" bank="1" program="20"/>
+<patch channel="0" name="K4oid: elektrik 1" bank="1" program="21"/>
+<patch channel="0" name="K4oid: PropaQ PaD" bank="1" program="22"/>
+<patch channel="0" name="K4oid: Vibraphon" bank="1" program="23"/>
+<patch channel="0" name="K4oid: Sierra" bank="1" program="24"/>
+<patch channel="0" name="K4oid: Spinn Solo" bank="1" program="25"/>
+<patch channel="0" name="K4oid: Seventy" bank="1" program="26"/>
+<patch channel="0" name="K4oid: OhhBe Ex-A" bank="1" program="27"/>
+<patch channel="0" name="K4oid: OldSutCase" bank="1" program="28"/>
+<patch channel="0" name="K4oid: Lead Me" bank="1" program="29"/>
+<patch channel="0" name="K4oid: Memory" bank="1" program="30"/>
+<patch channel="0" name="K4oid: Glass EP" bank="1" program="31"/>
+<patch channel="0" name="K4oid: Super KX" bank="1" program="32"/>
+<patch channel="0" name="K4oid: SquareLead" bank="1" program="33"/>
+<patch channel="0" name="K4oid: Rock Organ" bank="1" program="34"/>
+<patch channel="0" name="K4oid: Warmth" bank="1" program="35"/>
+<patch channel="0" name="K4oid: Miniapolis" bank="1" program="36"/>
+<patch channel="0" name="K4oid: Reso Syn" bank="1" program="37"/>
+<patch channel="0" name="K4oid: Oboe" bank="1" program="38"/>
+<patch channel="0" name="K4oid: Mini Bass" bank="1" program="39"/>
+<patch channel="0" name="K4oid: Melo Vox 1" bank="1" program="40"/>
+<patch channel="0" name="K4oid: Melo Waves" bank="1" program="41"/>
+<patch channel="0" name="K4oid: MelSqrSwep" bank="1" program="42"/>
+<patch channel="0" name="K4oid: Sqr Sweep1" bank="1" program="43"/>
+<patch channel="0" name="K4oid: SqrMel Ld1" bank="1" program="44"/>
+<patch channel="0" name="K4oid: SqrMel Ld2" bank="1" program="45"/>
+<patch channel="0" name="K4oid: Slow Swell" bank="1" program="46"/>
+<patch channel="0" name="K4oid: Eeeevil 1" bank="1" program="47"/>
+<patch channel="0" name="K4oid: Matheim" bank="1" program="48"/>
+<patch channel="0" name="K4oid: Celest" bank="1" program="49"/>
+<patch channel="0" name="K4oid: Xylophone" bank="1" program="50"/>
+<patch channel="0" name="K4oid: WaterBells" bank="1" program="51"/>
+<patch channel="0" name="K4oid: Oh Bo! Mel" bank="1" program="52"/>
+<patch channel="0" name="K4oid: Sunday 1" bank="1" program="53"/>
+<patch channel="0" name="K4oid: Sunday  2" bank="1" program="54"/>
+<patch channel="0" name="K4oid: Sunday  3" bank="1" program="55"/>
+<patch channel="0" name="K4oid: Rezysyn" bank="1" program="56"/>
+<patch channel="0" name="K4oid: Reso.Syn 0" bank="1" program="57"/>
+<patch channel="0" name="K4oid: 4osc. Juno" bank="1" program="58"/>
+<patch channel="0" name="K4oid: MooG InvsN" bank="1" program="59"/>
+<patch channel="0" name="K4oid: ToyPiano16" bank="1" program="60"/>
+<patch channel="0" name="K4oid: 7ender EP" bank="1" program="61"/>
+<patch channel="0" name="K4oid: Apham EP" bank="1" program="62"/>
+<patch channel="0" name="K4oid: Traum" bank="1" program="63"/>
+<patch channel="0" name="K4oid: EP" bank="1" program="64"/>
+<patch channel="0" name="K4oid: Blue*G*Org" bank="1" program="65"/>
+<patch channel="0" name="K4oid: Mild" bank="1" program="66"/>
+<patch channel="0" name="K4oid: Peak-A-Bos" bank="1" program="67"/>
+<patch channel="0" name="K4oid: Harpsich60" bank="1" program="68"/>
+<patch channel="0" name="K4oid: Troubles" bank="1" program="69"/>
+<patch channel="0" name="K4oid: Contempo" bank="1" program="70"/>
+<patch channel="0" name="K4oid: GurglGhost" bank="1" program="71"/>
+<patch channel="0" name="K4oid: ClavRhods" bank="1" program="72"/>
+<patch channel="0" name="K4oid: DX-7 Piano" bank="1" program="73"/>
+<patch channel="0" name="K4oid: Every" bank="1" program="74"/>
+<patch channel="0" name="K4oid: Iron E.P" bank="1" program="75"/>
+<patch channel="0" name="K4oid: SemiRoads" bank="1" program="76"/>
+<patch channel="0" name="K4oid: Glocklock+" bank="1" program="77"/>
+<patch channel="0" name="K4oid: Wastmnstr+" bank="1" program="78"/>
+<patch channel="0" name="K4oid: HouseBass+" bank="1" program="79"/>
+<patch channel="0" name="K4oid: Taurs4Pol+" bank="1" program="80"/>
+<patch channel="0" name="K4oid: Frogbell" bank="1" program="81"/>
+<patch channel="0" name="K4oid: Raspel" bank="1" program="82"/>
+<patch channel="0" name="K4oid: Clarinet" bank="1" program="83"/>
+<patch channel="0" name="K4oid: Glass Harp" bank="1" program="84"/>
+<patch channel="0" name="K4oid: GlockGlock" bank="1" program="85"/>
+<patch channel="0" name="K4oid: Islandbell" bank="1" program="86"/>
+<patch channel="0" name="K4oid: Drops" bank="1" program="87"/>
+<patch channel="0" name="K4oid: scritti" bank="1" program="88"/>
+<patch channel="0" name="K4oid: UnAnalogic" bank="1" program="89"/>
+<patch channel="0" name="K4oid: dead PIANO" bank="1" program="90"/>
+<patch channel="0" name="K4oid: digistical" bank="1" program="91"/>
+<patch channel="0" name="K4oid: modular 1" bank="1" program="92"/>
+<patch channel="0" name="K4oid: obPAD+dxEP" bank="1" program="93"/>
+<patch channel="0" name="K4oid: Candlemass" bank="1" program="94"/>
+<patch channel="0" name="K4oid: Eno's Mini" bank="1" program="95"/>
+<patch channel="0" name="K4oid: SyntexBass" bank="1" program="96"/>
+<patch channel="0" name="K4oid: OBX Brass" bank="1" program="97"/>
+<patch channel="0" name="K4oid: OceanBrass" bank="1" program="98"/>
+<patch channel="0" name="K4oid: Alassen" bank="1" program="99"/>
+<patch channel="0" name="K4oid: AnalgClavi" bank="1" program="100"/>
+<patch channel="0" name="K4oid: Kaliohpann" bank="1" program="101"/>
+<patch channel="0" name="K4oid: Pepe,Geh !" bank="1" program="102"/>
+<patch channel="0" name="K4oid: K4-Init" bank="1" program="103"/>
+<patch channel="0" name="================ Test patches:" bank="1" program="104"/>
+<patch channel="0" name="sweep alias test (key=100)" bank="1" program="105"/>
+<patch channel="0" name="sweep alias test 2 (key=108)" bank="1" program="106"/>
+<patch channel="0" name="sync alias test (key=108)" bank="1" program="107"/>
+<patch channel="0" name="mod discontinuity test" bank="1" program="108"/>
+<patch channel="0" name="subsample alias test (key=94)" bank="1" program="109"/>
+<patch channel="0" name="subsample alias 2 (key=60)" bank="1" program="110"/>
+<patch channel="0" name="subsample alias 3 (key=96)" bank="1" program="111"/>
+<patch channel="0" name="startup thump test (key=108)" bank="1" program="112"/>
+<patch channel="0" name="tri sync thump test (key=77)" bank="1" program="113"/>
+<patch channel="0" name="pulse click! (key=106)" bank="1" program="114"/>
+<patch channel="0" name="pulse click! (key=103)" bank="1" program="115"/>
+<patch channel="0" name="osc amp mod test" bank="1" program="116"/>
+<patch channel="0" name="amp mod test 2" bank="1" program="117"/>
+<patch channel="0" name="new filter test" bank="1" program="118"/>
+<patch channel="0" name="eg amp mod test" bank="1" program="119"/>
+<patch channel="0" name="wave comparer (LFO)" bank="1" program="120"/>
+<patch channel="0" name="========= Development patches:" bank="1" program="121"/>
+<patch channel="0" name="-Xsynth-DSSI single init voice" bank="1" program="122"/>
+<patch channel="0" name="-Xsynth-DSSI dual init voice-" bank="1" program="123"/>
+<patch channel="0" name="- K4oid single init voice -" bank="1" program="124"/>
+<patch channel="0" name="- K4oid dual init voice -" bank="1" program="125"/>
+<patch channel="0" name="- K4oid twin init voice -" bank="1" program="126"/>
+<patch channel="0" name="- K4oid double init voice -" bank="1" program="127"/>
+<patch channel="0" name="GSynth" bank="2" program="0"/>
+<patch channel="0" name="  dual agran base " bank="2" program="1"/>
+<patch channel="0" name="   PADsynth stereo base " bank="2" program="2"/>
+<patch channel="0" name="  init voice " bank="2" program="3"/>
+<patch channel="1" name="Elec Piano" bank="0" program="0"/>
+<patch channel="1" name="FB:PfVibe " bank="0" program="1"/>
+<patch channel="1" name="FatThinE.P" bank="0" program="2"/>
+<patch channel="1" name="E.PIANO 1 " bank="0" program="3"/>
+<patch channel="1" name="E.PIANO 3 " bank="0" program="4"/>
+<patch channel="1" name="E.GRAND 1 " bank="0" program="5"/>
+<patch channel="1" name="PIANO   1 " bank="0" program="6"/>
+<patch channel="1" name="A.Piano1.5" bank="0" program="7"/>
+<patch channel="1" name="HARPSICH. " bank="0" program="8"/>
+<patch channel="1" name="VIBES    A" bank="0" program="9"/>
+<patch channel="1" name="A.MALLET A" bank="0" program="10"/>
+<patch channel="1" name="CARIBIC 2 " bank="0" program="11"/>
+<patch channel="1" name="MARIMBA   " bank="0" program="12"/>
+<patch channel="1" name="XYLOPHONE " bank="0" program="13"/>
+<patch channel="1" name="CLAV.    B" bank="0" program="14"/>
+<patch channel="1" name="GUITAR  1 " bank="0" program="15"/>
+<patch channel="1" name="GUITAR  3 " bank="0" program="16"/>
+<patch channel="1" name="SPANISHGTR" bank="0" program="17"/>
+<patch channel="1" name="LUTE      " bank="0" program="18"/>
+<patch channel="1" name="HARP    1 " bank="0" program="19"/>
+<patch channel="1" name="FB:PluckGt" bank="0" program="20"/>
+<patch channel="1" name="LOTUS     " bank="0" program="21"/>
+<patch channel="1" name="E.ORGAN 1 " bank="0" program="22"/>
+<patch channel="1" name="HAMM ORG7 " bank="0" program="23"/>
+<patch channel="1" name="CLIC.ORGDW" bank="0" program="24"/>
+<patch channel="1" name="JOrg Combo" bank="0" program="25"/>
+<patch channel="1" name="PIPES    A" bank="0" program="26"/>
+<patch channel="1" name="PIPES   3 " bank="0" program="27"/>
+<patch channel="1" name="E.BASS Fix" bank="0" program="28"/>
+<patch channel="1" name="BASS    1 " bank="0" program="29"/>
+<patch channel="1" name="BASS    2 " bank="0" program="30"/>
+<patch channel="1" name="FUNK BASS " bank="0" program="31"/>
+<patch channel="1" name="FUNK-BASS1" bank="0" program="32"/>
+<patch channel="1" name="a-ha TOM  " bank="0" program="33"/>
+<patch channel="1" name="SKI       " bank="0" program="34"/>
+<patch channel="1" name="JUMP      " bank="0" program="35"/>
+<patch channel="1" name="FILTER EG " bank="0" program="36"/>
+<patch channel="1" name="--ANALOG--" bank="0" program="37"/>
+<patch channel="1" name="ORCHESTRAL" bank="0" program="38"/>
+<patch channel="1" name="SYN-LEAD 2" bank="0" program="39"/>
+<patch channel="1" name="SYN-LEAD 4" bank="0" program="40"/>
+<patch channel="1" name="Crazy4U  1" bank="0" program="41"/>
+<patch channel="1" name="BOMBAST 1D" bank="0" program="42"/>
+<patch channel="1" name="DOUBLE  2 " bank="0" program="43"/>
+<patch channel="1" name="DOUBLEHARP" bank="0" program="44"/>
+<patch channel="1" name="CELESTA   " bank="0" program="45"/>
+<patch channel="1" name="DOUBLE  3 " bank="0" program="46"/>
+<patch channel="1" name="KARIMBA!!!" bank="0" program="47"/>
+<patch channel="1" name="Growler   " bank="0" program="48"/>
+<patch channel="1" name="CHIMES    " bank="0" program="49"/>
+<patch channel="1" name="Sortofvoce" bank="0" program="50"/>
+<patch channel="1" name="FEM. CHOIR" bank="0" program="51"/>
+<patch channel="1" name="STRINGS 2 " bank="0" program="52"/>
+<patch channel="1" name="VIOLINS  A" bank="0" program="53"/>
+<patch channel="1" name="CELLOS   B" bank="0" program="54"/>
+<patch channel="1" name="Clarinet  " bank="0" program="55"/>
+<patch channel="1" name="FLUTE   1 " bank="0" program="56"/>
+<patch channel="1" name="PofL Brass" bank="0" program="57"/>
+<patch channel="1" name="BRASS   1 " bank="0" program="58"/>
+<patch channel="1" name="BRASS   3 " bank="0" program="59"/>
+<patch channel="1" name="HORN SEC.A" bank="0" program="60"/>
+<patch channel="1" name="TIMPANI   " bank="0" program="61"/>
+<patch channel="1" name="LOG DRUM  " bank="0" program="62"/>
+<patch channel="1" name="GONG    1 " bank="0" program="63"/>
+<patch channel="1" name="TUBERISE A" bank="0" program="64"/>
+<patch channel="1" name="DIGI DRUM1" bank="0" program="65"/>
+<patch channel="1" name="BeatMeHrdr" bank="0" program="66"/>
+<patch channel="1" name="EVOLUTION " bank="0" program="67"/>
+<patch channel="1" name="Nasty KCP2" bank="0" program="68"/>
+<patch channel="1" name="GRAND PRIX" bank="0" program="69"/>
+<patch channel="1" name="TIMEWARP  " bank="0" program="70"/>
+<patch channel="1" name="BACKBELLS " bank="0" program="71"/>
+<patch channel="1" name="BAD SUNDAY" bank="0" program="72"/>
+<patch channel="1" name="Bell  1   " bank="0" program="73"/>
+<patch channel="1" name="Bell  2   " bank="0" program="74"/>
+<patch channel="1" name="Bell  3   " bank="0" program="75"/>
+<patch channel="1" name="Bell  4   " bank="0" program="76"/>
+<patch channel="1" name="Bell  5   " bank="0" program="77"/>
+<patch channel="1" name="Bell  6   " bank="0" program="78"/>
+<patch channel="1" name="Bell  7   " bank="0" program="79"/>
+<patch channel="1" name="Bell  8   " bank="0" program="80"/>
+<patch channel="1" name="Bell  9   " bank="0" program="81"/>
+<patch channel="1" name="bell tree " bank="0" program="82"/>
+<patch channel="1" name="bellfry   " bank="0" program="83"/>
+<patch channel="1" name="bellsusta " bank="0" program="84"/>
+<patch channel="1" name="BIG BEN 1 " bank="0" program="85"/>
+<patch channel="1" name="BIG BEN 2 " bank="0" program="86"/>
+<patch channel="1" name="BIG BEN 3 " bank="0" program="87"/>
+<patch channel="1" name="BIG BEN 4 " bank="0" program="88"/>
+<patch channel="1" name="BIG BEN 5 " bank="0" program="89"/>
+<patch channel="1" name="BRONZE    " bank="0" program="90"/>
+<patch channel="1" name="BRONZE BIS" bank="0" program="91"/>
+<patch channel="1" name="CHINKBELL " bank="0" program="92"/>
+<patch channel="1" name="CHURCHBELL" bank="0" program="93"/>
+<patch channel="1" name="Clockwork " bank="0" program="94"/>
+<patch channel="1" name="DRK BELLS " bank="0" program="95"/>
+<patch channel="1" name="DTHS ANGEL" bank="0" program="96"/>
+<patch channel="1" name="DX9.BELL 1" bank="0" program="97"/>
+<patch channel="1" name="DX9.BELL 2" bank="0" program="98"/>
+<patch channel="1" name="DX9.BELL 3" bank="0" program="99"/>
+<patch channel="1" name="glasses   " bank="0" program="100"/>
+<patch channel="1" name="GONG 1    " bank="0" program="101"/>
+<patch channel="1" name="GONG 2    " bank="0" program="102"/>
+<patch channel="1" name="AC. PNO 1A" bank="0" program="103"/>
+<patch channel="1" name="AC. PNO 2A" bank="0" program="104"/>
+<patch channel="1" name="ELEC GRD 1" bank="0" program="105"/>
+<patch channel="1" name="E. PNO 1A " bank="0" program="106"/>
+<patch channel="1" name="E. PNO 2A " bank="0" program="107"/>
+<patch channel="1" name="E. PNO 3A " bank="0" program="108"/>
+<patch channel="1" name="CLAV. 1A  " bank="0" program="109"/>
+<patch channel="1" name="CLAV. 2A  " bank="0" program="110"/>
+<patch channel="1" name="E.ORGAN 1A" bank="0" program="111"/>
+<patch channel="1" name="E.ORGAN 2A" bank="0" program="112"/>
+<patch channel="1" name="PIPES 1A  " bank="0" program="113"/>
+<patch channel="1" name="HARPSICH 1" bank="0" program="114"/>
+<patch channel="1" name="HORN SECTN" bank="0" program="115"/>
+<patch channel="1" name="SYN BRS 1A" bank="0" program="116"/>
+<patch channel="1" name="TIGHT BR.A" bank="0" program="117"/>
+<patch channel="1" name="SYN BRS 2A" bank="0" program="118"/>
+<patch channel="1" name="HORN SEC.A" bank="0" program="119"/>
+<patch channel="1" name="TRUMPET 1A" bank="0" program="120"/>
+<patch channel="1" name="VIOLINS A " bank="0" program="121"/>
+<patch channel="1" name="CELLOS 1A " bank="0" program="122"/>
+<patch channel="1" name="AN. STG 1A" bank="0" program="123"/>
+<patch channel="1" name="MID-STRG A" bank="0" program="124"/>
+<patch channel="1" name="STRINGS-LO" bank="0" program="125"/>
+<patch channel="1" name="STRING ENS" bank="0" program="126"/>
+<patch channel="1" name="E.PN/BRS 1" bank="0" program="127"/>
+</patchlist>

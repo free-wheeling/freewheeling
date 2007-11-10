@@ -1,5 +1,22 @@
 IN PROGRESS v0.5.6 - SVN
 
+	    Friday Nov 9th, 2007
+
+            New Features
+            ------------
+
+	    * Completely revamped configuration system-
+
+	      Better splitting and organization-
+	        There are now many configuration files.
+	      The configuration is divided into 'interfaces'.
+	      Each interface defines behavior and display related to
+	        a hardware interface. 
+	      You can build whole functionality for a given MIDI interface
+	        such as a fader box, and share it on the Internet.
+	      This should help the current situation where people are 
+	      patching together bits of each other's configurations.
+
             Sunday July 8th, 2007
 
             New Features
@@ -7,10 +24,18 @@ IN PROGRESS v0.5.6 - SVN
 
             * Working on real-time pitch and time stretching- 
               not yet usable!
-                
+               
+	    * Adjustable global tuning for Fluidsynth:
+
+	      From .fweelin.rc:
+	      <fluidsynth tuning="-31.76"/>
+
+	      Adjusts Fluidsynth to -31.76 cents tuning, or 432 Hz
+	      tuning.
+
             Fixes
             -----
-
+	
             * Fixed a bug where some non-critical events (such as loading
               or selecting loops) could be missed.
 

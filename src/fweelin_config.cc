@@ -29,6 +29,8 @@
 #include <sched.h>
 #include <sys/mman.h>
 
+#include <glob.h>
+
 #include "fweelin_config.h"
 #include "fweelin_midiio.h"
 #include "fweelin_sdlio.h"
@@ -47,7 +49,115 @@ const char CfgMathOperation::operators[] = {'/', '*', '+', '-'};
 const int CfgMathOperation::numops = 4;
 
 const int FloConfig::NUM_PREALLOCATED_AUDIO_BLOCKS = 40;
+const int FloConfig::NUM_PREALLOCATED_TIME_MARKERS = 40;
 const float FloConfig::AUDIO_MEMORY_LEN = 10.0;
+
+// Maximum path length for config files
+#define CFG_PATH_MAX 2048
+
+// Copies configuration file 'cfgname' from shared to ~/.fweelin
+// If copyall is set, copies *all* .XML files from shared to ~/.fweelin
+// Backups are made if needed
+void FloConfig::CopyConfigFile (char *cfgname, char copyall) {
+  char buf[CFG_PATH_MAX];
+  char *homedir = getenv("HOME");
+
+  if (copyall) {
+    // Copy all .xml files in shared:
+    glob_t globbuf;
+    snprintf(buf,CFG_PATH_MAX,"%s/*%s",
+	     FWEELIN_DATADIR,FWEELIN_CONFIG_EXT);
+    printf("INIT: Copying all config files from shared folder...\n");
+    if (glob(buf, 0, NULL, &globbuf) == 0) {
+      for (size_t i = 0; i < globbuf.gl_pathc; i++) {
+	// Strip path and send filename
+	char *lastslash = strrchr(globbuf.gl_pathv[i],'/');
+	if (lastslash == 0)
+	  CopyConfigFile(globbuf.gl_pathv[i],0);
+	else 
+	  CopyConfigFile(lastslash+1,0);
+      }
+      globfree(&globbuf);
+    }
+  } else {
+    // Config file exists? (need to backup?)
+    snprintf(buf,CFG_PATH_MAX,"%s/%s/%s",homedir,
+	     FWEELIN_CONFIG_DIR,cfgname);
+    struct stat st;
+    if (stat(buf,&st) == 0) {
+      // Find backup name
+      char tmp2[CFG_PATH_MAX];
+      int bCnt = 1;
+      char go = 1;
+      while (go) {
+	snprintf(tmp2,CFG_PATH_MAX,"%s.backup.%d",buf,bCnt);
+	if (stat(tmp2,&st) != 0)
+	  go = 0; // Free backup filename
+	else
+	  bCnt++;
+      }
+
+      // Backup
+      printf("Backing up your old configuration to: %s\n",tmp2);
+      char tmp3[CFG_PATH_MAX];
+      snprintf(tmp3,CFG_PATH_MAX,"cp \"%s\" \"%s\"",buf,tmp2);
+      printf("INIT: Copying: %s\n",tmp3);
+      system(tmp3);
+    }
+
+    // Copy over from shared
+    char buf2[CFG_PATH_MAX];
+    snprintf(buf2,CFG_PATH_MAX,"cp \"%s/%s\" \"%s/%s\"",
+	     FWEELIN_DATADIR,cfgname,
+	     homedir,FWEELIN_CONFIG_DIR);
+    printf("INIT: Copying: %s\n",buf2);
+    system(buf2);
+  }
+};
+
+char *FloConfig::PrepareLoadConfigFile (char *cfgname, char basecfg) {
+  static char buf[CFG_PATH_MAX];
+  char *homedir = getenv("HOME");
+
+  // Look for config file
+  char go = 1;
+  do {
+    snprintf(buf,CFG_PATH_MAX,"%s/%s/%s",homedir,
+	     FWEELIN_CONFIG_DIR,cfgname);
+    struct stat st;
+    if (stat(buf,&st) != 0) {
+      if (go == 2) {
+	// Already tried to copy config file from shared. 
+	// Config file not found
+	printf("INIT: Can't find configuration file '%s'.\n",buf);
+	return 0;
+      } else {
+	// 1st try-
+	// Can't find config file in config dir-
+	printf("INIT: Configuration file '%s' not in usual place. "
+	       "Checking.\n",buf);
+	
+	// Check if config dir exists?
+	snprintf(buf,CFG_PATH_MAX,"%s/%s",homedir,FWEELIN_CONFIG_DIR);
+	if (mkdir(buf,S_IRWXU)) {
+	  if (errno != EEXIST) {
+	    printf("INIT: Error %d creating config folder '%s'- "
+		   "do you have write permission there?\n",
+		   errno,buf);
+	  }
+	} else 
+	  printf("INIT: *** Created new config folder '%s'.\n",buf);
+	
+	// Copy configuration file(s) from shared folder
+	CopyConfigFile(cfgname,basecfg);
+	go = 2;
+      }
+    } else
+      go = 0; // Found, end search
+  } while (go);
+
+  return buf;
+};
 
 void UserVariable::Print(char *str, int maxlen) {
   if (name != 0 && str == 0)
@@ -295,10 +405,12 @@ void InputMatrix::Start() {
   // Input events
   int evnum = (int) EventType(T_EV_Last_Bindable);
   for (int i = 0; i < evnum; i++)
-    if (i == (int) EventType(T_EV_GoSub))
-      // Listen for GoSub, but allow us to call ourselves because
+    if (i == (int) EventType(T_EV_GoSub) ||
+	i == (int) EventType(T_EV_StartInterface))
+      // Listen for GoSub/StartInterface, 
+      // but allow us to call ourselves because
       // that is what gosub does!
-      app->getEMG()->ListenEvent(this,0,T_EV_GoSub);
+      app->getEMG()->ListenEvent(this,0,(EventType) i);
     else
       // Listen for input events, blocking receive of calls from ourself to
       // prevent infinite loops on event echo
@@ -546,7 +658,8 @@ void InputMatrix::CreateVariable (xmlNode *declare) {
 
 // Scans in the given binding for settings for output event parameters
 // and sets us up to handle those
-void InputMatrix::CreateParameterSets (EventBinding *bind, xmlNode *binding, 
+void InputMatrix::CreateParameterSets (int interfaceid,
+				       EventBinding *bind, xmlNode *binding, 
 				       Event *input, int contnum) {
   const static char *delim = " and ";
 
@@ -557,6 +670,9 @@ void InputMatrix::CreateParameterSets (EventBinding *bind, xmlNode *binding,
     sprintf(basebuf,str_base);
   else 
     snprintf(basebuf,str_len,"%s%d",str_base,contnum);
+
+  // Interface ID set explicitly?
+  char interfaceset = 0; 
 
   xmlChar *paramstr = xmlGetProp(binding, (const xmlChar *)basebuf);
   if (paramstr != 0) {
@@ -606,6 +722,10 @@ void InputMatrix::CreateParameterSets (EventBinding *bind, xmlNode *binding,
 	    // Config specifies a param set for this parameter
 	    found = 1;
 
+	    if (!strcmp(param.name,INTERFACEID)) 
+	      // Parameter is interface ID
+	      interfaceset = 1;
+
 	    // Parse RValue expression that specifies set.
 	    char enable_keynames = (bind->boundproto->GetType() == 
 				    T_EV_Input_Key &&
@@ -627,8 +747,7 @@ void InputMatrix::CreateParameterSets (EventBinding *bind, xmlNode *binding,
 	      printf("\n");
 
 	      delete exp;
-	    }
-	    else {
+	    } else {
 	      // Dynamic expression
 
 	      DynamicToken *nwset = new DynamicToken();
@@ -663,23 +782,78 @@ void InputMatrix::CreateParameterSets (EventBinding *bind, xmlNode *binding,
     delete[] buf;
     xmlFree(paramstr);
   }
+
+  if (!interfaceset) {
+    // Interface ID not set explicitly as parameter- check if
+    // the event we're binding for output has 'interfaceid'-
+    // if so, set implicitly based on what interface this binding is
+    // defined in
+    
+    char found = 0;
+    for (int i = 0; !found && i < bind->boundproto->GetNumParams(); i++) {
+      EventParameter param = bind->boundproto->GetParam(i);
+      if (!strcmp(param.name,INTERFACEID)) {
+	// Yup, set implicitly
+	found = 1;
+	
+	char tmp[20];
+	snprintf(tmp,20,"%d",interfaceid); // Set from interface ID
+	ParsedExpression *exp = ParseExpression(tmp, input);
+
+	// OK, check if expression is static
+	if (exp->IsStatic()) {
+	  // Yup, so evaluate now
+	  UserVariable val = exp->Evaluate(input);
+	  
+	  // Store directly in output prototype event
+	  char *nwofs = 
+	    (char *)bind->boundproto + param.ofs; // Data location
+	  StoreParameter(nwofs,param.dtype,&val);
+	  printf("         -implicitly set '%s' = ",param.name);
+	  val.Print();
+	  printf("\n");
+
+	  delete exp;
+	} else {
+	  // Dynamic expression
+
+	  DynamicToken *nwset = new DynamicToken();
+	  CfgToken token;
+	  token.cvt = T_CFG_EventParameter;
+	  token.evparam = param;
+	  nwset->token = token;
+	  nwset->exp = exp;
+	  nwset->next = bind->paramsets;
+	  bind->paramsets = nwset;
+	  
+	  printf("         -implicitly set '%s' = ",param.name);
+	  exp->Print();
+	  printf("\n");
+	}	
+      }
+    }
+  }
 };
 
 // Scans in the given binding for conditions on input event parameters 
 // or user variables, and sets us up to handle those
 // Returns the hash index for this binding, based on an indexed parameter,
 // or 0 if this binding is not indexed
-int InputMatrix::CreateConditions (EventBinding *bind, xmlNode *binding, 
+int InputMatrix::CreateConditions (int interfaceid, 
+				   EventBinding *bind, xmlNode *binding, 
 				   Event *input, int paramidx) {
   const static char *delim = " and ";
 
   // Return index
   int ret_index = 0;
 
+  // Interface ID set explicitly?
+  char interfaceset = 0; 
+
   xmlChar *cond = xmlGetProp(binding, (const xmlChar *)"conditions");
   if (cond != 0) {
     // Config specifies conditions
-    
+
     // Separate into each condition
     char *buf = new char[xmlStrlen(cond)+1],
       *curc = (char *)cond, 
@@ -724,7 +898,11 @@ int InputMatrix::CreateConditions (EventBinding *bind, xmlNode *binding,
 	    if (!strcmp(lv,param.name)) {
 	      // Config specifies a condition for this parameter
 	      found = 1;
-
+	      
+	      if (!strcmp(param.name,INTERFACEID)) 
+		// Condition is interface ID
+		interfaceset = 1;
+ 
 	      // Parse RValue expression that specifies condition.
 	      char enable_keynames = (input->GetType() == T_EV_Input_Key &&
 				      !strcmp(param.name,"key"));
@@ -813,17 +991,70 @@ int InputMatrix::CreateConditions (EventBinding *bind, xmlNode *binding,
     xmlFree(cond);
   }
 
+  if (!interfaceset) {
+    // Interface ID not set explicitly as condition- check if
+    // the event we're binding for input has 'interfaceid'-
+    // if so, set implicitly based on what interface this binding is
+    // defined in
+    
+    char found = 0;
+    for (int i = 0; !found && i < input->GetNumParams(); i++) {
+      EventParameter param = input->GetParam(i);	
+      if (!strcmp(param.name,INTERFACEID)) {
+	// Yup, set implicitly
+	found = 1;
+	
+	char tmp[20];
+	snprintf(tmp,20,"%d",interfaceid); // Set from interface ID
+	ParsedExpression *exp = ParseExpression(tmp, input);
+	
+	// Is this parameter indexed?
+	if (i == paramidx) {
+	  // OK, is the RValue static (ie can we store the binding 
+	  // in a hash or do we need to compute during runtime)?
+	  if (exp->IsStatic()) {
+	    // Yup, so evaluate now
+	    UserVariable val = exp->Evaluate(input);
+	    
+	    // Return hash value
+	    ret_index = (int) val % param.max_index;
+	  } else {
+	    // Indexed parameter, but value is not static-
+	    // Use wildcard slot in hash
+	    ret_index = param.max_index;
+	  }
+	}
+	
+	// Create DynamicToken to hold condition
+	DynamicToken *nwcond = new DynamicToken();
+	CfgToken token;
+	token.cvt = T_CFG_EventParameter;
+	token.evparam = param;
+	nwcond->token = token;
+	nwcond->exp = exp;
+	nwcond->next = bind->tokenconds;
+	bind->tokenconds = nwcond;
+	
+	printf("         -implicit condition '%s' == ",param.name);
+	exp->Print();
+	printf("\n");
+      }
+    }
+  }
+  
   // printf("  (hash %d)\n",ret_index);
   return ret_index;
 }
 
-void InputMatrix::CreateBinding (xmlNode *binding) {
+void InputMatrix::CreateBinding (int interfaceid, xmlNode *binding) {
   EventBinding *nw = 0, *prev = 0;
 
   // Input event
   xmlChar *instr = xmlGetProp(binding, (const xmlChar *)"input");
   if (instr == 0) {
-    printf(" [Invalid binding: No input event!]\n");
+    printf(FWEELIN_ERROR_COLOR_ON
+	   " [Invalid binding: No input event!]\n"
+	   FWEELIN_ERROR_COLOR_OFF);
   } else {
     printf(" binding: input '%s'", (char *) instr);
 
@@ -831,11 +1062,15 @@ void InputMatrix::CreateBinding (xmlNode *binding) {
     // Wait for an instance if none available
     Event *inproto = Event::GetEventByName((char *)instr,1);
     if (inproto == 0)
-      printf(" [Invalid event!]\n");
+      printf(FWEELIN_ERROR_COLOR_ON
+	     " [Invalid event!]\n"
+	     FWEELIN_ERROR_COLOR_OFF);
     else {
       int typ = inproto->GetType();
       if (typ >= T_EV_Last_Bindable)
-	printf(" [This event type can't be an input!]\n");
+	printf(FWEELIN_ERROR_COLOR_ON
+	       " [This event type can't be an input!]\n"
+	       FWEELIN_ERROR_COLOR_OFF);
       else {
 	int pidx = Event::GetParamIdxByType((EventType) typ);
 	if (input_bind[typ] == 0) {
@@ -871,7 +1106,8 @@ void InputMatrix::CreateBinding (xmlNode *binding) {
 
 	// Conditions
 	printf("\n");
-	int store_idx = CreateConditions(nw,binding,inproto,pidx);
+	int store_idx = CreateConditions(interfaceid,
+					 nw,binding,inproto,pidx);
 
 	// Output event(s)
 	int contnum = 0;
@@ -909,7 +1145,7 @@ void InputMatrix::CreateBinding (xmlNode *binding) {
 	      printf("\n");
 	      
 	      // Create parameter settings
-	      CreateParameterSets(nw,binding,inproto,contnum);
+	      CreateParameterSets(interfaceid,nw,binding,inproto,contnum);
 	      
 	      if (prev != 0) {	  
 		// So flag previous binding as 'continued'
@@ -1315,8 +1551,10 @@ void InputMatrix::ReceiveEvent(Event *ev, EventProducer *from) {
       // First matching binding, check if she says to echo
       if (match != 0)
 	echo = match->echo;
-      else if (ev->GetType() == T_EV_GoSub)
-	echo = 0; // Never echo back unmatched GoSub- we'll get into a loop
+      else if (ev->GetType() == T_EV_GoSub ||
+	       ev->GetType() == T_EV_StartInterface)
+	echo = 0; // Never echo back unmatched GoSub/StartInterface-
+                  // we'll get into a loop
       
       // printf("CONFIG: Binding match %p (echo %d)\n",match,echo);
       
@@ -1413,7 +1651,7 @@ void InputMatrix::ReceiveEvent(Event *ev, EventProducer *from) {
 	  int tmp = (int) (*(tv->var));
 	  tmp++;
 	  if (tmp > tv->maxvalue)
-	    tmp = 0;
+	    tmp = tv->minvalue;
 	  UserVariable v;
 	  v.type = T_int;
 	  v = tmp;
@@ -1460,25 +1698,29 @@ void InputMatrix::ReceiveEvent(Event *ev, EventProducer *from) {
   }
 };
 
-void FloConfig::ConfigureEventBindings(xmlDocPtr doc, xmlNode *events) {
+void FloConfig::ConfigureEventBindings(xmlDocPtr doc, xmlNode *events, 
+				       int interfaceid, char firstpass) {
   xmlNode *cur_node;
   for (cur_node = events->children; cur_node != NULL; 
        cur_node = cur_node->next) {
     // Check for a help node
-    CheckForHelp(cur_node);
-
-    if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"declare"))) {
+    if (firstpass)
+      CheckForHelp(cur_node);
+    
+    // First pass, only configure declarations
+    if (firstpass && 
+	!xmlStrcmp(cur_node->name, (const xmlChar *)"declare")) {
       // Variable declaration
       im.CreateVariable(cur_node);
-    }
-    else if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"binding"))) {
+    } else if (!firstpass && 
+	       !xmlStrcmp(cur_node->name, (const xmlChar *)"binding")) {
       // Binding
-      im.CreateBinding(cur_node);
+      im.CreateBinding(interfaceid,cur_node);
     }
   }
 };
 
-void FloConfig::ConfigureGeneral(xmlDocPtr doc, xmlNode *gen) {
+void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
   xmlNode *cur_node;
   for (cur_node = gen->children; cur_node != NULL; 
        cur_node = cur_node->next) {
@@ -1991,32 +2233,12 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
       if (pb_patches != 0) {
 	// PatchBank file defined
 	xmlDocPtr pb_doc;
-	char *homedir = getenv("HOME");
-	char buf[strlen(FWEELIN_DATADIR) + 
-		 strlen(homedir) + strlen(FWEELIN_CONFIG_DIR) + 
-		 xmlStrlen(pb_patches) + 4];
 
 	// Try both ~/.fweelin and fweelin data dir
-	char notfound = 0;
-	sprintf(buf,"%s/%s/%s",homedir,FWEELIN_CONFIG_DIR,(char *) pb_patches);
-	struct stat st;
-
-	if (stat(buf,&st) != 0) {
-	  // Can't find it there. Try data dir
-	  sprintf(buf,"%s/%s",FWEELIN_DATADIR,(char *) pb_patches);
-	  if (stat(buf,&st) != 0) {
-	    // Not in either place!
-	    printf(FWEELIN_ERROR_COLOR_ON
-		   "\n*** INIT: ERROR: Can't find patches file '%s' in "
-		   "folders:\n\n%s/%s\n%s\n"
-		   FWEELIN_ERROR_COLOR_OFF,
-		   pb_patches,homedir,FWEELIN_CONFIG_DIR,FWEELIN_DATADIR);
-	    notfound = 1;
-	  }
-	}
+	char *buf = PrepareLoadConfigFile((char *) pb_patches,0);
 
 	// Load and parse
-	pb_doc = (notfound ? 0 : xmlParseFile(buf));
+	pb_doc = (buf == 0 ? 0 : xmlParseFile(buf));
 	if (pb_doc == 0)
 	  printf(FWEELIN_ERROR_COLOR_ON
 		 "\n*** INIT: ERROR: Problem parsing patches file '%s'.\n"
@@ -2193,7 +2415,8 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
   }    
 };
 
-void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
+void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid, 
+				  int interfaceid) {
   xmlNode *cur_node;
   for (cur_node = vid->children; cur_node != NULL; 
        cur_node = cur_node->next) {
@@ -2273,12 +2496,20 @@ void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
       FloDisplay *nw = 0;
       printf("CONFIG: New onscreen display: ");
 
+      int iid = interfaceid;
+      xmlChar *n = xmlGetProp(cur_node, (const xmlChar *)"interfaceid");
+      if (n != 0) {
+	iid = atoi((char *) n);
+	printf("(interface ID: %d) ",iid);
+	xmlFree(n);
+      }
+
       // Type of display?
-      xmlChar *n = xmlGetProp(cur_node, (const xmlChar *)"type");
+      n = xmlGetProp(cur_node, (const xmlChar *)"type");
       if (n != 0) {
 	if (!xmlStrcmp(n, (const xmlChar *)"text")) {
 	  printf("(text) ");
-	  nw = new FloDisplayText();
+	  nw = new FloDisplayText(iid);
 	} else if (!xmlStrcmp(n, (const xmlChar *)"browser")) {
 	  printf("(browser) ");
 
@@ -2349,7 +2580,8 @@ void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
 		  xmlFree(nn);
 		}
 		
-		nw = new LoopTray(btype,xpand,xpand_x1,xpand_y1,
+		nw = new LoopTray(iid,
+				  btype,xpand,xpand_x1,xpand_y1,
 				  xpand_x2,xpand_y2,loopsize);
 	      }
 	      break;
@@ -2361,7 +2593,8 @@ void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
 
 	    case B_Patch :
 	      {
-		nw = new PatchBrowser(btype,xpand,xpand_x1,xpand_y1,
+		nw = new PatchBrowser(iid,
+				      btype,xpand,xpand_x1,xpand_y1,
 				      xpand_x2,xpand_y2,xpand_delay);
 		ConfigurePatchBanks(cur_node,(PatchBrowser *) nw);
 	      }
@@ -2370,7 +2603,8 @@ void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
 	    default :
 	      {
 		// All other kinds of browsers
-		nw = new Browser(btype,xpand,xpand_x1,xpand_y1,
+		nw = new Browser(iid,
+				 btype,xpand,xpand_x1,xpand_y1,
 				 xpand_x2,xpand_y2,xpand_delay);
 	      }
 	      break;
@@ -2384,10 +2618,10 @@ void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
 	  }
 	} else if (!xmlStrcmp(n, (const xmlChar *)"switch")) {
 	  printf("(switch) ");
-	  nw = new FloDisplaySwitch();
+	  nw = new FloDisplaySwitch(iid);
 	} else if (!xmlStrcmp(n, (const xmlChar *)"circle-switch")) {
 	  printf("(circle-switch) ");
-	  nw = new FloDisplayCircleSwitch();
+	  nw = new FloDisplayCircleSwitch(iid);
 
 	  // Circle radii
 	  xmlChar *nn = xmlGetProp(cur_node, (const xmlChar *)"size1");
@@ -2415,7 +2649,7 @@ void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
 	  } 
 	} else if (!xmlStrcmp(n, (const xmlChar *)"text-switch")) {
 	  printf("(text-switch) ");
-	  nw = new FloDisplayTextSwitch();
+	  nw = new FloDisplayTextSwitch(iid);
 
 	  // Text lines
 	  xmlChar *nn = xmlGetProp(cur_node, (const xmlChar *)"text1");
@@ -2444,10 +2678,10 @@ void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
 	  if (!xmlStrcmp(n, (const xmlChar *)"bar-switch")) {
 	    sw = 1;
 	    printf("(bar-switch) ");
-	    nwb = new FloDisplayBarSwitch();
+	    nwb = new FloDisplayBarSwitch(iid);
 	  } else {
 	    printf("(bar) ");
-	    nwb = new FloDisplayBar();
+	    nwb = new FloDisplayBar(iid);
 	  }
 
 	  nw = nwb;
@@ -2516,7 +2750,9 @@ void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
 	    }
 	  }
 	} else {
-	  printf("(invalid display type: '%s')\n",n);
+	  printf(FWEELIN_ERROR_COLOR_ON
+		 "(invalid display type: '%s')\n"
+		 FWEELIN_ERROR_COLOR_OFF,n);
 	}
 	xmlFree(n);
       }
@@ -2599,6 +2835,10 @@ void FloConfig::ConfigureVideo(xmlDocPtr doc, xmlNode *vid) {
       // Layout declaration
       FloLayout *nw = new FloLayout();
       printf("CONFIG: New onscreen loop layout: ");
+
+      // Set interface ID based on 
+      // what interface the layout is declared in
+      nw->iid = interfaceid;
       
       xmlChar *n = xmlGetProp(cur_node, (const xmlChar *)"id");
       if (n != 0) {
@@ -2861,10 +3101,97 @@ FloConfig::FloConfig(Fweelin *app) : im(app),
 				     
   transpose(0), 
   
-  loop_peaksavgs_chunksize(500), status_report(0) { 
+  loop_peaksavgs_chunksize(500), status_report(0),
+  numinterfaces(0), numnsinterfaces(0) { 
   vsize[0] = 640;
   vsize[1] = 480;
   scope_sample_len = vsize[0]; // Scope goes across screen
+};
+
+void FloConfig::ConfigureInterfaces (xmlDocPtr doc, xmlNode *ifs,
+				     char firstpass) {
+  int cur_iid = 1, // First interface has ID 1 (0 is main config) 
+    // First non-switchable interface has this ID
+    cur_nsiid = NS_INTERFACE_START_ID; 
+
+  for (xmlNode *cur_node = ifs->children; cur_node != NULL; 
+       cur_node = cur_node->next) {
+    if (!xmlStrcmp(cur_node->name, (const xmlChar *)"interface")) {
+      char switchable = 1;
+      xmlChar *n = xmlGetProp(cur_node, (const xmlChar *)"switchable");
+      if (n != 0) {
+	switchable = atoi((char *) n);
+	xmlFree(n);
+      }
+
+      n = xmlGetProp(cur_node, (const xmlChar *)"setup");
+      if (n != 0) {
+	printf("INIT: Load interface '%s' [%s]\n",(char *) n,
+	       (firstpass ? "first pass" : "second pass"));
+	char *buf = PrepareLoadConfigFile((char *) n,0);
+
+	xmlSubstituteEntitiesDefault(1);
+	xmlDocPtr doc = (buf == 0 ? 0 : xmlParseFile(buf));
+	if (doc == 0)
+	  printf(FWEELIN_ERROR_COLOR_ON
+		 "INIT: Error parsing config file '%s'.\n"
+		 FWEELIN_ERROR_COLOR_OFF,(char *) n);
+	else {
+	  xmlNode *root = xmlDocGetRootElement(doc);
+	  if (!root || !root->name ||
+	      xmlStrcmp(root->name,(const xmlChar *) "interface") ) 
+	    printf(FWEELIN_ERROR_COLOR_ON
+		   "INIT: Interface config file '%s' format invalid-- "
+		   "should start with 'interface' tag\n"
+		   FWEELIN_ERROR_COLOR_OFF,(char *) n);
+	  else {
+	    if (switchable)
+	      ConfigureRoot(doc,root,cur_iid++,firstpass);
+	    else 
+	      ConfigureRoot(doc,root,cur_nsiid++,firstpass);
+	  }
+
+	  xmlFreeDoc(doc);
+	}
+
+	xmlFree(n);
+      }
+    }
+  }
+
+  numinterfaces = cur_iid-1;
+  numnsinterfaces = cur_nsiid-NS_INTERFACE_START_ID;
+  printf("CONFIG: # of interfaces: %d switchable / %d non-switchable\n",
+	 numinterfaces,numnsinterfaces);
+};
+
+void FloConfig::ConfigureRoot (xmlDocPtr doc, xmlNode *root, int interfaceid, char firstpass) {
+  for (xmlNode *cur_node = root->children; cur_node != NULL; 
+       cur_node = cur_node->next) {
+    if (!firstpass && interfaceid == 0 &&
+	!xmlStrcmp(cur_node->name, (const xmlChar *)"basics")) {
+      // Basics cfg
+      ConfigureBasics(doc,cur_node);
+    } else if (!firstpass && 
+	       !xmlStrcmp(cur_node->name, (const xmlChar *)"graphics")) {
+      // Video cfg
+      ConfigureGraphics(doc,cur_node,interfaceid);
+    } else if (/* interfaceid != 0 && */
+	       !xmlStrcmp(cur_node->name, (const xmlChar *)"bindings")) {
+      // Events
+      if (interfaceid == 0) {
+	// All at once in main config
+	ConfigureEventBindings(doc,cur_node,interfaceid,1);
+	ConfigureEventBindings(doc,cur_node,interfaceid,0);
+      } else
+	ConfigureEventBindings(doc,cur_node,interfaceid,firstpass);
+    } else if (!firstpass && interfaceid == 0 && 
+	       !xmlStrcmp(cur_node->name, (const xmlChar *)"interfaces")) {
+      // Interfaces- 2 passes- first load variables, then rest
+      ConfigureInterfaces(doc,cur_node,1);
+      ConfigureInterfaces(doc,cur_node,0);
+    }
+  }
 };
 
 // Parse configuration file, setup config
@@ -2879,177 +3206,52 @@ void FloConfig::Parse() {
   
   // Setup event type table
   Event::SetupEventTypeTable(im.app->getMMG());
-  xmlDocPtr doc;
-  char *homedir = getenv("HOME");
-  char buf[strlen(FWEELIN_DATADIR) + 2*strlen(homedir) + 
-	   strlen(FWEELIN_CONFIG_DIR) + strlen(FWEELIN_CONFIG_FILE) + 15];
-  sprintf(buf,"%s/%s/%s",homedir,FWEELIN_CONFIG_DIR,FWEELIN_CONFIG_FILE);
 
   // Look for config file
-  char pause = 0;
-  struct stat st;
-  if (stat(buf,&st) != 0) {
-    // Can't find config file in config dir-
-    printf("INIT: Can't find configuration file '%s'.\n",buf);
-    pause = 1;
-
-    // Check if config dir exists?
-    sprintf(buf,"%s/%s",homedir,FWEELIN_CONFIG_DIR);
-    if (mkdir(buf,S_IRWXU)) {
-      if (errno != EEXIST) {
-	printf("INIT: Error %d creating config folder '%s'- "
-	       "do you have write permission there?\n",
-	       errno,buf);
-      }
-    } else 
-      printf("INIT: *** Created new config folder '%s'.\n",buf);
-
-    // Look in home dir (old placement)
-    printf("INIT: Checking home folder (old place).\n");
-    sprintf(buf,"mv \"%s/%s\" \"%s/%s\"",
-	    homedir,FWEELIN_CONFIG_FILE,
-	    homedir,FWEELIN_CONFIG_DIR);
-    printf("INIT: Executing: %s\n",buf);
-    system(buf);
-
-    sprintf(buf,"%s/%s/%s",homedir,FWEELIN_CONFIG_DIR,FWEELIN_CONFIG_FILE);
-    if (stat(buf,&st) != 0) {
-      // Still can't find config file-
-      printf("INIT: Checking shared folder (install place).\n");
-      
-      sprintf(buf,"cp \"%s/%s\" \"%s/%s\"",
-	      FWEELIN_DATADIR,FWEELIN_CONFIG_FILE,
-	      homedir,FWEELIN_CONFIG_DIR);
-      printf("INIT: Executing: %s\n",buf);
-      system(buf);
-      
-      sprintf(buf,"%s/%s/%s",homedir,FWEELIN_CONFIG_DIR,FWEELIN_CONFIG_FILE);
-      if (stat(buf,&st) != 0) {
-	printf("INIT: Can't find our configuration file '%s' anywhere!\n"
-	       "Did you run 'make install'?\n",
-	       FWEELIN_CONFIG_FILE);
-	exit(1);
-      } else
-	printf("INIT: Config file installed @ '%s'.\n",buf);
-    } else
-      printf("INIT: Config file migrated to '%s'.\n",buf);
-  }
-
-  if (pause) {
-    printf("*** Please review the above change\n");
-    // getchar();
-  }
+  char *buf = PrepareLoadConfigFile(FWEELIN_CONFIG_FILE,1);
  
   xmlSubstituteEntitiesDefault(1);
-  doc = xmlParseFile(buf);
+  xmlDocPtr doc = (buf == 0 ? 0 : xmlParseFile(buf));
   if (doc == 0) {
-    printf("INIT: Error parsing config file.\n");
+    printf("INIT: Error parsing config file '%s'.\n",FWEELIN_CONFIG_FILE);
     exit(1);
   } else {
     xmlNode *root = NULL;
-    xmlNode *cur_node;
 
     /*Get the root element node */
     root = xmlDocGetRootElement(doc);
     
     if (!root || !root->name ||
 	xmlStrcmp(root->name,(const xmlChar *) "freewheeling") ) 
-      printf("INIT: Config file format invalid-- bad XML root name\n");
+      printf("INIT: Config file format invalid-- should start with 'freewheeling' tag\n");
     else {
       // Get config file version and make sure it matches our version
       xmlChar *ver = xmlGetProp(root, (const xmlChar *)"version");
       if (ver == 0 || strcmp((char *) ver,VERSION)) {
 	printf("INIT: ERROR: Config file version \"%s\" does not match "
 	       "FreeWheeling version \"%s\"!\n\n",ver,VERSION);
-#if 0
-	// Choice
-	printf("Would you like to override your old config with the new file\n"
-	       "(warning: You'll lose any config changes you've made!) "
-	       "(y/N)? ");
- 	char c = getchar();
-#endif
+
+	// Copy over new config files from shared
+	CopyConfigFile(FWEELIN_CONFIG_FILE,1);
 	
-	// Force yes and backup- avoid console-based choice which appears like a crash
-	printf("*** Installing new configuration file. I will make a backup of the old one.\n");
-	
-	char c = 'Y';
-	if (c == 'Y' || c == 'y') {
-	  char tmp2[strlen(buf) + 16];
-	  int bCnt = 1;
-	  char go = 1;
-	  while (go) {
-	    sprintf(tmp2,"%s.backup.%d",buf,bCnt);
-	    if (stat(tmp2,&st) != 0)
-	      go = 0; // Free backup filename
-	    else
-	      bCnt++;
-	  }
+	// Free and restart
+	printf("CONFIG: Reading new config...\n");
+	xmlFreeDoc(doc);
+	buf = PrepareLoadConfigFile(FWEELIN_CONFIG_FILE,1);
+	doc = xmlParseFile(buf);
 
-	  printf("Backing up your old configuration to: %s\n",tmp2);
-	  char tmp3[strlen(buf) + strlen(tmp2) + 14];
-	  sprintf(tmp3,"cp \"%s\" \"%s\"",buf,tmp2);
-	  printf("\nINIT: Executing: %s\n",tmp3);
-	  system(tmp3);
-	  
-	  char *homedir = getenv("HOME");
-	  char buf[strlen(FWEELIN_DATADIR) + strlen(homedir) + 
-		   strlen(FWEELIN_CONFIG_FILE) + 
-		   strlen(FWEELIN_CONFIG_DIR) + 15];
-	  sprintf(buf,"cp \"%s/%s\" \"%s/%s\"",FWEELIN_DATADIR,FWEELIN_CONFIG_FILE,
-		  homedir,FWEELIN_CONFIG_DIR);
-	  printf("\nINIT: Executing: %s\n",buf);
-	  system(buf);
-
-	  // Free and restart
-	  printf("Reading new config...\n");
-	  sprintf(buf,"%s/%s/%s",
-		  homedir,FWEELIN_CONFIG_DIR,FWEELIN_CONFIG_FILE);
-	  xmlFreeDoc(doc);
-	  doc = xmlParseFile(buf);
-
-	  /*Get the root element node */
-	  root = xmlDocGetRootElement(doc);
-	  xmlChar *ver = xmlGetProp(root, (const xmlChar *)"version");
-	  if (ver == 0 || strcmp((char *) ver,VERSION)) {
-	    printf("INIT: ERROR: Config in install dir is not up to date!\n"
-		   "Did you run 'make install'?\n");
-	    exit(1);
-	  }
-	} else {
-	  printf("\nYou can manually edit your config file to match the "
-		 "new one-- here is a diff of the two: \n\n");
-
-	  char *homedir = getenv("HOME");
-	  char buf[strlen(FWEELIN_DATADIR) + strlen(homedir) + 
-		   2*strlen(FWEELIN_CONFIG_FILE) + 
-		   strlen(FWEELIN_CONFIG_DIR) + 15];
-	  sprintf(buf,"diff \"%s/%s\" \"%s/%s/%s\"",
-		  FWEELIN_DATADIR,FWEELIN_CONFIG_FILE,
-		  homedir,FWEELIN_CONFIG_DIR,FWEELIN_CONFIG_FILE);
-	  printf("INIT: Executing: %s\n",buf);
-	  system(buf);
-
+	/*Get the root element node */
+	root = xmlDocGetRootElement(doc);
+	xmlChar *ver = xmlGetProp(root, (const xmlChar *)"version");
+	if (ver == 0 || strcmp((char *) ver,VERSION)) {
+	  printf("INIT: ERROR: Config in install dir is not up to date!\n"
+		 "Did you run 'make install'?\n");
 	  exit(1);
 	}
       } else
 	xmlFree(ver);
       
-      for (cur_node = root->children; cur_node != NULL; 
-	   cur_node = cur_node->next) {
-	if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"general"))) {
-	  // General cfg
-	  xmlNode *gen = cur_node;
-	  ConfigureGeneral(doc,gen);
-	} else if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"video"))) {
-	  // Video cfg
-	  xmlNode *vid = cur_node;
-	  ConfigureVideo(doc,vid);
-	} else if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"events"))) {
-	  // Events
-	  xmlNode *events = cur_node;
-	  ConfigureEventBindings(doc,events);
-	}
-      }
+      ConfigureRoot(doc,root);
     }
     
     /*free the document */
@@ -3060,5 +3262,42 @@ void FloConfig::Parse() {
      *have been allocated by the parser.
      */
     xmlCleanupParser();
+  }
+};
+
+void FloConfig::StartInterfaces () {
+  for (int iid = NS_INTERFACE_START_ID; 
+       iid < NS_INTERFACE_START_ID+numnsinterfaces; iid++) {
+    Event *proto = Event::GetEventByType(T_EV_StartInterface,1);
+    if (proto == 0) {
+      printf("GO: Can't get start interface event prototype!\n");
+    } else {
+      StartInterfaceEvent *cpy = (StartInterfaceEvent *) 
+	proto->RTNewWithWait();
+      if (cpy == 0)
+	printf("CONFIG: WARNING: Can't send event- RTNew() failed\n");
+      else { 
+	printf("CONFIG: Start non-switchable interface %d\n",iid);
+	cpy->interfaceid = iid;
+	im.app->getEMG()->BroadcastEventNow(cpy, &im);
+      }
+    }
+  }
+
+  for (int iid = 1; iid <= numinterfaces; iid++) {
+    Event *proto = Event::GetEventByType(T_EV_StartInterface,1);
+    if (proto == 0) {
+      printf("GO: Can't get start interface event prototype!\n");
+    } else {
+      StartInterfaceEvent *cpy = (StartInterfaceEvent *) 
+	proto->RTNewWithWait();
+      if (cpy == 0)
+	printf("CONFIG: WARNING: Can't send event- RTNew() failed\n");
+      else { 
+	printf("CONFIG: Start switchable interface %d\n",iid);
+	cpy->interfaceid = iid;
+	im.app->getEMG()->BroadcastEventNow(cpy, &im);
+      }
+    }
   }
 };
