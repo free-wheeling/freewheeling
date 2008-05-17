@@ -4,7 +4,7 @@
 /*
    ********
    Art is what's going on right under our noses.
-   An artist is just one who listens to it.
+   An artist is one who listens to it.
    ********
 */
 
@@ -64,6 +64,15 @@ class FluidSynthProcessor;
 #endif
 
 // ****************** CORE CLASSES
+
+// Status types for loops
+enum LoopStatus {
+  T_LS_Off,
+
+  T_LS_Recording,
+  T_LS_Overdubbing,
+  T_LS_Playing
+};
 
 // Base class for all saveable types of objects
 #define SAVEABLE_HASH_LENGTH 16 //MD5_DIGEST_LENGTH
@@ -242,6 +251,51 @@ public:
                       // in several sets
 };
 
+// Snapshot of information for a loop
+class LoopSnapshot {
+ public:
+  
+  LoopSnapshot (int l_idx = -1, LoopStatus status = T_LS_Off, 
+		float l_vol = 0.0, float t_vol = 0.0) :
+  l_idx(l_idx), status(status), l_vol(l_vol), t_vol(t_vol) {};
+
+  int l_idx;    // Loop index
+  LoopStatus status; // Is it playing?
+  float l_vol,  // Loop volume (persistent)
+    t_vol;      // Trigger volume (not persistent)
+};
+
+// A snapshot remembers all settings related to which loops are playing &
+// at what levels
+class Snapshot {
+ public:
+  
+  Snapshot() : name(0), exists(0), ls(0) {};
+  ~Snapshot () { DeleteSnapshot(); };
+
+  void DeleteSnapshot() {
+    if (name != 0) {
+      delete[] name;
+      name = 0;
+    }
+    if (ls != 0) {
+      delete[] ls;
+      ls = 0;
+    }
+    exists = 0;
+  };
+
+  // Create a snapshot from loops right now
+  void CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap);
+
+  char *name;   // Name of snapshot
+  char exists;  // This snapshot exists (nonzero), or empty slot (zero)?
+
+  // Array of info for each loop within the snapshot
+  LoopSnapshot *ls;
+  int numls;
+};
+
 // A set of loops
 class LoopList {
 public:
@@ -394,6 +448,16 @@ public:
     SetSaveStatus(NO_SAVE);
   };
 
+  // Return the number of loops in the map
+  inline int CountLoops() {
+    int cnt = 0;
+    for (int i = 0; i < mapsize; i++)
+      if (map[i] != 0)
+	cnt++;
+
+    return cnt;
+  };
+
 private:
   Fweelin *app;
 
@@ -402,15 +466,6 @@ private:
 
   // Time of last update of the map- used for rebuilding tables & such
   double lastupdate;
-};
-
-// Status types for loops
-enum LoopStatus {
-  T_LS_Off,
-
-  T_LS_Recording,
-  T_LS_Overdubbing,
-  T_LS_Playing
 };
 
 // LoopTrayItem is for loaded loops
@@ -875,12 +930,28 @@ class Fweelin : public EventProducer, public BrowserCallback {
       return 0;
   }
 
+  // Selections
   inline LoopList **getLOOPSEL(int idx) {
     if (idx >= 0 && idx < NUM_LOOP_SELECTION_SETS) 
       return &loopsel[idx];
     else
       return 0;
   };
+
+  // Snapshots
+  Snapshot *getSNAP(int idx); 
+  inline Snapshot *getSNAPS() { return snaps; }; 
+  Snapshot *CreateSnapshot (int idx) {
+    Snapshot *s = getSNAP(idx);
+    if (s != 0)
+      s->CreateSnapshot(0,loopmgr,tmap);
+    return s;
+  };
+  // Trigger snapshot #idx - return nonzero on failure
+  char TriggerSnapshot (int idx);
+
+  // Create a snapshot from loops right now
+  void CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap);
 
   // Sync parameters
   
@@ -927,6 +998,9 @@ class Fweelin : public EventProducer, public BrowserCallback {
   // ******************  LOOP SELECTIONS
   LoopList *loopsel[NUM_LOOP_SELECTION_SETS];
 
+  // ******************  ARRAY OF SNAPSHOTS
+  Snapshot *snaps;
+ 
   // ******************  SCENE INFO
   SceneBrowserItem *curscene;
 

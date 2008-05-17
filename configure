@@ -1297,6 +1297,8 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-fluidsynth     use integrated FluidSynth softsynth (libfluidsynth) (default=auto)
+  --disable-video         disable video output
+  --enable-lcd         enable USB LCD display output
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
 
@@ -2229,6 +2231,16 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 # Check whether --enable-fluidsynth was given.
 if test "${enable_fluidsynth+set}" = set; then
   enableval=$enable_fluidsynth;
+fi
+
+# Check whether --enable-video was given.
+if test "${enable_video+set}" = set; then
+  enableval=$enable_video;
+fi
+
+# Check whether --enable-lcd was given.
+if test "${enable_lcd+set}" = set; then
+  enableval=$enable_lcd;
 fi
 
 
@@ -6246,6 +6258,24 @@ _ACEOF
    fi
 else
    echo "--- Disabling integrated FluidSynth synth ---";
+fi
+
+if test "$enable_video" == "no"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define NO_VIDEO 1
+_ACEOF
+
+   echo "--- Disabling video output --";
+fi
+
+if test "$enable_lcd" == "yes"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define LCD_DISPLAY 1
+_ACEOF
+
+   echo "--- Enabling USB LCD display --";
 fi
 
 #SDL_VERSION=1.2.4

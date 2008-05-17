@@ -104,7 +104,7 @@ public:
 
   void ReceiveEvent(Event *ev, EventProducer *from);
 
-  // Returns size of text drawn in sx and sy (optionally)
+  // Draw text, and optionally return size of text drawn in sx and sy
   static int draw_text(SDL_Surface *out, TTF_Font *font,
 		       char *str, int x, int y, SDL_Color clr, char centerx = 0,
 		       char centery = 0, int *sx = 0, int *sy = 0);
@@ -180,6 +180,56 @@ public:
   char videothreadgo;
 
   pthread_mutex_t video_thread_lock;
+  
+#ifdef LCD_DISPLAY
+#define LCD_ROWS 4
+#define LCD_COLS 20
+
+  // Initialize LCD connection
+  int InitLCD (char *devname, int baud);
+
+  // Writing directly to LCD
+  inline void LCD_Send (unsigned char dat) {
+    if (lcd_handle)
+      while (write(lcd_handle, &dat, 1) != 1) {
+	printf("LCD_Send failed\n");
+	usleep(1000);
+      }
+  };
+  
+  inline void LCD_SendStr (char *data) {
+    while (*data)
+      LCD_Send(*data++);
+  }
+  
+  // Writing to LCD via double buffer (more efficient)
+  inline void LCDB_SetChar (int row, int col, char dat) {
+    if (row >= 0 && row < LCD_ROWS && col >= 0 && col < LCD_COLS)
+      lcd_dat[lcd_curb][row][col] = dat;
+  };
+  
+  inline void LCDB_Clear () {
+    memset(lcd_dat[lcd_curb],' ',sizeof(char) * LCD_ROWS * LCD_COLS);
+  };
+
+  inline void LCDB_Debug () {
+    char buf[LCD_COLS+1];
+    buf[LCD_COLS] = '\0';
+    for (int r = 0; r < LCD_ROWS; r++) {
+      strncpy(buf,lcd_dat[lcd_curb][r],LCD_COLS);
+      printf("%s\n",buf);
+    }
+  };
+
+  // Dump buffer to LCD, writing any changes, then switch buffer
+  void LCDB_Dump ();
+
+  // Handle for LCD output
+  int lcd_handle;
+  char lcd_dat[2][LCD_ROWS][LCD_COLS]; // Double buffer for LCD screen
+  int lcd_curb;                        // Which of two double buffers is 
+                                       // being written to
+#endif
 };
 
 #endif

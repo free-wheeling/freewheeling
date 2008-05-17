@@ -1,20 +1,3 @@
-# MAKING EFFECTIVE TOOLS
-# 
-# The more we incorporate complexity,
-# the more complex we have to become
-# to manage it. 
-# We become tied up in our own knots.
-# We are Nature,
-# we and the tool are One, and
-# we and the process of making the tool are One.
-#
-# It's not nostalgia for the past.
-# It's moving harmoniously
-# as One Whole Being of Nature
-# when we consider "All My Relations"
-# as fibers of our own Being. 
-#
-
 # Process this file with autoconf to produce a configure script.
 AC_INIT(src/fweelin.cc)
 AM_INIT_AUTOMAKE(fweelin,0.5.6)
@@ -22,6 +5,8 @@ AC_CONFIG_SRCDIR([src/fweelin.cc])
 #AM_CONFIG_HEADER(config.h)
 
 AC_ARG_ENABLE(fluidsynth,[  --enable-fluidsynth     use integrated FluidSynth softsynth (libfluidsynth) (default=auto) ])
+AC_ARG_ENABLE(video,[  --disable-video         disable video output ])
+AC_ARG_ENABLE(lcd,[  --enable-lcd         enable USB LCD display output ])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -79,6 +64,16 @@ if test "$enable_fluidsynth" != "no"; then
    fi
 else
    echo "--- Disabling integrated FluidSynth synth ---";
+fi
+
+if test "$enable_video" == "no"; then
+   AC_DEFINE(NO_VIDEO, 1, [Define if video output is disabled])
+   echo "--- Disabling video output --";
+fi
+
+if test "$enable_lcd" == "yes"; then
+   AC_DEFINE(LCD_DISPLAY, 1, [Define if USB LCD display is enabled])
+   echo "--- Enabling USB LCD display --";
 fi
 
 #SDL_VERSION=1.2.4

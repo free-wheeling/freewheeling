@@ -49,6 +49,69 @@ const float Loop::MIN_VOL = 0.01;
 
 // *********** CORE
 
+Snapshot *Fweelin::getSNAP (int idx) {
+  if (idx >= 0 && idx < cfg->GetMaxSnapshots())
+    return &snaps[idx];
+  else
+    return 0;
+}
+
+void Snapshot::CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap) {
+  DeleteSnapshot();
+
+  exists = 1;
+  if (name != 0) {
+    this->name = new char[strlen(name)+1];
+    strcpy(this->name,name);
+  } else
+    this->name = 0;
+    
+  // Count all loops
+  numls = tmap->CountLoops();
+  if (numls > 0) {
+    ls = new LoopSnapshot[numls];
+    
+    int idx = 0;
+    for (int i = 0; i < tmap->GetMapSize(); i++) {
+      if (tmap->GetMap(i) != 0) {
+	Loop *l = tmap->GetMap(i);
+	if (idx >= numls) {
+	  printf("CORE: ERROR: Loop count mismatch creating snapshot!\n");
+	  return;
+	}
+	
+	ls[idx++] = LoopSnapshot(i,lm->GetStatus(i),
+				 l->vol,lm->GetTriggerVol(i));
+      }
+    }
+  }
+};
+
+// Trigger snapshot #idx - return nonzero on failure
+char Fweelin::TriggerSnapshot (int idx) {
+  Snapshot *s = getSNAP(idx);
+  if (s != 0 && s->exists) {
+    for (int i = 0; i < s->numls; i++) {
+      LoopSnapshot *ls = &(s->ls[i]);
+
+      loopmgr->SetLoopVolume(ls->l_idx,ls->l_vol);
+
+      if (ls->status == T_LS_Off && loopmgr->IsActive(ls->l_idx)) {
+	loopmgr->Deactivate(ls->l_idx);
+      } else if ((ls->status == T_LS_Playing || 
+		  ls->status == T_LS_Overdubbing) && 
+		 loopmgr->GetStatus(ls->l_idx) != T_LS_Playing) {
+	if (loopmgr->IsActive(ls->l_idx))
+	  loopmgr->Deactivate(ls->l_idx);
+	loopmgr->Activate(ls->l_idx, 0, ls->t_vol);
+      } 
+    }
+
+    return 0;
+  } else
+    return 1;
+};
+
 // Splits a saveable filename in the format 'basename-hash-objectname'
 // into its base name, hash and object name components
 //
@@ -492,6 +555,8 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_SelectOnlyPlayingLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_SelectAllLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_InvertSelection);
+  app->getEMG()->ListenEvent(this,0,T_EV_CreateSnapshot);
+  app->getEMG()->ListenEvent(this,0,T_EV_TriggerSnapshot);
   app->getEMG()->ListenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->ListenEvent(this,0,T_EV_SaveLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_SaveNewScene);
@@ -545,6 +610,8 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_SelectOnlyPlayingLoops);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SelectAllLoops);
   app->getEMG()->UnlistenEvent(this,0,T_EV_InvertSelection);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_CreateSnapshot);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_TriggerSnapshot);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SaveLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SaveNewScene);
@@ -2250,6 +2317,34 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
     }
     break;
+
+  case T_EV_TriggerSnapshot :
+    {
+      TriggerSnapshotEvent *sev = (TriggerSnapshotEvent *) ev;
+      
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received TriggerSnapshotEvent: Snapshot #%d\n",
+	       sev->snapid);
+
+      if (app->TriggerSnapshot(sev->snapid))
+	printf("CORE: Invalid snapshot #%d- can't trigger\n",sev->snapid);
+    }
+    break;
+
+  case T_EV_CreateSnapshot :
+    {
+      CreateSnapshotEvent *sev = (CreateSnapshotEvent *) ev;
+      
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received CreateSnapshotEvent: Snapshot #%d\n",
+	       sev->snapid);
+
+      if (app->CreateSnapshot(sev->snapid) == 0)
+	printf("CORE: Invalid snapshot #%d- can't create\n",sev->snapid);
+    }
+    break;
     
   case T_EV_SetSelectedLoopsTriggerVolume :
     {
@@ -2710,6 +2805,10 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       for (int i = 0; i < MAX_PULSES; i++)
 	DeletePulse(i);
       // printf("DEBUG: DONE!\n\n");
+      // And all snapshots!
+      Snapshot *s = app->getSNAPS();
+      for (int i = 0; i < app->getCFG()->GetMaxSnapshots(); i++)
+	s[i].DeleteSnapshot();
     }
     break;
 
@@ -2763,16 +2862,19 @@ int Fweelin::go()
 #endif
   
   // Cleanup
-  vid->close();
+  if (vid != 0)
+    vid->close();
   sdlio->close();
   midi->close();
   audio->close();
-  delete vid;
+  if (vid != 0)
+    delete vid;
   delete sdlio;
   delete midi;
   delete audio;
   delete iset;
   delete abufs;
+  delete[] snaps;
 
 #if USE_FLUIDSYNTH
   delete fluidp;
@@ -2949,8 +3051,8 @@ int Fweelin::setup()
   /* Initialize SDL- this happens here because it is common to video, keys &
      config */ 
   // SDL_INIT_NOPARACHUTE
-  if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0 ) { /* | SDL_INIT_JOYSTICK 
-		| SDL_INIT_EVENTTHREAD) < 0) { */
+  /* (SDL_INIT_JOYSTICK | SDL_INIT_EVENTTHREAD) < 0) { */
+  if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0 ) {
     printf("MAIN: ERROR: Can't initialize SDL: %s\n",SDL_GetError());
     return 0;
   }
@@ -3178,6 +3280,10 @@ int Fweelin::setup()
     }
   }
 
+  // Create snapshots
+  snaps = new Snapshot[cfg->GetMaxSnapshots()];
+
+  // Input methods 
   sdlio = new SDLIO(this);
   midi = new MidiIO(this);
 

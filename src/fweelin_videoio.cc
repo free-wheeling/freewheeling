@@ -34,6 +34,11 @@
 #include <sched.h>
 #include <sys/mman.h>
 
+#ifdef LCD_DISPLAY
+#include <termios.h>
+#include <fcntl.h>
+#endif
+
 #include "fweelin_videoio.h"
 #include "fweelin_core.h"
 #include "fweelin_logo.h"
@@ -581,6 +586,55 @@ void FloLayoutBox::Draw(SDL_Surface *screen, SDL_Color clr) {
     hlineRGBA(screen,left,right,top,0,0,0,255);
   if (linebottom)
     hlineRGBA(screen,left,right,bottom,0,0,0,255);
+};
+
+// Draw snapshots display
+void FloDisplaySnapshots::Draw(SDL_Surface *screen) {
+  const static SDL_Color titleclr = { 0x77, 0x88, 0x99, 0 };
+  const static SDL_Color borderclr = { 0xFF, 0x50, 0x20, 0 };
+
+  if (numdisp == -1) {
+    int height = TTF_FontHeight(font->font);
+    numdisp = sy/height;
+  }
+
+  boxRGBA(screen,
+	  xpos,ypos,xpos+sx,ypos+sy,
+	  0,0,0,190);
+  vlineRGBA(screen,xpos,ypos,ypos+sy,
+	    borderclr.r,borderclr.g,borderclr.b,255);
+  vlineRGBA(screen,xpos+sx,ypos,ypos+sy,
+	    borderclr.r,borderclr.g,borderclr.b,255);
+  hlineRGBA(screen,xpos,xpos+sx,ypos,
+	    borderclr.r,borderclr.g,borderclr.b,255);
+  hlineRGBA(screen,xpos,xpos+sx,ypos+sy,
+	    borderclr.r,borderclr.g,borderclr.b,255);
+
+  if (font != 0 && font->font != 0) {
+    // Draw title
+    if (title != 0)
+      VideoIO::draw_text(screen,font->font,
+			 title,xpos+sx/2,ypos,titleclr,1,2);
+  }
+
+  // Draw items
+  int cury = ypos+margin;
+  int height = TTF_FontHeight(font->font);
+  for (int i = firstidx; i < firstidx + numdisp; i++, cury += height) {
+    const static int SNAP_NAME_LEN = 512;
+
+    char buf[SNAP_NAME_LEN];
+    Snapshot *sn = app->getSNAP(i);
+    char *nm = sn->name;
+    if (nm != 0)
+      snprintf(buf,SNAP_NAME_LEN,"%2d %s",i+1,nm);
+    else if (sn->exists != 0)
+      snprintf(buf,SNAP_NAME_LEN,"%2d **",i+1);      
+    else
+      snprintf(buf,SNAP_NAME_LEN,"%2d",i+1);
+    VideoIO::draw_text(screen,font->font,
+		       buf,xpos+margin,cury,titleclr,0,0);
+  }
 };
 
 CircularMap::CircularMap(SDL_Surface *in,
@@ -1681,12 +1735,114 @@ CircularMap *VideoIO::CreateMap(SDL_Surface *lscopepic, int sz) {
   return nw;
 };
 
+#ifdef LCD_DISPLAY
+int VideoIO::InitLCD (char *devname, int baud) {
+  struct termios term; 
+
+  // Open
+  lcd_handle = open(devname, O_RDWR | O_NOCTTY /*| O_NONBLOCK*/);
+
+  if (lcd_handle <= 0) {
+    printf("InitLCD: Failed to connect to USB LCD\n");
+    return 1;
+  }
+
+  if (tcgetattr(lcd_handle, &term) != 0) {
+    printf("InitLCD: tcgetattr() failed\n");
+    return 1;
+  }
+  
+  // Input modes 
+  term.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|INPCK|ISTRIP|INLCR|IGNCR|ICRNL
+		    |IXON|IXOFF);
+  term.c_iflag |= IGNPAR;
+  
+  // Output modes 
+  term.c_oflag &= ~(OPOST|ONLCR|OCRNL|ONOCR|ONLRET|OFILL
+		    |OFDEL|NLDLY|CRDLY|TABDLY|BSDLY|VTDLY|FFDLY);
+  term.c_oflag |= NL0|CR0|TAB0|BS0|VT0|FF0;
+  
+  // Control modes
+  term.c_cflag &= ~(CSIZE|PARENB|PARODD|HUPCL|CRTSCTS);
+  term.c_cflag |= CREAD|CS8|CSTOPB|CLOCAL;
+  
+  // Local modes 
+  term.c_lflag &= ~(ISIG|ICANON|IEXTEN|ECHO);
+  term.c_lflag |= NOFLSH;
+  
+  // Set baud rate
+  cfsetospeed(&term, baud);
+  cfsetispeed(&term, baud);
+
+  // Set
+  if (tcsetattr(lcd_handle, TCSANOW, &term) != 0) {
+    printf("InitLCD: tcsetattr() failed\n");
+    return 1;
+  }
+
+  // Backlight off
+  LCD_Send(14);
+  LCD_Send(0);
+  
+  // Hide cursor
+  LCD_Send(4);
+
+  // Turn off "scroll" and "wrap"
+  LCD_Send(20);
+  LCD_Send(24);
+
+  // Clear display
+  LCD_Send(12);
+
+  memset(lcd_dat,sizeof(lcd_dat),' ');
+  lcd_curb = 0;
+
+  printf("InitLCD: success\n");
+  return 0;
+}
+
+void VideoIO::LCDB_Dump () {
+  int oldb = (lcd_curb == 0 ? 1 : 0);
+
+  // Compare old and current buffers
+  if (memcmp(&lcd_dat[lcd_curb][0][0],&lcd_dat[oldb][0][0],
+	     sizeof(char) * LCD_ROWS * LCD_COLS) != 0) {
+    // Buffers differ, dump difference
+    int lu_r = -2, lu_c = -2; // Last update row/col
+    for (int r = 0; r < LCD_ROWS; r++)
+      for (int c = 0; c < LCD_COLS; c++)
+	if (lcd_dat[lcd_curb][r][c] != lcd_dat[oldb][r][c]) {
+	  // This cell differs- send
+	  if (r != lu_r || c != lu_c+1) {
+	    // Need to reposition- not the next character
+	    LCD_Send(17);
+	    LCD_Send(c);
+	    LCD_Send(r);
+	  }
+
+	  // Send new character
+	  LCD_Send(lcd_dat[lcd_curb][r][c]);
+	  /* printf("BUF#%d Sending: %c @ (%d,%d)\n",lcd_curb,
+	     lcd_dat[lcd_curb][r][c],c,r); */
+	  
+	  lu_r = r;
+	  lu_c = c;
+	}
+  }
+
+  // Switch write buffers
+  lcd_curb = oldb;
+};
+
+#endif
+
 // This is the video event loop
 void VideoIO::video_event_loop ()
 {
   FloConfig *fs = app->getCFG();
   LoopManager *loopmgr = app->getLOOPMGR();
 
+#ifndef NO_VIDEO
   int XSIZE = fs->GetVSize()[0];
 
   const static SDL_Color red = { 0xFF, 0x50, 0x20, 0 },
@@ -1900,18 +2056,36 @@ void VideoIO::video_event_loop ()
 
   video_time = 0;
   double video_start = mygettime();
+#endif // NO_VIDEO
+
+#ifdef LCD_DISPLAY
+  InitLCD("/dev/ttyUSB0",B19200);
+#endif
+
   while (videothreadgo) {
     // This video thread eats CPU
     // So for slower machines I advise using a higher delay time
     usleep(app->getCFG()->GetVDelay());
 
+    // Lock video space from changes
+    pthread_mutex_lock (&video_thread_lock);
+
+#ifdef LCD_DISPLAY
+    {
+      LCDB_Clear();
+      Pulse *a = loopmgr->GetPulseByIndex(0);
+      if (a != 0)
+	LCDB_SetChar(0,(int) (a->GetPct()*LCD_COLS),'*');
+      // LCDB_Debug();
+      LCDB_Dump();
+    }
+#endif // LCD_DISPLAY
+
+#ifndef NO_VIDEO
     //double t1 = mygettime();
 
     float lvol = app->getRP()->GetLimiterVolume();
     sample_t *peakbuf, *avgbuf;
-
-    // Lock video space from changes
-    pthread_mutex_lock (&video_thread_lock);
 
     // Clear screen
     SDL_FillRect(screen,NULL,0);
@@ -2328,11 +2502,13 @@ void VideoIO::video_event_loop ()
     // Now update screen!
     SDL_UpdateRect(screen, 0, 0, 0, 0);
     //video_time = mygettime() - t1;
+#endif // NO_VIDEO
 
     // Unlock video space from changes
     pthread_mutex_unlock (&video_thread_lock);
   }
 
+#ifndef NO_VIDEO
   delete[] curpeakidx;
   delete[] lastpeakidx;
   delete[] oldpeak;
@@ -2349,6 +2525,7 @@ void VideoIO::video_event_loop ()
   if (logopic != 0) 
     SDL_FreeSurface(logopic);
   SDL_FreeSurface(lscopepic);
+#endif // NO_VIDEO
 }
 
 void VideoIO::SetVideoMode(char fullscreen) {
@@ -2408,16 +2585,7 @@ void *VideoIO::run_video_thread(void *ptr)
   inst->cocoa.SetupCocoaThread();
 #endif
   
-#if 0
-  // This init was moved to fweelin_core because SDL is required
-  // for keyboard and config file reading as well..
-
-  if ( SDL_InitSubSystem(SDL_INIT_VIDEO) < 0 ) {
-    fprintf(stderr, "Couldn't initialize SDL: %s\n",SDL_GetError());
-    return 0;
-  }
-#endif
-
+#ifndef NO_VIDEO
   // Initialize the font library
   if ( TTF_Init() < 0 ) {
     fprintf(stderr, "Couldn't initialize TTF: %s\n",SDL_GetError());
@@ -2478,6 +2646,7 @@ void *VideoIO::run_video_thread(void *ptr)
     printf("VIDEO: Error, no 'small' font loaded!\n");
     exit(1);
   }
+#endif // NO_VIDEO
 
   inst->videothreadgo = 1;
   printf("VIDEO: SDL Ready!\n");
@@ -2495,6 +2664,7 @@ void *VideoIO::run_video_thread(void *ptr)
   // Start main loop
   inst->video_event_loop();
 
+#ifndef NO_VIDEO
   // Close all fonts
   {
     FloFont *cur = inst->app->getCFG()->GetFonts();
@@ -2504,6 +2674,7 @@ void *VideoIO::run_video_thread(void *ptr)
       cur = cur->next;
     }
   }
+#endif // NO_VIDEO
 
   // Close things up
   SDL_QuitSubSystem(SDL_INIT_VIDEO);
