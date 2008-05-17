@@ -614,6 +614,21 @@ class FloDisplaySquares : public FloDisplay
   int sx, sy;            // Square size
 };
 
+class FloDisplaySnapshots : public FloDisplay
+{
+ public:
+  FloDisplaySnapshots (Fweelin *app, int iid) : FloDisplay(iid), app(app),
+    firstidx(0), numdisp(-1) {};
+
+  virtual void Draw(SDL_Surface *screen);
+
+  Fweelin *app;
+  int firstidx,          // Index of first snapshot to display
+    numdisp;             // Number of snapshots to display
+  int sx, sy,            // Size of snapshots list
+    margin;              // Margin for text
+};
+
 // FluidSynth config
 #include "fweelin_fluidsynth.h"
 
@@ -999,6 +1014,10 @@ class FloConfig {
   int numinterfaces, // Switchable interfaces
                      // (range 1<=i<=numinterfaces) 
     numnsinterfaces; // Nonswitchable interfaces
+
+  // Maximum number of snapshots user can create
+  inline int GetMaxSnapshots() { return max_snapshots; };
+  int max_snapshots;
 
   // Seconds of fixed audio history 
   const static float AUDIO_MEMORY_LEN;

@@ -1756,6 +1756,12 @@ void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
 	  num_triggers = 1; 
 	printf("CONFIG: Starting with %d triggers.\n",num_triggers);
       } else if ((n = xmlGetProp(cur_node, 
+				 (const xmlChar *)"maxsnapshots")) != 0) {
+	max_snapshots = atoi((char *) n);
+	if (max_snapshots < 1)
+	  max_snapshots = 1; 
+	printf("CONFIG: Starting with %d max snapshots.\n",max_snapshots);
+      } else if ((n = xmlGetProp(cur_node, 
 				 (const xmlChar *)"librarypath")) != 0) {
 	if (xmlStrchr(n,'~') == n) {
 	  // Reference to home dir
@@ -2687,6 +2693,26 @@ void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid,
 
 	    xmlFree(nn);
 	  } 
+ 	} else if (!xmlStrcmp(n, (const xmlChar *)"snapshots")) {
+	  printf("(snapshots) ");
+	  nw = new FloDisplaySnapshots(GetInputMatrix()->app,iid);
+	  FloDisplaySnapshots *nws = (FloDisplaySnapshots *) nw;
+
+	  nws->margin = XCvt(0.005);
+
+	  // Snapshots display size
+	  xmlChar *nn = xmlGetProp(cur_node, (const xmlChar *)"size");
+	  if (nn != 0) {
+	    int cs; 
+	    float *coord = ExtractArray((char *)nn, &cs);
+	    if (cs) {
+	      nws->sx = XCvt(coord[0]);
+	      nws->sy = XCvt(coord[1]);
+	      printf("size (%d,%d) ",nws->sx,nws->sy);
+	    }
+	    delete[] coord;
+	    xmlFree(nn);
+	  }
  	} else if (!xmlStrcmp(n, (const xmlChar *)"bar") || 
 		   !xmlStrcmp(n, (const xmlChar *)"bar-switch")) {
 	  // Bar or bar-switch?
@@ -3109,7 +3135,8 @@ FloConfig::FloConfig(Fweelin *app) : im(app),
   loopoutformat(VORBIS), streamoutformat(VORBIS),
   vorbis_encode_quality(0.5),
 
-  num_triggers(1024), vdelay(50000), showdebug(0), 
+  num_triggers(1024), 
+  vdelay(50000), showdebug(0), 
   layouts(0), fonts(0), displays(0), help(0),
 		
 #if USE_FLUIDSYNTH
@@ -3119,7 +3146,8 @@ FloConfig::FloConfig(Fweelin *app) : im(app),
   transpose(0), 
   
   loop_peaksavgs_chunksize(500), status_report(0),
-  numinterfaces(0), numnsinterfaces(0) { 
+  numinterfaces(0), numnsinterfaces(0),
+  max_snapshots(20) { 
   vsize[0] = 640;
   vsize[1] = 480;
   scope_sample_len = vsize[0]; // Scope goes across screen

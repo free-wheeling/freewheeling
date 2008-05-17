@@ -169,6 +169,9 @@ enum EventType {
   T_EV_TriggerSelectedLoops,
   T_EV_SetSelectedLoopsTriggerVolume,
   T_EV_InvertSelection,
+  
+  T_EV_CreateSnapshot,
+  T_EV_TriggerSnapshot,
 
   T_EV_SetTriggerVolume,
   T_EV_SlideLoopAmp,
@@ -2091,6 +2094,54 @@ public:
   };    
   
   int setid; // ID # of the selection set to invert (select all other loops)
+};
+
+class CreateSnapshotEvent : public Event {
+public:
+  EVT_DEFINE(CreateSnapshotEvent,T_EV_CreateSnapshot);
+  virtual void Recycle() {
+    snapid = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    CreateSnapshotEvent &s = (CreateSnapshotEvent &) src;
+    snapid = s.snapid;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+      case 0:
+	return EventParameter("snapid",FWEELIN_GETOFS(snapid),T_int);
+    }
+    
+    return EventParameter();
+  };    
+  
+  int snapid; // Create and store snapshot #snapid
+};
+
+class TriggerSnapshotEvent : public Event {
+public:
+  EVT_DEFINE(TriggerSnapshotEvent,T_EV_TriggerSnapshot);
+  virtual void Recycle() {
+    snapid = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    TriggerSnapshotEvent &s = (TriggerSnapshotEvent &) src;
+    snapid = s.snapid;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+      case 0:
+	return EventParameter("snapid",FWEELIN_GETOFS(snapid),T_int);
+    }
+    
+    return EventParameter();
+  };    
+  
+  int snapid; // Trigger snapshot #snapid
 };
 
 class TriggerSelectedLoopsEvent : public Event {

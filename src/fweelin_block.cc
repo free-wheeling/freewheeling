@@ -1960,6 +1960,8 @@ BlockManager::BlockManager (Fweelin *app) :
 					 ::new StripeBlockManager(),
 					 sizeof(StripeBlockManager));
 
+  pthread_mutex_init(&manage_thread_lock,0);
+
   const static size_t STACKSIZE = 1024*128;
   pthread_attr_t attr;
   pthread_attr_init(&attr);
@@ -1990,6 +1992,8 @@ BlockManager::~BlockManager () {
   // Terminate the management thread
   threadgo = 0;
   pthread_join(manage_thread,0);
+
+  pthread_mutex_destroy (&manage_thread_lock);
 
   delete pre_growchain;
   delete pre_peaksavgs;
@@ -2078,10 +2082,12 @@ void BlockManager::DelManager (ManagedChain **first, ManagedChain *m) {
   
   if (cur != 0) {
     // Got it, unlink!
+    pthread_mutex_lock (&manage_thread_lock);
     if (prev != 0) 
       prev->next = cur->next;
     else 
       *first = cur->next;
+    pthread_mutex_unlock (&manage_thread_lock);
     cur->RTDelete();
   }
 };
@@ -2094,11 +2100,13 @@ void BlockManager::RefDeleted (ManagedChain **first, void *ref) {
       //printf("RefDeleted delete loose reference!\n");
 
       // Remove chain
+      pthread_mutex_lock (&manage_thread_lock);
       ManagedChain *tmp = cur->next;
       if (prev != 0) 
 	prev->next = tmp;
       else 
 	*first = tmp;
+      pthread_mutex_unlock (&manage_thread_lock);
       cur->RTDelete();
       
       // Next chain
@@ -2182,6 +2190,8 @@ ManagedChain *BlockManager::GetBlockManager(AudioBlock *o,
 };
 
 void BlockManager::AddManager (ManagedChain **first, ManagedChain *nw) {
+  pthread_mutex_lock (&manage_thread_lock);
+
   ManagedChain *cur = *first;
   if (cur == 0)
     *first = nw; // That was easy, now we have 1 item
@@ -2190,6 +2200,8 @@ void BlockManager::AddManager (ManagedChain **first, ManagedChain *nw) {
       cur = cur->next;
     cur->next = nw; // Link up the last item to new1
   }
+
+  pthread_mutex_unlock (&manage_thread_lock);
 }
 
 // Delete a managed chain for block o and manager type t
@@ -2209,10 +2221,12 @@ void BlockManager::DelManager (ManagedChain **first, AudioBlock *o,
   
   if (cur != 0) {
     // Got it, unlink!
+    pthread_mutex_lock (&manage_thread_lock);
     if (prev != 0) 
       prev->next = cur->next;
     else 
       *first = cur->next;
+    pthread_mutex_unlock (&manage_thread_lock);
     cur->RTDelete();
   }
 }
@@ -2236,10 +2250,12 @@ void BlockManager::DelHiManager (HiPriManagedChain **first,
   
   if (cur != 0) {
     // Got it, unlink!
+    pthread_mutex_lock (&manage_thread_lock);
     if (prev != 0) 
       prev->next = cur->next;
     else 
       *first = (HiPriManagedChain *) cur->next;
+    pthread_mutex_unlock (&manage_thread_lock);
     cur->RTDelete();
   }
 }
@@ -2254,11 +2270,13 @@ void *BlockManager::run_manage_thread (void *ptr) {
     while (cur != 0) {
       if (cur->Manage()) {
 	// Remove chain
+	pthread_mutex_lock (&inst->manage_thread_lock);
 	ManagedChain *tmp = cur->next;
 	if (prev != 0) 
 	  prev->next = tmp;
 	else 
 	  inst->manageblocks = tmp;
+	pthread_mutex_unlock (&inst->manage_thread_lock);
 	//printf("end mgr\n");
 	cur->RTDelete();
 	

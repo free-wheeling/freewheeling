@@ -912,9 +912,6 @@ class StripeBlockManager : public HiPriManagedChain {
 //
 // It also handles -time-critical events-, such as firing off pulse sync
 // messages. This second function may soon be moved to the EventManager.
-//
-// TODO: Doublecheck for possible threading issues.
-//       accessing lists from nonRT and RT threads simultaneously?
 class BlockManager {
 public:
   BlockManager (Fweelin *app);
@@ -989,6 +986,7 @@ public:
   HiPriManagedChain *himanageblocks;
 
   pthread_t manage_thread;
+  pthread_mutex_t manage_thread_lock;
   int threadgo;
 
   // ****************** PREALLOCATED TYPE MANAGERS
