@@ -207,6 +207,11 @@ public:
     if (row >= 0 && row < LCD_ROWS && col >= 0 && col < LCD_COLS)
       lcd_dat[lcd_curb][row][col] = dat;
   };
+
+  inline void LCDB_SetStr (int row, int col, char *data) {
+    while (*data)
+      LCDB_SetChar(row,col++,*data++);
+  }
   
   inline void LCDB_Clear () {
     memset(lcd_dat[lcd_curb],' ',sizeof(char) * LCD_ROWS * LCD_COLS);
