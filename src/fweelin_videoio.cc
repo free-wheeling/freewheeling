@@ -54,6 +54,32 @@
 #define FILLED_PIE filledpieRGBA
 #endif
 
+char *strup (char *str) {
+  const static int STRBUFLEN = 512;
+  static char buf[STRBUFLEN];
+
+  strncpy(buf,str,STRBUFLEN-1);
+  buf[STRBUFLEN-1] = '\0';
+  int len = strlen(buf);
+  for (int i = 0; i < len; i++)
+    buf[i] = toupper(buf[i]);
+
+  return buf;
+};
+
+char *strlwr (char *str) {
+  const static int STRBUFLEN = 512;
+  static char buf[STRBUFLEN];
+
+  strncpy(buf,str,STRBUFLEN-1);
+  buf[STRBUFLEN-1] = '\0';
+  int len = strlen(buf);
+  for (int i = 0; i < len; i++)
+    buf[i] = tolower(buf[i]);
+
+  return buf;
+};
+
 double mygettime(void) {
   static struct timeval mytv;
   gettimeofday(&mytv,NULL);
@@ -1815,12 +1841,14 @@ void VideoIO::LCDB_Dump () {
 	  // This cell differs- send
 	  if (r != lu_r || c != lu_c+1) {
 	    // Need to reposition- not the next character
+	    // printf("pos: %d %d\n",c,r);
 	    LCD_Send(17);
 	    LCD_Send(c);
 	    LCD_Send(r);
 	  }
 
 	  // Send new character
+	  // printf("%c\n",lcd_dat[lcd_curb][r][c]);
 	  LCD_Send(lcd_dat[lcd_curb][r][c]);
 	  /* printf("BUF#%d Sending: %c @ (%d,%d)\n",lcd_curb,
 	     lcd_dat[lcd_curb][r][c],c,r); */
@@ -2059,6 +2087,10 @@ void VideoIO::video_event_loop ()
 #endif // NO_VIDEO
 
 #ifdef LCD_DISPLAY
+#define LCD_FLASHLEN 5
+#define LOOPROW 1
+  float prev_pct = 0.0;
+  int flashcnt = LCD_FLASHLEN;
   InitLCD("/dev/ttyUSB0",B19200);
 #endif
 
@@ -2073,9 +2105,75 @@ void VideoIO::video_event_loop ()
 #ifdef LCD_DISPLAY
     {
       LCDB_Clear();
+
+      // Draw pulse
       Pulse *a = loopmgr->GetPulseByIndex(0);
-      if (a != 0)
-	LCDB_SetChar(0,(int) (a->GetPct()*LCD_COLS),'*');
+      if (a != 0) {
+	float pct = a->GetPct();
+	if (pct < prev_pct)
+	  flashcnt = 0;
+	// LCDB_SetChar(0,LCD_COLS-1,'*');
+	if (flashcnt++ < LCD_FLASHLEN)
+	  LCDB_SetStr(0,0,"********************");
+	else
+	  LCDB_SetChar(0,(int) (a->GetPct()*LCD_COLS),'*');
+	prev_pct = pct;
+      }
+
+      // Draw loops
+      loopmgr->LockLoops();
+      FloLayout *curlayout = fs->GetLayouts();
+      int lc = 0, lr = LOOPROW;
+      while (curlayout != 0) {
+	if (curlayout->show && curlayout->elems != 0) {
+	  // Draw each element in this layout
+	  FloLayoutElement *curel = curlayout->elems;
+	  int firstid = curlayout->loopids.lo, 
+	    curid = firstid,
+	    maxid = curlayout->loopids.hi;
+
+	  while (curel != 0 && curid <= maxid) {
+	    // Calculate the actual loop ID that corresponds to this element
+	    int i = firstid + curel->id;
+
+	    char loopexists;
+	    if (loopmgr->GetSlot(i) || loopmgr->IsActive(i))
+	      loopexists = 1;
+	    else
+	      loopexists = 0;
+
+	    // Draw loop for this element
+	    if (loopexists && curlayout->showelabel) {
+	      // printf("el: %s\n",curel->name);
+	      if (loopmgr->IsActive(i)) {
+		/* LCDB_SetChar(lr,lc-1,'-');
+		   char *buf; */
+		LCDB_SetStr(lr,lc,strup(curel->name));
+		// LCDB_SetChar(lr,lc+strlen(buf),'-');
+	      } else
+		LCDB_SetStr(lr,lc,strlwr(curel->name));
+	      lc += strlen(curel->name) + 1;
+	      if (lc >= LCD_COLS - 3) {
+		lc = 0;
+		lr++;
+	      }
+	    }
+
+	    /*if (loopexists)
+	      DrawLoop(loopmgr,i,screen,lscopepic,
+		       loopcolors[clrnum],colormag,
+		       fs,curel,0,0,0,
+		       lvol);*/
+
+	    curel = curel->next;
+	    curid++;
+	  }
+	}
+	
+	curlayout = curlayout->next;
+      }
+      loopmgr->UnlockLoops();
+
       // LCDB_Debug();
       LCDB_Dump();
     }
