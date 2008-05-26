@@ -52,6 +52,8 @@
 #define FWEELIN_OUTPUT_TIMING_EXT  ".wav.usx"
 #define FWEELIN_OUTPUT_LOOP_NAME   "loop"
 #define FWEELIN_OUTPUT_SCENE_NAME  "scene"
+#define FWEELIN_OUTPUT_SNAPSHOT_NAME "snapshot"
+#define FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME "loopsnap"
 #define FWEELIN_OUTPUT_DATA_EXT    ".xml"
 
 // Console sequence for error color

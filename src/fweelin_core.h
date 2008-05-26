@@ -67,11 +67,11 @@ class FluidSynthProcessor;
 
 // Status types for loops
 enum LoopStatus {
-  T_LS_Off,
+  T_LS_Off = 0,
 
-  T_LS_Recording,
-  T_LS_Overdubbing,
-  T_LS_Playing
+  T_LS_Recording = 1,
+  T_LS_Overdubbing = 2,
+  T_LS_Playing = 3
 };
 
 // Base class for all saveable types of objects
@@ -707,6 +707,9 @@ public:
   // Delete the loop at the specified index..
   void DeleteLoop (int index);
 
+  // Add the given loop index to all snapshots (off)
+  void UpdateLoopLists_ItemAdded (int l_idx);
+
   // Remove the given loop index from all loop lists
   void UpdateLoopLists_ItemRemoved (int l_idx);
 
@@ -941,12 +944,28 @@ class Fweelin : public EventProducer, public BrowserCallback {
   // Snapshots
   Snapshot *getSNAP(int idx); 
   inline Snapshot *getSNAPS() { return snaps; }; 
-  Snapshot *CreateSnapshot (int idx) {
+
+  // Create snapshot from current state of all loops
+  Snapshot *CreateSnapshot (int idx) { 
     Snapshot *s = getSNAP(idx);
-    if (s != 0)
+    if (s != 0) {
+      tmap->TouchMap();
       s->CreateSnapshot(0,loopmgr,tmap);
+    }
     return s;
   };
+
+  // Load snapshot from disk- just create space & name
+  Snapshot *LoadSnapshot (int idx, char *name) {
+    Snapshot *s = getSNAP(idx);
+    if (s != 0) {
+      tmap->TouchMap();
+      s->CreateSnapshot(name,0,0);
+      s->numls = 0;
+    }
+    return s;
+  };
+
   // Trigger snapshot #idx - return nonzero on failure
   char TriggerSnapshot (int idx);
 

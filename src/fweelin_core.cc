@@ -65,23 +65,25 @@ void Snapshot::CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap) {
     strcpy(this->name,name);
   } else
     this->name = 0;
-    
-  // Count all loops
-  numls = tmap->CountLoops();
-  if (numls > 0) {
-    ls = new LoopSnapshot[numls];
-    
-    int idx = 0;
-    for (int i = 0; i < tmap->GetMapSize(); i++) {
-      if (tmap->GetMap(i) != 0) {
-	Loop *l = tmap->GetMap(i);
-	if (idx >= numls) {
-	  printf("CORE: ERROR: Loop count mismatch creating snapshot!\n");
-	  return;
+
+  if (lm != 0) {
+    // Count all loops
+    numls = tmap->CountLoops();
+    if (numls > 0) {
+      ls = new LoopSnapshot[numls];
+      
+      int idx = 0;
+      for (int i = 0; i < tmap->GetMapSize(); i++) {
+	if (tmap->GetMap(i) != 0) {
+	  Loop *l = tmap->GetMap(i);
+	  if (idx >= numls) {
+	    printf("CORE: ERROR: Loop count mismatch creating snapshot!\n");
+	    return;
+	  }
+	  
+	  ls[idx++] = LoopSnapshot(i,lm->GetStatus(i),
+				   l->vol,lm->GetTriggerVol(i));
 	}
-	
-	ls[idx++] = LoopSnapshot(i,lm->GetStatus(i),
-				 l->vol,lm->GetTriggerVol(i));
       }
     }
   }
@@ -98,12 +100,17 @@ char Fweelin::TriggerSnapshot (int idx) {
 
       if (ls->status == T_LS_Off && loopmgr->IsActive(ls->l_idx)) {
 	loopmgr->Deactivate(ls->l_idx);
-      } else if ((ls->status == T_LS_Playing || 
-		  ls->status == T_LS_Overdubbing) && 
-		 loopmgr->GetStatus(ls->l_idx) != T_LS_Playing) {
-	if (loopmgr->IsActive(ls->l_idx))
-	  loopmgr->Deactivate(ls->l_idx);
-	loopmgr->Activate(ls->l_idx, 0, ls->t_vol);
+      } else if (ls->status == T_LS_Playing || 
+		 ls->status == T_LS_Overdubbing) {
+	if (loopmgr->GetStatus(ls->l_idx) != T_LS_Playing) {
+	  // Loop not yet playing
+	  if (loopmgr->IsActive(ls->l_idx))
+	    loopmgr->Deactivate(ls->l_idx);
+	  loopmgr->Activate(ls->l_idx, 0, ls->t_vol);
+	} else {
+	  // Loop already playing- adjust volume
+	  loopmgr->SetTriggerVol(ls->l_idx, ls->t_vol);
+	}
       } 
     }
 
@@ -1002,6 +1009,46 @@ void TriggerMap::GoSave(char *filename) {
 	  xmlSetProp(lp,(xmlChar *) "volume",(xmlChar *) xmltmp);
 	}
 
+      // Snapshots
+      Snapshot *snaps = app->getSNAPS();
+      for (int i = 0; i < app->getCFG()->GetMaxSnapshots(); i++) {
+	if (snaps[i].exists) {
+	  Snapshot *s = &snaps[i];
+	  xmlNodePtr sp = xmlNewChild(ldat->children, 0, 
+				      (xmlChar *) FWEELIN_OUTPUT_SNAPSHOT_NAME, 0);
+
+	  // Snapshot index
+	  snprintf(xmltmp,XT_LEN,"%d",i);
+	  xmlSetProp(sp,(xmlChar *) "snapid",(xmlChar *) xmltmp);
+
+	  // Name
+	  if (s->name != 0)
+	    xmlSetProp(sp,(xmlChar *) "name",(xmlChar *) s->name);
+
+	  for (int j = 0; j < s->numls; j++) {
+	    LoopSnapshot *ls = &(s->ls[j]);
+	    xmlNodePtr slp = xmlNewChild(sp, 0, 
+					 (xmlChar *) FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME, 0);
+	    
+	    // Loop index
+	    snprintf(xmltmp,XT_LEN,"%d",ls->l_idx);
+	    xmlSetProp(slp,(xmlChar *) "loopid",(xmlChar *) xmltmp);
+
+	    // Loop status
+	    snprintf(xmltmp,XT_LEN,"%d",ls->status);
+	    xmlSetProp(slp,(xmlChar *) "status",(xmlChar *) xmltmp);
+
+	    // Loop volume
+	    snprintf(xmltmp,XT_LEN,"%.5f",ls->l_vol);
+	    xmlSetProp(slp,(xmlChar *) "loopvol",(xmlChar *) xmltmp);
+
+	    // Trigger volume
+	    snprintf(xmltmp,XT_LEN,"%.5f",ls->t_vol);
+	    xmlSetProp(slp,(xmlChar *) "triggervol",(xmlChar *) xmltmp);
+	  }
+	}
+      }
+
       xmlSaveFormatFile(tmp,ldat,1);
       xmlFreeDoc(ldat);
 
@@ -1891,14 +1938,82 @@ void LoopManager::DeleteLoop (int index) {
   UnlockLoops();
 }
 
+void LoopManager::UpdateLoopLists_ItemAdded (int l_idx) {
+  // Update...
+
+  // Snapshots
+  Snapshot *snaps = app->getSNAPS();
+  for (int i = 0; i < app->getCFG()->GetMaxSnapshots(); i++) {
+    if (snaps[i].exists) {
+      Snapshot *s = &snaps[i];
+      char go = 1;
+      for (int j = 0; go && j < s->numls; j++) 
+	if (s->ls[j].l_idx == l_idx)
+	  go = 0;
+
+      if (go) {
+	// Loop index not present in snapshot- add, defaulting to loop off
+	LoopSnapshot *newls = 0;
+	newls = new LoopSnapshot[s->numls+1];
+
+	memcpy(newls,s->ls,sizeof(LoopSnapshot) * s->numls);
+	LoopSnapshot *n = &newls[s->numls];
+
+	n->l_idx = l_idx;
+	n->status = T_LS_Off;
+	n->l_vol = GetLoopVolume(l_idx);
+	n->t_vol = 0.;
+
+	delete[] s->ls;
+	s->ls = newls;
+	s->numls = s->numls+1;
+      }
+    }
+  }
+};
+
 void LoopManager::UpdateLoopLists_ItemRemoved (int l_idx) {
+  // Update...
+
+  // Selection sets
   for (int i = 0; i < NUM_LOOP_SELECTION_SETS; i++) {
     LoopList **ll = app->getLOOPSEL(i);
     *ll = LoopList::Remove(*ll,l_idx);
   }
+
+  // Snapshots
+  Snapshot *snaps = app->getSNAPS();
+  for (int i = 0; i < app->getCFG()->GetMaxSnapshots(); i++) {
+    if (snaps[i].exists) {
+      Snapshot *s = &snaps[i];
+      char go = 1;
+      for (int j = 0; go && j < s->numls; j++) 
+	if (s->ls[j].l_idx == l_idx) {
+	  // Remove loop from list
+	  LoopSnapshot *newls = 0;
+	  if (s->numls > 1) {
+	    newls = new LoopSnapshot[s->numls-1];
+
+	    // All elements preceding j
+	    memcpy(newls,s->ls,sizeof(LoopSnapshot) * j);
+	    // & following
+	    memcpy(&newls[j],&(s->ls[j+1]),
+		   sizeof(LoopSnapshot) * (s->numls-j-1));
+	  }
+
+	  delete[] s->ls;
+	  s->ls = newls;
+	  s->numls = s->numls-1;
+	  go = 0; // No more checking in this snapshot
+	}
+    }
+  }
 };
 
 void LoopManager::UpdateLoopLists_ItemMoved (int l_idx_old, int l_idx_new) {
+  // Update...
+
+  // Selection sets
   for (int i = 0; i < NUM_LOOP_SELECTION_SETS; i++) {
     LoopList **ll = app->getLOOPSEL(i),
       *prev,
@@ -1907,6 +2022,17 @@ void LoopManager::UpdateLoopLists_ItemMoved (int l_idx_old, int l_idx_new) {
     // Update index
     if (found != 0)
       found->l_idx = l_idx_new;
+  }
+
+  // Snapshots
+  Snapshot *snaps = app->getSNAPS();
+  for (int i = 0; i < app->getCFG()->GetMaxSnapshots(); i++) {
+    if (snaps[i].exists) {
+      Snapshot *s = &snaps[i];
+      for (int j = 0; j < s->numls; j++) 
+	if (s->ls[j].l_idx == l_idx_old)
+	  s->ls[j].l_idx = l_idx_new;
+    }
   }
 };
 
@@ -1996,6 +2122,7 @@ void LoopManager::Deactivate (int index) {
 	   ((RecordProcessor *) plist[index])->GetNBeats(),
 	   app->getCFG()->GetLoopOutFormat());
     app->getTMAP()->SetMap(index, newlp);
+    UpdateLoopLists_ItemAdded(index);
     numloops++;
     lastindex = index;
 
@@ -2098,6 +2225,108 @@ void LoopManager::LoadScene(SceneBrowserItem *i) {
 	  } else 
 	    printf("DISK: Scene definition for loop (id %d) has missing "
 		   "hash!\n",l_idx);
+	} else if ((!xmlStrcmp(cur_node->name, 
+			       (const xmlChar *) FWEELIN_OUTPUT_SNAPSHOT_NAME))) {
+	  // Snapshot within scene-- read
+	  int snapid = 0;
+	  char sgo = 1;
+
+	  // Snapshot index
+	  xmlChar *n = xmlGetProp(cur_node, (const xmlChar *) "snapid");
+	  if (n != 0) {
+	    snapid = atoi((char *) n);
+	    xmlFree(n);
+	  }
+
+	  // Check if snapshot exists- if so, find another slot
+	  if (app->getSNAP(snapid) == 0 || app->getSNAP(snapid)->exists) {
+	    Snapshot *snaps = app->getSNAPS();
+	    char go = 1;
+	    int i = 0; 
+	    while (go && i < app->getCFG()->GetMaxSnapshots()) {
+	      if (!snaps[i].exists) 
+		go = 0;
+	      else
+		i++;
+	    }
+	    
+	    if (go) {
+	      printf("DISK: No space to load snapshot in scene-\n"
+		     "please raise maximum # of snapshots in configuration!\n");
+	      sgo = 0;
+	    } else
+	      snapid = i;
+	  }
+
+	  if (sgo) {
+	    // Name
+	    n = xmlGetProp(cur_node, (const xmlChar *) "name");
+
+	    printf(" (snapshot: %s)\n",n);
+	    Snapshot *s = app->LoadSnapshot(snapid,(char *) n);
+	    if (n != 0)
+	      xmlFree(n);
+
+	    // Now, count loop snapshots given in snapshot
+	    if (s != 0) {
+	      int numls = 0;
+	      for (xmlNode *ls_node = cur_node->children; ls_node != NULL; 
+		   ls_node = ls_node->next) {
+		if ((!xmlStrcmp(ls_node->name, 
+				(const xmlChar *) FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME))) {
+		  numls++;
+		}
+	      }
+	      
+	      printf("  (%d loops in snapshot)\n",numls);
+
+	      // Setup & load loop snapshots
+	      s->numls = numls;
+	      if (numls > 0)
+		s->ls = new LoopSnapshot[numls];
+	      else
+		s->ls = 0;
+
+	      int i = 0;
+	      for (xmlNode *ls_node = cur_node->children; ls_node != NULL; 
+		   ls_node = ls_node->next) {
+		if ((!xmlStrcmp(ls_node->name, 
+				(const xmlChar *) FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME))) {
+		  LoopSnapshot *ls = &(s->ls[i]);
+
+		  // Loop index
+		  xmlChar *nn = xmlGetProp(ls_node, (const xmlChar *) "loopid");
+		  if (nn != 0) {
+		    ls->l_idx = atoi((char *) nn);
+		    xmlFree(nn);
+		  }
+
+		  // Loop status
+		  nn = xmlGetProp(ls_node, (const xmlChar *) "status");
+		  if (nn != 0) {
+		    ls->status = (LoopStatus) atoi((char *) nn);
+		    xmlFree(nn);
+		  }
+
+		  // Loop volume
+		  nn = xmlGetProp(ls_node, (const xmlChar *) "loopvol");
+		  if (nn != 0) {
+		    ls->l_vol = atof((char *) nn);
+		    xmlFree(nn);
+		  }
+
+		  // Trigger volume
+		  nn = xmlGetProp(ls_node, (const xmlChar *) "triggervol");
+		  if (nn != 0) {
+		    ls->t_vol = atof((char *) nn);
+		    xmlFree(nn);
+		  }
+
+		  i++;
+		}
+	      }
+	    }
+	  }
 	}
       }
 
