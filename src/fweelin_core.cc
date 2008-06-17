@@ -594,6 +594,7 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_TriggerLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_TriggerSelectedLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_SetSelectedLoopsTriggerVolume);
+  app->getEMG()->ListenEvent(this,0,T_EV_AdjustSelectedLoopsAmp);
 
   app->getEMG()->ListenEvent(this,0,T_EV_MoveLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_RenameLoop);
@@ -649,6 +650,7 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_TriggerLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_TriggerSelectedLoops);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetSelectedLoopsTriggerVolume);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_AdjustSelectedLoopsAmp);
 
   app->getEMG()->UnlistenEvent(this,0,T_EV_MoveLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_RenameLoop);
@@ -2589,6 +2591,30 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 	LoopList *cur = *ll;
 	while (cur != 0) {
 	  SetTriggerVol(cur->l_idx,sev->vol);
+	  cur = cur->next;
+	}
+	
+      } else 
+	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+    }
+    break;
+
+  case T_EV_AdjustSelectedLoopsAmp :
+    {
+      AdjustSelectedLoopsAmpEvent *sev = (AdjustSelectedLoopsAmpEvent *) ev;
+      
+      // OK!
+      if (CRITTERS)
+	printf("CORE: Received AdjustSelectedLoopsAmpEvent: Set %d: "
+	       "Amp factor %f\n",
+	       sev->setid,sev->ampfactor);
+      
+      LoopList **ll = app->getLOOPSEL(sev->setid);
+      if (ll != 0) {
+	LoopList *cur = *ll;
+	while (cur != 0) {
+	  SetLoopVolume(cur->l_idx,
+			sev->ampfactor * GetLoopVolume(cur->l_idx));
 	  cur = cur->next;
 	}
 	

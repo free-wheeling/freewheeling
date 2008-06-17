@@ -1,5 +1,39 @@
 IN PROGRESS v0.5.6 - SVN
 
+            Monday Jun 16th, 2008
+
+            New Features
+            ------------
+
+            * Create snapshots for playing loops
+         
+              - Create / save / load snapshots. All loop levels and playing
+                loops are remembered.
+              
+                To create a snapshot, hold SHIFT and press 1-9.
+                The snapshot is shown in a popup window.
+        
+              - An easy way to switch between song sections.
+
+                To switch snapshots, hold CTRL and press 1-9.
+                
+              - Snapshots are saved/loaded in scenes. 
+
+              Still to do on snapshots: Renaming, fading, 
+              paging through snapshots on display, more flexible 
+              synchronization.
+        
+            * Easily adjust levels for all selected loops
+
+              To use: Select some loops. Hold CTRL and press UP/DOWN repeatedly
+              to adjust all loop levels. Or, hold CTRL and use the mousewheel
+              on any loop. All selected loops are adjusted.
+
+              This works well when you have many loops that are overdriving
+              Freewheeling's outputs. The limiter is bouncing around. You could
+              reduce the output level, but this approach is more flexible- and 
+              the results are saved in snapshots and scenes.
+        
             Friday Nov 9th, 2007
 
             New Features
