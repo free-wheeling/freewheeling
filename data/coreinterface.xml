@@ -47,6 +47,8 @@
     <!-- Range of audio inputs -->
     <declare var="VAR_inputs" type="range" init="1>4"/>
     <declare var="VAR_zero_keysym" type="int" init="48"/>
+    <!-- Range of snapshots adjustable by keyboard -->
+    <declare var="VAR_snaps" type="range" init="1>9"/>
 
     <declare var="VAR_switch_metronome" type="char" init="0"/>
 
@@ -75,7 +77,12 @@
 
     <declare var="VAR_loopid_default_range" type="range" init="600>1000"/>
 
+    <!-- How fast do loop volumes slide (when active) -->
     <declare var="VAR_slide_speed" type="float" init="0.3"/>
+
+    <!-- How much are loop amplitudes adjusted when operating on entire
+         selections? -->
+    <declare var="VAR_loopamp_adj" type="float" init="0.9"/>
 
     <declare var="VAR_channelrange" type="range" init="0>15"/>
 
@@ -144,6 +151,16 @@
      output="midikey" parameters="keydown=keydown and outport=1 and 
 				  midichannel=0 and 
 				  notenum=37 and velocity=127"/>
+
+    <!-- Early bindings- LOOPS -->
+    <binding input="key" conditions="VAR_keyheld_shift=1 and
+				     key=VAR_snaps+VAR_zero_keysym and
+				     keydown=1"
+     output="create-snapshot" parameters="snapid=key-VAR_zero_keysym-1"/>
+    <binding input="key" conditions="VAR_keyheld_ctrl=1 and
+				     key=VAR_snaps+VAR_zero_keysym and
+				     keydown=1"
+     output="trigger-snapshot" parameters="snapid=key-VAR_zero_keysym-1"/>
 
     <!-- HELP: -->
     <!-- HELP: __ LEVELS __ -->
@@ -245,6 +262,16 @@
      parameters="loopid=loopid and
 		 slide=-VAR_slide_speed/2"/> 
 
+    <!-- HELP: CTRL + Mousewheel: +/- volume of all selected loops -->
+    <binding input="loop-clicked" 
+     conditions="button=4 and VAR_keyheld_ctrl=1"
+     output="adjust-selected-loops-amp"
+     parameters="setid=0 and ampfactor=1.0/VAR_loopamp_adj"/>
+    <binding input="loop-clicked" 
+     conditions="button=5 and VAR_keyheld_ctrl=1"
+     output="adjust-selected-loops-amp"
+     parameters="setid=0 and ampfactor=VAR_loopamp_adj"/>
+
     <!-- HELP: Mousewheel on loops: +/- loop volume -->
     <binding input="loop-clicked" 
      conditions="button=4"
@@ -254,6 +281,8 @@
      conditions="button=5"
      output="adjust-loop-amplifier"
      parameters="loopid=loopid and damp=-0.1"/>
+
+    <!-- HELP: CTRL + up/down arrows: Adjust volume of all selected loops -->
 
     <!-- Renaming loops by clicking -->
     <binding input="loop-clicked" 
@@ -299,6 +328,8 @@
     <!-- HELP: -->
     <!-- HELP: __ LOOPS __ -->
     <!-- HELP: -->
+
+    <!-- HELP: shift + 1-9: Create snapshot #1-9 -->
 
     <!-- HELP: shift + click on loop: Select loop -->
     <!-- HELP: right click on loop: Select loop -->
@@ -602,26 +633,46 @@
     <binding input="key" conditions="key=space"
      output="set-variable" parameters="var=VAR_keyheld_space and 
 				       value=keydown"/>
+
+    <binding input="key" conditions="key=up and VAR_keyheld_ctrl=1"
+     output1="set-variable" parameters1="var=VAR_keyheld_up and 
+				         value=keydown"
+     output2="adjust-selected-loops-amp" 
+     parameters2="setid=0 and ampfactor=1.0/VAR_loopamp_adj"/>
     <binding input="key" conditions="key=up"
      output="set-variable" parameters="var=VAR_keyheld_up and 
 				       value=keydown"/>
+
+    <binding input="key" conditions="key=down and VAR_keyheld_ctrl=1"
+     output1="set-variable" parameters1="var=VAR_keyheld_down and 
+				         value=keydown"
+     output2="adjust-selected-loops-amp" 
+     parameters2="setid=0 and ampfactor=VAR_loopamp_adj"/>
     <binding input="key" conditions="key=down"
      output="set-variable" parameters="var=VAR_keyheld_down and 
 				       value=keydown"/>
 
     <binding input="key" conditions="key=leftshift"
-     output="set-variable" parameters="var=VAR_keyheld_shift and 
-				       value=keydown"/>
+     output1="set-variable" parameters1="var=VAR_keyheld_shift and 
+				        value=keydown"
+     output2="video-show-display" parameters2="displayid=2000 and
+					       show=keydown"/>
     <binding input="key" conditions="key=rightshift"
-     output="set-variable" parameters="var=VAR_keyheld_shift and 
-				       value=keydown"/>
+     output1="set-variable" parameters1="var=VAR_keyheld_shift and 
+				        value=keydown"
+     output2="video-show-display" parameters2="displayid=2000 and
+					       show=keydown"/>
 
     <binding input="key" conditions="key=leftctrl"
-     output="set-variable" parameters="var=VAR_keyheld_ctrl and 
-				       value=keydown"/>
+     output1="set-variable" parameters1="var=VAR_keyheld_ctrl and 
+					 value=keydown"
+     output2="video-show-display" parameters2="displayid=2000 and
+					       show=keydown"/>
     <binding input="key" conditions="key=rightctrl"
-     output="set-variable" parameters="var=VAR_keyheld_ctrl and 
-				       value=keydown"/>
+     output1="set-variable" parameters1="var=VAR_keyheld_ctrl and 
+					 value=keydown"
+     output2="video-show-display" parameters2="displayid=2000 and
+					       show=keydown"/>
 
     <binding input="key" conditions="key=leftalt"
      output="set-variable" parameters="var=VAR_keyheld_alt and 
@@ -714,5 +765,9 @@
      title="DUB"/> 
     <display var="VAR_cutmode" type="switch" font="small" pos="0.16,0.9" 
      title="CUT"/> 
+
+    <display id="2000" show="0"
+     type="snapshots" font="small" pos="0.69,0.4" size="0.3,0.28" 
+     title="SNAPS"/> 
   </graphics>
 </interface>

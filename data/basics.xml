@@ -19,6 +19,12 @@
      a loop sample is not allocated until that loop is recorded. -->
   <var numloopids="1024"/>
 
+<!-- A user can grab snapshots, which store all settings for playing loops
+     and levels. This allows 'song sections' to be easily created and 
+     switched, all live. Here is the maximum number of snapshots that can
+     be loaded. -->
+  <var maxsnapshots="20"/>
+
 <!-- Path to FreeWheeling library. The library stores loops, scenes and
      other data that persists between FreeWheeling sessions. -->
   <var librarypath="fw-lib/"/>

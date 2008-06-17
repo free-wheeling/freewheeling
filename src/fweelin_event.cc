@@ -257,6 +257,9 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_SetSelectedLoopsTriggerVolume,
 		"set-selected-loops-trigger-volume",
 		SetSelectedLoopsTriggerVolumeEvent);
+      SET_ETYPE(T_EV_AdjustSelectedLoopsAmp,
+		"adjust-selected-loops-amp",
+		AdjustSelectedLoopsAmpEvent);
       SET_ETYPE_SLOW(T_EV_InvertSelection,"invert-selection",
 		     InvertSelectionEvent);
 

@@ -168,6 +168,7 @@ enum EventType {
   T_EV_SelectAllLoops,
   T_EV_TriggerSelectedLoops,
   T_EV_SetSelectedLoopsTriggerVolume,
+  T_EV_AdjustSelectedLoopsAmp,
   T_EV_InvertSelection,
   
   T_EV_CreateSnapshot,
@@ -2181,7 +2182,7 @@ class TriggerSelectedLoopsEvent : public Event {
 class SetSelectedLoopsTriggerVolumeEvent : public Event {
  public:
   EVT_DEFINE(SetSelectedLoopsTriggerVolumeEvent,
-	     T_EV_SetSelectedLoopsTriggerVolume);
+             T_EV_SetSelectedLoopsTriggerVolume);
   virtual void Recycle() {
     setid = 0;
     vol = 1.0;
@@ -2207,6 +2208,37 @@ class SetSelectedLoopsTriggerVolumeEvent : public Event {
 
   int setid; // ID # of the selection set to work on
   float vol; // Trigger volume to set for loops
+};
+
+class AdjustSelectedLoopsAmpEvent : public Event {
+ public:
+  EVT_DEFINE(AdjustSelectedLoopsAmpEvent,
+	     T_EV_AdjustSelectedLoopsAmp);
+  virtual void Recycle() {
+    setid = 0;
+    ampfactor = 1.0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    AdjustSelectedLoopsAmpEvent &s = 
+      (AdjustSelectedLoopsAmpEvent &) src;
+    setid = s.setid;
+    ampfactor = s.ampfactor;
+  };
+  virtual int GetNumParams() { return 2; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
+    case 1:
+      return EventParameter("ampfactor",FWEELIN_GETOFS(ampfactor),T_float);
+    }
+
+    return EventParameter();
+  };    
+
+  int setid;       // ID # of the selection set to work on
+  float ampfactor; // Factor to multiply all loop amplitudes by
 };
 
 class EndRecordEvent : public Event {
