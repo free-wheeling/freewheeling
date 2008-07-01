@@ -23,7 +23,7 @@
      and levels. This allows 'song sections' to be easily created and 
      switched, all live. Here is the maximum number of snapshots that can
      be loaded. -->
-  <var maxsnapshots="20"/>
+  <var maxsnapshots="100"/>
 
 <!-- Path to FreeWheeling library. The library stores loops, scenes and
      other data that persists between FreeWheeling sessions. -->
