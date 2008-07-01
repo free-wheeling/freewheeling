@@ -2284,8 +2284,7 @@ void *BlockManager::run_manage_thread (void *ptr) {
 	// have changed-- for ex, in destructor of manager 'cur'
 	// may call DelManager
 	cur = inst->manageblocks;
-      }
-      else {
+      } else {
 	// Next chain
 	prev = cur;
 	cur = cur->next;

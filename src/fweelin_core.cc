@@ -3356,6 +3356,7 @@ int Fweelin::setup()
   cfg->AddEmptyVariable("SYSTEM_num_patchbanks");
   cfg->AddEmptyVariable("SYSTEM_cur_patchbank_tag");
   cfg->AddEmptyVariable("SYSTEM_num_switchable_interfaces");
+  cfg->AddEmptyVariable("SYSTEM_snapshot_page_firstidx");
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
     cfg->AddEmptyVariable(tmp);
@@ -3611,6 +3612,13 @@ int Fweelin::setup()
     snprintf(tmp,255,"SYSTEM_in_%d_record",i+1);
     cfg->LinkSystemVariable(tmp,T_char,
 			    (char *) &(iset->selins[i]));
+  }
+  {
+    FloDisplaySnapshots *sn = 
+      (FloDisplaySnapshots *) cfg->GetDisplayByType(FD_Snapshots);
+    if (sn != 0)
+      cfg->LinkSystemVariable("SYSTEM_snapshot_page_firstidx",T_int,
+			      (char *) &(sn->firstidx));
   }
 
   // Finally, final Config start

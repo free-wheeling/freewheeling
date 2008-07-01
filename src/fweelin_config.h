@@ -476,7 +476,8 @@ class FloFont {
 
 enum FloDisplayType {
   FD_Unknown,
-  FD_Browser
+  FD_Browser,
+  FD_Snapshots
 };
 
 // List of variable displays used in video
@@ -621,6 +622,8 @@ class FloDisplaySnapshots : public FloDisplay
  public:
   FloDisplaySnapshots (Fweelin *app, int iid) : FloDisplay(iid), app(app),
     firstidx(0), numdisp(-1) {};
+
+  virtual FloDisplayType GetFloDisplayType() { return FD_Snapshots; };
 
   virtual void Draw(SDL_Surface *screen);
 
@@ -933,6 +936,15 @@ class FloConfig {
     FloDisplay *cur = displays;
     while (cur != 0) {
       if (cur->iid == iid && cur->id == id)
+	return cur;
+      cur = cur->next;
+    }
+    return 0;
+  };
+  inline FloDisplay *GetDisplayByType (FloDisplayType typ) {
+    FloDisplay *cur = displays;
+    while (cur != 0) {
+      if (cur->GetFloDisplayType() == typ)
 	return cur;
       cur = cur->next;
     }
