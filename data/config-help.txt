@@ -1093,6 +1093,9 @@ SYSTEM_in_2_record ... -
 SYSTEM_num_midi_outs
   number of MIDI outputs you have defined
 
+SYSTEM_snapshot_page_firstidx
+  index of the first snapshot on the currently visible page of snapshots
+
 Browser types:
 
 BROWSE_patch

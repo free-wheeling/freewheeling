@@ -131,6 +131,7 @@ enum EventType {
   T_EV_SetVariable,
   T_EV_ToggleVariable,
 
+  T_EV_VideoShowSnapshotPage,
   T_EV_VideoShowLoop,
   T_EV_VideoShowLayout,
   T_EV_VideoSwitchInterface,
@@ -853,6 +854,41 @@ class VideoShowLoopEvent : public Event {
     layoutid;      // Layout in which to show loops
   Range loopid;    // Range of loop IDs that will be set to correspond to 
                    // elements in layout
+};
+
+class VideoShowSnapshotPageEvent : public Event {
+ public:
+  EVT_DEFINE_NO_CONSTR(VideoShowSnapshotPageEvent,T_EV_VideoShowSnapshotPage);
+  VideoShowSnapshotPageEvent() { Recycle(); };
+  virtual void Recycle() {
+    interfaceid = -1;
+    displayid = 0;
+    page = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    VideoShowSnapshotPageEvent &s = (VideoShowSnapshotPageEvent &) src;
+    interfaceid = s.interfaceid;
+    displayid = s.displayid;
+    page = s.page;
+  };
+  virtual int GetNumParams() { return 3; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+    case 0:
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
+    case 1:
+      return EventParameter("displayid",FWEELIN_GETOFS(displayid),T_int);
+    case 2:
+      return EventParameter("page",FWEELIN_GETOFS(page),T_int);
+    }
+
+    return EventParameter();
+  };    
+
+  int interfaceid, // Interface in which snapshot display is defined
+    displayid,     // Display ID of snapshot display
+    page;          // +1 (next page) or -1 (previous page)
 };
 
 class VideoShowLayoutEvent : public Event {

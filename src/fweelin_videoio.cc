@@ -651,15 +651,17 @@ void FloDisplaySnapshots::Draw(SDL_Surface *screen) {
 
     char buf[SNAP_NAME_LEN];
     Snapshot *sn = app->getSNAP(i);
-    char *nm = sn->name;
-    if (nm != 0)
-      snprintf(buf,SNAP_NAME_LEN,"%2d %s",i+1,nm);
-    else if (sn->exists != 0)
-      snprintf(buf,SNAP_NAME_LEN,"%2d **",i+1);      
-    else
-      snprintf(buf,SNAP_NAME_LEN,"%2d",i+1);
-    VideoIO::draw_text(screen,font->font,
-		       buf,xpos+margin,cury,titleclr,0,0);
+    if (sn != 0) {
+      char *nm = sn->name;
+      if (nm != 0)
+	snprintf(buf,SNAP_NAME_LEN,"%2d %s",i+1,nm);
+      else if (sn->exists != 0)
+	snprintf(buf,SNAP_NAME_LEN,"%2d **",i+1);      
+      else
+	snprintf(buf,SNAP_NAME_LEN,"%2d",i+1);
+      VideoIO::draw_text(screen,font->font,
+			 buf,xpos+margin,cury,titleclr,0,0);
+    }
   }
 };
 
@@ -940,6 +942,7 @@ int VideoIO::activate() {
     exit(1);
   }
 
+  app->getEMG()->ListenEvent(this,0,T_EV_VideoShowSnapshotPage);
   app->getEMG()->ListenEvent(this,0,T_EV_VideoShowLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_VideoShowDisplay);
   app->getEMG()->ListenEvent(this,0,T_EV_VideoShowLayout);
@@ -955,6 +958,7 @@ int VideoIO::activate() {
 }
 
 void VideoIO::close() {
+  app->getEMG()->UnlistenEvent(this,0,T_EV_VideoShowSnapshotPage);
   app->getEMG()->UnlistenEvent(this,0,T_EV_VideoShowLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_VideoShowDisplay);
   app->getEMG()->UnlistenEvent(this,0,T_EV_VideoShowLayout);
@@ -1046,6 +1050,36 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
 	  cur = cur->next;
 	}
       }
+    }
+    break;
+
+  case T_EV_VideoShowSnapshotPage :
+    {
+      VideoShowSnapshotPageEvent *vev = (VideoShowSnapshotPageEvent *) ev;
+      if (CRITTERS)
+	printf("VIDEO: %s snapshot page (interface id %d, display id %d)\n",
+	       (vev->page < 0 ? "Previous" : "Next"),
+	       vev->interfaceid,vev->displayid);
+      
+      // Find the right display
+      FloDisplay *cur = app->getCFG()->GetDisplayById(vev->interfaceid,
+						      vev->displayid);
+      if (cur != 0 && cur->GetFloDisplayType() == FD_Snapshots) {
+	FloDisplaySnapshots *sn = (FloDisplaySnapshots *) cur;
+	if (vev->page < 0) {
+	  int newidx = sn->firstidx - sn->numdisp;
+	  if (newidx < 0)
+	    newidx = 0;
+	  sn->firstidx = newidx;
+	} else {
+	  int newidx = sn->firstidx + sn->numdisp;
+	  if (newidx < app->getCFG()->GetMaxSnapshots())
+	    sn->firstidx = newidx;
+	}
+      } else
+	printf("VIDEO: Specified display is not a snapshot display "
+	       "(interface id %d, display id %d)\n",
+	       vev->interfaceid,vev->displayid);
     }
     break;
 

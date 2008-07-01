@@ -220,6 +220,8 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_SetVariable,"set-variable",SetVariableEvent);
       SET_ETYPE(T_EV_ToggleVariable,"toggle-variable",ToggleVariableEvent);
 
+      SET_ETYPE(T_EV_VideoShowSnapshotPage,"video-show-snapshot-page",
+		VideoShowSnapshotPageEvent);
       SET_ETYPE(T_EV_VideoShowLoop,"video-show-loop",VideoShowLoopEvent);
       SET_ETYPE(T_EV_VideoShowLayout,"video-show-layout",
 		VideoShowLayoutEvent);
