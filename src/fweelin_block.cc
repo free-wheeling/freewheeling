@@ -2071,51 +2071,26 @@ void BlockManager::AddManager (ManagedChain *nw) {
 };
 
 void BlockManager::DelManager (ManagedChain **first, ManagedChain *m) {
-  ManagedChain *cur = *first,
-    *prev = 0;
+  ManagedChain *cur = *first;
   
   // Search for manager 'm' in our list
-  while (cur != 0 && cur != m) {
-    prev = cur;
+  while (cur != 0 && (cur != m || cur->status == T_MC_PendingDelete))
     cur = cur->next;
-  }
   
-  if (cur != 0) {
-    // Got it, unlink!
-    pthread_mutex_lock (&manage_thread_lock);
-    if (prev != 0) 
-      prev->next = cur->next;
-    else 
-      *first = cur->next;
-    pthread_mutex_unlock (&manage_thread_lock);
-    cur->RTDelete();
-  }
+  if (cur != 0)
+    // Flag for deletion
+    cur->status = T_MC_PendingDelete;
 };
 
 void BlockManager::RefDeleted (ManagedChain **first, void *ref) {
-  ManagedChain *cur = *first,
-    *prev = 0; 
+  ManagedChain *cur = *first;
   while (cur != 0) {
-    if (cur->RefDeleted(ref)) {
-      //printf("RefDeleted delete loose reference!\n");
+    if (cur->status == T_MC_Running && cur->RefDeleted(ref))
+      // Flag for deletion
+      cur->status = T_MC_PendingDelete;
 
-      // Remove chain
-      pthread_mutex_lock (&manage_thread_lock);
-      ManagedChain *tmp = cur->next;
-      if (prev != 0) 
-	prev->next = tmp;
-      else 
-	*first = tmp;
-      pthread_mutex_unlock (&manage_thread_lock);
-      cur->RTDelete();
-      
-      // Next chain
-      cur = *first; // Start again!
-    } else {
-      // Next chain
-      prev = cur;
-      cur = cur->next;
-    }
+    // Next chain
+    cur = cur->next;
   }
 }
 
@@ -2130,49 +2105,21 @@ void BlockManager::RefDeleted (void *ref) {
 // specified trigger pointer will have manage() method called
 // Safe to call in realtime!
 void BlockManager::HiPriTrigger (void *trigger) {
-  HiPriManagedChain *cur = himanageblocks,
-    *prev = 0;
-  
-  // Count the managers- this is necessary
-  // Because new managers can be added during the Trigger process
-  // causing infinite loops
-  long mgrcnt = 0;
-  while (cur != 0) {
-    mgrcnt++;
-    cur = (HiPriManagedChain *) cur->next;
-  }
+  HiPriManagedChain *cur = himanageblocks;
   
   //printf("HIPRITRIG: %ld\n", mgrcnt);
   
   cur = himanageblocks;
-  long curcnt = 0;
-  while (curcnt < mgrcnt && cur != 0) {
-    char advance = 1;
-    
-    if (cur->trigger == trigger || cur->trigger == 0)
+  while (cur != 0) {
+    if (cur->status == T_MC_Running &&
+	(cur->trigger == trigger || cur->trigger == 0))
       // Ok, right trigger or no trigger specified, call 'em!
-      if (cur->Manage()) {
-	// Remove chain
-	HiPriManagedChain *tmp = (HiPriManagedChain *) cur->next;
-	if (prev != 0) 
-	  prev->next = tmp;
-	else 
-	  himanageblocks = tmp;
-	cur->RTDelete();
-	
-	// Next chain
-	cur = tmp;
-	curcnt++;
-	
-	advance = 0;
-      }
-    
-    if (advance) {
-      // Next chain
-      prev = cur;
-      cur = (HiPriManagedChain *) cur->next;
-      curcnt++;
-    }
+      if (cur->Manage()) 
+	// Flag for delete
+	cur->status = T_MC_PendingDelete;
+
+    // Next chain
+    cur = (HiPriManagedChain *) cur->next;
   }
 }
 
@@ -2183,15 +2130,21 @@ ManagedChain *BlockManager::GetBlockManager(AudioBlock *o,
   ManagedChain *cur = manageblocks;
   
   // Search for block 'o' && type t in our list
-  while (cur != 0 && (cur->b != o || cur->GetType() != t))
+  while (cur != 0 && (cur->status == T_MC_PendingDelete ||
+		      cur->b != o || cur->GetType() != t)) 
     cur = cur->next;
   
   return cur;
 };
 
 void BlockManager::AddManager (ManagedChain **first, ManagedChain *nw) {
-  pthread_mutex_lock (&manage_thread_lock);
+  nw->status = T_MC_Running;
 
+  // Possibility of priority inversion if AddManager is run in RT,
+  // because non-RT manage thread also locks here. So far, AddManager shouldn't
+  // be run in RT
+  pthread_mutex_lock (&manage_thread_lock);
+  
   ManagedChain *cur = *first;
   if (cur == 0)
     *first = nw; // That was easy, now we have 1 item
@@ -2209,26 +2162,17 @@ void BlockManager::AddManager (ManagedChain **first, ManagedChain *nw) {
 // of any type
 void BlockManager::DelManager (ManagedChain **first, AudioBlock *o,
 			       ManagedChainType t) {
-  ManagedChain *cur = *first,
-    *prev = 0;
+  ManagedChain *cur = *first;
   
   // Search for block 'o' in our list of type 't'
-  while (cur != 0 && (cur->b != o || (cur->GetType() != t &&
-				      t != T_MC_None))) {
-    prev = cur;
+  while (cur != 0 && (cur->status == T_MC_PendingDelete ||
+		      cur->b != o || (cur->GetType() != t &&
+				      t != T_MC_None))) 
     cur = cur->next;
-  }
   
-  if (cur != 0) {
-    // Got it, unlink!
-    pthread_mutex_lock (&manage_thread_lock);
-    if (prev != 0) 
-      prev->next = cur->next;
-    else 
-      *first = cur->next;
-    pthread_mutex_unlock (&manage_thread_lock);
-    cur->RTDelete();
-  }
+  if (cur != 0)
+    // Flag for deletion
+    cur->status = T_MC_PendingDelete;
 }
 
 // Delete a hiprimanaged chain for block o and manager type t
@@ -2238,26 +2182,17 @@ void BlockManager::DelManager (ManagedChain **first, AudioBlock *o,
 void BlockManager::DelHiManager (HiPriManagedChain **first, 
 				 AudioBlock *o,
 				 ManagedChainType t, void *trigger) {
-  HiPriManagedChain *cur = *first,
-    *prev = 0;
+  HiPriManagedChain *cur = *first;
   
   // Search for block 'o' in our list of type 't'
-  while (cur != 0 && (cur->b != o || cur->trigger != trigger ||
-		      (cur->GetType() != t && t != T_MC_None))) {
-    prev = cur;
+  while (cur != 0 && (cur->status == T_MC_PendingDelete ||
+		      cur->b != o || cur->trigger != trigger ||
+		      (cur->GetType() != t && t != T_MC_None)))
     cur = (HiPriManagedChain *) cur->next;
-  }
   
-  if (cur != 0) {
-    // Got it, unlink!
-    pthread_mutex_lock (&manage_thread_lock);
-    if (prev != 0) 
-      prev->next = cur->next;
-    else 
-      *first = (HiPriManagedChain *) cur->next;
-    pthread_mutex_unlock (&manage_thread_lock);
-    cur->RTDelete();
-  }
+  if (cur != 0)
+    // Flag for deletion
+    cur->status = T_MC_PendingDelete;
 }
 
 void *BlockManager::run_manage_thread (void *ptr) {
@@ -2265,10 +2200,24 @@ void *BlockManager::run_manage_thread (void *ptr) {
   
   while (inst->threadgo) {
     // Manage the blocks we have
-    ManagedChain *cur = inst->manageblocks,
-      *prev = 0;
+    ManagedChain *cur = inst->manageblocks;
     while (cur != 0) {
-      if (cur->Manage()) {
+      if (cur->status == T_MC_Running)
+	if (cur->Manage())
+	  // Flag for deletion
+	  cur->status = T_MC_PendingDelete;
+
+      // Next chain
+      cur = cur->next;
+    }
+
+    // Delete managers
+    cur = inst->manageblocks;
+    ManagedChain *prev = 0;
+    while (cur != 0) {
+      if (cur->status == T_MC_PendingDelete) {
+	// printf("MGR %p DELETE\n",cur);
+
 	// Remove chain
 	pthread_mutex_lock (&inst->manage_thread_lock);
 	ManagedChain *tmp = cur->next;
@@ -2279,11 +2228,33 @@ void *BlockManager::run_manage_thread (void *ptr) {
 	pthread_mutex_unlock (&inst->manage_thread_lock);
 	//printf("end mgr\n");
 	cur->RTDelete();
-	
-	// We have to start again, because manageblocks list may
-	// have changed-- for ex, in destructor of manager 'cur'
-	// may call DelManager
-	cur = inst->manageblocks;
+
+	cur = tmp;
+      } else {
+	// Next chain
+	prev = cur;
+	cur = cur->next;
+      }
+    }
+
+    cur = inst->himanageblocks;
+    prev = 0;
+    while (cur != 0) {
+      if (cur->status == T_MC_PendingDelete) {
+	// printf("HI-MGR %p DELETE\n",cur);
+
+	// Remove chain
+	pthread_mutex_lock (&inst->manage_thread_lock);
+	ManagedChain *tmp = cur->next;
+	if (prev != 0) 
+	  prev->next = tmp;
+	else 
+	  inst->himanageblocks = (HiPriManagedChain *) tmp;
+	pthread_mutex_unlock (&inst->manage_thread_lock);
+	//printf("end mgr\n");
+	cur->RTDelete();
+
+	cur = tmp;
       } else {
 	// Next chain
 	prev = cur;
@@ -2299,13 +2270,14 @@ void *BlockManager::run_manage_thread (void *ptr) {
       printf("BLOCKMANAGER REPORT:\n");
       ManagedChain *cur = inst->manageblocks;
       while (cur != 0) {
-	printf(" bmg mgr: type(%d)\n",cur->GetType());
+	printf(" bmg mgr: type(%d) status(%d)\n",cur->GetType(),cur->status);
 	cur = cur->next;
       }
 
       cur = inst->himanageblocks;
       while (cur != 0) {
-	printf(" bmg HiPrimgr: type(%d)\n",cur->GetType());
+	printf(" bmg HiPrimgr: type(%d) status(%d)\n",cur->GetType(),
+	       cur->status);
 	cur = cur->next;
       }
     }
