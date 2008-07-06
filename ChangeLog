@@ -1,5 +1,27 @@
 IN PROGRESS v0.5.6 - SVN
 
+            Saturday July 5th, 2008
+
+            New Features
+            ------------
+
+            * Multiple pages of snapshots
+              
+              100 snapshots are provided by default (edit this in
+              basics.xml). You can pageup/pagedown through them by holding
+              CTRL or SHIFT and pressing , or .
+
+              Then use CTRL 1-9 to trigger and SHIFT 1-9 to store.
+
+            Fixes
+            -----
+
+            * Reworked some of the guts to fix crashes. Race condition 
+              fixes in block manager.
+
+              Thanks to Florent and Andrea for your crash reports. 
+              They helped nail the bug.
+        
             Monday Jun 16th, 2008
 
             New Features

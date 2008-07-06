@@ -376,6 +376,12 @@ enum ManagedChainType {
   T_MC_StripeBlock
 };
 
+// Status of managed chain
+enum ManagedChainStatus {
+  T_MC_Running,
+  T_MC_PendingDelete
+};
+
 // Generic class specifying a chain of blocks & iterator to manage
 // Management happens when blockmanager periodically calls
 // the Manage() method for all managed chains.
@@ -413,6 +419,7 @@ public:
   AudioBlock *b;
   AudioBlockIterator *i;
   
+  ManagedChainStatus status;
   ManagedChain *next;
 };
 
