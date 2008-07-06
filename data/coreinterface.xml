@@ -175,20 +175,20 @@
      output="trigger-snapshot" 
      parameters="snapid=9+SYSTEM_snapshot_page_firstidx"/>
 
-    <binding input="key" conditions="VAR_keyheld_ctrl and key=comma and 
+    <binding input="key" conditions="VAR_keyheld_ctrl=1 and key=comma and 
 				     keydown=1"
      output="video-show-snapshot-page" parameters="displayid=2000 and
                                                    page=-1"/>
-    <binding input="key" conditions="VAR_keyheld_ctrl and key=period and 
+    <binding input="key" conditions="VAR_keyheld_ctrl=1 and key=period and 
 				     keydown=1"
      output="video-show-snapshot-page" parameters="displayid=2000 and
                                                    page=1"/>
 
-    <binding input="key" conditions="VAR_keyheld_shift and key=comma and 
+    <binding input="key" conditions="VAR_keyheld_shift=1 and key=comma and 
 				     keydown=1"
      output="video-show-snapshot-page" parameters="displayid=2000 and
                                                    page=-1"/>
-    <binding input="key" conditions="VAR_keyheld_shift and key=period and 
+    <binding input="key" conditions="VAR_keyheld_shift=1 and key=period and 
 				     keydown=1"
      output="video-show-snapshot-page" parameters="displayid=2000 and
                                                    page=1"/>
