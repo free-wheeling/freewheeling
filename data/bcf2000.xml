@@ -2,36 +2,49 @@
   <bindings>
     <!-- Variables -->
 
+    <!-- Multi-pages of loops -->
+    <declare var="VAR_bcf2000_looppage" type="int" init="0"/>
+    <declare var="VAR_loopidrangechange" type="int" init="8"/>
+
+    <!-- Pulse create/select MIDI controller # -->
+    <declare var="VAR_bcf2000_pulseselect_midicontrol" type="int" init="125"/>
+
+    <!-- Next/prev page of loops control # -->
+    <declare var="VAR_bcf2000_prevlooppage_midicontrol" type="int" init="120"/>
+    <declare var="VAR_bcf2000_nextlooppage_midicontrol" type="int" init="121"/>
+
     <!-- Which MIDI controller # controls fast scroll switch in browser.
 	 This switch also doubles for the space key. -->
-    <declare var="VAR_midishift_midicontrol" type="int" init="72"/>
+    <declare var="VAR_bcf2000_midishift_midicontrol" type="int" init="119"/>
     <declare var="VAR_keyheld_midishift" type="char" init="0"/>
 
     <!-- Which MIDI controller # controls overdub feedback. -->
-    <declare var="VAR_overdubfeedback_midicontrol" type="int" init="87"/>
+    <declare var="VAR_bcf2000_overdubfeedback_midicontrol" type="int" init="87"/>
 
     <!-- MIDI controller # to fade trigger volume of selected loops -->
-    <declare var="VAR_triggervol_selected_midicontrol" type="int" init="89"/>
+    <declare var="VAR_bcf2000_triggervol_selected_midicontrol" type="int" init="89"/>
 
     <!-- MIDI controller #s for patchbank select -->
-    <declare var="VAR_patchbank_midicontrol" type="int" init="88"/>
-    <declare var="VAR_patchbank_back_midicontrol" type="int" init="53"/>
-    <declare var="VAR_patchbank_forward_midicontrol" type="int" init="54"/>
+    <declare var="VAR_bcf2000_patchbank_midicontrol" type="int" init="88"/>
+    <declare var="VAR_bcf2000_patchbank_back_midicontrol" type="int" init="53"/>
+    <declare var="VAR_bcf2000_patchbank_forward_midicontrol" type="int" init="54"/>
 
     <!-- MIDI controller # for undo -->
-    <declare var="VAR_undo_midicontrol" type="int" init="73"/>
+    <declare var="VAR_bcf2000_undo_midicontrol" type="int" init="118"/>
 
     <declare var="VAR_loopid_bcf2000" type="int" init="350"/>
-    <declare var="VAR_bcf2000range" type="range" init="0>15"/>
+    <declare var="VAR_bcf2000range" type="range" init="0>7"/>
     <declare var="VAR_bcf2000controlrange1" type="range" init="0>7"/>
     <declare var="VAR_bcf2000controlrange2" type="range" init="8>15"/>
     <declare var="VAR_bcf2000capturecc" type="int" init="110"/>
+    <declare var="VAR_bcf2000ampcc" type="int" init="90"/>
+    <declare var="VAR_damp_speed" type="float" init="0.04"/>
     <declare var="VAR_bcf2000fadercc" type="int" init="80"/>
         
     <!-- Fadermode 0 - loops -->
     <!-- Fadermode 1 - master levels -->
     <declare var="VAR_fadermode" type="char" init="1"/>
-    <declare var="VAR_fadermode_midicontrol" type="int" init="70"/>
+    <declare var="VAR_bcf2000_fadermode_midicontrol" type="int" init="70"/>
 
     <!-- 16 loops and only 8 faders/knobs, so we create 2 pages of
          switchable controls -->
@@ -45,8 +58,42 @@
 
     <!-- Rest of the bindings... -->
     
+    <!-- Prev/Next page of loops on screen -->
+    <binding input="midicontroller"
+     conditions="controlnum=VAR_bcf2000_prevlooppage_midicontrol and 
+		 controlval=VAR_switch_on" 
+     output1="set-variable" parameters1="var=VAR_loopid_bcf2000 and 
+					 value=VAR_loopid_bcf2000-
+					       VAR_loopidrangechange"
+     output2="set-variable" parameters2="var=VAR_bcf2000_looppage and
+					 value=VAR_bcf2000_looppage-1"
+     output3="video-show-loop"
+     parameters3="layoutid=0 and loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
+
+    <binding input="midicontroller"
+     conditions="controlnum=VAR_bcf2000_nextlooppage_midicontrol and 
+		 controlval=VAR_switch_on" 
+     output1="set-variable" parameters1="var=VAR_loopid_bcf2000 and 
+					 value=VAR_loopid_bcf2000+
+					       VAR_loopidrangechange"
+     output2="set-variable" parameters2="var=VAR_bcf2000_looppage and
+					 value=VAR_bcf2000_looppage+1"
+     output3="video-show-loop"
+     parameters3="layoutid=0 and loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
+
+    <!-- (Delete)/create/select pulse -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_fadermode_midicontrol and 
+     conditions="VAR_keyheld_space=1 and
+		 controlnum=VAR_bcf2000_pulseselect_midicontrol and
+                 controlval=VAR_switch_on"
+     output="delete-pulse" parameters="pulse=0"/>
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_bcf2000_pulseselect_midicontrol and
+                 controlval=VAR_switch_on"
+     output="select-pulse" parameters="pulse=0"/>
+
+    <binding input="midicontroller" 
+     conditions="controlnum=VAR_bcf2000_fadermode_midicontrol and 
                  controlval=VAR_switch_on"
      output="toggle-variable" parameters="var=VAR_fadermode and maxvalue=1"/>
 
@@ -73,6 +120,16 @@
      output="set-trigger-volume" 
      parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000fadercc and
                  vol=controlval/127.0*2.0"/>
+
+    <!-- Knobs: Fade loops- amp levels -->
+    <binding input="midicontroller" conditions="controlnum=VAR_bcf2000controlrange1+VAR_bcf2000ampcc and controlval=0>64" 
+     output="adjust-loop-amplifier"
+     parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
+                 damp=controlval*VAR_damp_speed"/>
+    <binding input="midicontroller" conditions="controlnum=VAR_bcf2000controlrange1+VAR_bcf2000ampcc and controlval=64>127" 
+     output="adjust-loop-amplifier"
+     parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
+                 damp=controlval-128*VAR_damp_speed"/>
 
     <!-- Knobs: Loop trigger levels -->
     <binding input="midicontroller" conditions="controlnum=100" 
@@ -107,40 +164,6 @@
      output="set-trigger-volume" 
      parameters="loopid=SYSTEM_loopid_lastrecord_7 and 
 		 vol=controlval/127.0*2.0"/>
-
-    <!-- Knobs: Loop volumes -->
-    <binding input="midicontroller" conditions="controlnum=90" 
-     output="set-loop-amplifier" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_0 and 
-		 amp=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="controlnum=91" 
-     output="set-loop-amplifier" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_1 and 
-		 amp=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="controlnum=92" 
-     output="set-loop-amplifier" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_2 and 
-		 amp=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="controlnum=93" 
-     output="set-loop-amplifier" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_3 and 
-		 amp=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="controlnum=94" 
-     output="set-loop-amplifier" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_4 and 
-		 amp=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="controlnum=95" 
-     output="set-loop-amplifier" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_5 and 
-		 amp=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="controlnum=96" 
-     output="set-loop-amplifier" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_6 and 
-		 amp=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="controlnum=97" 
-     output="set-loop-amplifier" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_7 and 
-		 amp=controlval/127.0*2.0"/>
 
   <!-- Loops on buttons mode-
 
@@ -191,26 +214,26 @@
     <!-- Overdub feedback continuous adjust from MIDI control -->
     <!-- MIDI CC87: Overdub feedback continuous adjust -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_overdubfeedback_midicontrol"
+     conditions="controlnum=VAR_bcf2000_overdubfeedback_midicontrol"
      output="set-variable" parameters="var=VAR_overdubfeedback and
 				       value=controlval/127"/>
 
     <!-- MIDI CC89: Fade volume of selected loops -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_triggervol_selected_midicontrol"   
+     conditions="controlnum=VAR_bcf2000_triggervol_selected_midicontrol"   
      output="set-selected-loops-trigger-volume" 
      parameters="setid=0 and vol=controlval*2.0/127"/>
 
     <!-- MIDI CC73: Undo last loop record -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_undo_midicontrol and
+     conditions="controlnum=VAR_bcf2000_undo_midicontrol and
 		 controlval=VAR_switch_on"
      output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
     <!-- MIDI CC88: Change patch bank by MIDI fader -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_patchbank_midicontrol"   
+     conditions="controlnum=VAR_bcf2000_patchbank_midicontrol"   
      output1="video-show-display" parameters1="interfaceid=0 and
                                                displayid=VAR_cur_browser and
 					       show=0"
@@ -224,7 +247,7 @@
 
     <!-- MIDI CC53/54: Change patch bank by MIDI buttons -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_patchbank_back_midicontrol and
+     conditions="controlnum=VAR_bcf2000_patchbank_back_midicontrol and
 		 controlval=VAR_switch_on"   
      output1="video-show-display" parameters1="interfaceid=0 and 
                                                displayid=VAR_cur_browser and
@@ -237,7 +260,7 @@
      output4="patchbrowser-move-to-bank" parameters4="direction=-1"/>
 
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_patchbank_forward_midicontrol and
+     conditions="controlnum=VAR_bcf2000_patchbank_forward_midicontrol and
 		 controlval=VAR_switch_on"
      output1="video-show-display" parameters1="interfaceid=0 and 
                                                displayid=VAR_cur_browser and
@@ -252,7 +275,7 @@
     <!-- Overdub feedback continuous adjust from MIDI control -->
     <!-- HELP: MIDI CC72: MIDI shift key (like space) -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_midishift_midicontrol and
+     conditions="controlnum=VAR_bcf2000_midishift_midicontrol and
 		 controlval=VAR_switch_on"
      output1="set-variable" parameters1="var=VAR_keyheld_midishift and
 					 value=1"
@@ -260,7 +283,7 @@
 					 value=1"/>
 
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_midishift_midicontrol and
+     conditions="controlnum=VAR_bcf2000_midishift_midicontrol and
 		 controlval=VAR_switch_off"
      output1="set-variable" parameters1="var=VAR_keyheld_midishift and
 					 value=0"

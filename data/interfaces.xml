@@ -31,6 +31,6 @@ for
   <interface setup="pckeyboard.xml"/>
   <interface setup="midikeyboard.xml"/>
   <interface setup="bcf2000.xml"/>
-  <interface setup="pcr-m1.xml" switchable="0"/>
+<!-- <interface setup="pcr-m1.xml" switchable="0"/> -->
   <interface setup="dancemat.xml"/>
 </interfaces>

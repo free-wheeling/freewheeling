@@ -431,6 +431,7 @@ void *MidiIO::run_midi_thread(void *ptr)
   FloConfig *fs = inst->app->getCFG();
   
   printf("MIDIthread start..\n");
+  // printf("*** MIDI THREAD: %li\n",pthread_self());
   
   // Open up ALSA MIDI client
   if (inst->open_midi(1, fs->GetNumMIDIOuts())) {

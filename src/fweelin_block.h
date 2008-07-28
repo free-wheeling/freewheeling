@@ -968,7 +968,9 @@ public:
 
   void DelManager (ManagedChain **first, ManagedChain *m);
   void AddManager (ManagedChain **first, ManagedChain *nw);
+  void AddHiManager (HiPriManagedChain **first, HiPriManagedChain *nw);
   void RefDeleted (ManagedChain **first, void *ref);
+  void HiRefDeleted (HiPriManagedChain **first, void *ref);
 
   // Delete a managed chain for block o and manager type t
   // If t is T_MC_None, removes the first managed chain for 'o' 
