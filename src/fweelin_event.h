@@ -2485,9 +2485,12 @@ class EventManager {
 
   // Broadcast through dispatch thread!
   // RT safe! -- so long as you allocate your event with RTNew()
+
+  // *** Rewrite with one lockless ringbuffer for each broadcasting thread
+  // EMG reads all ringbuffers
   void BroadcastEvent(Event *ev, 
 		      EventProducer *source) {
-    // printf("*** THREAD (BROADCAST): %p\n",pthread_self());
+    // printf("*** THREAD (BROADCAST): %li\n",pthread_self());
     
     ev->from = source;
     //ev->time = mygettime();

@@ -2686,9 +2686,9 @@ void VideoIO::SetVideoMode(char fullscreen) {
   videoflags = SDL_HWSURFACE | SDL_DOUBLEBUF;
   this->fullscreen = fullscreen;
   if (fullscreen) 
-    videoflags |= SDL_FULLSCREEN;
+    videoflags |= SDL_FULLSCREEN | SDL_NOFRAME;
 
-  /* Set 640x480 video mode */
+  /* Set right video mode */
   int XSIZE = app->getCFG()->GetVSize()[0],
     YSIZE = app->getCFG()->GetVSize()[1];
   if ( (screen=SDL_SetVideoMode(XSIZE,YSIZE,video_bpp,videoflags)) == NULL ) {
@@ -2711,7 +2711,7 @@ void *VideoIO::run_video_thread(void *ptr)
   VideoIO *inst = static_cast<VideoIO *>(ptr);
 
   printf("VIDEO: Thread start..\n");
-  // printf("*** THREAD: %p\n",pthread_self());
+  // printf("*** VIDEO THREAD: %li\n",pthread_self());
 
 #ifdef __MACOSX__
   inst->cocoa.SetupCocoaThread();

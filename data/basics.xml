@@ -71,8 +71,10 @@
 <!-- Threshhold for limiter. When audio out goes above this threshold (1.0 is
      100% amplitude or 0 db), the limiter kicks in. 
      Since the limiter does not look ahead, it is a good idea to set the 
-     threshhold slightly below max to avoid clipping. -->
-  <var limiterthreshhold="0.9"/>
+     threshhold slightly below max to avoid clipping. 
+
+     Set limiter to -6 dB to allow headroom for reverb and other effects. -->
+  <var limiterthreshhold="0.5"/>
 
 <!-- Limiter release rate. A higher number is a faster release. -->
   <var limiterreleaserate="0.000020"/>

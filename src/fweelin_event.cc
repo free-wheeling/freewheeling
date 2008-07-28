@@ -200,7 +200,7 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_SetLoopAmp,"set-loop-amplifier",SetLoopAmpEvent);
       SET_ETYPE(T_EV_AdjustLoopAmp,"adjust-loop-amplifier",AdjustLoopAmpEvent);
       SET_ETYPE(T_EV_TriggerLoop,"trigger-loop",TriggerLoopEvent);
-      SET_ETYPE(T_EV_MoveLoop,"move-loop",MoveLoopEvent);
+      SET_ETYPE_SLOW(T_EV_MoveLoop,"move-loop",MoveLoopEvent);
       SET_ETYPE_SLOW(T_EV_RenameLoop,"rename-loop",RenameLoopEvent);
       SET_ETYPE_SLOW(T_EV_EraseLoop,"erase-loop",EraseLoopEvent);
       SET_ETYPE_SLOW(T_EV_EraseAllLoops,"erase-all-loops",EraseAllLoopsEvent);
@@ -220,21 +220,21 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_SetVariable,"set-variable",SetVariableEvent);
       SET_ETYPE(T_EV_ToggleVariable,"toggle-variable",ToggleVariableEvent);
 
-      SET_ETYPE(T_EV_VideoShowSnapshotPage,"video-show-snapshot-page",
-		VideoShowSnapshotPageEvent);
-      SET_ETYPE(T_EV_VideoShowLoop,"video-show-loop",VideoShowLoopEvent);
-      SET_ETYPE(T_EV_VideoShowLayout,"video-show-layout",
-		VideoShowLayoutEvent);
-      SET_ETYPE(T_EV_VideoSwitchInterface,"video-switch-interface",
-		VideoSwitchInterfaceEvent);
-      SET_ETYPE(T_EV_VideoShowDisplay,"video-show-display",
-		VideoShowDisplayEvent);
-      SET_ETYPE(T_EV_VideoShowHelp,"video-show-help",
-		VideoShowHelpEvent);
+      SET_ETYPE_SLOW(T_EV_VideoShowSnapshotPage,"video-show-snapshot-page",
+		     VideoShowSnapshotPageEvent);
+      SET_ETYPE_SLOW(T_EV_VideoShowLoop,"video-show-loop",VideoShowLoopEvent);
+      SET_ETYPE_SLOW(T_EV_VideoShowLayout,"video-show-layout",
+		     VideoShowLayoutEvent);
+      SET_ETYPE_SLOW(T_EV_VideoSwitchInterface,"video-switch-interface",
+		     VideoSwitchInterfaceEvent);
+      SET_ETYPE_SLOW(T_EV_VideoShowDisplay,"video-show-display",
+		     VideoShowDisplayEvent);
+      SET_ETYPE_SLOW(T_EV_VideoShowHelp,"video-show-help",
+		     VideoShowHelpEvent);
       SET_ETYPE_SLOW(T_EV_VideoFullScreen,"video-full-screen",
 		     VideoFullScreenEvent);
-      SET_ETYPE(T_EV_ShowDebugInfo,"show-debug-info",
-		ShowDebugInfoEvent);
+      SET_ETYPE_SLOW(T_EV_ShowDebugInfo,"show-debug-info",
+		     ShowDebugInfoEvent);
 
       SET_ETYPE_SLOW(T_EV_ToggleDiskOutput,"toggle-disk-output",
 		     ToggleDiskOutputEvent);

@@ -2055,7 +2055,7 @@ void BlockManager::StripeBlockOn (void *trigger, AudioBlock *b,
   nw->i = i;
   nw->trigger = trigger;
   nw->Setup();
-  AddManager((ManagedChain**) &himanageblocks,nw);
+  AddHiManager(&himanageblocks,nw);
 }
 
 void BlockManager::StripeBlockOff (void *trigger, AudioBlock *b) {
@@ -2094,11 +2094,23 @@ void BlockManager::RefDeleted (ManagedChain **first, void *ref) {
   }
 }
 
+void BlockManager::HiRefDeleted (HiPriManagedChain **first, void *ref) {
+  HiPriManagedChain *cur = *first;
+  while (cur != 0) {
+    if (cur->status == T_MC_Running && cur->RefDeleted(ref))
+      // Flag for deletion
+      cur->status = T_MC_PendingDelete;
+
+    // Next chain
+    cur = (HiPriManagedChain *) cur->next;
+  }
+}
+
 // Notify all Managers that the object pointed to has been deleted-
 // To avoid broken dependencies
 void BlockManager::RefDeleted (void *ref) {
   RefDeleted(&manageblocks,ref);
-  RefDeleted((ManagedChain **) &himanageblocks,ref);
+  HiRefDeleted(&himanageblocks,ref);
 }
 
 // Activate a hipriority trigger- all hiprimanagedchains with
@@ -2143,18 +2155,44 @@ void BlockManager::AddManager (ManagedChain **first, ManagedChain *nw) {
   // Possibility of priority inversion if AddManager is run in RT,
   // because non-RT manage thread also locks here. So far, AddManager shouldn't
   // be run in RT
-  pthread_mutex_lock (&manage_thread_lock);
-  
-  ManagedChain *cur = *first;
-  if (cur == 0)
-    *first = nw; // That was easy, now we have 1 item
-  else {
-    while (cur->next != 0)
-      cur = cur->next;
-    cur->next = nw; // Link up the last item to new1
+  if (pthread_mutex_trylock (&manage_thread_lock) == 0) {
+    ManagedChain *cur = *first;
+    if (cur == 0)
+      *first = nw; // That was easy, now we have 1 item
+    else {
+      while (cur->next != 0)
+	cur = cur->next;
+      cur->next = nw; // Link up the last item to new1
+    }
+    
+    pthread_mutex_unlock (&manage_thread_lock);
   }
+  else
+    // Priority inversion
+    printf("BLOCK: WARNING: Priority inversion during AddManager\n");
+}
 
-  pthread_mutex_unlock (&manage_thread_lock);
+void BlockManager::AddHiManager (HiPriManagedChain **first, 
+				 HiPriManagedChain *nw) {
+  nw->status = T_MC_Running;
+
+  // Possibility of priority inversion if AddHiManager is run in RT,
+  // because non-RT manage thread also locks here. 
+  // So far, AddHiManager shouldn't be run in RT
+  if (pthread_mutex_trylock (&manage_thread_lock) == 0) {
+    HiPriManagedChain *cur = *first;
+    if (cur == 0)
+      *first = nw; // That was easy, now we have 1 item
+    else {
+      while (cur->next != 0)
+	cur = (HiPriManagedChain *) cur->next;
+      cur->next = nw; // Link up the last item to new1
+    }
+    
+    pthread_mutex_unlock (&manage_thread_lock);
+  } else
+    // Priority inversion
+    printf("BLOCK: WARNING: Priority inversion during AddHiManager\n");
 }
 
 // Delete a managed chain for block o and manager type t
@@ -2237,28 +2275,28 @@ void *BlockManager::run_manage_thread (void *ptr) {
       }
     }
 
-    cur = inst->himanageblocks;
-    prev = 0;
-    while (cur != 0) {
-      if (cur->status == T_MC_PendingDelete) {
-	// printf("HI-MGR %p DELETE\n",cur);
+    HiPriManagedChain *hcur = inst->himanageblocks,
+      *hprev = 0;
+    while (hcur != 0) {
+      if (hcur->status == T_MC_PendingDelete) {
+	// printf("HI-MGR %p DELETE\n",hcur);
 
 	// Remove chain
 	pthread_mutex_lock (&inst->manage_thread_lock);
-	ManagedChain *tmp = cur->next;
-	if (prev != 0) 
-	  prev->next = tmp;
+	HiPriManagedChain *tmp = (HiPriManagedChain *) hcur->next;
+	if (hprev != 0) 
+	  hprev->next = tmp;
 	else 
-	  inst->himanageblocks = (HiPriManagedChain *) tmp;
+	  inst->himanageblocks = tmp;
 	pthread_mutex_unlock (&inst->manage_thread_lock);
 	//printf("end mgr\n");
-	cur->RTDelete();
+	hcur->RTDelete();
 
-	cur = tmp;
+	hcur = tmp;
       } else {
 	// Next chain
-	prev = cur;
-	cur = cur->next;
+	hprev = hcur;
+	hcur = (HiPriManagedChain *) hcur->next;
       }
     }
 

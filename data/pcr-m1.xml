@@ -4,22 +4,22 @@
 
     <!-- Which MIDI controller # controls fast scroll switch in browser.
 	 This switch also doubles for the space key. -->
-    <declare var="VAR_midishift_midicontrol" type="int" init="50"/>
+    <declare var="VAR_pcrm_midishift_midicontrol" type="int" init="50"/>
     <declare var="VAR_keyheld_midishift" type="char" init="0"/>
 
     <!-- Which MIDI controller # controls overdub feedback. -->
-    <declare var="VAR_overdubfeedback_midicontrol" type="int" init="87"/>
+    <declare var="VAR_pcrm_overdubfeedback_midicontrol" type="int" init="87"/>
 
     <!-- MIDI controller # to fade trigger volume of selected loops -->
-    <declare var="VAR_triggervol_selected_midicontrol" type="int" init="89"/>
+    <declare var="VAR_pcrm_triggervol_selected_midicontrol" type="int" init="89"/>
 
     <!-- MIDI controller #s for patchbank select -->
-    <declare var="VAR_patchbank_midicontrol" type="int" init="88"/>
-    <declare var="VAR_patchbank_back_midicontrol" type="int" init="53"/>
-    <declare var="VAR_patchbank_forward_midicontrol" type="int" init="54"/>
+    <declare var="VAR_pcrm_patchbank_midicontrol" type="int" init="88"/>
+    <declare var="VAR_pcrm_patchbank_back_midicontrol" type="int" init="53"/>
+    <declare var="VAR_pcrm_patchbank_forward_midicontrol" type="int" init="54"/>
 
     <!-- MIDI controller # for undo -->
-    <declare var="VAR_undo_midicontrol" type="int" init="51"/>
+    <declare var="VAR_pcrm_undo_midicontrol" type="int" init="51"/>
 
     <!-- Startup -->
 
@@ -160,26 +160,26 @@
     <!-- Overdub feedback continuous adjust from MIDI control -->
     <!-- MIDI CC87: Overdub feedback continuous adjust -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_overdubfeedback_midicontrol"
+     conditions="controlnum=VAR_pcrm_overdubfeedback_midicontrol"
      output="set-variable" parameters="var=VAR_overdubfeedback and
 				       value=controlval/127"/>
 
     <!-- MIDI CC89: Fade volume of selected loops -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_triggervol_selected_midicontrol"   
+     conditions="controlnum=VAR_pcrm_triggervol_selected_midicontrol"   
      output="set-selected-loops-trigger-volume" 
      parameters="setid=0 and vol=controlval*2.0/127"/>
 
     <!-- MIDI CC51: Undo last loop record -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_undo_midicontrol and
+     conditions="controlnum=VAR_pcrm_undo_midicontrol and
 		 controlval=VAR_switch_on"
      output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
     <!-- MIDI CC88: Change patch bank by MIDI fader -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_patchbank_midicontrol"   
+     conditions="controlnum=VAR_pcrm_patchbank_midicontrol"   
      output1="video-show-display" parameters1="interfaceid=0 and
                                                displayid=VAR_cur_browser and
 					       show=0"
@@ -193,7 +193,7 @@
 
     <!-- MIDI CC53/54: Change patch bank by MIDI buttons -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_patchbank_back_midicontrol and
+     conditions="controlnum=VAR_pcrm_patchbank_back_midicontrol and
 		 controlval=VAR_switch_on"   
      output1="video-show-display" parameters1="interfaceid=0 and 
                                                displayid=VAR_cur_browser and
@@ -206,7 +206,7 @@
      output4="patchbrowser-move-to-bank" parameters4="direction=-1"/>
 
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_patchbank_forward_midicontrol and
+     conditions="controlnum=VAR_pcrm_patchbank_forward_midicontrol and
 		 controlval=VAR_switch_on"
      output1="video-show-display" parameters1="interfaceid=0 and 
                                                displayid=VAR_cur_browser and
@@ -221,7 +221,7 @@
     <!-- Overdub feedback continuous adjust from MIDI control -->
     <!-- HELP: MIDI CC50: MIDI shift key (like space) -->
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_midishift_midicontrol and
+     conditions="controlnum=VAR_pcrm_midishift_midicontrol and
 		 controlval=VAR_switch_on"
      output1="set-variable" parameters1="var=VAR_keyheld_midishift and
 					 value=1"
@@ -229,7 +229,7 @@
 					 value=1"/>
 
     <binding input="midicontroller" 
-     conditions="controlnum=VAR_midishift_midicontrol and
+     conditions="controlnum=VAR_pcrm_midishift_midicontrol and
 		 controlval=VAR_switch_off"
      output1="set-variable" parameters1="var=VAR_keyheld_midishift and
 					 value=0"
