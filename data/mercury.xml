@@ -198,15 +198,18 @@
   </bindings>
 
   <graphics>
+    <!-- Mercury's patchbanks: -->
+
+<!--
     <display interfaceid="0" 
      id="DISPLAY_browser_patch" type="browser" font="main" 
      browsetype="BROWSE_patch" pos="0.0,0.96" 
      xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="1">
-       <!-- Mercury's patchbanks: -->
        <patchbank midiport="2" separatechannels="1" patches="patches2.xml"/>
        <patchbank midiport="1" suppressprogramchanges="1" separatechannels="0" patches="mercury/patches-piano-strings-small.xml"/>
        <patchbank midiport="3" patches="patches3.xml"/>
        <patchbank midiport="4" patches="patches-b3.xml" tag="999"/>
     </display>
+-->
   </graphics>
 </interface>
