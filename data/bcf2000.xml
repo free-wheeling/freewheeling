@@ -16,6 +16,10 @@
     <declare var="VAR_bcf2000_prevlooppage_midicontrol" type="int" init="120"/>
     <declare var="VAR_bcf2000_nextlooppage_midicontrol" type="int" init="121"/>
 
+    <!-- In scene mode, loop buttons trigger scenes instead -->
+    <declare var="VAR_bcf2000_scenemode_midicontrol" type="int" init="72"/>
+    <declare var="VAR_scene_mode" type="int" init="0"/>
+
     <!-- Which MIDI controller # controls fast scroll switch in browser.
 	 This switch also doubles for the space key. -->
     <declare var="VAR_bcf2000_midishift_midicontrol" type="int" init="119"/>
@@ -39,6 +43,7 @@
     <declare var="VAR_bcf2000range" type="range" init="0>7"/>
     <declare var="VAR_bcf2000controlrange1" type="range" init="0>7"/>
     <declare var="VAR_bcf2000controlrange2" type="range" init="8>15"/>
+    <declare var="VAR_bcf2000auxtriggercc" type="int" init="100"/>
     <declare var="VAR_bcf2000capturecc" type="int" init="110"/>
     <declare var="VAR_bcf2000ampcc" type="int" init="90"/>
     <declare var="VAR_damp_speed" type="float" init="0.04"/>
@@ -60,7 +65,43 @@
 		  loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
 
     <!-- Rest of the bindings... -->
-    
+
+    <!-- Show/hide scene mode -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and 
+		 controlnum=VAR_bcf2000_scenemode_midicontrol and
+		 controlval=VAR_switch_on"
+     output1="set-variable" parameters1="var=VAR_scene_mode and value=1"
+     output2="video-show-display" parameters2="interfaceid=0 and 
+					       displayid=DISPLAY_scenes and
+					       show=VAR_scene_mode"/>
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and 
+		 controlnum=VAR_bcf2000_scenemode_midicontrol"
+     output1="set-variable" parameters1="var=VAR_scene_mode and value=0"
+     output2="video-show-display" parameters2="interfaceid=0 and
+					       displayid=DISPLAY_scenes and
+					       show=VAR_scene_mode"/>
+
+    <!-- Prev/Next page of scenes on screen -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and 
+		 VAR_scene_mode=1 and
+		 controlnum=VAR_bcf2000_prevlooppage_midicontrol and 
+		 controlval=VAR_switch_on" 
+     output="video-show-snapshot-page" parameters="interfaceid=0 and
+						   displayid=DISPLAY_scenes and
+                                                   page=-1"/>
+
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and 
+		 VAR_scene_mode=1 and
+		 controlnum=VAR_bcf2000_nextlooppage_midicontrol and 
+		 controlval=VAR_switch_on" 
+     output="video-show-snapshot-page" parameters="interfaceid=0 and
+						   displayid=DISPLAY_scenes and
+                                                   page=1"/>
+
     <!-- Prev/Next page of loops on screen -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_prevlooppage_midicontrol and 
@@ -133,86 +174,6 @@
      output="adjust-loop-amplifier"
      parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
                  damp=controlval-128*VAR_damp_speed"/>
-
-    <!-- Knobs: Loop trigger levels -->
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=100" 
-     output="set-trigger-volume" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_0 and 
-		 vol=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=101" 
-     output="set-trigger-volume" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_1 and 
-		 vol=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=102" 
-     output="set-trigger-volume" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_2 and 
-		 vol=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=103" 
-     output="set-trigger-volume" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_3 and 
-		 vol=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=104" 
-     output="set-trigger-volume" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_4 and 
-		 vol=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=105" 
-     output="set-trigger-volume" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_5 and 
-		 vol=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=106" 
-     output="set-trigger-volume" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_6 and 
-		 vol=controlval/127.0*2.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=107" 
-     output="set-trigger-volume" 
-     parameters="loopid=SYSTEM_loopid_lastrecord_7 and 
-		 vol=controlval/127.0*2.0"/>
-
-  <!-- Loops on buttons mode-
-
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=91" 
-     output="set-loop-amplifier" 
-     parameters="loopid=1+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=92" 
-     output="set-loop-amplifier" 
-     parameters="loopid=2+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=93" 
-     output="set-loop-amplifier" 
-     parameters="loopid=3+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=94" 
-     output="set-loop-amplifier" 
-     parameters="loopid=4+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=95" 
-     output="set-loop-amplifier" 
-     parameters="loopid=5+VAR_loopid_pcrmstart and amp=controlval/127.0*4.0"/>
-  -->
-
-  <!-- MIDI faders: Set loop volumes
-    <binding input="midicontroller" conditions="controlnum=7 and midichannel=0" 
-     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_0
-					     and amp=controlval/127*2"/>
-    <binding input="midicontroller" conditions="controlnum=7 and midichannel=1" 
-     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_1
-					     and amp=controlval/127*2"/>
-    <binding input="midicontroller" conditions="controlnum=7 and midichannel=2" 
-     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_2
-					     and amp=controlval/127*2"/>
-    <binding input="midicontroller" conditions="controlnum=7 and midichannel=3" 
-     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_3
-					     and amp=controlval/127*2"/>
-    <binding input="midicontroller" conditions="controlnum=7 and midichannel=4" 
-     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_4
-					     and amp=controlval/127*2"/>
-    <binding input="midicontroller" conditions="controlnum=7 and midichannel=5" 
-     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_5
-					     and amp=controlval/127*2"/>
-    <binding input="midicontroller" conditions="controlnum=7 and midichannel=6" 
-     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_6
-					     and amp=controlval/127*2"/>
-    <binding input="midicontroller" conditions="controlnum=7 and midichannel=7" 
-     output="set-loop-amplifier" parameters="loopid=SYSTEM_loopid_lastrecord_7
-					     and amp=controlval/127*2"/>
-  -->
 
     <!-- Overdub feedback continuous adjust from MIDI control -->
     <!-- MIDI CC87: Overdub feedback continuous adjust -->
@@ -353,6 +314,26 @@
     <binding input="midiprogramchange"
      output="set-variable" parameters="var=VAR_cur_program and value=programval"/>
 
+    <!-- Trigger Scenes -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and
+		 VAR_scene_mode=1 and
+		 controlnum=VAR_bcf2000range+VAR_bcf2000capturecc and 
+                 controlval=VAR_switch_on"
+     output="trigger-snapshot" 
+     parameters="snapid=controlnum-VAR_bcf2000capturecc+
+		 SYSTEM_snapshot_page_firstidx"/>
+
+    <!-- Store Scenes -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and
+		 VAR_scene_mode=1 and
+		 controlnum=VAR_bcf2000range+VAR_bcf2000auxtriggercc and 
+                 controlval=VAR_switch_on"
+     output="create-snapshot"
+     parameters="snapid=controlnum-VAR_bcf2000auxtriggercc+
+		 SYSTEM_snapshot_page_firstidx"/>
+
     <!-- Erase Loops -->
     <binding input="midicontroller" 
      conditions="VAR_keyheld_space=1 and 
@@ -370,6 +351,16 @@
      parameters1="oldloopid=VAR_xferidx and 
 		  newloopid=controlnum-VAR_bcf2000capturecc+VAR_loopid_bcf2000"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
+
+    <!-- Overdub Loops -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and 
+		 controlnum=VAR_bcf2000range+VAR_bcf2000auxtriggercc and 
+                 controlval=VAR_switch_on"
+     output="trigger-loop"
+     parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
+		 loopid=controlnum-VAR_bcf2000auxtriggercc+VAR_loopid_bcf2000
+		 and vol=1.0"/>
 
     <!-- Trigger Loops -->
     <binding input="midicontroller"
