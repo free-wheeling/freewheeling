@@ -24,6 +24,7 @@
     <declare var="VAR_cur_browser" type="int" init="0"/>
 
     <declare var="DISPLAY_loop_tray" type="int" init="10"/>
+    <declare var="DISPLAY_scenes" type="int" init="2000"/>
 
     <!-- Show sync panel? -->
     <declare var="VAR_syncpanel_show" type="int" init="0"/>
@@ -177,20 +178,24 @@
 
     <binding input="key" conditions="VAR_keyheld_ctrl=1 and key=comma and 
 				     keydown=1"
-     output="video-show-snapshot-page" parameters="displayid=2000 and
+     output="video-show-snapshot-page" parameters="interfaceid=0 and
+						   displayid=DISPLAY_scenes and
                                                    page=-1"/>
     <binding input="key" conditions="VAR_keyheld_ctrl=1 and key=period and 
 				     keydown=1"
-     output="video-show-snapshot-page" parameters="displayid=2000 and
+     output="video-show-snapshot-page" parameters="interfaceid=0 and
+						   displayid=DISPLAY_scenes and
                                                    page=1"/>
 
     <binding input="key" conditions="VAR_keyheld_shift=1 and key=comma and 
 				     keydown=1"
-     output="video-show-snapshot-page" parameters="displayid=2000 and
+     output="video-show-snapshot-page" parameters="interfaceid=0 and
+						   displayid=DISPLAY_scenes and
                                                    page=-1"/>
     <binding input="key" conditions="VAR_keyheld_shift=1 and key=period and 
 				     keydown=1"
-     output="video-show-snapshot-page" parameters="displayid=2000 and
+     output="video-show-snapshot-page" parameters="interfaceid=0 and
+						   displayid=DISPLAY_scenes and
                                                    page=1"/>
 
     <!-- HELP: -->
@@ -687,23 +692,27 @@
     <binding input="key" conditions="key=leftshift"
      output1="set-variable" parameters1="var=VAR_keyheld_shift and 
 				        value=keydown"
-     output2="video-show-display" parameters2="displayid=2000 and
+     output2="video-show-display" parameters2="interfaceid=0 and
+					       displayid=DISPLAY_scenes and
 					       show=keydown"/>
     <binding input="key" conditions="key=rightshift"
      output1="set-variable" parameters1="var=VAR_keyheld_shift and 
 				        value=keydown"
-     output2="video-show-display" parameters2="displayid=2000 and
+     output2="video-show-display" parameters2="interfaceid=0 and
+					       displayid=DISPLAY_scenes and
 					       show=keydown"/>
 
     <binding input="key" conditions="key=leftctrl"
      output1="set-variable" parameters1="var=VAR_keyheld_ctrl and 
 					 value=keydown"
-     output2="video-show-display" parameters2="displayid=2000 and
+     output2="video-show-display" parameters2="interfaceid=0 and
+					       displayid=DISPLAY_scenes and
 					       show=keydown"/>
     <binding input="key" conditions="key=rightctrl"
      output1="set-variable" parameters1="var=VAR_keyheld_ctrl and 
 					 value=keydown"
-     output2="video-show-display" parameters2="displayid=2000 and
+     output2="video-show-display" parameters2="interfaceid=0 and
+					       displayid=DISPLAY_scenes and
 					       show=keydown"/>
 
     <binding input="key" conditions="key=leftalt"
@@ -798,8 +807,8 @@
     <display var="VAR_cutmode" type="switch" font="small" pos="0.16,0.9" 
      title="CUT"/> 
 
-    <display id="2000" show="0"
-     type="snapshots" font="small" pos="0.69,0.4" size="0.3,0.28" 
+    <display interfaceid="0" id="DISPLAY_scenes" show="0"
+     type="snapshots" font="small" pos="0.69,0.4" size="0.3,0.22" 
      title="SNAPS"/> 
   </graphics>
 </interface>

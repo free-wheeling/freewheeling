@@ -28,7 +28,8 @@
      output2="set-variable" parameters2="var=VAR_midi_footswitch and value=67"
      output3="set-variable" parameters3="var=VAR_laptopkeymode and value=1"
      output4="set-variable" parameters4="var=VAR_notechan and value=1"
-     output5="set-variable" parameters5="var=VAR_noterange and value=48>59"/>
+     output5="set-variable" parameters5="var=VAR_noterange and value=48>59"
+     output6="patchbrowser-move-to-bank" parameters6="direction=1"/>
 
     <!-- F toggles action of footpedal
     <binding input="key" conditions="VAR_mercurymode=1 and key=f and keydown=1"

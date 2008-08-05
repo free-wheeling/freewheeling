@@ -64,17 +64,15 @@
   <var maxplayvol="5.0"/>
 
 <!-- Maximum gain for limiter. When this is above 1.0 (100% amplitude), the
-     limiter acts like a compressor, gently rising in gain until it reaches 
+     limiter acts like a high-ratio compressor, rising in gain until it reaches 
      this max. -->
   <var maxlimitergain="1.0"/>
 
 <!-- Threshhold for limiter. When audio out goes above this threshold (1.0 is
      100% amplitude or 0 db), the limiter kicks in. 
      Since the limiter does not look ahead, it is a good idea to set the 
-     threshhold slightly below max to avoid clipping. 
-
-     Set limiter to -6 dB to allow headroom for reverb and other effects. -->
-  <var limiterthreshhold="0.5"/>
+     threshhold slightly below max to avoid clipping. -->
+  <var limiterthreshhold="0.75"/>
 
 <!-- Limiter release rate. A higher number is a faster release. -->
   <var limiterreleaserate="0.000020"/>
@@ -90,7 +88,7 @@
 
      -->
   <var loopoutformat="OGG"/>
-  <var streamoutformat="WAV"/>
+  <var streamoutformat="OGG"/>
 
 <!-- Quality setting for OGG encoding -->
   <var oggquality="0.5"/>
@@ -132,7 +130,7 @@
 
   <fluidsynth soundfont="basic.sf2"/>
 
-<!-- Load some soundfonts: -->
+<!-- Load some soundfonts: 
   <fluidsynth soundfont="/usr/local/share/soundfonts/hs_tb303.sf2"/>
   <fluidsynth soundfont="/usr/local/share/soundfonts/Ruckus_Acoustic_Drums.SF2"/>
   <fluidsynth soundfont="/usr/local/share/soundfonts/hs_magic_techno_drums.sf2"/>
@@ -167,4 +165,5 @@
   <fluidsynth soundfont="/usr/local/share/soundfonts/4/Chris_Percussion2.sf2"/>
 
   <fluidsynth soundfont="/usr/local/share/soundfonts/5/emu.sf2"/>
+-->
 </basics>
