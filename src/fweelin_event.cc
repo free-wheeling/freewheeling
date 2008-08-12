@@ -59,15 +59,15 @@ EventTypeTable *Event::ett = 0;
       ett[i].name = nm; \
       ett[i].mgr = \
         new PreallocatedType(mmgr,proto,sizeof(typ), \
-			     PreallocatedType:: \
-			     PREALLOC_DEFAULT_NUM_INSTANCES, \
-			     1); \
+                             PreallocatedType:: \
+                             PREALLOC_DEFAULT_NUM_INSTANCES, \
+                             1); \
       ett[i].slowdelivery = 0; \
       int paramidx = -1, j = 0; \
       for (; j < proto->GetNumParams() && \
-	   proto->GetParam(j).max_index == -1; j++); \
+           proto->GetParam(j).max_index == -1; j++); \
       if (j < proto->GetNumParams()) \
-	paramidx = j; \
+        paramidx = j; \
       ett[i].paramidx = paramidx; \
     } \
     break; 
@@ -81,15 +81,15 @@ EventTypeTable *Event::ett = 0;
       ett[i].name = nm; \
       ett[i].mgr = \
         new PreallocatedType(mmgr,proto,sizeof(typ), \
-			     PreallocatedType:: \
-			     PREALLOC_DEFAULT_NUM_INSTANCES, \
-			     1); \
+                             PreallocatedType:: \
+                             PREALLOC_DEFAULT_NUM_INSTANCES, \
+                             1); \
       ett[i].slowdelivery = 1; \
       int paramidx = -1, j = 0; \
       for (; j < proto->GetNumParams() && \
-	   proto->GetParam(j).max_index == -1; j++); \
+           proto->GetParam(j).max_index == -1; j++); \
       if (j < proto->GetNumParams()) \
-	paramidx = j; \
+        paramidx = j; \
       ett[i].paramidx = paramidx; \
     } \
     break; 
@@ -103,14 +103,14 @@ EventTypeTable *Event::ett = 0;
       ett[i].name = nm; \
       ett[i].mgr = \
         new PreallocatedType(mmgr,proto,sizeof(typ), \
-			     PreallocatedType:: \
-			     PREALLOC_DEFAULT_NUM_INSTANCES, \
-			     0); \
+                             PreallocatedType:: \
+                             PREALLOC_DEFAULT_NUM_INSTANCES, \
+                             0); \
       int paramidx = -1, j = 0; \
       for (; j < proto->GetNumParams() && \
-	   proto->GetParam(j).max_index == -1; j++); \
+           proto->GetParam(j).max_index == -1; j++); \
       if (j < proto->GetNumParams()) \
-	paramidx = j; \
+        paramidx = j; \
       ett[i].paramidx = paramidx; \
     } \
     break; 
@@ -123,9 +123,9 @@ EventTypeTable *Event::ett = 0;
       ett[i].mgr = new PreallocatedType(mmgr,proto,sizeof(typ),numpre,1); \
       int paramidx = -1, j = 0; \
       for (; j < proto->GetNumParams() && \
-	   proto->GetParam(j).max_index == -1; j++); \
+           proto->GetParam(j).max_index == -1; j++); \
       if (j < proto->GetNumParams()) \
-	paramidx = j; \
+        paramidx = j; \
       ett[i].paramidx = paramidx; \
     } \
     break; 
@@ -146,18 +146,18 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
 
       SET_ETYPE(T_EV_Input_Key,"key",KeyInputEvent);
       SET_ETYPE(T_EV_Input_JoystickButton,"joybutton",
-		JoystickButtonInputEvent);
+                JoystickButtonInputEvent);
       SET_ETYPE(T_EV_Input_MIDIKey,"midikey",MIDIKeyInputEvent);
       SET_ETYPE(T_EV_Input_MIDIController,"midicontroller",
-		MIDIControllerInputEvent);
+                MIDIControllerInputEvent);
       SET_ETYPE(T_EV_Input_MIDIProgramChange,
-		"midiprogramchange",
-		MIDIProgramChangeInputEvent);
+                "midiprogramchange",
+                MIDIProgramChangeInputEvent);
       SET_ETYPE(T_EV_Input_MIDIChannelPressure,
-		"midichannelpressure",
-		MIDIChannelPressureInputEvent);
+                "midichannelpressure",
+                MIDIChannelPressureInputEvent);
       SET_ETYPE(T_EV_Input_MIDIPitchBend,"midipitchbend",
-		MIDIPitchBendInputEvent);
+                MIDIPitchBendInputEvent);
       SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIClock,"midiclock",MIDIClockInputEvent,20);
       SET_ETYPE(T_EV_Input_MIDIStartStop,"midistartstop",MIDIStartStopInputEvent);
 
@@ -169,33 +169,33 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE_SLOW(T_EV_ExitSession,"exit-freewheeling",ExitSessionEvent);
 
       SET_ETYPE(T_EV_SlideMasterInVolume,"slide-master-in-volume",
-		SlideMasterInVolumeEvent);
+                SlideMasterInVolumeEvent);
       SET_ETYPE(T_EV_SlideMasterOutVolume,"slide-master-out-volume",
-		SlideMasterOutVolumeEvent);
+                SlideMasterOutVolumeEvent);
       SET_ETYPE(T_EV_SlideInVolume,"slide-in-volume",
-		SlideInVolumeEvent);
+                SlideInVolumeEvent);
       SET_ETYPE(T_EV_SetMasterInVolume,"set-master-in-volume",
-		SetMasterInVolumeEvent);
+                SetMasterInVolumeEvent);
       SET_ETYPE(T_EV_SetMasterOutVolume,"set-master-out-volume",
-		SetMasterOutVolumeEvent);
+                SetMasterOutVolumeEvent);
       SET_ETYPE(T_EV_SetInVolume,"set-in-volume",
-		SetInVolumeEvent);
+                SetInVolumeEvent);
       SET_ETYPE(T_EV_ToggleInputRecord,"toggle-input-record",
-		ToggleInputRecordEvent);
+                ToggleInputRecordEvent);
 
       SET_ETYPE(T_EV_SetMidiEchoPort,"set-midi-echo-port",
-	        SetMidiEchoPortEvent);
+                SetMidiEchoPortEvent);
       SET_ETYPE(T_EV_SetMidiEchoChannel,"set-midi-echo-channel",
-	        SetMidiEchoChannelEvent);
+                SetMidiEchoChannelEvent);
       SET_ETYPE(T_EV_AdjustMidiTranspose,"adjust-midi-transpose",
-	        AdjustMidiTransposeEvent);
+                AdjustMidiTransposeEvent);
       SET_ETYPE(T_EV_FluidSynthEnable,"fluidsynth-enable",
-	        FluidSynthEnableEvent);
+                FluidSynthEnableEvent);
       SET_ETYPE(T_EV_SetMidiTuning,"set-midi-tuning",
-	        SetMidiTuningEvent);
+                SetMidiTuningEvent);
 
       SET_ETYPE(T_EV_SetTriggerVolume,"set-trigger-volume",
-		SetTriggerVolumeEvent);
+                SetTriggerVolumeEvent);
       SET_ETYPE(T_EV_SlideLoopAmp,"slide-loop-amplifier",SlideLoopAmpEvent);
       SET_ETYPE(T_EV_SetLoopAmp,"set-loop-amplifier",SetLoopAmpEvent);
       SET_ETYPE(T_EV_AdjustLoopAmp,"adjust-loop-amplifier",AdjustLoopAmpEvent);
@@ -205,9 +205,9 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE_SLOW(T_EV_EraseLoop,"erase-loop",EraseLoopEvent);
       SET_ETYPE_SLOW(T_EV_EraseAllLoops,"erase-all-loops",EraseAllLoopsEvent);
       SET_ETYPE_SLOW(T_EV_EraseSelectedLoops,"erase-selected-loops",
-		     EraseSelectedLoopsEvent);
+                     EraseSelectedLoopsEvent);
       SET_ETYPE(T_EV_SlideLoopAmpStopAll,"slide-loop-amplifier-stop-all",
-		SlideLoopAmpStopAllEvent);
+                SlideLoopAmpStopAllEvent);
 
       SET_ETYPE_SLOW(T_EV_DeletePulse,"delete-pulse",DeletePulseEvent);
       SET_ETYPE_SLOW(T_EV_SelectPulse,"select-pulse",SelectPulseEvent);
@@ -221,71 +221,73 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_ToggleVariable,"toggle-variable",ToggleVariableEvent);
 
       SET_ETYPE_SLOW(T_EV_VideoShowSnapshotPage,"video-show-snapshot-page",
-		     VideoShowSnapshotPageEvent);
+                     VideoShowSnapshotPageEvent);
       SET_ETYPE_SLOW(T_EV_VideoShowLoop,"video-show-loop",VideoShowLoopEvent);
       SET_ETYPE_SLOW(T_EV_VideoShowLayout,"video-show-layout",
-		     VideoShowLayoutEvent);
+                     VideoShowLayoutEvent);
       SET_ETYPE_SLOW(T_EV_VideoSwitchInterface,"video-switch-interface",
-		     VideoSwitchInterfaceEvent);
+                     VideoSwitchInterfaceEvent);
       SET_ETYPE_SLOW(T_EV_VideoShowDisplay,"video-show-display",
-		     VideoShowDisplayEvent);
+                     VideoShowDisplayEvent);
       SET_ETYPE_SLOW(T_EV_VideoShowHelp,"video-show-help",
-		     VideoShowHelpEvent);
+                     VideoShowHelpEvent);
       SET_ETYPE_SLOW(T_EV_VideoFullScreen,"video-full-screen",
-		     VideoFullScreenEvent);
+                     VideoFullScreenEvent);
       SET_ETYPE_SLOW(T_EV_ShowDebugInfo,"show-debug-info",
-		     ShowDebugInfoEvent);
+                     ShowDebugInfoEvent);
 
       SET_ETYPE_SLOW(T_EV_ToggleDiskOutput,"toggle-disk-output",
-		     ToggleDiskOutputEvent);
+                     ToggleDiskOutputEvent);
       SET_ETYPE(T_EV_SetAutoLoopSaving,"set-auto-loop-saving",
-		SetAutoLoopSavingEvent);
+                SetAutoLoopSavingEvent);
       SET_ETYPE_SLOW(T_EV_SaveLoop,"save-loop",SaveLoopEvent);
       SET_ETYPE_SLOW(T_EV_SaveNewScene,"save-new-scene",SaveNewSceneEvent);
       SET_ETYPE_SLOW(T_EV_SaveCurrentScene,"save-current-scene",
-		     SaveCurrentSceneEvent);
+                     SaveCurrentSceneEvent);
       SET_ETYPE(T_EV_SetLoadLoopId,"set-load-loop-id",SetLoadLoopIdEvent);
       SET_ETYPE(T_EV_SetDefaultLoopPlacement,"set-default-loop-placement",
-		SetDefaultLoopPlacementEvent);
+                SetDefaultLoopPlacementEvent);
 
       SET_ETYPE_SLOW(T_EV_ToggleSelectLoop,"toggle-select-loop",
-		     ToggleSelectLoopEvent);
+                     ToggleSelectLoopEvent);
       SET_ETYPE_SLOW(T_EV_SelectOnlyPlayingLoops,"select-only-playing-loops",
-		     SelectOnlyPlayingLoopsEvent);
+                     SelectOnlyPlayingLoopsEvent);
       SET_ETYPE_SLOW(T_EV_SelectAllLoops,"select-all-loops",
-		     SelectAllLoopsEvent);
+                     SelectAllLoopsEvent);
       SET_ETYPE_SLOW(T_EV_TriggerSelectedLoops,"trigger-selected-loops",
-		     TriggerSelectedLoopsEvent);
+                     TriggerSelectedLoopsEvent);
       SET_ETYPE(T_EV_SetSelectedLoopsTriggerVolume,
-		"set-selected-loops-trigger-volume",
-		SetSelectedLoopsTriggerVolumeEvent);
+                "set-selected-loops-trigger-volume",
+                SetSelectedLoopsTriggerVolumeEvent);
       SET_ETYPE(T_EV_AdjustSelectedLoopsAmp,
-		"adjust-selected-loops-amp",
-		AdjustSelectedLoopsAmpEvent);
+                "adjust-selected-loops-amp",
+                AdjustSelectedLoopsAmpEvent);
       SET_ETYPE_SLOW(T_EV_InvertSelection,"invert-selection",
-		     InvertSelectionEvent);
+                     InvertSelectionEvent);
 
       SET_ETYPE_SLOW(T_EV_CreateSnapshot,"create-snapshot",
-		     CreateSnapshotEvent);
+                     CreateSnapshotEvent);
+      SET_ETYPE_SLOW(T_EV_RenameSnapshot,"rename-snapshot",
+                     RenameSnapshotEvent);
       SET_ETYPE_SLOW(T_EV_TriggerSnapshot,"trigger-snapshot",
-		     TriggerSnapshotEvent);
+                     TriggerSnapshotEvent);
       
       SET_ETYPE_SLOW(T_EV_BrowserMoveToItem,"browser-move-to-item",
-		     BrowserMoveToItemEvent);
+                     BrowserMoveToItemEvent);
       SET_ETYPE_SLOW(T_EV_BrowserMoveToItemAbsolute,
-		     "browser-move-to-item-absolute",
-		     BrowserMoveToItemAbsoluteEvent);
+                     "browser-move-to-item-absolute",
+                     BrowserMoveToItemAbsoluteEvent);
       SET_ETYPE_SLOW(T_EV_BrowserSelectItem,"browser-select-item",
-		     BrowserSelectItemEvent);
+                     BrowserSelectItemEvent);
       SET_ETYPE_SLOW(T_EV_BrowserRenameItem,"browser-rename-item",
-		     BrowserRenameItemEvent);
+                     BrowserRenameItemEvent);
       SET_ETYPE(T_EV_BrowserItemBrowsed,"browser-item-browsed",
-	        BrowserItemBrowsedEvent);
+                BrowserItemBrowsedEvent);
       SET_ETYPE_SLOW(T_EV_PatchBrowserMoveToBank,"patchbrowser-move-to-bank",
-		     PatchBrowserMoveToBankEvent);
+                     PatchBrowserMoveToBankEvent);
       SET_ETYPE_SLOW(T_EV_PatchBrowserMoveToBankByIndex,
-		     "patchbrowser-move-to-bank-by-index",
-		     PatchBrowserMoveToBankByIndexEvent);
+                     "patchbrowser-move-to-bank-by-index",
+                     PatchBrowserMoveToBankByIndexEvent);
 
       // Internal events-- don't try to bind to these
 
@@ -331,15 +333,15 @@ Event *Event::GetEventByType(EventType typ, char wait) {
     else {
       // No instance available
       if (wait) {
-	// Wait
-	printf("EVENT: Waiting for memory to be allocated.\n");	
-	do {
-	  usleep(10000);
-	  ret = (Event *) ett[i].mgr->RTNew();
-	} while (ret == 0);
-	return ret;
+        // Wait
+        printf("EVENT: Waiting for memory to be allocated.\n"); 
+        do {
+          usleep(10000);
+          ret = (Event *) ett[i].mgr->RTNew();
+        } while (ret == 0);
+        return ret;
       } else {
-	return 0; // Don't wait
+        return 0; // Don't wait
       }
     }
   }
@@ -350,21 +352,21 @@ Event *Event::GetEventByType(EventType typ, char wait) {
     else {
       // No instance available
       if (wait) {
-	// Wait
-	printf("EVENT: Waiting for mem alloc...\n");	
-	do {
-	  usleep(10000);
-	  ret = (Event *) ett[i].proto->RTNew();
-	} while (ret == 0);
-	return ret;
+        // Wait
+        printf("EVENT: Waiting for mem alloc...\n");    
+        do {
+          usleep(10000);
+          ret = (Event *) ett[i].proto->RTNew();
+        } while (ret == 0);
+        return ret;
       } else {
-	return 0; // Don't wait
+        return 0; // Don't wait
       }
     }
   }
   else {
     printf("ERROR: no prototype or mgr for event type: '%s'\n",
-	   ett[i].name);
+           ett[i].name);
     return 0;
   }
 };
@@ -379,7 +381,7 @@ Event *Event::GetEventByName(char *evtname, char wait) {
   for (int i = 0; i < evnum; i++) {
     if (ett[i].name != 0) 
       if (!strcmp(evtname, ett[i].name))
-	return GetEventByType((EventType) i,wait);
+        return GetEventByType((EventType) i,wait);
   }
 
   return 0;

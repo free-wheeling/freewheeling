@@ -181,7 +181,7 @@ public:
   // either smooth the beginning into the end (smoothtype == 1)
   // or smooth the end into the beginning     (smoothtype == 0)
   void Smooth(char smoothtype = 1, 
-	      nframes_t smoothlen = AUDIOBLOCK_SMOOTH_ENDPOINTS_LEN);
+              nframes_t smoothlen = AUDIOBLOCK_SMOOTH_ENDPOINTS_LEN);
 
   // Erases this whole audioblock chain from first to last
   // Also erases any extended data!
@@ -200,7 +200,7 @@ public:
   // Finds the audioblock and offset into that block that correspond
   // to the provided absolute offset into this chain 
   void SetPtrsFromAbsOffset(AudioBlock **ptr, nframes_t *blkofs, 
-			    nframes_t absofs);
+                            nframes_t absofs);
 
   // Generates a subchain of AudioBlocks by copying the samples between offsets
   // from & to.. offsets expressed absolutely with reference to
@@ -210,7 +210,7 @@ public:
   // the block and the beginning up to toofs (wrap case)
   // Realtime safe?
   AudioBlock *GenerateSubChain(nframes_t fromofs, nframes_t toofs,
-			       char copystereo);
+                               char copystereo);
 
   // Removes the last 'hacklen' samples from this block chain
   // Returns nonzero on error!
@@ -269,7 +269,7 @@ public:
   // Optionally pass preallocatedtype for extrachannel if you want
   // extra channels to be added as needed when putting fragments
   AudioBlockIterator(AudioBlock *firstblock, nframes_t fragmentsize,
-		     PreallocatedType *pre_extrachannel = 0);
+                     PreallocatedType *pre_extrachannel = 0);
   ~AudioBlockIterator();
 
   inline float round(float num) {
@@ -308,7 +308,7 @@ public:
   // variables). No scaling is done in PutFragment, just a choice of
   // which block chain to write to
   int PutFragment (sample_t *frag_l, sample_t *frag_r, 
-		   nframes_t size_override = 0, char wait_alloc = 0);
+                   nframes_t size_override = 0, char wait_alloc = 0);
 
   // Returns the current fragment of audio
   // Points frag_l and frag_r buffers to the current fragment
@@ -529,12 +529,12 @@ class VorbisEncoder : public iFileEncoder {
 
   // Vorbis encoder stuff
   ogg_stream_state os; /* take physical pages, weld into a logical
-			  stream of packets */
+                          stream of packets */
   ogg_page         og; /* one Ogg bitstream page.  Vorbis packets are inside */
   ogg_packet       op; /* one raw packet of data for decode */
   
   vorbis_info      vi; /* struct that stores all the static vorbis bitstream
-			  settings */
+                          settings */
   vorbis_comment   vc; /* struct that stores all the user comments */
 
   vorbis_dsp_state vd; /* central working state for the packet->PCM decoder */
@@ -632,7 +632,7 @@ class AutoWriteControl {
   // decide which loops to save, while the BlockManager thread does the work
   // in the background
   virtual void GetWriteBlock(FILE **out, AudioBlock **b, 
-			     AudioBlockIterator **i, nframes_t *len) = 0;
+                             AudioBlockIterator **i, nframes_t *len) = 0;
 };
 
 class AutoReadControl {
@@ -666,7 +666,7 @@ class BlockReadManager : public ManagedChain {
   const static int NUM_DECODE_PASSES = 100;
 
   BlockReadManager(FILE *in = 0, AutoReadControl *arc = 0, 
-		   BlockManager *bmg = 0, nframes_t peaksavgs_chunksize = 0);
+                   BlockManager *bmg = 0, nframes_t peaksavgs_chunksize = 0);
   virtual ~BlockReadManager();
 
   virtual Preallocated *NewInstance() { return ::new BlockReadManager(); };
@@ -728,8 +728,8 @@ class BlockWriteManager : public ManagedChain {
     ENCODE_CROSSOVER_LEN = 1000;
 
   BlockWriteManager(FILE *out = 0, AutoWriteControl *awc = 0, 
-		     BlockManager *bmg = 0, AudioBlock *b = 0, 
-		     AudioBlockIterator *i = 0);
+                     BlockManager *bmg = 0, AudioBlock *b = 0, 
+                     AudioBlockIterator *i = 0);
   virtual ~BlockWriteManager();
 
   virtual Preallocated *NewInstance() { return ::new BlockWriteManager(); };
@@ -748,11 +748,11 @@ class BlockWriteManager : public ManagedChain {
       printf("DISK: Blocks deleted while saving- abort!\n");
       End();
       if (awc != 0)
-	// Auto save, so keep running
-	return 0;
+        // Auto save, so keep running
+        return 0;
       else 
-	// Single save, so stop
-	return 1;
+        // Single save, so stop
+        return 1;
     }
     else
       return 0;
@@ -760,7 +760,7 @@ class BlockWriteManager : public ManagedChain {
 
   // Start encoding the given block chain to the given file
   void Start(FILE *new_out = 0, AudioBlock *new_b = 0, 
-	     AudioBlockIterator *new_i = 0, nframes_t new_len = 0);
+             AudioBlockIterator *new_i = 0, nframes_t new_len = 0);
 
   // Ends writing
   void End();
@@ -786,8 +786,8 @@ class BlockWriteManager : public ManagedChain {
 class PeaksAvgsManager : public ManagedChain {
  public:
   PeaksAvgsManager(BlockManager *bmg = 0, 
-		   AudioBlock *b = 0, AudioBlockIterator *i = 0, 
-		   char grow = 0) : 
+                   AudioBlock *b = 0, AudioBlockIterator *i = 0, 
+                   char grow = 0) : 
     ManagedChain(b,i), bmg(bmg), runmax(0), runmin(0), runtally(0), 
     lastcnt(0), chunkcnt(0), stereo(0), grow(grow), go(1), ended(0) {};
   virtual ~PeaksAvgsManager();
@@ -857,7 +857,7 @@ class PeaksAvgsManager : public ManagedChain {
 class HiPriManagedChain : public ManagedChain {
  public:
   HiPriManagedChain(void *trigger = 0, 
-		    AudioBlock *b = 0, AudioBlockIterator *i = 0) :
+                    AudioBlock *b = 0, AudioBlockIterator *i = 0) :
     ManagedChain(b,i), trigger(trigger), lastcnt(0) {};
 
   virtual Preallocated *NewInstance() { 
@@ -888,8 +888,8 @@ class HiPriManagedChain : public ManagedChain {
 class StripeBlockManager : public HiPriManagedChain {
  public:
   StripeBlockManager(PreallocatedType *pre_tm = 0,
-		     void *trigger = 0, 
-		     AudioBlock *b = 0, AudioBlockIterator *i = 0) :
+                     void *trigger = 0, 
+                     AudioBlock *b = 0, AudioBlockIterator *i = 0) :
     HiPriManagedChain(trigger,b,i), pre_tm(pre_tm) {};
 
   // Call before starting!
@@ -937,13 +937,13 @@ public:
   // for the specified Block & Iterator
   // We compute as the currenty iterated position advances
   PeaksAvgsManager *PeakAvgOn (AudioBlock *b, AudioBlockIterator *i, 
-			       char grow = 0);
+                               char grow = 0);
   void PeakAvgOff (AudioBlock *b);
 
   // Stripes the specified chain with TimeMarkers according to the specified
   // trigger. Works in conjunction with RT threads that call HiPriTrigger.
   void StripeBlockOn (void *trigger, AudioBlock *b, 
-		      AudioBlockIterator *i);
+                      AudioBlockIterator *i);
   // Removes striping from the specified trigger on blockchain b
   void StripeBlockOff (void *trigger, AudioBlock *b);
 
@@ -976,15 +976,15 @@ public:
   // If t is T_MC_None, removes the first managed chain for 'o' 
   // of any type
   void DelManager (ManagedChain **first, AudioBlock *o,
-		   ManagedChainType t = T_MC_None);
+                   ManagedChainType t = T_MC_None);
 
   // Delete a hiprimanaged chain for block o and manager type t
   // with specified trigger.
   // If t is T_MC_None, removes the first managed chain for 'o' 
   // with specified trigger, of any type
   void DelHiManager (HiPriManagedChain **first, 
-		     AudioBlock *o,
-		     ManagedChainType t, void *trigger);
+                     AudioBlock *o,
+                     ManagedChainType t, void *trigger);
 
   // NEED TO MAKE/USE GENERALIZED LIST CLASS
   // ^^ speed issues?

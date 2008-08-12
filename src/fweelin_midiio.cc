@@ -94,7 +94,7 @@ char MidiIO::open_midi (int num_in, int num_out) {
   }
   for (l1 = 0; l1 < num_out; l1++) {
     sprintf(portname, MIDI_CLIENT_NAME " OUT %d", l1+1);
-    if (MIDIOutputPortCreate(client, CFStringCreateWithCString(0,portname,kCFStringEncodingUTF8), &out_ports[l1]) != noErr) {	
+    if (MIDIOutputPortCreate(client, CFStringCreateWithCString(0,portname,kCFStringEncodingUTF8), &out_ports[l1]) != noErr) {   
       fprintf(stderr, "MIDI: Error creating MIDI port.\n");
       return -1;
     }
@@ -154,7 +154,7 @@ char MidiIO::open_midi (int num_in, int num_out) {
   for (int i = 0; i < num_out; i++) {
     sprintf(sourcename, MIDI_CLIENT_NAME " OUT %d", i+1);
     if (MIDISourceCreate(client,CFStringCreateWithCString(0,sourcename,kCFStringEncodingUTF8),
-			 &out_sources[i]) != noErr) {
+                         &out_sources[i]) != noErr) {
       fprintf(stderr, "MIDI: Error creating virtual MIDI source.\n");
       return -1;
     }
@@ -201,39 +201,39 @@ void MidiIO::MidiInputProc (const MIDIPacketList *pktlist, void *refCon, void *c
   MIDIPacket *packet = (MIDIPacket *) pktlist->packet;
   for (int j = 0; j < pktlist->numPackets; j++) {
     if ((packet->data[0] >= 0x80 && packet->data[0] <= 0x8F) ||
-	(packet->data[0] >= 0x90 && packet->data[0] <= 0x9F &&
-	 packet->data[2] == 0)) {			// Interpret NoteOn velocity 0 as note off
+        (packet->data[0] >= 0x90 && packet->data[0] <= 0x9F &&
+         packet->data[2] == 0)) {                       // Interpret NoteOn velocity 0 as note off
       // Note Off
       int base = (packet->data[0] >= 0x90 ? 0x90 : 0x80);
       inst->ReceiveNoteOffEvent(packet->data[0] - base,
-				packet->data[1],	
-				packet->data[2]);
+                                packet->data[1],        
+                                packet->data[2]);
     } else if (packet->data[0] >= 0x90 && packet->data[0] <= 0x9F) {
       // Note On
       inst->ReceiveNoteOnEvent(packet->data[0] - 0x90,
-			       packet->data[1],	
-			       packet->data[2]);
+                               packet->data[1], 
+                               packet->data[2]);
     } else if (packet->data[0] >= 0xB0 && packet->data[0] <= 0xBF) {
       // Control Change
       inst->ReceiveControlChangeEvent(packet->data[0] - 0xB0,
-				      packet->data[1],
-				      packet->data[2]);
+                                      packet->data[1],
+                                      packet->data[2]);
     } else if (packet->data[0] >= 0xC0 && packet->data[0] <= 0xCF) {
       // Program Change
       inst->ReceiveProgramChangeEvent(packet->data[0] - 0xC0,
-				      packet->data[1]);
+                                      packet->data[1]);
     } else if (packet->data[0] >= 0xD0 && packet->data[0] <= 0xDF) {
       // Channel Pressure
       inst->ReceiveChannelPressureEvent(packet->data[0] - 0xD0,
-					packet->data[1]);
+                                        packet->data[1]);
     } else if (packet->data[0] >= 0xE0 && packet->data[0] <= 0xEF) {
       // Pitch Bend
       int lsb = packet->data[1],
-	msb = packet->data[2],
-	benderval = msb << 8 + lsb;
+        msb = packet->data[2],
+        benderval = msb << 8 + lsb;
       
       inst->ReceivePitchBendEvent(packet->data[0] - 0xE0,
-				  benderval);
+                                  benderval);
     }   
     
     // Advance
@@ -242,7 +242,7 @@ void MidiIO::MidiInputProc (const MIDIPacketList *pktlist, void *refCon, void *c
 }
 
 void MidiIO::OutputController (int port, int chan, int ctrl, int val) {
-  unsigned char msg[3];	
+  unsigned char msg[3]; 
   msg[0] = 0xB0 + chan;
   msg[1] = (unsigned char) ctrl;
   if (val > 127)
@@ -252,11 +252,11 @@ void MidiIO::OutputController (int port, int chan, int ctrl, int val) {
   msg[2] = (unsigned char) val;
   
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
-				curPacket,0 /*Now*/,3,msg);
+                                curPacket,0 /*Now*/,3,msg);
 };
 
 void MidiIO::OutputProgramChange (int port, int chan, int val) {
-  unsigned char msg[2];	
+  unsigned char msg[2]; 
   msg[0] = 0xC0 + chan;
   if (val > 127)
     val = 127;
@@ -265,11 +265,11 @@ void MidiIO::OutputProgramChange (int port, int chan, int val) {
   msg[1] = (unsigned char) val;
   
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
-				curPacket,0 /*Now*/,2,msg);
+                                curPacket,0 /*Now*/,2,msg);
 };
 
 void MidiIO::OutputChannelPressure (int port, int chan, int val) {
-  unsigned char msg[2];	
+  unsigned char msg[2]; 
   msg[0] = 0xD0 + chan;
   if (val > 127)
     val = 127;
@@ -278,21 +278,21 @@ void MidiIO::OutputChannelPressure (int port, int chan, int val) {
   msg[1] = (unsigned char) val;
   
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
-				curPacket,0 /*Now*/,2,msg);
+                                curPacket,0 /*Now*/,2,msg);
 };
 
 void MidiIO::OutputPitchBend (int port, int chan, int val) {
-  unsigned char msg[3];	
+  unsigned char msg[3]; 
   msg[0] = 0xE0 + chan;
-  msg[1] = (unsigned char) (val & 0x00FF);	// LSB
-  msg[2] = (unsigned char) (val >> 8);	        // MSB
+  msg[1] = (unsigned char) (val & 0x00FF);      // LSB
+  msg[2] = (unsigned char) (val >> 8);          // MSB
   
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
-				curPacket,0 /*Now*/,3,msg);
+                                curPacket,0 /*Now*/,3,msg);
 };
 
 void MidiIO::OutputNote (int port, int chan, char down, int notenum, int vel) {
-  unsigned char msg[3];	
+  unsigned char msg[3]; 
   if (down)
     msg[0] = 0x90 + chan; // NoteOn
   else
@@ -301,26 +301,26 @@ void MidiIO::OutputNote (int port, int chan, char down, int notenum, int vel) {
   msg[2] = (unsigned char) vel;
   
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
-				curPacket,0 /*Now*/,3,msg);
+                                curPacket,0 /*Now*/,3,msg);
 };
 
 void MidiIO::OutputClock (int port) {
-  unsigned char msg = 0xF8;	  
+  unsigned char msg = 0xF8;       
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
-				curPacket,0 /*Now*/,1,&msg);
+                                curPacket,0 /*Now*/,1,&msg);
 };
 
 
 void MidiIO::OutputStart (int port) {
-  unsigned char msg = 0xFA;	  
+  unsigned char msg = 0xFA;       
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
-				curPacket,0 /*Now*/,1,&msg);
+                                curPacket,0 /*Now*/,1,&msg);
 };
 
 void MidiIO::OutputStop (int port) {
-  unsigned char msg = 0xFC;	  
+  unsigned char msg = 0xFC;       
   curPacket = MIDIPacketListAdd(packetList,sizeof(obuf),
-				curPacket,0 /*Now*/,1,&msg);
+                                curPacket,0 /*Now*/,1,&msg);
 };
 
 void MidiIO::OutputStartOnPort () {
@@ -356,8 +356,8 @@ char MidiIO::open_midi (int num_in, int num_out) {
   for (l1 = 0; l1 < num_in; l1++) {
     sprintf(portname, MIDI_CLIENT_NAME " IN %d", l1+1);
     if ((in_ports[l1] = snd_seq_create_simple_port(seq_handle, portname,
-						   SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
-						   SND_SEQ_PORT_TYPE_APPLICATION)) < 0) {
+                                                   SND_SEQ_PORT_CAP_WRITE|SND_SEQ_PORT_CAP_SUBS_WRITE,
+                                                   SND_SEQ_PORT_TYPE_APPLICATION)) < 0) {
       fprintf(stderr, "MIDI: Error creating MIDI port.\n");
       return -1;
     }
@@ -365,8 +365,8 @@ char MidiIO::open_midi (int num_in, int num_out) {
   for (l1 = 0; l1 < num_out; l1++) {
     sprintf(portname, MIDI_CLIENT_NAME " OUT %d", l1+1);
     if ((out_ports[l1] = snd_seq_create_simple_port(seq_handle, portname,
-						    SND_SEQ_PORT_CAP_READ|SND_SEQ_PORT_CAP_SUBS_READ,
-						    SND_SEQ_PORT_TYPE_APPLICATION)) < 0) {
+                                                    SND_SEQ_PORT_CAP_READ|SND_SEQ_PORT_CAP_SUBS_READ,
+                                                    SND_SEQ_PORT_TYPE_APPLICATION)) < 0) {
       fprintf(stderr, "MIDI: Error creating MIDI port.\n");
       return -1;
     }
@@ -387,9 +387,9 @@ int MidiIO::activate() {
 
   midithreadgo = 1;
   int ret = pthread_create(&midi_thread,
-			   &attr,
-			   run_midi_thread,
-			   this);
+                           &attr,
+                           run_midi_thread,
+                           this);
   if (ret != 0) {
     printf("(start) pthread_create failed, exiting");
     return 1;
@@ -453,72 +453,72 @@ void *MidiIO::run_midi_thread(void *ptr)
       snd_seq_event_t *ev;
       //      static int cnt = 0;
       do {
-	snd_seq_event_input(inst->seq_handle, &ev);
-	switch (ev->type) {
+        snd_seq_event_input(inst->seq_handle, &ev);
+        switch (ev->type) {
 #if 0
-	  case SND_SEQ_EVENT_QFRAME:
-	    printf("MTC quarterframe\n");
-	    break;
-	    
-	  case SND_SEQ_EVENT_CLOCK:
-	    if (cnt % 24 == 0)
-	      printf("clock: %d\n",cnt);
-	    cnt++;
-	    //printf("clock: %d\n",ev->data.time.tick);
-	    //printf("clock: %d\n",ev->data.time.time.tv_sec);
-	    //printf("clock: %d\n",ev->data.queue.param.time.time.tv_sec);
-	    break;
-	    
-	  case SND_SEQ_EVENT_TICK:
-	    printf("MIDI: 'tick' not yet implemented\n");
-	    break;
-	    
-	  case SND_SEQ_EVENT_TEMPO:
-	    printf("MIDI: 'tempo' not yet implemented\n");
-	    break;
+          case SND_SEQ_EVENT_QFRAME:
+            printf("MTC quarterframe\n");
+            break;
+            
+          case SND_SEQ_EVENT_CLOCK:
+            if (cnt % 24 == 0)
+              printf("clock: %d\n",cnt);
+            cnt++;
+            //printf("clock: %d\n",ev->data.time.tick);
+            //printf("clock: %d\n",ev->data.time.time.tv_sec);
+            //printf("clock: %d\n",ev->data.queue.param.time.time.tv_sec);
+            break;
+            
+          case SND_SEQ_EVENT_TICK:
+            printf("MIDI: 'tick' not yet implemented\n");
+            break;
+            
+          case SND_SEQ_EVENT_TEMPO:
+            printf("MIDI: 'tempo' not yet implemented\n");
+            break;
 #endif
-	    
-	  case SND_SEQ_EVENT_CONTROLLER: 
-	    // Control Change
-	    inst->ReceiveControlChangeEvent(ev->data.control.channel,
-					    ev->data.control.param,
-					    ev->data.control.value);
-	    break;
+            
+          case SND_SEQ_EVENT_CONTROLLER: 
+            // Control Change
+            inst->ReceiveControlChangeEvent(ev->data.control.channel,
+                                            ev->data.control.param,
+                                            ev->data.control.value);
+            break;
 
-	  case SND_SEQ_EVENT_CHANPRESS:
-	    // Channel aftertouch 
-	    inst->ReceiveChannelPressureEvent(ev->data.control.channel,
-					      ev->data.control.value);
-	    break;
+          case SND_SEQ_EVENT_CHANPRESS:
+            // Channel aftertouch 
+            inst->ReceiveChannelPressureEvent(ev->data.control.channel,
+                                              ev->data.control.value);
+            break;
 
-	  case SND_SEQ_EVENT_PGMCHANGE:
-	    // Program Change
-	    inst->ReceiveProgramChangeEvent(ev->data.control.channel,
-					    ev->data.control.value);
-	    break;
-	    
-	  case SND_SEQ_EVENT_PITCHBEND:
-	    // Pitch Bend
-	    inst->ReceivePitchBendEvent(ev->data.control.channel,
-					ev->data.control.value);
-	    break;
-	    
-	  case SND_SEQ_EVENT_NOTEON:
-	    // Note On
-	    inst->ReceiveNoteOnEvent(ev->data.control.channel,
-				     ev->data.note.note,
-				     ev->data.note.velocity);
-	    break;
-	    
-	  case SND_SEQ_EVENT_NOTEOFF: 
-	    // Note Off
-	    inst->ReceiveNoteOffEvent(ev->data.control.channel,
-				      ev->data.note.note,
-				      ev->data.note.velocity);
-	    break;
-	}
-	
-	snd_seq_free_event(ev);
+          case SND_SEQ_EVENT_PGMCHANGE:
+            // Program Change
+            inst->ReceiveProgramChangeEvent(ev->data.control.channel,
+                                            ev->data.control.value);
+            break;
+            
+          case SND_SEQ_EVENT_PITCHBEND:
+            // Pitch Bend
+            inst->ReceivePitchBendEvent(ev->data.control.channel,
+                                        ev->data.control.value);
+            break;
+            
+          case SND_SEQ_EVENT_NOTEON:
+            // Note On
+            inst->ReceiveNoteOnEvent(ev->data.control.channel,
+                                     ev->data.note.note,
+                                     ev->data.note.velocity);
+            break;
+            
+          case SND_SEQ_EVENT_NOTEOFF: 
+            // Note Off
+            inst->ReceiveNoteOffEvent(ev->data.control.channel,
+                                      ev->data.note.note,
+                                      ev->data.note.velocity);
+            break;
+        }
+        
+        snd_seq_free_event(ev);
       } while (snd_seq_event_input_pending(inst->seq_handle, 0) > 0);
     }
   }
@@ -631,17 +631,17 @@ void MidiIO::OutputEndOnPort (int port) {};
 // ******** CROSS-PLATFORM MIDI CODE
 
 MidiIO::MidiIO (Fweelin *app) : bendertune(0), curbender(0), 
-				echoport(1), echochan(-1), curpatch(0), 
-				numins(0), numouts(0), app(app), 
+                                echoport(1), echochan(-1), curpatch(0), 
+                                numins(0), numouts(0), app(app), 
 #ifdef __MACOSX__
-				client(0), in_ports(0), out_ports(0), out_sources(0), dest(0), 
-				inputidx(-1), curPacket(0),
-				packetList((MIDIPacketList *) obuf),
+                                client(0), in_ports(0), out_ports(0), out_sources(0), dest(0), 
+                                inputidx(-1), curPacket(0),
+                                packetList((MIDIPacketList *) obuf),
 #else
                                 seq_handle(0), in_ports(0), out_ports(0),
                                 midithreadgo(0),
 #endif
-				midisyncxmit(0)
+                                midisyncxmit(0)
 {
   note_def_port = new int[MAX_MIDI_NOTES];
   note_patch = new PatchItem *[MAX_MIDI_NOTES];
@@ -656,13 +656,13 @@ void MidiIO::listen_events () {
   app->getEMG()->ListenEvent(this,0,T_EV_SetMidiEchoPort);
   app->getEMG()->ListenEvent(this,0,T_EV_SetMidiEchoChannel);
   app->getEMG()->ListenEvent(this,fs->GetInputMatrix(),
-				  T_EV_Input_MIDIKey);
+                                  T_EV_Input_MIDIKey);
   app->getEMG()->ListenEvent(this,fs->GetInputMatrix(),
-				  T_EV_Input_MIDIController);
+                                  T_EV_Input_MIDIController);
   app->getEMG()->ListenEvent(this,fs->GetInputMatrix(),
-				  T_EV_Input_MIDIProgramChange);
+                                  T_EV_Input_MIDIProgramChange);
   app->getEMG()->ListenEvent(this,fs->GetInputMatrix(),
-				  T_EV_Input_MIDIPitchBend);
+                                  T_EV_Input_MIDIPitchBend);
   app->getEMG()->ListenEvent(this,0,T_EV_Input_MIDIClock);
   app->getEMG()->ListenEvent(this,0,T_EV_Input_MIDIStartStop);
 }
@@ -674,13 +674,13 @@ void MidiIO::unlisten_events () {
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetMidiEchoPort);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetMidiEchoChannel);
   app->getEMG()->UnlistenEvent(this,fs->GetInputMatrix(),
-				    T_EV_Input_MIDIKey);
+                                    T_EV_Input_MIDIKey);
   app->getEMG()->UnlistenEvent(this,fs->GetInputMatrix(),
-				    T_EV_Input_MIDIController);
+                                    T_EV_Input_MIDIController);
   app->getEMG()->UnlistenEvent(this,fs->GetInputMatrix(),
-				    T_EV_Input_MIDIProgramChange);
+                                    T_EV_Input_MIDIProgramChange);
   app->getEMG()->UnlistenEvent(this,fs->GetInputMatrix(),
-				    T_EV_Input_MIDIPitchBend);
+                                    T_EV_Input_MIDIPitchBend);
   app->getEMG()->UnlistenEvent(this,0,T_EV_Input_MIDIClock);
   app->getEMG()->UnlistenEvent(this,0,T_EV_Input_MIDIStartStop);
 }
@@ -700,7 +700,7 @@ void MidiIO::ReceiveNoteOffEvent (int channel, int notenum, int vel) {
   mevt->outport = note_def_port[mevt->notenum];
   if (app->getCFG()->IsDebugInfo())
     printf("MIDI: Note %d off, channel %d velocity %d\n",
-	   mevt->notenum, mevt->channel, mevt->vel);
+           mevt->notenum, mevt->channel, mevt->vel);
   app->getEMG()->BroadcastEventNow(mevt, this);
 };
 
@@ -724,9 +724,9 @@ void MidiIO::ReceiveNoteOnEvent (int channel, int notenum, int vel) {
   }
   if (app->getCFG()->IsDebugInfo())
     printf("MIDI: Note %d %s, channel %d velocity %d\n",
-	   mevt->notenum,
-	   (mevt->down ? "on" : "off"),
-	   mevt->channel, mevt->vel);
+           mevt->notenum,
+           (mevt->down ? "on" : "off"),
+           mevt->channel, mevt->vel);
   app->getEMG()->BroadcastEventNow(mevt, this);
 }
 
@@ -743,9 +743,9 @@ void MidiIO::ReceivePitchBendEvent (int channel, int value) {
   mevt->val = value;
   if (app->getCFG()->IsDebugInfo())
     printf("MIDI: Pitchbend channel %d value %d\n",
-	   mevt->channel,mevt->val);
+           mevt->channel,mevt->val);
   app->getEMG()->BroadcastEventNow(mevt, this);
-}	  
+}         
 
 void MidiIO::ReceiveChannelPressureEvent (int channel, int value) {
   MIDIChannelPressureInputEvent *mevt = (MIDIChannelPressureInputEvent *)
@@ -755,9 +755,9 @@ void MidiIO::ReceiveChannelPressureEvent (int channel, int value) {
   mevt->val = value;
   if (app->getCFG()->IsDebugInfo())
     printf("MIDI: Channel pressure channel %d value %d\n",
-	   mevt->channel,mevt->val);
+           mevt->channel,mevt->val);
   app->getEMG()->BroadcastEventNow(mevt, this);
-}	  
+}         
 
 void MidiIO::ReceiveProgramChangeEvent (int channel, int value) {
   MIDIProgramChangeInputEvent *mevt = (MIDIProgramChangeInputEvent *)
@@ -767,9 +767,9 @@ void MidiIO::ReceiveProgramChangeEvent (int channel, int value) {
   mevt->val = value;
   if (app->getCFG()->IsDebugInfo())
     printf("MIDI: Program change channel %d value %d\n",
-	   mevt->channel,mevt->val);
+           mevt->channel,mevt->val);
   app->getEMG()->BroadcastEventNow(mevt, this);
-}	  
+}         
 
 void MidiIO::ReceiveControlChangeEvent (int channel, int ctrl, int value) {
   MIDIControllerInputEvent *mevt = (MIDIControllerInputEvent *)
@@ -780,7 +780,7 @@ void MidiIO::ReceiveControlChangeEvent (int channel, int ctrl, int value) {
   mevt->val = value;
   if (app->getCFG()->IsDebugInfo())
     printf("MIDI: Controller %d channel %d value %d\n",mevt->ctrl,
-	   mevt->channel,mevt->val);
+           mevt->channel,mevt->val);
   app->getEMG()->BroadcastEventNow(mevt, this);
 }
 
@@ -801,7 +801,7 @@ MidiIO::~MidiIO() {
 void MidiIO::SetMIDIEcho (int def_port, PatchItem *patch) {
   if (CRITTERS)
     printf("MIDI: Set Echo Port: %d Patch: %s\n",def_port,
-	   (patch != 0 ? patch->name : "(none)"));
+           (patch != 0 ? patch->name : "(none)"));
 
   // Save default port
   char outportschanged = 0,
@@ -811,30 +811,30 @@ void MidiIO::SetMIDIEcho (int def_port, PatchItem *patch) {
       echoport = def_port;
       outportschanged = 1;
       if (echoport == 0)
-	usefluid = 1;
+        usefluid = 1;
     }
   } else
     printf("MIDI: Invalid port #%d (valid range 0-%d)\n",
-	   def_port,numouts);
+           def_port,numouts);
 
   if (patch != 0) {
     if (patch->IsCombi()) {
       // Store reference to patch, to get zones later
       if (patch != curpatch) {
-	curpatch = patch;
+        curpatch = patch;
 
-	// Check if FluidSynth port is referenced-
-	outportschanged = 1;
-	usefluid = 0;
-	for (int i = 0; i < patch->numzones && !usefluid; i++) {
-	  CombiZone *z = patch->GetZone(i);
-	  if ((!z->port_r && echoport == 0) || // Port 0 is FluidSynth
-	      (z->port_r && z->port == 0))   
-	    usefluid = 1;
-	}
+        // Check if FluidSynth port is referenced-
+        outportschanged = 1;
+        usefluid = 0;
+        for (int i = 0; i < patch->numzones && !usefluid; i++) {
+          CombiZone *z = patch->GetZone(i);
+          if ((!z->port_r && echoport == 0) || // Port 0 is FluidSynth
+              (z->port_r && z->port == 0))   
+            usefluid = 1;
+        }
 
-	if (CRITTERS)
-	  printf("MIDI: COMBI PATCH!\n");
+        if (CRITTERS)
+          printf("MIDI: COMBI PATCH!\n");
       }
     } else {
       // Easy, single channel patch
@@ -861,8 +861,8 @@ void MidiIO::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("MIDI: Received SetMidiTuning "
-	       "(new tuning: %d)\n", tev->tuning);
+        printf("MIDI: Received SetMidiTuning "
+               "(new tuning: %d)\n", tev->tuning);
       SetBenderTune(tev->tuning);
     }
     return;
@@ -874,13 +874,13 @@ void MidiIO::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("MIDI: Received SetMidiEchoPort "
-	       "(port #: %d)\n", pev->echoport);
+        printf("MIDI: Received SetMidiEchoPort "
+               "(port #: %d)\n", pev->echoport);
       if (pev->echoport >= 0 && pev->echoport <= numouts)
-	echoport = pev->echoport;
+        echoport = pev->echoport;
       else
-	printf("MIDI: Invalid port #%d (valid range 0-%d)\n",
-	       pev->echoport,numouts);
+        printf("MIDI: Invalid port #%d (valid range 0-%d)\n",
+               pev->echoport,numouts);
     }
     return;
 
@@ -890,8 +890,8 @@ void MidiIO::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("MIDI: Received SetMidiEchoChannel "
-	       "(channel #: %d)\n", cev->echochannel);
+        printf("MIDI: Received SetMidiEchoChannel "
+               "(channel #: %d)\n", cev->echochannel);
       echochan = cev->echochannel;
     }
     return;
@@ -924,9 +924,9 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
     {
       MIDIStartStopInputEvent *ssevt = (MIDIStartStopInputEvent *) ev;
       if (ssevt->start) 
-	OutputStart(ret = port);
+        OutputStart(ret = port);
       else
-	OutputStop(ret = port);
+        OutputStop(ret = port);
     } 
     break;
     
@@ -934,9 +934,9 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
     {
       MIDIControllerInputEvent *mcev = (MIDIControllerInputEvent *) ev;
       OutputController(ret = (port == -1 ? mcev->outport-1 : port),
-		       (channel == -1 ? mcev->channel : channel),
-		       mcev->ctrl,
-		       mcev->val);
+                       (channel == -1 ? mcev->channel : channel),
+                       mcev->ctrl,
+                       mcev->val);
     }
     break;
     
@@ -944,18 +944,18 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
     {
       MIDIProgramChangeInputEvent *mpev = (MIDIProgramChangeInputEvent *) ev;
       OutputProgramChange(ret = (port == -1 ? mpev->outport-1 : port),
-			  (channel == -1 ? mpev->channel : channel),
-			  mpev->val);
+                          (channel == -1 ? mpev->channel : channel),
+                          mpev->val);
     } 
     break;
 
   case T_EV_Input_MIDIChannelPressure :
     {
       MIDIChannelPressureInputEvent *mpev = 
-	(MIDIChannelPressureInputEvent *) ev;
+        (MIDIChannelPressureInputEvent *) ev;
       OutputChannelPressure(ret = (port == -1 ? mpev->outport-1 : port),
-			    (channel == -1 ? mpev->channel : channel),
-			    mpev->val);
+                            (channel == -1 ? mpev->channel : channel),
+                            mpev->val);
     }
     break;
     
@@ -963,8 +963,8 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
     {
       MIDIPitchBendInputEvent *mpev = (MIDIPitchBendInputEvent *) ev;
       OutputPitchBend(ret = (port == -1 ? mpev->outport-1 : port),
-		      (channel == -1 ? mpev->channel : channel),
-		      mpev->val);
+                      (channel == -1 ? mpev->channel : channel),
+                      mpev->val);
     }
     break;
     
@@ -972,16 +972,16 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
     {
       MIDIKeyInputEvent *mkev = (MIDIKeyInputEvent *) ev;      
       OutputNote(ret = (port == -1 ? mkev->outport-1 : port),
-		 (channel == -1 ? mkev->channel : channel),
-		 mkev->down,
-		 mkev->notenum + fs->transpose,
-		 mkev->vel);
+                 (channel == -1 ? mkev->channel : channel),
+                 mkev->down,
+                 mkev->notenum + fs->transpose,
+                 mkev->vel);
       if (!mkev->down) // Double up on Note Offs
-	OutputNote(ret = (port == -1 ? mkev->outport-1 : port),
-		   (channel == -1 ? mkev->channel : channel),
-		   mkev->down,
-		   mkev->notenum + fs->transpose,
-		   mkev->vel);
+        OutputNote(ret = (port == -1 ? mkev->outport-1 : port),
+                   (channel == -1 ? mkev->channel : channel),
+                   mkev->down,
+                   mkev->notenum + fs->transpose,
+                   mkev->vel);
     }
     break;
 
@@ -1021,8 +1021,8 @@ void MidiIO::EchoEvent (Event *ev) {
     PatchItem *ev_patch = 0;
     int ev_port = 0;
     if (ev->GetType() == T_EV_Input_MIDIKey &&
-	!((MIDIKeyInputEvent *) ev)->down &&
-	note_patch[((MIDIKeyInputEvent *) ev)->notenum] != 0) {
+        !((MIDIKeyInputEvent *) ev)->down &&
+        note_patch[((MIDIKeyInputEvent *) ev)->notenum] != 0) {
       // Use patch which was used when note was pressed
       ev_patch = note_patch[((MIDIKeyInputEvent *) ev)->notenum];
       ev_port = note_def_port[((MIDIKeyInputEvent *) ev)->notenum];
@@ -1040,47 +1040,47 @@ void MidiIO::EchoEvent (Event *ev) {
       
       int curport = -1;
       for (int i = 0; i < ev_patch->numzones; i++) {
-	CombiZone *z = ev_patch->GetZone(i);
-	
-	int notenum = -1;
-	MIDIKeyInputEvent *note = 0;
-	if (ev->GetType() == T_EV_Input_MIDIKey) {
-	  note = (MIDIKeyInputEvent *) ev;
-	  notenum = note->notenum;
-	}
-	
-	if (notenum == -1 || (notenum >= z->kr_lo && notenum <= z->kr_hi)) {
-	  int z_port = (z->port_r ? z->port : echoport);
-	  if (curport == -1 || z_port != curport) {
-	    // Starting with a new port
-	    if (curport > 0 && curport <= numouts)
-	      OutputEndOnPort(curport-1);
-	    
-	    if (z_port > 0 && z_port <= numouts)
-	      OutputStartOnPort();
-	    curport = z_port;
-	  }
-	  
-	  if (curport > 0 && curport <= numouts)
-	    EchoEventToPortChannel(ev,curport-1,z->channel);
-	  else if (curport == 0) {
+        CombiZone *z = ev_patch->GetZone(i);
+        
+        int notenum = -1;
+        MIDIKeyInputEvent *note = 0;
+        if (ev->GetType() == T_EV_Input_MIDIKey) {
+          note = (MIDIKeyInputEvent *) ev;
+          notenum = note->notenum;
+        }
+        
+        if (notenum == -1 || (notenum >= z->kr_lo && notenum <= z->kr_hi)) {
+          int z_port = (z->port_r ? z->port : echoport);
+          if (curport == -1 || z_port != curport) {
+            // Starting with a new port
+            if (curport > 0 && curport <= numouts)
+              OutputEndOnPort(curport-1);
+            
+            if (z_port > 0 && z_port <= numouts)
+              OutputStartOnPort();
+            curport = z_port;
+          }
+          
+          if (curport > 0 && curport <= numouts)
+            EchoEventToPortChannel(ev,curport-1,z->channel);
+          else if (curport == 0) {
 #if USE_FLUIDSYNTH
-	    app->getFLUIDP()->ReceiveMIDIEvent(ev);
+            app->getFLUIDP()->ReceiveMIDIEvent(ev);
 #endif
-	  }
-	}
+          }
+        }
       }
     } else {   
       if (ev_port > 0 && ev_port <= numouts) {
-	// Single channel output- easy case
-	OutputStartOnPort();
-	EchoEventToPortChannel(ev,ev_port-1,
-			       (echochan != -1 && ev_patch != 0 ? 
-				ev_patch->channel : echochan));
-	OutputEndOnPort(ev_port-1);
+        // Single channel output- easy case
+        OutputStartOnPort();
+        EchoEventToPortChannel(ev,ev_port-1,
+                               (echochan != -1 && ev_patch != 0 ? 
+                                ev_patch->channel : echochan));
+        OutputEndOnPort(ev_port-1);
       } else if (ev_port == 0) {
 #if USE_FLUIDSYNTH
-	app->getFLUIDP()->ReceiveMIDIEvent(ev);
+        app->getFLUIDP()->ReceiveMIDIEvent(ev);
 #endif
       }
     }
@@ -1088,7 +1088,7 @@ void MidiIO::EchoEvent (Event *ev) {
 };
 
 void MidiIO::SendBankProgramChangeToPortChannel (int bank, int program, 
-						 int port, int channel) {
+                                                 int port, int channel) {
   if (bank != -1) {
     OutputController(port,channel,MIDI_BANKCHANGE_MSB,bank / 128);
     OutputController(port,channel,MIDI_BANKCHANGE_MSB,bank % 128);
@@ -1104,18 +1104,18 @@ void MidiIO::SendBankProgramChange (PatchItem *patch) {
     if (patch->IsCombi()) {
       // Combi, send individual zone bank/patch changes
       for (int i = 0; i < patch->numzones; i++) {
-	CombiZone *z = patch->GetZone(i);
-	
-	int z_port = (z->port_r ? z->port : echoport);
-	if (z_port > 0 && z_port <= numouts)
-	  SendBankProgramChangeToPortChannel(z->bank, z->prog,
-					     z_port-1, z->channel);
+        CombiZone *z = patch->GetZone(i);
+        
+        int z_port = (z->port_r ? z->port : echoport);
+        if (z_port > 0 && z_port <= numouts)
+          SendBankProgramChangeToPortChannel(z->bank, z->prog,
+                                             z_port-1, z->channel);
       }
     } else {
       // Single patch, send bank/patch change
       if (echoport > 0 && echoport <= numouts) 
-	SendBankProgramChangeToPortChannel(patch->bank, patch->prog,
-					   echoport-1, patch->channel);
+        SendBankProgramChangeToPortChannel(patch->bank, patch->prog,
+                                           echoport-1, patch->channel);
     }
   }  
 };

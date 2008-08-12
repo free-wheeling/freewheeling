@@ -164,6 +164,11 @@
 				     keydown=1"
      output="trigger-snapshot" 
      parameters="snapid=key-VAR_zero_keysym-1+SYSTEM_snapshot_page_firstidx"/>
+    <binding input="key" conditions="VAR_keyheld_alt=1 and
+				     key=VAR_snaps+VAR_zero_keysym and
+				     keydown=1"
+     output="rename-snapshot" 
+     parameters="snapid=key-VAR_zero_keysym-1+SYSTEM_snapshot_page_firstidx"/>
 
     <binding input="key" conditions="VAR_keyheld_shift=1 and
 				     key=zero and
@@ -174,6 +179,11 @@
 				     key=zero and
 				     keydown=1"
      output="trigger-snapshot" 
+     parameters="snapid=9+SYSTEM_snapshot_page_firstidx"/>
+    <binding input="key" conditions="VAR_keyheld_alt=1 and
+				     key=zero and
+				     keydown=1"
+     output="rename-snapshot" 
      parameters="snapid=9+SYSTEM_snapshot_page_firstidx"/>
 
     <binding input="key" conditions="VAR_keyheld_ctrl=1 and key=comma and 

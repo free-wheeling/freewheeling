@@ -74,16 +74,16 @@ void Snapshot::CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap) {
       
       int idx = 0;
       for (int i = 0; i < tmap->GetMapSize(); i++) {
-	if (tmap->GetMap(i) != 0) {
-	  Loop *l = tmap->GetMap(i);
-	  if (idx >= numls) {
-	    printf("CORE: ERROR: Loop count mismatch creating snapshot!\n");
-	    return;
-	  }
-	  
-	  ls[idx++] = LoopSnapshot(i,lm->GetStatus(i),
-				   l->vol,lm->GetTriggerVol(i));
-	}
+        if (tmap->GetMap(i) != 0) {
+          Loop *l = tmap->GetMap(i);
+          if (idx >= numls) {
+            printf("CORE: ERROR: Loop count mismatch creating snapshot!\n");
+            return;
+          }
+          
+          ls[idx++] = LoopSnapshot(i,lm->GetStatus(i),
+                                   l->vol,lm->GetTriggerVol(i));
+        }
       }
     }
   }
@@ -99,18 +99,18 @@ char Fweelin::TriggerSnapshot (int idx) {
       loopmgr->SetLoopVolume(ls->l_idx,ls->l_vol);
 
       if (ls->status == T_LS_Off && loopmgr->IsActive(ls->l_idx)) {
-	loopmgr->Deactivate(ls->l_idx);
+        loopmgr->Deactivate(ls->l_idx);
       } else if (ls->status == T_LS_Playing || 
-		 ls->status == T_LS_Overdubbing) {
-	if (loopmgr->GetStatus(ls->l_idx) != T_LS_Playing) {
-	  // Loop not yet playing
-	  if (loopmgr->IsActive(ls->l_idx))
-	    loopmgr->Deactivate(ls->l_idx);
-	  loopmgr->Activate(ls->l_idx, 0, ls->t_vol);
-	} else {
-	  // Loop already playing- adjust volume
-	  loopmgr->SetTriggerVol(ls->l_idx, ls->t_vol);
-	}
+                 ls->status == T_LS_Overdubbing) {
+        if (loopmgr->GetStatus(ls->l_idx) != T_LS_Playing) {
+          // Loop not yet playing
+          if (loopmgr->IsActive(ls->l_idx))
+            loopmgr->Deactivate(ls->l_idx);
+          loopmgr->Activate(ls->l_idx, 0, ls->t_vol);
+        } else {
+          // Loop already playing- adjust volume
+          loopmgr->SetTriggerVol(ls->l_idx, ls->t_vol);
+        }
       } 
     }
 
@@ -124,8 +124,8 @@ char Fweelin::TriggerSnapshot (int idx) {
 //
 // Returns zero on success
 char Saveable::SplitFilename(char *filename, int baselen, char *basename, 
-			     char *hash, char *objname,
-			     int maxlen) {
+                             char *hash, char *objname,
+                             int maxlen) {
   // Loop exists, use combination of time and hash as name
   char *slashptr = filename + baselen;
 
@@ -148,13 +148,13 @@ char Saveable::SplitFilename(char *filename, int baselen, char *basename,
     char *breaker = (slashptr2 != 0 ? slashptr2 : extptr);
     if (strlen(slashptr+1) - strlen(breaker) == SAVEABLE_HASH_LENGTH*2) {
       if (hash != 0) {
-	len = MIN(SAVEABLE_HASH_LENGTH*2,maxlen-1);
-	memcpy(hash,slashptr+1,sizeof(char)*len);
-	hash[len] = '\0';
+        len = MIN(SAVEABLE_HASH_LENGTH*2,maxlen-1);
+        memcpy(hash,slashptr+1,sizeof(char)*len);
+        hash[len] = '\0';
       }
     } else {
       printf("SAVEABLE: Invalid hash within filename: '%s'\n",
-	     filename);
+             filename);
       return 1;
     }
     
@@ -162,17 +162,17 @@ char Saveable::SplitFilename(char *filename, int baselen, char *basename,
     // this would be placed after the hash
     if (objname != 0) {
       if (slashptr2 != 0) {
-	// Name
-	len = strlen(slashptr2+1) - strlen(extptr);
-	len = MIN(len,maxlen-1);
-	memcpy(objname,slashptr2+1,sizeof(char)*len);
-	objname[len] = '\0';
-      } else 	  
-	strcpy(objname,"");
+        // Name
+        len = strlen(slashptr2+1) - strlen(extptr);
+        len = MIN(len,maxlen-1);
+        memcpy(objname,slashptr2+1,sizeof(char)*len);
+        objname[len] = '\0';
+      } else      
+        strcpy(objname,"");
     }
   } else {
     printf("SAVEABLE: Invalid filename for extracting hash/name: '%s'\n",
-	   filename);
+           filename);
     return 1;
   }
   
@@ -180,15 +180,15 @@ char Saveable::SplitFilename(char *filename, int baselen, char *basename,
 };
 
 void Saveable::RenameSaveable(char **filename_ptr, int baselen, 
-			      char *newname, const char **exts, int num_exts) {
+                              char *newname, const char **exts, int num_exts) {
   // Parse filename to extract hash part
   char fn_base[FWEELIN_OUTNAME_LEN], 
     fn_hash[FWEELIN_OUTNAME_LEN],
     fn_name[FWEELIN_OUTNAME_LEN];
   if (Saveable::SplitFilename(*filename_ptr,baselen,fn_base,fn_hash,fn_name,
-			      FWEELIN_OUTNAME_LEN))
+                              FWEELIN_OUTNAME_LEN))
     printf("SAVEABLE: Can't rename '%s'- poorly formatted filename.\n",
-	   *filename_ptr);
+           *filename_ptr);
   else {
     char tmp[FWEELIN_OUTNAME_LEN];
     strncpy(tmp,*filename_ptr,FWEELIN_OUTNAME_LEN);
@@ -196,14 +196,14 @@ void Saveable::RenameSaveable(char **filename_ptr, int baselen,
 
     delete[] *filename_ptr;
     *filename_ptr = new char[strlen(fn_base)+1+
-			     strlen(fn_hash)+1+
-			     strlen(newname)+1];
+                             strlen(fn_hash)+1+
+                             strlen(newname)+1];
     if (strlen(newname) > 0) 
       sprintf(*filename_ptr,"%s-%s-%s",
-	      fn_base,fn_hash,newname);
+              fn_base,fn_hash,newname);
     else
       sprintf(*filename_ptr,"%s-%s",
-	      fn_base,fn_hash);
+              fn_base,fn_hash);
 
     char tmp_a[FWEELIN_OUTNAME_LEN],
       tmp_b[FWEELIN_OUTNAME_LEN];
@@ -213,7 +213,7 @@ void Saveable::RenameSaveable(char **filename_ptr, int baselen,
       snprintf(tmp_b,FWEELIN_OUTNAME_LEN,"%s%s",*filename_ptr,exts[i]);
 
       if (!rename(tmp_a,tmp_b))
-	printf("SAVEABLE: Rename file '%s' -> '%s'\n",tmp_a,tmp_b);
+        printf("SAVEABLE: Rename file '%s' -> '%s'\n",tmp_a,tmp_b);
       //else 
       //printf("SAVEABLE: File '%s' not found for rename\n",tmp_a);
     }
@@ -223,9 +223,9 @@ void Saveable::RenameSaveable(char **filename_ptr, int baselen,
 // This is for renaming an item in memory, so that the disk corresponds
 // with the new name
 void Saveable::RenameSaveable(char *librarypath, char *basename, 
-			      char *old_objname, char *nw_objname,
-			      const char **exts, int num_exts,
-			      char **old_filename, char **new_filename) {
+                              char *old_objname, char *nw_objname,
+                              const char **exts, int num_exts,
+                              char **old_filename, char **new_filename) {
   if (savestatus == SAVE_DONE) {
     // OK, we have to rename on disk
 
@@ -239,38 +239,38 @@ void Saveable::RenameSaveable(char *librarypath, char *basename,
       // Add each type of extension provided and rename the file
 
       if (old_objname == 0 || strlen(old_objname) == 0) 
-	snprintf(*old_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s%s",
-		 librarypath,basename,hashtext,exts[i]);
+        snprintf(*old_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s%s",
+                 librarypath,basename,hashtext,exts[i]);
       else 
-	snprintf(*old_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s-%s%s",
-		 librarypath,basename,hashtext,old_objname,exts[i]);
+        snprintf(*old_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s-%s%s",
+                 librarypath,basename,hashtext,old_objname,exts[i]);
 
       if (nw_objname == 0 || strlen(nw_objname) == 0) 
-	snprintf(*new_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s%s",
-		 librarypath,basename,hashtext,exts[i]);
+        snprintf(*new_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s%s",
+                 librarypath,basename,hashtext,exts[i]);
       else 
-	snprintf(*new_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s-%s%s",
-		 librarypath,basename,hashtext,nw_objname,exts[i]);
+        snprintf(*new_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s-%s%s",
+                 librarypath,basename,hashtext,nw_objname,exts[i]);
 
       printf("SAVEABLE: Rename file '%s' -> '%s'\n",
-	     *old_filename,*new_filename);
+             *old_filename,*new_filename);
       rename(*old_filename,*new_filename);
     }
 
     // Get names without extensions
     if (old_objname == 0) 
       snprintf(*old_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s",
-	       librarypath,basename,hashtext);
+               librarypath,basename,hashtext);
     else 
       snprintf(*old_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s-%s",
-	       librarypath,basename,hashtext,old_objname);
+               librarypath,basename,hashtext,old_objname);
     
     if (nw_objname == 0) 
       snprintf(*new_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s",
-	       librarypath,basename,hashtext);
+               librarypath,basename,hashtext);
     else 
       snprintf(*new_filename,FWEELIN_OUTNAME_LEN,"%s/%s-%s-%s",
-	       librarypath,basename,hashtext,nw_objname);
+               librarypath,basename,hashtext,nw_objname);
   }
 };
 
@@ -292,7 +292,7 @@ void LoopManager::AddLoopToSaveQueue(Loop *l) {
     LoopListEvent *ll = (LoopListEvent *) 
       Event::GetEventByType(T_EV_LoopList,1);
     ll->l = l;
-	
+        
     EventManager::QueueEvent(&savequeue,ll);
   }
 };
@@ -334,15 +334,15 @@ void LoopManager::SetupLoopBrowser() {
     glob_t globbuf;
     char tmp[FWEELIN_OUTNAME_LEN];
     for (codec lformat = FIRST_FORMAT; lformat < END_OF_FORMATS; 
-	 lformat = (codec) (lformat+1)) {
+         lformat = (codec) (lformat+1)) {
       snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s*%s",
-	     app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
-	     app->getCFG()->GetAudioFileExt(lformat)); 
+             app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
+             app->getCFG()->GetAudioFileExt(lformat)); 
       printf("BROWSER: (Loop) Scanning for loops in library: %s\n",tmp);
       if (glob(tmp, 0, NULL, &globbuf) == 0) {
         for (size_t i = 0; i < globbuf.gl_pathc; i++) {
-	  //printf("BROWSER: (Loop) Loop: %s\n",globbuf.gl_pathv[i]);
-	  AddLoopToBrowser(br,globbuf.gl_pathv[i]);
+          //printf("BROWSER: (Loop) Loop: %s\n",globbuf.gl_pathv[i]);
+          AddLoopToBrowser(br,globbuf.gl_pathv[i]);
         }
 
         br->AddDivisions(FWEELIN_FILE_BROWSER_DIVISION_TIME);
@@ -364,7 +364,7 @@ SceneBrowserItem *LoopManager::AddSceneToBrowser(Browser *br, char *filename) {
       br->GetDisplayName(filename,&st.st_mtime,tmp,FWEELIN_OUTNAME_LEN);
 
     br->AddItem(ret = 
-		new SceneBrowserItem(st.st_mtime,tmp,default_name,filename),1);
+                new SceneBrowserItem(st.st_mtime,tmp,default_name,filename),1);
   }
 
   return ret;
@@ -382,13 +382,13 @@ void LoopManager::SetupSceneBrowser() {
     glob_t globbuf;
     char tmp[FWEELIN_OUTNAME_LEN];
     snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s*%s",
-	     app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_SCENE_NAME,
-	     FWEELIN_OUTPUT_DATA_EXT);
+             app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_SCENE_NAME,
+             FWEELIN_OUTPUT_DATA_EXT);
     printf("BROWSER: (Scene) Scanning for scenes in library: %s\n",tmp);
     if (glob(tmp, 0, NULL, &globbuf) == 0) {
       for (size_t i = 0; i < globbuf.gl_pathc; i++) {
-	// printf("BROWSER: (Scene) Scene: %s\n",globbuf.gl_pathv[i]);
-	AddSceneToBrowser(br,globbuf.gl_pathv[i]);
+        // printf("BROWSER: (Scene) Scene: %s\n",globbuf.gl_pathv[i]);
+        AddSceneToBrowser(br,globbuf.gl_pathv[i]);
       }
       br->AddDivisions(FWEELIN_FILE_BROWSER_DIVISION_TIME);
       br->MoveToBeginning();
@@ -403,7 +403,7 @@ void LoopManager::ItemSelected(BrowserItem *i) {
   case B_Loop: 
     printf("DISK: Load '%s'\n",((LoopBrowserItem *) i)->filename);
     LoadLoop(((LoopBrowserItem *) i)->filename,loadloopid,
-	     newloopvol / GetOutputVolume());
+             newloopvol / GetOutputVolume());
     break;
     
   case B_Scene:
@@ -422,27 +422,27 @@ void LoopManager::ItemRenamed(BrowserItem *i) {
     {
       LoopTrayItem *curl = (LoopTrayItem *) i;
       char *old_filename = 0, 
-	*new_filename = 0;
+        *new_filename = 0;
       
       // Rename on disk
       const static char *exts[] = {app->getCFG()->GetAudioFileExt(curl->l->format),
-				   FWEELIN_OUTPUT_DATA_EXT};
+                                   FWEELIN_OUTPUT_DATA_EXT};
       curl->l->RenameSaveable(app->getCFG()->GetLibraryPath(), 
-			      FWEELIN_OUTPUT_LOOP_NAME,
-			      curl->l->name, curl->name,
-			      exts, 2,
-			      &old_filename,
-			      &new_filename);
+                              FWEELIN_OUTPUT_LOOP_NAME,
+                              curl->l->name, curl->name,
+                              exts, 2,
+                              &old_filename,
+                              &new_filename);
     
       // We also need to rename in the loop browser
       if (app->getBROWSER(B_Loop) != 0) 
-	app->getBROWSER(B_Loop)->
-	  ItemRenamedOnDisk(old_filename,new_filename,curl->name);
+        app->getBROWSER(B_Loop)->
+          ItemRenamedOnDisk(old_filename,new_filename,curl->name);
       
       if (old_filename != 0)
-	delete[] old_filename;
+        delete[] old_filename;
       if (new_filename != 0)
-	delete[] new_filename;
+        delete[] new_filename;
 
       // And in memory..
       RenameLoop(curl->l,curl->name);
@@ -453,45 +453,45 @@ void LoopManager::ItemRenamed(BrowserItem *i) {
     {
       // Name change on disk
       int baselen = strlen(app->getCFG()->GetLibraryPath()) + 1 +
-	strlen(FWEELIN_OUTPUT_LOOP_NAME);
+        strlen(FWEELIN_OUTPUT_LOOP_NAME);
 
       // Add all audio format names + XML to extension list
       int numexts = END_OF_FORMATS + 1;
       char *exts[numexts];
       for (codec c = FIRST_FORMAT; c < END_OF_FORMATS; c = (codec) (c+1))
-	exts[c] = app->getCFG()->GetAudioFileExt(c);
+        exts[c] = app->getCFG()->GetAudioFileExt(c);
       exts[END_OF_FORMATS] = FWEELIN_OUTPUT_DATA_EXT;
 
       // Rename all possible audio files + XML metadata to new name
       printf("DISK: Rename '%s'\n",((LoopBrowserItem *) i)->filename);
       Saveable::RenameSaveable(&((LoopBrowserItem *) i)->filename,baselen,
-			       i->name,(const char **) exts,numexts);
+                               i->name,(const char **) exts,numexts);
 
       // Is this loop loaded? If so, rename it
 
       // Find loop in memory (by hash, extracted from filename)
       char fn_hash[FWEELIN_OUTNAME_LEN];
       if (!Saveable::SplitFilename(((LoopBrowserItem *) i)->filename,
-				   baselen,0,fn_hash,0,FWEELIN_OUTNAME_LEN)) {
-	// Convert text 'fn_hash' to binary hash and scan for it
-	Saveable tmp;
-	if (!(tmp.SetSaveableHashFromText(fn_hash))) {
-	  int foundidx;
-	  if ((foundidx = 
-	       app->getTMAP()->ScanForHash(tmp.GetSaveHash())) != -1) {
-	    // This loop -is- loaded, rename in map and in loop tray
-	    // printf("loop renamed is also in memory: %d\n",foundidx);
-	    Loop *foundloop = GetSlot(foundidx);
-	    
-	    // Rename in memory
-	    RenameLoop(foundloop,i->name);
-	    
-	    // We have to notify the LoopTray of the new name given
-	    LoopTray *tray = (LoopTray *) app->getBROWSER(B_Loop_Tray);
-	    if (tray != 0)
-	      tray->ItemRenamedFromOutside(foundloop,i->name);
-	  }	
-	}
+                                   baselen,0,fn_hash,0,FWEELIN_OUTNAME_LEN)) {
+        // Convert text 'fn_hash' to binary hash and scan for it
+        Saveable tmp;
+        if (!(tmp.SetSaveableHashFromText(fn_hash))) {
+          int foundidx;
+          if ((foundidx = 
+               app->getTMAP()->ScanForHash(tmp.GetSaveHash())) != -1) {
+            // This loop -is- loaded, rename in map and in loop tray
+            // printf("loop renamed is also in memory: %d\n",foundidx);
+            Loop *foundloop = GetSlot(foundidx);
+            
+            // Rename in memory
+            RenameLoop(foundloop,i->name);
+            
+            // We have to notify the LoopTray of the new name given
+            LoopTray *tray = (LoopTray *) app->getBROWSER(B_Loop_Tray);
+            if (tray != 0)
+              tray->ItemRenamedFromOutside(foundloop,i->name);
+          }     
+        }
       }      
     }
     break;
@@ -499,12 +499,12 @@ void LoopManager::ItemRenamed(BrowserItem *i) {
   case B_Scene:
     {
       int baselen = strlen(app->getCFG()->GetLibraryPath()) + 1 +
-	strlen(FWEELIN_OUTPUT_SCENE_NAME);
+        strlen(FWEELIN_OUTPUT_SCENE_NAME);
       const static char *exts[] = {FWEELIN_OUTPUT_DATA_EXT};
       
       printf("DISK: Rename '%s'\n",((SceneBrowserItem *) i)->filename);
       Saveable::RenameSaveable(&((SceneBrowserItem *) i)->filename,baselen,
-			       i->name,exts,1);
+                               i->name,exts,1);
     }
     break;
 
@@ -550,7 +550,7 @@ LoopManager::LoopManager (Fweelin *app) :
 
   // Turn on block read/write managers for loading & saving loops
   bread = ::new BlockReadManager(0,this,app->getBMG(),
-				 app->getCFG()->loop_peaksavgs_chunksize);
+                                 app->getCFG()->loop_peaksavgs_chunksize);
   bwrite = ::new BlockWriteManager(0,this,app->getBMG());
   app->getBMG()->AddManager(bread);
   app->getBMG()->AddManager(bwrite);
@@ -563,6 +563,7 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_SelectAllLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_InvertSelection);
   app->getEMG()->ListenEvent(this,0,T_EV_CreateSnapshot);
+  app->getEMG()->ListenEvent(this,0,T_EV_RenameSnapshot);
   app->getEMG()->ListenEvent(this,0,T_EV_TriggerSnapshot);
   app->getEMG()->ListenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->ListenEvent(this,0,T_EV_SaveLoop);
@@ -619,6 +620,7 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_SelectAllLoops);
   app->getEMG()->UnlistenEvent(this,0,T_EV_InvertSelection);
   app->getEMG()->UnlistenEvent(this,0,T_EV_CreateSnapshot);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_RenameSnapshot);
   app->getEMG()->UnlistenEvent(this,0,T_EV_TriggerSnapshot);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SaveLoop);
@@ -705,9 +707,9 @@ nframes_t LoopManager::GetRoundedLength(int index) {
     Loop *cur = app->getTMAP()->GetMap(index);
     if (cur != 0)
       if (cur->pulse != 0)
-	return cur->pulse->QuantizeLength(cur->blocks->GetTotalLen());
+        return cur->pulse->QuantizeLength(cur->blocks->GetTotalLen());
       else
-	return 0; // cur->blocks->GetTotalLen();
+        return 0; // cur->blocks->GetTotalLen();
   }
   
   return 0;
@@ -721,19 +723,19 @@ float LoopManager::GetPos(int index) {
     if (cur != 0 && plist[index] != 0) {
       nframes_t playedlen = 0;
       if (status[index] == T_LS_Playing)
-	playedlen = ((PlayProcessor *) plist[index])->GetPlayedLength();
+        playedlen = ((PlayProcessor *) plist[index])->GetPlayedLength();
       else if (status[index] == T_LS_Overdubbing)
-	playedlen = ((RecordProcessor *) plist[index])->GetRecordedLength();
+        playedlen = ((RecordProcessor *) plist[index])->GetRecordedLength();
 
       if (cur->pulse == 0) 
-	return (float) playedlen / cur->blocks->GetTotalLen();
+        return (float) playedlen / cur->blocks->GetTotalLen();
       else {
-	if (cur->pulse->QuantizeLength(cur->blocks->GetTotalLen()) == 0) {
-	  printf("LoopManager: ERROR: Problem with quantize GetPos\n");
-	  exit(1);
-	}
-	return (float) playedlen / 
-	  cur->pulse->QuantizeLength(cur->blocks->GetTotalLen());
+        if (cur->pulse->QuantizeLength(cur->blocks->GetTotalLen()) == 0) {
+          printf("LoopManager: ERROR: Problem with quantize GetPos\n");
+          exit(1);
+        }
+        return (float) playedlen / 
+          cur->pulse->QuantizeLength(cur->blocks->GetTotalLen());
       }
     }
   }
@@ -749,9 +751,9 @@ nframes_t LoopManager::GetCurCnt(int index) {
     Loop *cur = app->getTMAP()->GetMap(index);
     if (cur != 0 && plist[index] != 0) {
       if (status[index] == T_LS_Playing)
-	return ((PlayProcessor *) plist[index])->GetPlayedLength();
+        return ((PlayProcessor *) plist[index])->GetPlayedLength();
       else if (status[index] == T_LS_Overdubbing) 
-	return ((RecordProcessor *) plist[index])->GetRecordedLength();
+        return ((RecordProcessor *) plist[index])->GetRecordedLength();
     }
   }
   
@@ -924,12 +926,12 @@ void TriggerMap::GoSave(char *filename) {
     MD5_Init(&md5gen);
     for (int i = 0; i < mapsize; i++)
       if (map[i] != 0) {
-	if (map[i]->GetSaveStatus() == SAVE_DONE)
-	  // Update scene hash with hash from this loop
-	  MD5_Update(&md5gen,map[i]->GetSaveHash(),SAVEABLE_HASH_LENGTH);
-	else
-	  printf("DISK: WARNING: Loop %d not saved yet but scene about to be "
-		 "saved!\n",i);
+        if (map[i]->GetSaveStatus() == SAVE_DONE)
+          // Update scene hash with hash from this loop
+          MD5_Update(&md5gen,map[i]->GetSaveHash(),SAVEABLE_HASH_LENGTH);
+        else
+          printf("DISK: WARNING: Loop %d not saved yet but scene about to be "
+                 "saved!\n",i);
       }
     
     // Done- compute our final hash
@@ -943,12 +945,12 @@ void TriggerMap::GoSave(char *filename) {
   if (newScene) {
     GET_SAVEABLE_HASH_TEXT(GetSaveHash());
     snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s-%s%s",
-	     app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_SCENE_NAME,
-	     hashtext,FWEELIN_OUTPUT_DATA_EXT);
+             app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_SCENE_NAME,
+             hashtext,FWEELIN_OUTPUT_DATA_EXT);
   } else
     snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s%s",
-	     filename,FWEELIN_OUTPUT_DATA_EXT);
-	     
+             filename,FWEELIN_OUTPUT_DATA_EXT);
+             
   if (!newScene) {
     // Back up existing scene data
     struct stat st;
@@ -959,11 +961,11 @@ void TriggerMap::GoSave(char *filename) {
       char go = 1;
       
       while (go) {
-	snprintf(tmp2,FWEELIN_OUTNAME_LEN,"%s.backup.%d",tmp,bCnt);
-	if (stat(tmp2,&st) != 0)
-	  go = 0; // Free backup filename
-	else
-	  bCnt++;
+        snprintf(tmp2,FWEELIN_OUTNAME_LEN,"%s.backup.%d",tmp,bCnt);
+        if (stat(tmp2,&st) != 0)
+          go = 0; // Free backup filename
+        else
+          bCnt++;
       }
       
       char buf[FWEELIN_OUTNAME_LEN * 2 + 20];
@@ -976,8 +978,8 @@ void TriggerMap::GoSave(char *filename) {
   
   struct stat st;
   printf("DISK: Opening %s '%s' for saving.\n",
-	 (newScene ? "new scene" : "existing scene"),
-	 tmp);
+         (newScene ? "new scene" : "existing scene"),
+         tmp);
   if (newScene && stat(tmp,&st) == 0) {
     printf("DISK: ERROR: MD5 collision while saving scene- file exists!\n");
   } else {
@@ -989,78 +991,78 @@ void TriggerMap::GoSave(char *filename) {
       
       // Scene
       ldat->children = xmlNewDocNode(ldat,0,
-				     (xmlChar *) FWEELIN_OUTPUT_SCENE_NAME,0);
+                                     (xmlChar *) FWEELIN_OUTPUT_SCENE_NAME,0);
 
       // Loops
       for (int i = 0; i < mapsize; i++)
-	if (map[i] != 0 && map[i]->GetSaveStatus() == SAVE_DONE) {
-	  xmlNodePtr lp = xmlNewChild(ldat->children, 0, 
-				      (xmlChar *) FWEELIN_OUTPUT_LOOP_NAME, 0);
+        if (map[i] != 0 && map[i]->GetSaveStatus() == SAVE_DONE) {
+          xmlNodePtr lp = xmlNewChild(ldat->children, 0, 
+                                      (xmlChar *) FWEELIN_OUTPUT_LOOP_NAME, 0);
 
-	  // Loop index
-	  snprintf(xmltmp,XT_LEN,"%d",i);
-	  xmlSetProp(lp,(xmlChar *) "loopid",(xmlChar *) xmltmp);
+          // Loop index
+          snprintf(xmltmp,XT_LEN,"%d",i);
+          xmlSetProp(lp,(xmlChar *) "loopid",(xmlChar *) xmltmp);
 
-	  // Loop hash (used to find the loop on disk)
-	  unsigned char *sh = map[i]->GetSaveHash();
-	  GET_SAVEABLE_HASH_TEXT(sh);
-	  xmlSetProp(lp,(xmlChar *) "hash",(xmlChar *) hashtext);
+          // Loop hash (used to find the loop on disk)
+          unsigned char *sh = map[i]->GetSaveHash();
+          GET_SAVEABLE_HASH_TEXT(sh);
+          xmlSetProp(lp,(xmlChar *) "hash",(xmlChar *) hashtext);
 
-	  // Loop volume
-	  snprintf(xmltmp,XT_LEN,"%.5f",map[i]->vol);
-	  xmlSetProp(lp,(xmlChar *) "volume",(xmlChar *) xmltmp);
-	}
+          // Loop volume
+          snprintf(xmltmp,XT_LEN,"%.5f",map[i]->vol);
+          xmlSetProp(lp,(xmlChar *) "volume",(xmlChar *) xmltmp);
+        }
 
       // Snapshots
       Snapshot *snaps = app->getSNAPS();
       for (int i = 0; i < app->getCFG()->GetMaxSnapshots(); i++) {
-	if (snaps[i].exists) {
-	  Snapshot *s = &snaps[i];
-	  xmlNodePtr sp = xmlNewChild(ldat->children, 0, 
-				      (xmlChar *) FWEELIN_OUTPUT_SNAPSHOT_NAME, 0);
+        if (snaps[i].exists) {
+          Snapshot *s = &snaps[i];
+          xmlNodePtr sp = xmlNewChild(ldat->children, 0, 
+                                      (xmlChar *) FWEELIN_OUTPUT_SNAPSHOT_NAME, 0);
 
-	  // Snapshot index
-	  snprintf(xmltmp,XT_LEN,"%d",i);
-	  xmlSetProp(sp,(xmlChar *) "snapid",(xmlChar *) xmltmp);
+          // Snapshot index
+          snprintf(xmltmp,XT_LEN,"%d",i);
+          xmlSetProp(sp,(xmlChar *) "snapid",(xmlChar *) xmltmp);
 
-	  // Name
-	  if (s->name != 0)
-	    xmlSetProp(sp,(xmlChar *) "name",(xmlChar *) s->name);
+          // Name
+          if (s->name != 0)
+            xmlSetProp(sp,(xmlChar *) "name",(xmlChar *) s->name);
 
-	  for (int j = 0; j < s->numls; j++) {
-	    LoopSnapshot *ls = &(s->ls[j]);
-	    xmlNodePtr slp = xmlNewChild(sp, 0, 
-					 (xmlChar *) FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME, 0);
-	    
-	    // Loop index
-	    snprintf(xmltmp,XT_LEN,"%d",ls->l_idx);
-	    xmlSetProp(slp,(xmlChar *) "loopid",(xmlChar *) xmltmp);
+          for (int j = 0; j < s->numls; j++) {
+            LoopSnapshot *ls = &(s->ls[j]);
+            xmlNodePtr slp = xmlNewChild(sp, 0, 
+                                         (xmlChar *) FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME, 0);
+            
+            // Loop index
+            snprintf(xmltmp,XT_LEN,"%d",ls->l_idx);
+            xmlSetProp(slp,(xmlChar *) "loopid",(xmlChar *) xmltmp);
 
-	    // Loop status
-	    snprintf(xmltmp,XT_LEN,"%d",ls->status);
-	    xmlSetProp(slp,(xmlChar *) "status",(xmlChar *) xmltmp);
+            // Loop status
+            snprintf(xmltmp,XT_LEN,"%d",ls->status);
+            xmlSetProp(slp,(xmlChar *) "status",(xmlChar *) xmltmp);
 
-	    // Loop volume
-	    snprintf(xmltmp,XT_LEN,"%.5f",ls->l_vol);
-	    xmlSetProp(slp,(xmlChar *) "loopvol",(xmlChar *) xmltmp);
+            // Loop volume
+            snprintf(xmltmp,XT_LEN,"%.5f",ls->l_vol);
+            xmlSetProp(slp,(xmlChar *) "loopvol",(xmlChar *) xmltmp);
 
-	    // Trigger volume
-	    snprintf(xmltmp,XT_LEN,"%.5f",ls->t_vol);
-	    xmlSetProp(slp,(xmlChar *) "triggervol",(xmlChar *) xmltmp);
-	  }
-	}
+            // Trigger volume
+            snprintf(xmltmp,XT_LEN,"%.5f",ls->t_vol);
+            xmlSetProp(slp,(xmlChar *) "triggervol",(xmlChar *) xmltmp);
+          }
+        }
       }
 
       xmlSaveFormatFile(tmp,ldat,1);
       xmlFreeDoc(ldat);
 
       if (newScene) {
-	// Add scene to browser so we can load it
-	Browser *br = app->getBROWSER(B_Scene);
-	if (br != 0) {
-	  app->setCURSCENE(app->getLOOPMGR()->AddSceneToBrowser(br,tmp));
-	  br->AddDivisions(FWEELIN_FILE_BROWSER_DIVISION_TIME);
-	}
+        // Add scene to browser so we can load it
+        Browser *br = app->getBROWSER(B_Scene);
+        if (br != 0) {
+          app->setCURSCENE(app->getLOOPMGR()->AddSceneToBrowser(br,tmp));
+          br->AddDivisions(FWEELIN_FILE_BROWSER_DIVISION_TIME);
+        }
       }
 
       printf("DISK: Close output.\n");
@@ -1083,13 +1085,13 @@ void LoopManager::CheckSaveMap() {
     for (int i = 0; i < mapsz; i++) {
       Loop *l = tmap->GetMap(i);
       if (l != 0 && l->GetSaveStatus() == NO_SAVE) {
-	// Loop exists but not saved-- add to our map
-	LoopListEvent *ll = (LoopListEvent *) 
-	  Event::GetEventByType(T_EV_LoopList,1);
-	ll->l = l;
-	
-	numsave++;
-	EventManager::QueueEvent(&savequeue,ll);
+        // Loop exists but not saved-- add to our map
+        LoopListEvent *ll = (LoopListEvent *) 
+          Event::GetEventByType(T_EV_LoopList,1);
+        ll->l = l;
+        
+        numsave++;
+        EventManager::QueueEvent(&savequeue,ll);
       }
     }
 
@@ -1102,9 +1104,9 @@ void LoopManager::CheckSaveMap() {
 
 // Saves loop XML data & prepares to save loop audio
 void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out, 
-				AudioBlock **b, 
-				AudioBlockIterator **i,
-				nframes_t *len) {
+                                AudioBlock **b, 
+                                AudioBlockIterator **i,
+                                nframes_t *len) {
   const static nframes_t LOOP_HASH_CHUNKSIZE = 10000;
 
   if (l->GetSaveStatus() == NO_SAVE) {
@@ -1128,7 +1130,7 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
     // *** Hopefully this won't take so long- or we may have to split it up
     // as we split up the write phase
     AudioBlockIterator *hashi = new AudioBlockIterator(l->blocks,
-						       LOOP_HASH_CHUNKSIZE);
+                                                       LOOP_HASH_CHUNKSIZE);
     MD5_CTX md5gen;
     MD5_Init(&md5gen);
     char go = 1;
@@ -1136,26 +1138,26 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
     
     do {
       nframes_t pos = hashi->GetTotalLength2Cur(),
-	remaining = *len-pos;
+        remaining = *len-pos;
       nframes_t num = MIN(LOOP_HASH_CHUNKSIZE,remaining);
       
       sample_t *ibuf[2];
       if (stereo) {
-	// Stereo
-	hashi->GetFragment(&ibuf[0],&ibuf[1]);
-	MD5_Update(&md5gen,ibuf[0],sizeof(sample_t) * num);
-	MD5_Update(&md5gen,ibuf[1],sizeof(sample_t) * num);
+        // Stereo
+        hashi->GetFragment(&ibuf[0],&ibuf[1]);
+        MD5_Update(&md5gen,ibuf[0],sizeof(sample_t) * num);
+        MD5_Update(&md5gen,ibuf[1],sizeof(sample_t) * num);
       } else {
-	// Mono
-	hashi->GetFragment(&ibuf[0],0);
-	MD5_Update(&md5gen,ibuf[0],sizeof(sample_t) * num);
+        // Mono
+        hashi->GetFragment(&ibuf[0],0);
+        MD5_Update(&md5gen,ibuf[0],sizeof(sample_t) * num);
       }
       
       if (remaining <= LOOP_HASH_CHUNKSIZE) {
-	// Finished encoding
-	go = 0;
+        // Finished encoding
+        go = 0;
       } else
-	hashi->NextFragment();
+        hashi->NextFragment();
     } while (go);
     
     // Done- compute final hash
@@ -1171,14 +1173,14 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
     GET_SAVEABLE_HASH_TEXT(l->GetSaveHash());
     if (l->name == 0 || strlen(l->name) == 0)
       snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s-%s%s",
-	       app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
-	       hashtext,
-	       app->getCFG()->GetAudioFileExt(app->getCFG()->GetLoopOutFormat()));
+               app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
+               hashtext,
+               app->getCFG()->GetAudioFileExt(app->getCFG()->GetLoopOutFormat()));
     else
       snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s-%s-%s%s",
-	       app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
-	       hashtext,l->name,
-	       app->getCFG()->GetAudioFileExt(app->getCFG()->GetLoopOutFormat()));
+               app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
+               hashtext,l->name,
+               app->getCFG()->GetAudioFileExt(app->getCFG()->GetLoopOutFormat()));
 
     struct stat st;
     printf("DISK: Opening '%s' for saving.\n",tmp);
@@ -1189,67 +1191,67 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
       *len = 0;
       *i = 0;
       if (*out != 0) {
-	fclose(*out);
-	*out = 0;
+        fclose(*out);
+        *out = 0;
       }
     } else {
       // Go save!
       *out = fopen(tmp,"wb");
       if (*out == 0) {
-	printf("DISK: ERROR: Couldn't open file! Does the folder exist and "
-	       "do you have write permission?\n");
-	*b = 0;
-	*len = 0;
-	*i = 0;
-	if (*out != 0) {
-	  fclose(*out);
-	  *out = 0;
-	}	
+        printf("DISK: ERROR: Couldn't open file! Does the folder exist and "
+               "do you have write permission?\n");
+        *b = 0;
+        *len = 0;
+        *i = 0;
+        if (*out != 0) {
+          fclose(*out);
+          *out = 0;
+        }       
       } else {
-	// Add loop to browser so we can load it
-	Browser *br = app->getBROWSER(B_Loop);
-	if (br != 0) {
-	  AddLoopToBrowser(br,tmp);
-	  br->AddDivisions(FWEELIN_FILE_BROWSER_DIVISION_TIME);
-	}
+        // Add loop to browser so we can load it
+        Browser *br = app->getBROWSER(B_Loop);
+        if (br != 0) {
+          AddLoopToBrowser(br,tmp);
+          br->AddDivisions(FWEELIN_FILE_BROWSER_DIVISION_TIME);
+        }
 
-	// Main file open, now save loop XML data
-	if (l->name == 0 || strlen(l->name) == 0)
-	  snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s-%s%s",
-		   app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
-		   hashtext,FWEELIN_OUTPUT_DATA_EXT);
-	else
-	  snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s-%s-%s%s",
-		   app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
-		   hashtext,l->name,FWEELIN_OUTPUT_DATA_EXT);
+        // Main file open, now save loop XML data
+        if (l->name == 0 || strlen(l->name) == 0)
+          snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s-%s%s",
+                   app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
+                   hashtext,FWEELIN_OUTPUT_DATA_EXT);
+        else
+          snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s-%s-%s%s",
+                   app->getCFG()->GetLibraryPath(),FWEELIN_OUTPUT_LOOP_NAME,
+                   hashtext,l->name,FWEELIN_OUTPUT_DATA_EXT);
 
-	xmlDocPtr ldat = xmlNewDoc((xmlChar *) "1.0");
-	if (ldat != 0) {
-	  const static int XT_LEN = 10;
-	  char xmltmp[XT_LEN];
+        xmlDocPtr ldat = xmlNewDoc((xmlChar *) "1.0");
+        if (ldat != 0) {
+          const static int XT_LEN = 10;
+          char xmltmp[XT_LEN];
 
-	  ldat->children = xmlNewDocNode(ldat,0,
-	    (xmlChar *) FWEELIN_OUTPUT_LOOP_NAME,0);
+          ldat->children = xmlNewDocNode(ldat,0,
+            (xmlChar *) FWEELIN_OUTPUT_LOOP_NAME,0);
 
-	  // version
-	  snprintf(xmltmp,XT_LEN,"%d",LOOP_SAVE_FORMAT_VERSION);
-	  xmlSetProp(ldat->children,(xmlChar *) "version",(xmlChar *) xmltmp);
+          // version
+          snprintf(xmltmp,XT_LEN,"%d",LOOP_SAVE_FORMAT_VERSION);
+          xmlSetProp(ldat->children,(xmlChar *) "version",(xmlChar *) xmltmp);
 
-	  // # beats
-	  snprintf(xmltmp,XT_LEN,"%ld",l->nbeats);
-	  xmlSetProp(ldat->children,(xmlChar *) "nbeats",(xmlChar *) xmltmp);
+          // # beats
+          snprintf(xmltmp,XT_LEN,"%ld",l->nbeats);
+          xmlSetProp(ldat->children,(xmlChar *) "nbeats",(xmlChar *) xmltmp);
 
-	  // pulse length
-	  if (l->pulse == 0)
-	    xmlSetProp(ldat->children,(xmlChar *) "pulselen",(xmlChar *) "0");
-	  else {
-	    snprintf(xmltmp,XT_LEN,"%d",l->pulse->GetLength());
-	    xmlSetProp(ldat->children,(xmlChar *) "pulselen",
-		       (xmlChar *) xmltmp);
-	  }
-	  xmlSaveFormatFile(tmp,ldat,1);
-	  xmlFreeDoc(ldat);
-	}
+          // pulse length
+          if (l->pulse == 0)
+            xmlSetProp(ldat->children,(xmlChar *) "pulselen",(xmlChar *) "0");
+          else {
+            snprintf(xmltmp,XT_LEN,"%d",l->pulse->GetLength());
+            xmlSetProp(ldat->children,(xmlChar *) "pulselen",
+                       (xmlChar *) xmltmp);
+          }
+          xmlSaveFormatFile(tmp,ldat,1);
+          xmlFreeDoc(ldat);
+        }
       }
     }
   } else {
@@ -1267,7 +1269,7 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
 
 // Loads loop XML data & prepares to load loop audio
 int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop, 
-			       int l_idx, float l_vol, char *l_filename) {
+                               int l_idx, float l_vol, char *l_filename) {
   // Open up right file and begin loading
   char tmp[FWEELIN_OUTNAME_LEN];
   codec format = UNKNOWN;
@@ -1275,7 +1277,7 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
   for (codec i = FIRST_FORMAT; i < END_OF_FORMATS; i = (codec) (i+1))
   {
     snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s%s",l_filename,
-	     app->getCFG()->GetAudioFileExt(i));
+             app->getCFG()->GetAudioFileExt(i));
     *in = fopen(tmp,"rb");
     if (*in != 0) {
       printf("DISK: Open loop '%s'\n",tmp);
@@ -1289,12 +1291,12 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
     // No go, try wildcard search with all format types
     for (codec i = FIRST_FORMAT; i < END_OF_FORMATS; i = (codec) (i+1)) {
       snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s*%s",l_filename,
-	       app->getCFG()->GetAudioFileExt(i));
+               app->getCFG()->GetAudioFileExt(i));
       glob_t globbuf;
       if (glob(tmp, 0, NULL, &globbuf) == 0) {
         for (size_t j = 0; *in == 0 && j < globbuf.gl_pathc; j++) {
-	  printf("DISK: Open loop '%s'\n",globbuf.gl_pathv[j]);
-	  *in = fopen(globbuf.gl_pathv[j],"rb");
+          printf("DISK: Open loop '%s'\n",globbuf.gl_pathv[j]);
+          *in = fopen(globbuf.gl_pathv[j],"rb");
         }
         globfree(&globbuf);
       }
@@ -1312,7 +1314,7 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
 
   // Main file open, now load loop XML data
   snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s%s",
-	   l_filename,FWEELIN_OUTPUT_DATA_EXT);
+           l_filename,FWEELIN_OUTPUT_DATA_EXT);
   
   // Create loop data
   *new_loop = new Loop(0,0,1.0,l_vol,0,format);
@@ -1322,22 +1324,22 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
   if (stat(tmp,&st) != 0) {
     // Try loading with wildcard
     snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s*%s",
-	     l_filename,FWEELIN_OUTPUT_DATA_EXT);
+             l_filename,FWEELIN_OUTPUT_DATA_EXT);
     glob_t globbuf;
 
     if (glob(tmp, 0, NULL, &globbuf) == 0) {
       for (size_t i = 0; result != 0 && i < globbuf.gl_pathc; i++) {
-	result = stat(globbuf.gl_pathv[i],&st);
-	if (result == 0)
-	  strncpy(tmp,globbuf.gl_pathv[i],
-		  FWEELIN_OUTNAME_LEN); // Save the name for later
+        result = stat(globbuf.gl_pathv[i],&st);
+        if (result == 0)
+          strncpy(tmp,globbuf.gl_pathv[i],
+                  FWEELIN_OUTNAME_LEN); // Save the name for later
       }
       globfree(&globbuf);
     }
 
     if (result != 0)
       printf("DISK: WARNING: Loop data '%s' missing!\n"
-	     "I will load just the raw audio.\n",tmp);
+             "I will load just the raw audio.\n",tmp);
   } else
     result = 0;
 
@@ -1346,7 +1348,7 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
     ldat = xmlParseFile(tmp);
   if (ldat == 0)
     printf("DISK: WARNING: Loop data '%s' invalid!\n"
-	   "I will load just the raw audio.\n",tmp);
+           "I will load just the raw audio.\n",tmp);
   else {
     xmlNode *root = xmlDocGetRootElement(ldat);
     
@@ -1356,7 +1358,7 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
     int baselen = strlen(app->getCFG()->GetLibraryPath()) + 1 +
       strlen(FWEELIN_OUTPUT_LOOP_NAME);
     if (!Saveable::SplitFilename(tmp,baselen,0,fn_hash,loopname,
-				 FWEELIN_OUTNAME_LEN)) {
+                                 FWEELIN_OUTNAME_LEN)) {
       // Set hash from filename
       (*new_loop)->SetSaveableHashFromText(fn_hash);
       
@@ -1367,16 +1369,16 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
       // by scanning for another loop with the same hash
       int dupidx;
       if ((dupidx = 
-	   app->getTMAP()->ScanForHash((*new_loop)->GetSaveHash())) != -1) {
-	printf("DISK: (DUPLICATE) Loop to load is already loaded at "
-	       "ID #%d.\n",dupidx);
-	
-	delete (*new_loop);
-	*new_loop = 0;
-	fclose(*in);
-	*in = 0;
-	
-	return 1;
+           app->getTMAP()->ScanForHash((*new_loop)->GetSaveHash())) != -1) {
+        printf("DISK: (DUPLICATE) Loop to load is already loaded at "
+               "ID #%d.\n",dupidx);
+        
+        delete (*new_loop);
+        *new_loop = 0;
+        fclose(*in);
+        *in = 0;
+        
+        return 1;
       }
       
       // Set loop name from filename
@@ -1389,16 +1391,16 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
     xmlChar *n = xmlGetProp(root, (const xmlChar *) "version");
     if (n != 0) {
       if (atoi((char *) n) >= 1)
-	// New format of loop save, so smooth end
-	*smooth_end = 1;
+        // New format of loop save, so smooth end
+        *smooth_end = 1;
       else
-	*smooth_end = 0;
+        *smooth_end = 0;
       
       xmlFree(n);
     } else {
       *smooth_end = 0;
       printf("DISK: Old format loop '%s'- loading with length fix.\n",
-	     l_filename);
+             l_filename);
     }
     
     // # beats
@@ -1412,8 +1414,8 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
     if ((n = xmlGetProp(root, (const xmlChar *) "pulselen")) != 0) {
       int plen = atoi((char *) n);
       if (plen != 0) {
-	// Loop should be syncronized to a pulse of given length-
-	(*new_loop)->pulse = CreatePulse(plen);
+        // Loop should be syncronized to a pulse of given length-
+        (*new_loop)->pulse = CreatePulse(plen);
       }
       xmlFree(n);
     }
@@ -1432,13 +1434,13 @@ void LoopManager::RenameLoop(int loopid) {
     Loop *l = GetSlot(loopid);
     if (l != 0) {
       if (CRITTERS)
-	printf("RENAME: Loop: %p\n",l);
+        printf("RENAME: Loop: %p\n",l);
       rename_loop = l;
       renamer = new ItemRenamer(app,this,l->name);
       if (!renamer->IsRenaming()) {
-	delete renamer;
-	renamer = 0;
-	rename_loop = 0;
+        delete renamer;
+        renamer = 0;
+        rename_loop = 0;
       }
     }
   }
@@ -1448,20 +1450,20 @@ void LoopManager::ItemRenamed(char *nw) {
   if (nw != 0) {
     // Rename on disk
     const static char *exts[] = {app->getCFG()->GetAudioFileExt(rename_loop->format), 
-				 FWEELIN_OUTPUT_DATA_EXT};
+                                 FWEELIN_OUTPUT_DATA_EXT};
     char *old_filename = 0, 
       *new_filename = 0;
     rename_loop->RenameSaveable(app->getCFG()->GetLibraryPath(), 
-				FWEELIN_OUTPUT_LOOP_NAME,
-				rename_loop->name, nw,
-				exts, 2,
-				&old_filename,
-				&new_filename);
+                                FWEELIN_OUTPUT_LOOP_NAME,
+                                rename_loop->name, nw,
+                                exts, 2,
+                                &old_filename,
+                                &new_filename);
     
     // We also need to rename in the loop browser
     if (app->getBROWSER(B_Loop) != 0) 
       app->getBROWSER(B_Loop)->
-	ItemRenamedOnDisk(old_filename,new_filename,nw);
+        ItemRenamedOnDisk(old_filename,new_filename,nw);
     
     if (old_filename != 0)
       delete[] old_filename;
@@ -1475,7 +1477,7 @@ void LoopManager::ItemRenamed(char *nw) {
     LoopTray *tray = (LoopTray *) app->getBROWSER(B_Loop_Tray);
     if (tray != 0)
       tray->ItemRenamedFromOutside(rename_loop,nw);
-	
+        
     delete renamer;
     renamer = 0;
     rename_loop = 0;
@@ -1488,8 +1490,8 @@ void LoopManager::ItemRenamed(char *nw) {
 };
 
 void LoopManager::GetWriteBlock(FILE **out, AudioBlock **b, 
-				AudioBlockIterator **i,
-				nframes_t *len) {
+                                AudioBlockIterator **i,
+                                nframes_t *len) {
   // If we are autosaving, check that our list is up to date
   if (autosave)
     CheckSaveMap();
@@ -1509,30 +1511,30 @@ void LoopManager::GetWriteBlock(FILE **out, AudioBlock **b,
     if (cur->GetType() == T_EV_LoopList) {
       // Loop in save queue- does it exist and is it ready to save?
       if ((l_idx = app->getTMAP()->SearchMap(((LoopListEvent *) cur)->l)) == -1
-	  || GetStatus(l_idx) == T_LS_Overdubbing
-	  || GetStatus(l_idx) == T_LS_Recording) {
-	if (l_idx == -1) {
-	  printf("DEBUG: Loop no longer exists- abort save!\n");
-	  EventManager::RemoveEvent(&savequeue,prev,&cur);
-	  advance = 0;
-	}
+          || GetStatus(l_idx) == T_LS_Overdubbing
+          || GetStatus(l_idx) == T_LS_Recording) {
+        if (l_idx == -1) {
+          printf("DEBUG: Loop no longer exists- abort save!\n");
+          EventManager::RemoveEvent(&savequeue,prev,&cur);
+          advance = 0;
+        }
 
-	// If we are overdubbing or recording, just ignore this loop
-	// we will come back to it
+        // If we are overdubbing or recording, just ignore this loop
+        // we will come back to it
       } else {
-	go = 0; // Found a suitable loop to save- stop!
-	advance = 0;
+        go = 0; // Found a suitable loop to save- stop!
+        advance = 0;
       }
     } else {
       if (cur->GetType() == T_EV_SceneMarker) {
-	// Scene marker in queue indicates we need to save a scene-
-	if (cur == savequeue) {
-	  // No loops are waiting to be saved.. go
+        // Scene marker in queue indicates we need to save a scene-
+        if (cur == savequeue) {
+          // No loops are waiting to be saved.. go
           app->getTMAP()->GoSave(((SceneMarkerEvent *) cur)->s_filename);
-	  EventManager::RemoveEvent(&savequeue,prev,&cur);
-	  cursave++;
-	  advance = 0;
-	} 
+          EventManager::RemoveEvent(&savequeue,prev,&cur);
+          cursave++;
+          advance = 0;
+        } 
       }
     }
 
@@ -1584,10 +1586,10 @@ void LoopManager::GetReadBlock(FILE **in, char *smooth_end) {
       // Open up right files, load data & setup for audio load
       LoopListEvent *ll = (LoopListEvent *) cur;
       if (SetupLoadLoop(in,smooth_end,
-			&ll->l,ll->l_idx,ll->l_vol,ll->l_filename)) {
-	// Not a loop or there was an error in loading
-	EventManager::RemoveEvent(&loadqueue,0,&cur);
-	curload++;
+                        &ll->l,ll->l_idx,ll->l_vol,ll->l_filename)) {
+        // Not a loop or there was an error in loading
+        EventManager::RemoveEvent(&loadqueue,0,&cur);
+        curload++;
       }
     } else {
       // Not a loop- remove
@@ -1621,19 +1623,19 @@ void LoopManager::ReadComplete(AudioBlock *b) {
       ll->l->blocks = b;
 
       if (app->getTMAP()->GetMap(ll->l_idx) != 0) {
-	// Loop ID is full. Choose another
-	int newidx = app->getTMAP()->GetFirstFree(default_looprange.lo,
-						  default_looprange.hi);
-	
-	if (newidx != -1) {
-	  printf("LOOP MANAGER: LoopID #%d full, got new ID: #%d!\n",
-		 ll->l_idx,newidx);
-	  ll->l_idx = newidx;
-	} else {
-	  printf("LOOP MANAGER: No free loopids in default placement range.\n"
-		 "I will erase the loop at id #%d.\n",ll->l_idx);
-	  DeleteLoop(ll->l_idx);
-	}
+        // Loop ID is full. Choose another
+        int newidx = app->getTMAP()->GetFirstFree(default_looprange.lo,
+                                                  default_looprange.hi);
+        
+        if (newidx != -1) {
+          printf("LOOP MANAGER: LoopID #%d full, got new ID: #%d!\n",
+                 ll->l_idx,newidx);
+          ll->l_idx = newidx;
+        } else {
+          printf("LOOP MANAGER: No free loopids in default placement range.\n"
+                 "I will erase the loop at id #%d.\n",ll->l_idx);
+          DeleteLoop(ll->l_idx);
+        }
       }
 
       // Add loop to our map
@@ -1648,9 +1650,9 @@ void LoopManager::ReadComplete(AudioBlock *b) {
 
 void LoopManager::StripePulseOn(Pulse *pulse) {
   app->getBMG()->StripeBlockOn(pulse,app->getAMPEAKS(),
-			       app->getAMPEAKSI());
+                               app->getAMPEAKSI());
   app->getBMG()->StripeBlockOn(pulse,app->getAUDIOMEM(),
-			       app->getAUDIOMEMI());
+                               app->getAUDIOMEMI());
 }
 
 void LoopManager::StripePulseOff(Pulse *pulse) {
@@ -1664,7 +1666,7 @@ Pulse *LoopManager::CreatePulse(nframes_t len) {
   // First, check to see if we have a pulse of the right length-
   int i;
   for (i = 0; i < MAX_PULSES && 
-	 (pulses[i] == 0 || pulses[i]->GetLength() != len); i++);
+         (pulses[i] == 0 || pulses[i]->GetLength() != len); i++);
   if (i < MAX_PULSES)
     // Found it, use this pulse
     return pulses[i];
@@ -1673,8 +1675,8 @@ Pulse *LoopManager::CreatePulse(nframes_t len) {
     for (i = 0; i < MAX_PULSES && pulses[i] != 0; i++);
     if (i < MAX_PULSES) {
       app->getRP()->AddChild(pulses[i] = 
-			     new Pulse(app,len,0),
-			     ProcessorItem::TYPE_HIPRIORITY);
+                             new Pulse(app,len,0),
+                             ProcessorItem::TYPE_HIPRIORITY);
       StripePulseOn(pulses[i]);
       curpulseindex = i;
 
@@ -1695,8 +1697,8 @@ Pulse *LoopManager::CreatePulse(nframes_t len) {
 void LoopManager::CreatePulse(int index, int pulseindex, int sub) {
   Loop *cur = app->getTMAP()->GetMap(index);
   if (cur != 0 && (status[index] == T_LS_Off ||
-		   status[index] == T_LS_Playing ||
-		   status[index] == T_LS_Overdubbing)) {
+                   status[index] == T_LS_Playing ||
+                   status[index] == T_LS_Overdubbing)) {
     // Set pulse length based on loop length
     nframes_t len = GetLength(index);
     if (len != 0) {
@@ -1705,14 +1707,14 @@ void LoopManager::CreatePulse(int index, int pulseindex, int sub) {
       nframes_t startpos = 0;
       // So set the starting pulse position based on where loop is playing
       if (status[index] == T_LS_Playing)
-	startpos = ((PlayProcessor *) plist[index])->GetPlayedLength() % len;
+        startpos = ((PlayProcessor *) plist[index])->GetPlayedLength() % len;
       else if (status[index] == T_LS_Overdubbing)
-	startpos = ((RecordProcessor *) plist[index])->
-	  GetRecordedLength() % len;
+        startpos = ((RecordProcessor *) plist[index])->
+          GetRecordedLength() % len;
       
       app->getRP()->AddChild(cur->pulse = pulses[pulseindex] = 
-			     new Pulse(app,len,startpos),
-			     ProcessorItem::TYPE_HIPRIORITY);
+                             new Pulse(app,len,startpos),
+                             ProcessorItem::TYPE_HIPRIORITY);
       StripePulseOn(cur->pulse);
       curpulseindex = pulseindex;
       cur->nbeats = sub; // Set # of beats in the loop
@@ -1722,9 +1724,9 @@ void LoopManager::CreatePulse(int index, int pulseindex, int sub) {
       
       // Now reconfigure processor on this index to be synced to the new pulse
       if (status[index] == T_LS_Playing) 
-	((PlayProcessor *) plist[index])->SyncUp();
+        ((PlayProcessor *) plist[index])->SyncUp();
       else if (status[index] == T_LS_Overdubbing)
-	((RecordProcessor *) plist[index])->SyncUp();
+        ((RecordProcessor *) plist[index])->SyncUp();
     }
   }
 }
@@ -1745,51 +1747,51 @@ void LoopManager::TapPulse(int pulseindex, char newlen) {
     Pulse *cur = pulses[pulseindex];
     if (cur == 0) {
       if (newlen) {
-	// New pulse- tap now!- set zero length for now
-	cur = pulses[pulseindex] = new Pulse(app,0,0);
-	cur->stopped = 1;
-	cur->prevtap = app->getRP()->GetSampleCnt();
-	//cur->SwitchMetronome(1);
-	app->getRP()->AddChild(cur,ProcessorItem::TYPE_HIPRIORITY);
-	
-	StripePulseOn(cur);
-	curpulseindex = pulseindex;
+        // New pulse- tap now!- set zero length for now
+        cur = pulses[pulseindex] = new Pulse(app,0,0);
+        cur->stopped = 1;
+        cur->prevtap = app->getRP()->GetSampleCnt();
+        //cur->SwitchMetronome(1);
+        app->getRP()->AddChild(cur,ProcessorItem::TYPE_HIPRIORITY);
+        
+        StripePulseOn(cur);
+        curpulseindex = pulseindex;
       }
     } else {
       // Test position of axis
       char nextdownbeat = 0;
       if (cur->GetPct() >= 0.5)
-	nextdownbeat = 1;
+        nextdownbeat = 1;
 
       // Old pulse- tap now!
       if (newlen) {
-	// Redefine length from tap
-	nframes_t oldlen = cur->GetLength(),
-	  newtap = app->getRP()->GetSampleCnt(),
-	  newlen = newtap - cur->prevtap;
+        // Redefine length from tap
+        nframes_t oldlen = cur->GetLength(),
+          newtap = app->getRP()->GetSampleCnt(),
+          newlen = newtap - cur->prevtap;
 
-	// .. only if the new length isn't outrageous
-	if (oldlen < 64)
-	  cur->SetLength(newlen);
-	else if (newlen < oldlen * TAP_NEWLEN_TIMEOUT_RATIO) {
-	  // 2nd outrageous length check
-	  float ratio = (float) MIN(newlen,oldlen)/MAX(newlen,oldlen);
-	  if (ratio > 1.0-TAP_NEWLEN_REJECT_TOLERANCE)
-	    cur->SetLength((nframes_t) (oldlen*TAP_NEWLEN_GRADUATION +
-					newlen*(1-TAP_NEWLEN_GRADUATION)));
-	}
+        // .. only if the new length isn't outrageous
+        if (oldlen < 64)
+          cur->SetLength(newlen);
+        else if (newlen < oldlen * TAP_NEWLEN_TIMEOUT_RATIO) {
+          // 2nd outrageous length check
+          float ratio = (float) MIN(newlen,oldlen)/MAX(newlen,oldlen);
+          if (ratio > 1.0-TAP_NEWLEN_REJECT_TOLERANCE)
+            cur->SetLength((nframes_t) (oldlen*TAP_NEWLEN_GRADUATION +
+                                        newlen*(1-TAP_NEWLEN_GRADUATION)));
+        }
 
-	cur->prevtap = newtap;
-	//cur->SwitchMetronome(1);
-	cur->stopped = 0;
+        cur->prevtap = newtap;
+        //cur->SwitchMetronome(1);
+        cur->stopped = 0;
       }
 
       if (nextdownbeat)
-	// Tap to beginning- with wrap
-	cur->Wrap();
+        // Tap to beginning- with wrap
+        cur->Wrap();
       else
-	// Tap to beginning- no wrap
-	cur->SetPos(0);
+        // Tap to beginning- no wrap
+        cur->SetPos(0);
 
       // Notify external transport that we have moved
       app->getAUDIO()->RelocateTransport(0);
@@ -1824,7 +1826,7 @@ void LoopManager::DeletePulse(int pulseindex) {
     int nt = app->getCFG()->GetNumTriggers();
     for (int i = 0; i < nt; i++)
       if (GetPulse(i) == pulses[pulseindex]) 
-	DeleteLoop(i);
+        DeleteLoop(i);
 
     // Erase this pulse
     app->getRP()->DelChild(pulses[pulseindex]);
@@ -1864,12 +1866,12 @@ int LoopManager::MoveLoop (int src, int tgt) {
       waitactivate_od[src] = 0;
       waitactivate_od_fb[tgt] = waitactivate_od_fb[src];
       waitactivate_od_fb[src] = 0;
-      for (int i = 0; i < LAST_REC_COUNT; i++)	
-	if (lastrecidx[i] == src)
-	  lastrecidx[i] = tgt;
+      for (int i = 0; i < LAST_REC_COUNT; i++)  
+        if (lastrecidx[i] == src)
+          lastrecidx[i] = tgt;
 
       if (lastindex == src)
-	lastindex = tgt;
+        lastindex = tgt;
       
       UpdateLoopLists_ItemMoved(src,tgt);
     }
@@ -1902,10 +1904,10 @@ void LoopManager::DeleteLoop (int index) {
       recp->AbortRecording();
       AudioBlock *recblk = recp->GetFirstRecordedBlock();
       if (recblk != 0) {
-	app->getBMG()->RefDeleted(recblk);
-	recblk->DeleteChain(); // *** Not RT Safe
-	if (lp != 0)
-	  lp->blocks = 0;
+        app->getBMG()->RefDeleted(recblk);
+        recblk->DeleteChain(); // *** Not RT Safe
+        if (lp != 0)
+          lp->blocks = 0;
       }
 
       numrecordingloops--;
@@ -1950,25 +1952,25 @@ void LoopManager::UpdateLoopLists_ItemAdded (int l_idx) {
       Snapshot *s = &snaps[i];
       char go = 1;
       for (int j = 0; go && j < s->numls; j++) 
-	if (s->ls[j].l_idx == l_idx)
-	  go = 0;
+        if (s->ls[j].l_idx == l_idx)
+          go = 0;
 
       if (go) {
-	// Loop index not present in snapshot- add, defaulting to loop off
-	LoopSnapshot *newls = 0;
-	newls = new LoopSnapshot[s->numls+1];
+        // Loop index not present in snapshot- add, defaulting to loop off
+        LoopSnapshot *newls = 0;
+        newls = new LoopSnapshot[s->numls+1];
 
-	memcpy(newls,s->ls,sizeof(LoopSnapshot) * s->numls);
-	LoopSnapshot *n = &newls[s->numls];
+        memcpy(newls,s->ls,sizeof(LoopSnapshot) * s->numls);
+        LoopSnapshot *n = &newls[s->numls];
 
-	n->l_idx = l_idx;
-	n->status = T_LS_Off;
-	n->l_vol = GetLoopVolume(l_idx);
-	n->t_vol = 0.;
+        n->l_idx = l_idx;
+        n->status = T_LS_Off;
+        n->l_vol = GetLoopVolume(l_idx);
+        n->t_vol = 0.;
 
-	delete[] s->ls;
-	s->ls = newls;
-	s->numls = s->numls+1;
+        delete[] s->ls;
+        s->ls = newls;
+        s->numls = s->numls+1;
       }
     }
   }
@@ -1990,24 +1992,24 @@ void LoopManager::UpdateLoopLists_ItemRemoved (int l_idx) {
       Snapshot *s = &snaps[i];
       char go = 1;
       for (int j = 0; go && j < s->numls; j++) 
-	if (s->ls[j].l_idx == l_idx) {
-	  // Remove loop from list
-	  LoopSnapshot *newls = 0;
-	  if (s->numls > 1) {
-	    newls = new LoopSnapshot[s->numls-1];
+        if (s->ls[j].l_idx == l_idx) {
+          // Remove loop from list
+          LoopSnapshot *newls = 0;
+          if (s->numls > 1) {
+            newls = new LoopSnapshot[s->numls-1];
 
-	    // All elements preceding j
-	    memcpy(newls,s->ls,sizeof(LoopSnapshot) * j);
-	    // & following
-	    memcpy(&newls[j],&(s->ls[j+1]),
-		   sizeof(LoopSnapshot) * (s->numls-j-1));
-	  }
+            // All elements preceding j
+            memcpy(newls,s->ls,sizeof(LoopSnapshot) * j);
+            // & following
+            memcpy(&newls[j],&(s->ls[j+1]),
+                   sizeof(LoopSnapshot) * (s->numls-j-1));
+          }
 
-	  delete[] s->ls;
-	  s->ls = newls;
-	  s->numls = s->numls-1;
-	  go = 0; // No more checking in this snapshot
-	}
+          delete[] s->ls;
+          s->ls = newls;
+          s->numls = s->numls-1;
+          go = 0; // No more checking in this snapshot
+        }
     }
   }
 };
@@ -2032,8 +2034,8 @@ void LoopManager::UpdateLoopLists_ItemMoved (int l_idx_old, int l_idx_new) {
     if (snaps[i].exists) {
       Snapshot *s = &snaps[i];
       for (int j = 0; j < s->numls; j++) 
-	if (s->ls[j].l_idx == l_idx_old)
-	  s->ls[j].l_idx = l_idx_new;
+        if (s->ls[j].l_idx == l_idx_old)
+          s->ls[j].l_idx = l_idx_new;
     }
   }
 };
@@ -2043,7 +2045,7 @@ void LoopManager::UpdateLoopLists_ItemMoved (int l_idx_old, int l_idx_new) {
 // this loop and the settings passed- see .fweelin.rc
 // *** Not RT Safe
 void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs, 
-			    char overdub, float *od_feedback) {
+                            char overdub, float *od_feedback) {
   // printf("ACTIVATE plist %p status %d\n",plist[index],status[index]);
 
   if (plist[index] != 0) {
@@ -2062,12 +2064,12 @@ void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs,
     // Record a new loop
     float *inputvol = &(app->getRP()->inputvol); // Where to get input vol from
     app->getRP()->AddChild(plist[index] =
-			   new RecordProcessor(app,app->getISET(),inputvol,
-					       GetCurPulse(),
-					       app->getAUDIOMEM(),
-					       app->getAUDIOMEMI(),
-					       app->getCFG()->
-					       loop_peaksavgs_chunksize));
+                           new RecordProcessor(app,app->getISET(),inputvol,
+                                               GetCurPulse(),
+                                               app->getAUDIOMEM(),
+                                               app->getAUDIOMEMI(),
+                                               app->getCFG()->
+                                               loop_peaksavgs_chunksize));
     
     numrecordingloops++;
     status[index] = T_LS_Recording;
@@ -2081,15 +2083,15 @@ void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs,
       // Overdub
       float *inputvol = &(app->getRP()->inputvol); // Get input vol from main
       app->getRP()->AddChild(plist[index] = 
-			     new RecordProcessor(app,
-						 app->getISET(),inputvol,
-						 lp,vol,ofs,od_feedback));
+                             new RecordProcessor(app,
+                                                 app->getISET(),inputvol,
+                                                 lp,vol,ofs,od_feedback));
       numrecordingloops++;
       status[index] = T_LS_Overdubbing;
     } else {
       // Play
       app->getRP()->AddChild(plist[index] = 
-			     new PlayProcessor(app,lp,vol,ofs));
+                             new PlayProcessor(app,lp,vol,ofs));
       status[index] = T_LS_Playing;
     }
   }
@@ -2120,9 +2122,9 @@ void LoopManager::Deactivate (int index) {
     //printf("newlp from plist: %p\n",plist[index]);
     Loop *newlp = new
       Loop(((RecordProcessor *) plist[index])->GetFirstRecordedBlock(),
-	   curpulse,1.0,adjustednewloopvol,
-	   ((RecordProcessor *) plist[index])->GetNBeats(),
-	   app->getCFG()->GetLoopOutFormat());
+           curpulse,1.0,adjustednewloopvol,
+           ((RecordProcessor *) plist[index])->GetNBeats(),
+           app->getCFG()->GetLoopOutFormat());
     app->getTMAP()->SetMap(index, newlp);
     UpdateLoopLists_ItemAdded(index);
     numloops++;
@@ -2179,7 +2181,7 @@ void LoopManager::LoadScene(SceneBrowserItem *i) {
   char tmp[FWEELIN_OUTNAME_LEN],
     tmp2[FWEELIN_OUTNAME_LEN];
   snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s%s",
-	   filename,FWEELIN_OUTPUT_DATA_EXT);
+           filename,FWEELIN_OUTPUT_DATA_EXT);
   
   xmlDocPtr dat = xmlParseFile(tmp);
   if (dat == 0)
@@ -2187,149 +2189,149 @@ void LoopManager::LoadScene(SceneBrowserItem *i) {
   else {
     xmlNode *root = xmlDocGetRootElement(dat);
     if (!root || !root->name ||
-	xmlStrcmp(root->name,(const xmlChar *) FWEELIN_OUTPUT_SCENE_NAME))
+        xmlStrcmp(root->name,(const xmlChar *) FWEELIN_OUTPUT_SCENE_NAME))
       printf("DISK: ERROR: Scene data '%s' bad format!\n",tmp);
     else {
       for (xmlNode *cur_node = root->children; cur_node != NULL; 
-	   cur_node = cur_node->next) {
-	if ((!xmlStrcmp(cur_node->name, 
-			(const xmlChar *) FWEELIN_OUTPUT_LOOP_NAME))) {
-	  // Loop within scene-- read
-	  int l_idx = loadloopid;
-	  float vol = 1.0;
+           cur_node = cur_node->next) {
+        if ((!xmlStrcmp(cur_node->name, 
+                        (const xmlChar *) FWEELIN_OUTPUT_LOOP_NAME))) {
+          // Loop within scene-- read
+          int l_idx = loadloopid;
+          float vol = 1.0;
 
-	  // Loopid
-	  xmlChar *n = xmlGetProp(cur_node, (const xmlChar *) "loopid");
-	  if (n != 0) {
-	    l_idx = atoi((char *) n);
-	    xmlFree(n);
-	  }
+          // Loopid
+          xmlChar *n = xmlGetProp(cur_node, (const xmlChar *) "loopid");
+          if (n != 0) {
+            l_idx = atoi((char *) n);
+            xmlFree(n);
+          }
 
-	  // Volume
-	  if ((n = xmlGetProp(cur_node, (const xmlChar *) "volume")) != 0) {
-	    vol = atof((char *) n);
-	    xmlFree(n);
-	  }
+          // Volume
+          if ((n = xmlGetProp(cur_node, (const xmlChar *) "volume")) != 0) {
+            vol = atof((char *) n);
+            xmlFree(n);
+          }
 
-	  // Hash
-	  if ((n = xmlGetProp(cur_node, (const xmlChar *) "hash")) != 0) {
-	    // Compose loop filename from hash
-	    snprintf(tmp2,FWEELIN_OUTNAME_LEN,"%s/%s-%s",
-		     app->getCFG()->GetLibraryPath(),
-		     FWEELIN_OUTPUT_LOOP_NAME,n);
-	    xmlFree(n);
+          // Hash
+          if ((n = xmlGetProp(cur_node, (const xmlChar *) "hash")) != 0) {
+            // Compose loop filename from hash
+            snprintf(tmp2,FWEELIN_OUTNAME_LEN,"%s/%s-%s",
+                     app->getCFG()->GetLibraryPath(),
+                     FWEELIN_OUTPUT_LOOP_NAME,n);
+            xmlFree(n);
 
-	    // Load the loop into the specified index
-	    printf(" (loopid %d vol %.5f filename %s)\n",
-	    	   l_idx,vol,tmp2);
-	    LoadLoop(tmp2,l_idx,vol);
-	    // sleep(2);
-	  } else 
-	    printf("DISK: Scene definition for loop (id %d) has missing "
-		   "hash!\n",l_idx);
-	} else if ((!xmlStrcmp(cur_node->name, 
-			       (const xmlChar *) FWEELIN_OUTPUT_SNAPSHOT_NAME))) {
-	  // Snapshot within scene-- read
-	  int snapid = 0;
-	  char sgo = 1;
+            // Load the loop into the specified index
+            printf(" (loopid %d vol %.5f filename %s)\n",
+                   l_idx,vol,tmp2);
+            LoadLoop(tmp2,l_idx,vol);
+            // sleep(2);
+          } else 
+            printf("DISK: Scene definition for loop (id %d) has missing "
+                   "hash!\n",l_idx);
+        } else if ((!xmlStrcmp(cur_node->name, 
+                               (const xmlChar *) FWEELIN_OUTPUT_SNAPSHOT_NAME))) {
+          // Snapshot within scene-- read
+          int snapid = 0;
+          char sgo = 1;
 
-	  // Snapshot index
-	  xmlChar *n = xmlGetProp(cur_node, (const xmlChar *) "snapid");
-	  if (n != 0) {
-	    snapid = atoi((char *) n);
-	    xmlFree(n);
-	  }
+          // Snapshot index
+          xmlChar *n = xmlGetProp(cur_node, (const xmlChar *) "snapid");
+          if (n != 0) {
+            snapid = atoi((char *) n);
+            xmlFree(n);
+          }
 
-	  // Check if snapshot exists- if so, find another slot
-	  if (app->getSNAP(snapid) == 0 || app->getSNAP(snapid)->exists) {
-	    Snapshot *snaps = app->getSNAPS();
-	    char go = 1;
-	    int i = 0; 
-	    while (go && i < app->getCFG()->GetMaxSnapshots()) {
-	      if (!snaps[i].exists) 
-		go = 0;
-	      else
-		i++;
-	    }
-	    
-	    if (go) {
-	      printf("DISK: No space to load snapshot in scene-\n"
-		     "please raise maximum # of snapshots in configuration!\n");
-	      sgo = 0;
-	    } else
-	      snapid = i;
-	  }
+          // Check if snapshot exists- if so, find another slot
+          if (app->getSNAP(snapid) == 0 || app->getSNAP(snapid)->exists) {
+            Snapshot *snaps = app->getSNAPS();
+            char go = 1;
+            int i = 0; 
+            while (go && i < app->getCFG()->GetMaxSnapshots()) {
+              if (!snaps[i].exists) 
+                go = 0;
+              else
+                i++;
+            }
+            
+            if (go) {
+              printf("DISK: No space to load snapshot in scene-\n"
+                     "please raise maximum # of snapshots in configuration!\n");
+              sgo = 0;
+            } else
+              snapid = i;
+          }
 
-	  if (sgo) {
-	    // Name
-	    n = xmlGetProp(cur_node, (const xmlChar *) "name");
+          if (sgo) {
+            // Name
+            n = xmlGetProp(cur_node, (const xmlChar *) "name");
 
-	    printf(" (snapshot: %s)\n",n);
-	    Snapshot *s = app->LoadSnapshot(snapid,(char *) n);
-	    if (n != 0)
-	      xmlFree(n);
+            printf(" (snapshot: %s)\n",n);
+            Snapshot *s = app->LoadSnapshot(snapid,(char *) n);
+            if (n != 0)
+              xmlFree(n);
 
-	    // Now, count loop snapshots given in snapshot
-	    if (s != 0) {
-	      int numls = 0;
-	      for (xmlNode *ls_node = cur_node->children; ls_node != NULL; 
-		   ls_node = ls_node->next) {
-		if ((!xmlStrcmp(ls_node->name, 
-				(const xmlChar *) FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME))) {
-		  numls++;
-		}
-	      }
-	      
-	      printf("  (%d loops in snapshot)\n",numls);
+            // Now, count loop snapshots given in snapshot
+            if (s != 0) {
+              int numls = 0;
+              for (xmlNode *ls_node = cur_node->children; ls_node != NULL; 
+                   ls_node = ls_node->next) {
+                if ((!xmlStrcmp(ls_node->name, 
+                                (const xmlChar *) FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME))) {
+                  numls++;
+                }
+              }
+              
+              printf("  (%d loops in snapshot)\n",numls);
 
-	      // Setup & load loop snapshots
-	      s->numls = numls;
-	      if (numls > 0)
-		s->ls = new LoopSnapshot[numls];
-	      else
-		s->ls = 0;
+              // Setup & load loop snapshots
+              s->numls = numls;
+              if (numls > 0)
+                s->ls = new LoopSnapshot[numls];
+              else
+                s->ls = 0;
 
-	      int i = 0;
-	      for (xmlNode *ls_node = cur_node->children; ls_node != NULL; 
-		   ls_node = ls_node->next) {
-		if ((!xmlStrcmp(ls_node->name, 
-				(const xmlChar *) FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME))) {
-		  LoopSnapshot *ls = &(s->ls[i]);
+              int i = 0;
+              for (xmlNode *ls_node = cur_node->children; ls_node != NULL; 
+                   ls_node = ls_node->next) {
+                if ((!xmlStrcmp(ls_node->name, 
+                                (const xmlChar *) FWEELIN_OUTPUT_LOOPSNAPSHOT_NAME))) {
+                  LoopSnapshot *ls = &(s->ls[i]);
 
-		  // Loop index
-		  xmlChar *nn = xmlGetProp(ls_node, (const xmlChar *) "loopid");
-		  if (nn != 0) {
-		    ls->l_idx = atoi((char *) nn);
-		    xmlFree(nn);
-		  }
+                  // Loop index
+                  xmlChar *nn = xmlGetProp(ls_node, (const xmlChar *) "loopid");
+                  if (nn != 0) {
+                    ls->l_idx = atoi((char *) nn);
+                    xmlFree(nn);
+                  }
 
-		  // Loop status
-		  nn = xmlGetProp(ls_node, (const xmlChar *) "status");
-		  if (nn != 0) {
-		    ls->status = (LoopStatus) atoi((char *) nn);
-		    xmlFree(nn);
-		  }
+                  // Loop status
+                  nn = xmlGetProp(ls_node, (const xmlChar *) "status");
+                  if (nn != 0) {
+                    ls->status = (LoopStatus) atoi((char *) nn);
+                    xmlFree(nn);
+                  }
 
-		  // Loop volume
-		  nn = xmlGetProp(ls_node, (const xmlChar *) "loopvol");
-		  if (nn != 0) {
-		    ls->l_vol = atof((char *) nn);
-		    xmlFree(nn);
-		  }
+                  // Loop volume
+                  nn = xmlGetProp(ls_node, (const xmlChar *) "loopvol");
+                  if (nn != 0) {
+                    ls->l_vol = atof((char *) nn);
+                    xmlFree(nn);
+                  }
 
-		  // Trigger volume
-		  nn = xmlGetProp(ls_node, (const xmlChar *) "triggervol");
-		  if (nn != 0) {
-		    ls->t_vol = atof((char *) nn);
-		    xmlFree(nn);
-		  }
+                  // Trigger volume
+                  nn = xmlGetProp(ls_node, (const xmlChar *) "triggervol");
+                  if (nn != 0) {
+                    ls->t_vol = atof((char *) nn);
+                    xmlFree(nn);
+                  }
 
-		  i++;
-		}
-	      }
-	    }
-	  }
-	}
+                  i++;
+                }
+              }
+            }
+          }
+        }
       }
 
       // Now, remember this scene is loaded
@@ -2348,43 +2350,43 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     // Recording has ended on one of the RecordProcessors- find it!
     for (int i = 0; i < app->getTMAP()->GetMapSize(); i++) 
       if (plist[i] == from) {
-	// Should we keep this recording
-	if (!((EndRecordEvent *) ev)->keeprecord) {
-	  DeleteLoop(i); // No
-	}
-	else {
-	  nframes_t playofs = 0;
-	  if (status[i] == T_LS_Recording) {
-	    // Adjust number of beats in loop based on the recording
-	    app->getTMAP()->GetMap(i)->nbeats = 
-	      ((RecordProcessor *) plist[i])->GetNBeats();
+        // Should we keep this recording
+        if (!((EndRecordEvent *) ev)->keeprecord) {
+          DeleteLoop(i); // No
+        }
+        else {
+          nframes_t playofs = 0;
+          if (status[i] == T_LS_Recording) {
+            // Adjust number of beats in loop based on the recording
+            app->getTMAP()->GetMap(i)->nbeats = 
+              ((RecordProcessor *) plist[i])->GetNBeats();
 
-	    Pulse *recsync = ((RecordProcessor *) plist[i])->GetPulse();
-	    // Sync recording may have ended late, so start play where we
-	    // left off
-	    if (recsync != 0)
-	      playofs = recsync->GetPos();
-	  } else if (status[i] == T_LS_Overdubbing) {
-	    // Start play at position where overdub left off
-	    playofs = ((RecordProcessor *) plist[i])->GetRecordedLength();
-	  }
+            Pulse *recsync = ((RecordProcessor *) plist[i])->GetPulse();
+            // Sync recording may have ended late, so start play where we
+            // left off
+            if (recsync != 0)
+              playofs = recsync->GetPos();
+          } else if (status[i] == T_LS_Overdubbing) {
+            // Start play at position where overdub left off
+            playofs = ((RecordProcessor *) plist[i])->GetRecordedLength();
+          }
 
-	  // Remove recordprocessor from chain
-	  app->getRP()->DelChild(plist[i]);
-	  numrecordingloops--;
-	  status[i] = T_LS_Off;
-	  plist[i] = 0;
+          // Remove recordprocessor from chain
+          app->getRP()->DelChild(plist[i]);
+          numrecordingloops--;
+          status[i] = T_LS_Off;
+          plist[i] = 0;
 
-	  // Check if we need to activate a playprocessor
-	  if (waitactivate[i]) {
-	    waitactivate[i] = 0;
-	    // Activate is not RT safe (new processor alloc)
-	    // So this event thread had better be nonRT!
-	    Activate(i,waitactivate_shot[i],waitactivate_vol[i],
-		     playofs,
-		     waitactivate_od[i],waitactivate_od_fb[i]);
-	  }
-	}
+          // Check if we need to activate a playprocessor
+          if (waitactivate[i]) {
+            waitactivate[i] = 0;
+            // Activate is not RT safe (new processor alloc)
+            // So this event thread had better be nonRT!
+            Activate(i,waitactivate_shot[i],waitactivate_vol[i],
+                     playofs,
+                     waitactivate_od[i],waitactivate_od_fb[i]);
+          }
+        }
       }
     break;
 
@@ -2392,7 +2394,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       // OK!
       if (CRITTERS)
-	printf("CORE: Received ToggleDiskOutputEvent\n");
+        printf("CORE: Received ToggleDiskOutputEvent\n");
       app->ToggleDiskOutput();
     }
     break;
@@ -2403,28 +2405,28 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received ToggleSelectLoopEvent: Set %d Loop ID %d\n",
-	       sev->setid,sev->loopid);
+        printf("CORE: Received ToggleSelectLoopEvent: Set %d Loop ID %d\n",
+               sev->setid,sev->loopid);
       
       LoopList **ll = app->getLOOPSEL(sev->setid);
       if (ll != 0) {
-	// Get loop with id
-	Loop *l = app->getTMAP()->GetMap(sev->loopid);
-	if (l != 0) {
-	  LoopList *prev;
-	  LoopList *exists = LoopList::Scan(*ll,sev->loopid,&prev);
-	  if (exists != 0) {
-	    // printf("REMOVE!\n");
-	    *ll = LoopList::Remove(*ll,exists,prev);
-	    l->ChangeSelectedCount(-1);
-	  } else {
-	    // printf("ADD!\n");
-	    *ll = LoopList::AddBegin(*ll,sev->loopid);
-	    l->ChangeSelectedCount(1);
-	  }
-	}
+        // Get loop with id
+        Loop *l = app->getTMAP()->GetMap(sev->loopid);
+        if (l != 0) {
+          LoopList *prev;
+          LoopList *exists = LoopList::Scan(*ll,sev->loopid,&prev);
+          if (exists != 0) {
+            // printf("REMOVE!\n");
+            *ll = LoopList::Remove(*ll,exists,prev);
+            l->ChangeSelectedCount(-1);
+          } else {
+            // printf("ADD!\n");
+            *ll = LoopList::AddBegin(*ll,sev->loopid);
+            l->ChangeSelectedCount(1);
+          }
+        }
       } else 
-	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+        printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
     }
     break;
 
@@ -2434,47 +2436,47 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SelectOnlyPlayingLoopsEvent: Set %d [%s]\n",
-	       sev->setid,(sev->playing ? "PLAYING" : "IDLE"));
+        printf("CORE: Received SelectOnlyPlayingLoopsEvent: Set %d [%s]\n",
+               sev->setid,(sev->playing ? "PLAYING" : "IDLE"));
       
       LoopList **ll = app->getLOOPSEL(sev->setid);
       if (ll != 0) {
-	// Scan all loops for playing loops
-	for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
-	  Loop *l = app->getTMAP()->GetMap(i);
-	  if (GetStatus(i) == T_LS_Overdubbing ||
-	      GetStatus(i) == T_LS_Playing) {
-	    if (l != 0) {
-	      // Loop exists, and it's playing!
-	      LoopList *prev;
-	      LoopList *exists = LoopList::Scan(*ll,i,&prev);
-	      if (!sev->playing && exists != 0) {
-		// printf("REMOVE!\n");
-		*ll = LoopList::Remove(*ll,exists,prev);
-		l->ChangeSelectedCount(-1);
-	      } else if (sev->playing && exists == 0) {
-		// printf("ADD!\n");
-		*ll = LoopList::AddBegin(*ll,i);
-		l->ChangeSelectedCount(1);
-	      }
-	    }
-	  } else if (app->getTMAP()->GetMap(i) != 0) {
-	    // Loop exists, but not playing/overdubbing
-	    LoopList *prev;
-	    LoopList *exists = LoopList::Scan(*ll,i,&prev);
-	    if (sev->playing && exists != 0) {
-	      // printf("REMOVE!\n");
-	      *ll = LoopList::Remove(*ll,exists,prev);
-	      l->ChangeSelectedCount(-1);
-	    } else if (!sev->playing && exists == 0) {
-	      // printf("ADD!\n");
-	      *ll = LoopList::AddBegin(*ll,i);
-	      l->ChangeSelectedCount(1);
-	    }
-	  }
-	}
+        // Scan all loops for playing loops
+        for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
+          Loop *l = app->getTMAP()->GetMap(i);
+          if (GetStatus(i) == T_LS_Overdubbing ||
+              GetStatus(i) == T_LS_Playing) {
+            if (l != 0) {
+              // Loop exists, and it's playing!
+              LoopList *prev;
+              LoopList *exists = LoopList::Scan(*ll,i,&prev);
+              if (!sev->playing && exists != 0) {
+                // printf("REMOVE!\n");
+                *ll = LoopList::Remove(*ll,exists,prev);
+                l->ChangeSelectedCount(-1);
+              } else if (sev->playing && exists == 0) {
+                // printf("ADD!\n");
+                *ll = LoopList::AddBegin(*ll,i);
+                l->ChangeSelectedCount(1);
+              }
+            }
+          } else if (app->getTMAP()->GetMap(i) != 0) {
+            // Loop exists, but not playing/overdubbing
+            LoopList *prev;
+            LoopList *exists = LoopList::Scan(*ll,i,&prev);
+            if (sev->playing && exists != 0) {
+              // printf("REMOVE!\n");
+              *ll = LoopList::Remove(*ll,exists,prev);
+              l->ChangeSelectedCount(-1);
+            } else if (!sev->playing && exists == 0) {
+              // printf("ADD!\n");
+              *ll = LoopList::AddBegin(*ll,i);
+              l->ChangeSelectedCount(1);
+            }
+          }
+        }
       } else 
-	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+        printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
     }
     break;
 
@@ -2484,33 +2486,33 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SelectAllLoopsEvent: Set %d [%s]\n",
-	       sev->setid,(sev->select ? "SELECT" : "UNSELECT"));
+        printf("CORE: Received SelectAllLoopsEvent: Set %d [%s]\n",
+               sev->setid,(sev->select ? "SELECT" : "UNSELECT"));
       
       LoopList **ll = app->getLOOPSEL(sev->setid);
       if (ll != 0) {
-	// Scan all loops
-	for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
-	  Loop *l = app->getTMAP()->GetMap(i);
-	  if (l != 0) {
-	    // Loop exists in map
-	    LoopList *prev;
-	    LoopList *exists = LoopList::Scan(*ll,i,&prev);
-	    if (!sev->select && exists != 0) {
-	      // Unselect loops- remove loop from list
-	      // printf("REMOVE!\n");
-	      *ll = LoopList::Remove(*ll,exists,prev);
-	      l->ChangeSelectedCount(-1);
-	    } else if (sev->select && exists == 0) {
-	      // Select loops- add loop to list
-	      // printf("ADD!\n");
-	      *ll = LoopList::AddBegin(*ll,i);
-	      l->ChangeSelectedCount(1);
-	    }
-	  }
-	}
+        // Scan all loops
+        for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
+          Loop *l = app->getTMAP()->GetMap(i);
+          if (l != 0) {
+            // Loop exists in map
+            LoopList *prev;
+            LoopList *exists = LoopList::Scan(*ll,i,&prev);
+            if (!sev->select && exists != 0) {
+              // Unselect loops- remove loop from list
+              // printf("REMOVE!\n");
+              *ll = LoopList::Remove(*ll,exists,prev);
+              l->ChangeSelectedCount(-1);
+            } else if (sev->select && exists == 0) {
+              // Select loops- add loop to list
+              // printf("ADD!\n");
+              *ll = LoopList::AddBegin(*ll,i);
+              l->ChangeSelectedCount(1);
+            }
+          }
+        }
       } else 
-	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+        printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
     }
     break;
 
@@ -2520,32 +2522,32 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("CORE: Received InvertSelectionEvent: Set %d\n",sev->setid);
+        printf("CORE: Received InvertSelectionEvent: Set %d\n",sev->setid);
 
       LoopList **ll = app->getLOOPSEL(sev->setid);
       if (ll != 0) {
-	// Scan all loops
-	for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
-	  Loop *l = app->getTMAP()->GetMap(i);
-	  if (l != 0) {
-	    // Loop exists in map
-	    LoopList *prev;
-	    LoopList *exists = LoopList::Scan(*ll,i,&prev);
-	    if (exists != 0) {
-	      // Loop exists in list- remove
-	      // printf("REMOVE!\n");
-	      *ll = LoopList::Remove(*ll,exists,prev);
-	      l->ChangeSelectedCount(-1);
-	    } else if (exists == 0) {
-	      // Loop not in list- add
-	      // printf("ADD!\n");
-	      *ll = LoopList::AddBegin(*ll,i);
-	      l->ChangeSelectedCount(1);
-	    }
-	  }
-	}
+        // Scan all loops
+        for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
+          Loop *l = app->getTMAP()->GetMap(i);
+          if (l != 0) {
+            // Loop exists in map
+            LoopList *prev;
+            LoopList *exists = LoopList::Scan(*ll,i,&prev);
+            if (exists != 0) {
+              // Loop exists in list- remove
+              // printf("REMOVE!\n");
+              *ll = LoopList::Remove(*ll,exists,prev);
+              l->ChangeSelectedCount(-1);
+            } else if (exists == 0) {
+              // Loop not in list- add
+              // printf("ADD!\n");
+              *ll = LoopList::AddBegin(*ll,i);
+              l->ChangeSelectedCount(1);
+            }
+          }
+        }
       } else 
-	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+        printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
     }
     break;
 
@@ -2555,11 +2557,11 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("CORE: Received TriggerSnapshotEvent: Snapshot #%d\n",
-	       sev->snapid);
+        printf("CORE: Received TriggerSnapshotEvent: Snapshot #%d\n",
+               sev->snapid);
 
       if (app->TriggerSnapshot(sev->snapid))
-	printf("CORE: Invalid snapshot #%d- can't trigger\n",sev->snapid);
+        printf("CORE: Invalid snapshot #%d- can't trigger\n",sev->snapid);
     }
     break;
 
@@ -2569,33 +2571,48 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("CORE: Received CreateSnapshotEvent: Snapshot #%d\n",
-	       sev->snapid);
+        printf("CORE: Received CreateSnapshotEvent: Snapshot #%d\n",
+               sev->snapid);
 
       if (app->CreateSnapshot(sev->snapid) == 0)
-	printf("CORE: Invalid snapshot #%d- can't create\n",sev->snapid);
+        printf("CORE: Invalid snapshot #%d- can't create\n",sev->snapid);
     }
     break;
-    
+
+  case T_EV_RenameSnapshot :
+    {
+      RenameSnapshotEvent *sev = (RenameSnapshotEvent *) ev;
+      
+      // OK!
+      if (CRITTERS)
+        printf("CORE: Received RenameSnapshotEvent: Snapshot #%d\n",
+               sev->snapid);
+
+      FloDisplaySnapshots *sdisp = (FloDisplaySnapshots *) app->getCFG()->GetDisplayByType(FD_Snapshots);
+      if (sdisp != 0)
+        sdisp->Rename(sev->snapid);
+    }
+    break;
+
   case T_EV_SetSelectedLoopsTriggerVolume :
     {
       SetSelectedLoopsTriggerVolumeEvent *sev = (SetSelectedLoopsTriggerVolumeEvent *) ev;
       
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetSelectedLoopsTriggerVolumeEvent: Set %d: Volume %f\n",
-	       sev->setid,sev->vol);
+        printf("CORE: Received SetSelectedLoopsTriggerVolumeEvent: Set %d: Volume %f\n",
+               sev->setid,sev->vol);
       
       LoopList **ll = app->getLOOPSEL(sev->setid);
       if (ll != 0) {
-	LoopList *cur = *ll;
-	while (cur != 0) {
-	  SetTriggerVol(cur->l_idx,sev->vol);
-	  cur = cur->next;
-	}
-	
+        LoopList *cur = *ll;
+        while (cur != 0) {
+          SetTriggerVol(cur->l_idx,sev->vol);
+          cur = cur->next;
+        }
+        
       } else 
-	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+        printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
     }
     break;
 
@@ -2605,21 +2622,21 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("CORE: Received AdjustSelectedLoopsAmpEvent: Set %d: "
-	       "Amp factor %f\n",
-	       sev->setid,sev->ampfactor);
+        printf("CORE: Received AdjustSelectedLoopsAmpEvent: Set %d: "
+               "Amp factor %f\n",
+               sev->setid,sev->ampfactor);
       
       LoopList **ll = app->getLOOPSEL(sev->setid);
       if (ll != 0) {
-	LoopList *cur = *ll;
-	while (cur != 0) {
-	  SetLoopVolume(cur->l_idx,
-			sev->ampfactor * GetLoopVolume(cur->l_idx));
-	  cur = cur->next;
-	}
-	
+        LoopList *cur = *ll;
+        while (cur != 0) {
+          SetLoopVolume(cur->l_idx,
+                        sev->ampfactor * GetLoopVolume(cur->l_idx));
+          cur = cur->next;
+        }
+        
       } else 
-	printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
+        printf("CORE: Invalid set id #%d when selecting loop\n",sev->setid);
     }
     break;
 
@@ -2629,18 +2646,18 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("CORE: Received EraseSelectedLoopsEvent: Set: %d\n",sev->setid);
+        printf("CORE: Received EraseSelectedLoopsEvent: Set: %d\n",sev->setid);
       
       LoopList **ll = app->getLOOPSEL(sev->setid);
       if (ll != 0) {
-	LoopList *cur = *ll;
-	while (cur != 0) {
-	  DeleteLoop(cur->l_idx);
-	  cur = cur->next;
-	}	
+        LoopList *cur = *ll;
+        while (cur != 0) {
+          DeleteLoop(cur->l_idx);
+          cur = cur->next;
+        }       
       } else 
-	printf("CORE: Invalid set id #%d when erasing selected loops\n",
-	       sev->setid);
+        printf("CORE: Invalid set id #%d when erasing selected loops\n",
+               sev->setid);
     }
     break;
     
@@ -2650,8 +2667,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetAutoLoopSavingEvent (%s)\n",
-	       (sev->save ? "on" : "off"));
+        printf("CORE: Received SetAutoLoopSavingEvent (%s)\n",
+               (sev->save ? "on" : "off"));
       SetAutoLoopSaving(sev->save);
     }
     break;
@@ -2662,7 +2679,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SaveLoopEvent (%d)\n",sev->index);
+        printf("CORE: Received SaveLoopEvent (%d)\n",sev->index);
       SaveLoop(sev->index);
     }
     break;
@@ -2671,7 +2688,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SaveNewSceneEvent\n");
+        printf("CORE: Received SaveNewSceneEvent\n");
       SaveNewScene();
     }
     break;
@@ -2680,7 +2697,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SaveCurrentSceneEvent\n");
+        printf("CORE: Received SaveCurrentSceneEvent\n");
       SaveCurScene();
     }
     break;
@@ -2691,7 +2708,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetLoadLoopIdEvent (%d)\n",sev->index);
+        printf("CORE: Received SetLoadLoopIdEvent (%d)\n",sev->index);
       loadloopid = sev->index;
     }
     break;
@@ -2702,8 +2719,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetDefaultLoopPlacementEvent (%d>%d)\n",
-	       sev->looprange.lo,sev->looprange.hi);
+        printf("CORE: Received SetDefaultLoopPlacementEvent (%d>%d)\n",
+               sev->looprange.lo,sev->looprange.hi);
       default_looprange = sev->looprange;
     }
     break;
@@ -2714,7 +2731,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SlideMasterInVolumeEvent(%f)\n", vev->slide);
+        printf("CORE: Received SlideMasterInVolumeEvent(%f)\n", vev->slide);
       AdjustInputVolume(vev->slide);
     }
     break;
@@ -2725,7 +2742,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SlideMasterOutVolumeEvent(%f)\n", vev->slide);
+        printf("CORE: Received SlideMasterOutVolumeEvent(%f)\n", vev->slide);
       AdjustOutputVolume(vev->slide);
     }
     break;
@@ -2736,7 +2753,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SlideInVolumeEvent(%d: %f)\n", vev->input, vev->slide);
+        printf("CORE: Received SlideInVolumeEvent(%d: %f)\n", vev->input, vev->slide);
       app->getISET()->AdjustInputVol(vev->input-1, vev->slide);
     }
     break;
@@ -2747,7 +2764,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetMasterInVolumeEvent(%f)\n", vev->vol);
+        printf("CORE: Received SetMasterInVolumeEvent(%f)\n", vev->vol);
       SetInputVolume(vev->vol);
     }
     break;
@@ -2758,7 +2775,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetMasterOutVolumeEvent(%f)\n", vev->vol);
+        printf("CORE: Received SetMasterOutVolumeEvent(%f)\n", vev->vol);
       SetOutputVolume(vev->vol);
     }
     break;
@@ -2769,7 +2786,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetInVolumeEvent(%d: %f)\n", vev->input, vev->vol);
+        printf("CORE: Received SetInVolumeEvent(%d: %f)\n", vev->input, vev->vol);
       app->getISET()->SetInputVol(vev->input-1, vev->vol);
     }
     break;
@@ -2780,7 +2797,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received ToggleInputRecordEvent(%d)\n", vev->input);
+        printf("CORE: Received ToggleInputRecordEvent(%d)\n", vev->input);
       app->getISET()->SelectInput(vev->input-1,(app->getISET()->InputSelected(vev->input-1) == 0 ? 1 : 0));
     }
     break;
@@ -2791,7 +2808,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received DeletePulse(%d)\n", dev->pulse);
+        printf("CORE: Received DeletePulse(%d)\n", dev->pulse);
       DeletePulse(dev->pulse);
     }
     break;
@@ -2802,7 +2819,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SelectPulse(%d)\n", sev->pulse);
+        printf("CORE: Received SelectPulse(%d)\n", sev->pulse);
       SelectPulse(sev->pulse);
     }
     break;
@@ -2813,8 +2830,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received TapPulse(%d) %s\n", tev->pulse,
-	       (tev->newlen ? "[new length]" : ""));
+        printf("CORE: Received TapPulse(%d) %s\n", tev->pulse,
+               (tev->newlen ? "[new length]" : ""));
       TapPulse(tev->pulse,tev->newlen);
     }
     break;
@@ -2825,8 +2842,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SwitchMetronome(%d) %s\n", swev->pulse,
-	       (swev->metronome ? "[on]" : "[off]"));
+        printf("CORE: Received SwitchMetronome(%d) %s\n", swev->pulse,
+               (swev->metronome ? "[on]" : "[off]"));
       SwitchMetronome(swev->pulse,swev->metronome);
     }
     break;
@@ -2837,7 +2854,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetSyncType(%d)\n", sev->stype);
+        printf("CORE: Received SetSyncType(%d)\n", sev->stype);
       app->SetSyncType(sev->stype);
     }
     break;
@@ -2848,7 +2865,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetSyncSpeed(%d)\n", sev->sspd);
+        printf("CORE: Received SetSyncSpeed(%d)\n", sev->sspd);
       app->SetSyncSpeed(sev->sspd);
     }
     break;
@@ -2859,7 +2876,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetMidiSync(%d)\n", sev->midisync);
+        printf("CORE: Received SetMidiSync(%d)\n", sev->midisync);
       app->getMIDI()->SetMIDISyncTransmit(sev->midisync);
     }
     break;
@@ -2870,8 +2887,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetTriggerVolume(%d,%f)\n", laev->index, 
-	       laev->vol);
+        printf("CORE: Received SetTriggerVolume(%d,%f)\n", laev->index, 
+               laev->vol);
       SetTriggerVol(laev->index,laev->vol);
     }
     break;
@@ -2882,8 +2899,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SlideLoopAmp(%d,%f)\n", laev->index, 
-	       laev->slide);
+        printf("CORE: Received SlideLoopAmp(%d,%f)\n", laev->index, 
+               laev->slide);
       AdjustLoopVolume(laev->index,laev->slide);
     }
     break;
@@ -2894,7 +2911,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SetLoopAmp(%d,%f)\n", laev->index, laev->amp);
+        printf("CORE: Received SetLoopAmp(%d,%f)\n", laev->index, laev->amp);
       SetLoopVolume(laev->index,laev->amp);
     }
     break;
@@ -2905,10 +2922,10 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received AdjustLoopAmp(%d,%f)\n", laev->index, 
-	       laev->damp);
+        printf("CORE: Received AdjustLoopAmp(%d,%f)\n", laev->index, 
+               laev->damp);
       SetLoopVolume(laev->index,
-		    GetLoopVolume(laev->index) + laev->damp);
+                    GetLoopVolume(laev->index) + laev->damp);
     }
     break;
 
@@ -2916,62 +2933,62 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       TriggerLoopEvent *tev = (TriggerLoopEvent *) ev;
       int index = tev->index,
-	engage = tev->engage;
+        engage = tev->engage;
       float vol = tev->vol;
       char od = tev->od,
-	shot = tev->shot;
+        shot = tev->shot;
       UserVariable *od_fb = tev->od_fb;
       float *od_fb_ptr = 0;
       if (od_fb != 0) {
-	if (od_fb->GetType() == T_float)
-	  od_fb_ptr = (float *) od_fb->GetValue();
-	else 
-	  printf("CORE: ERROR: Overdub feedback assigned to variable '%s'- but that variable is not a 'float'!\n",od_fb->GetName());
+        if (od_fb->GetType() == T_float)
+          od_fb_ptr = (float *) od_fb->GetValue();
+        else 
+          printf("CORE: ERROR: Overdub feedback assigned to variable '%s'- but that variable is not a 'float'!\n",od_fb->GetName());
       }
       
       // OK!
       if (CRITTERS) {
-	printf("CORE: Received TriggerLoop(%d,%.2f)", index, vol);
-	if (od) {
-	  printf(" [overdub]");
-	  if (od_fb != 0) {
-	    printf(" (feedback ");
-	    od_fb->Print();
-	    printf(")\n");
-	  } else
-	    printf("\n");
-	}
-	if (shot)
-	  printf(" (shot)");
-	if (engage != -1)
-	  printf(" (%s)\n",(engage ? "force on" : "force off"));
-	else
-	  printf("\n");
+        printf("CORE: Received TriggerLoop(%d,%.2f)", index, vol);
+        if (od) {
+          printf(" [overdub]");
+          if (od_fb != 0) {
+            printf(" (feedback ");
+            od_fb->Print();
+            printf(")\n");
+          } else
+            printf("\n");
+        }
+        if (shot)
+          printf(" (shot)");
+        if (engage != -1)
+          printf(" (%s)\n",(engage ? "force on" : "force off"));
+        else
+          printf("\n");
       }
 
       if ((engage == -1 || engage == 1) &&
-	  (GetStatus(index) == T_LS_Recording || 
-	   GetStatus(index) == T_LS_Overdubbing ||
-	   (GetStatus(index) == T_LS_Playing && od == 1))) {
-	// Stop-start case
-	nframes_t ofs = 0;
-	if (GetStatus(index) == T_LS_Overdubbing && od == 1) {
-	  // Don't allow retrigger from overdub to overdub-- override to play
-	  od = 0;
-	} else if (GetStatus(index) == T_LS_Playing) {
-	  // Play->overdub case- start overdub where play left off
-	  ofs = ((PlayProcessor *) plist[index])->GetPlayedLength();
-	}
+          (GetStatus(index) == T_LS_Recording || 
+           GetStatus(index) == T_LS_Overdubbing ||
+           (GetStatus(index) == T_LS_Playing && od == 1))) {
+        // Stop-start case
+        nframes_t ofs = 0;
+        if (GetStatus(index) == T_LS_Overdubbing && od == 1) {
+          // Don't allow retrigger from overdub to overdub-- override to play
+          od = 0;
+        } else if (GetStatus(index) == T_LS_Playing) {
+          // Play->overdub case- start overdub where play left off
+          ofs = ((PlayProcessor *) plist[index])->GetPlayedLength();
+        }
 
-	Deactivate(index);                // Stop
-	Activate(index,shot,vol,ofs,od,od_fb_ptr); // Start
+        Deactivate(index);                // Stop
+        Activate(index,shot,vol,ofs,od,od_fb_ptr); // Start
       } else if ((engage == -1 || engage == 0) && IsActive(index)) {
-	// Stop case (play and no overdub)
-	Deactivate(index);
+        // Stop case (play and no overdub)
+        Deactivate(index);
       }
       else if (engage == -1 || engage == 1) {
-	// Start case (record)
-	Activate(index,shot,vol,0,od,od_fb_ptr);
+        // Start case (record)
+        Activate(index,shot,vol,0,od,od_fb_ptr);
       }
     }
     break;
@@ -2981,29 +2998,29 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       TriggerSelectedLoopsEvent *tev = (TriggerSelectedLoopsEvent *) ev;
 
       if (CRITTERS)
-	printf("CORE: Received TriggerSelectedLoops(set #%d,%.2f)\n", 
-	       tev->setid,tev->vol);
+        printf("CORE: Received TriggerSelectedLoops(set #%d,%.2f)\n", 
+               tev->setid,tev->vol);
 
       LoopList **ll = app->getLOOPSEL(tev->setid);
       if (ll != 0) {
-	// Get all loops from this set
-	LoopList *cur = *ll;
-	while (cur != 0) {
-	  if (IsActive(cur->l_idx)) {
-	    // Overdub/play on this loop
-	    if (tev->toggleloops)
-	      Deactivate(cur->l_idx);
-	  } else {
-	    // Loop idle-- start play
-	    // No overdub/shot/etc, just straight play
-	    Activate(cur->l_idx,0,tev->vol,0,0,0);
-	  }
+        // Get all loops from this set
+        LoopList *cur = *ll;
+        while (cur != 0) {
+          if (IsActive(cur->l_idx)) {
+            // Overdub/play on this loop
+            if (tev->toggleloops)
+              Deactivate(cur->l_idx);
+          } else {
+            // Loop idle-- start play
+            // No overdub/shot/etc, just straight play
+            Activate(cur->l_idx,0,tev->vol,0,0,0);
+          }
 
-	  cur = cur->next;
-	}
+          cur = cur->next;
+        }
       } else 
-	printf("CORE: Invalid set id #%d when triggering selected loops\n",
-	       tev->setid);      
+        printf("CORE: Invalid set id #%d when triggering selected loops\n",
+               tev->setid);      
     }
     break;
 
@@ -3013,8 +3030,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received MoveLoop(%d->%d)\n", mev->oldloopid, 
-	       mev->newloopid);
+        printf("CORE: Received MoveLoop(%d->%d)\n", mev->oldloopid, 
+               mev->newloopid);
       MoveLoop(mev->oldloopid,mev->newloopid);
     }
     break;
@@ -3024,9 +3041,9 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       RenameLoopEvent *rev = (RenameLoopEvent *) ev;
 
       if (rev->in == 1) {
-	RenameLoop(rev->loopid);
-	if (CRITTERS)
-	  printf("LOOPMGR: Received RenameLoop(loopid: %d)\n",rev->loopid);
+        RenameLoop(rev->loopid);
+        if (CRITTERS)
+          printf("LOOPMGR: Received RenameLoop(loopid: %d)\n",rev->loopid);
       }
     }
     break;
@@ -3037,7 +3054,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-	printf("CORE: Received EraseLoop(%d)\n", eev->index);
+        printf("CORE: Received EraseLoop(%d)\n", eev->index);
       DeleteLoop(eev->index);
     }
     break;
@@ -3046,7 +3063,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       // OK!
       if (CRITTERS)
-	printf("CORE: Received EraseAllLoops\n");
+        printf("CORE: Received EraseAllLoops\n");
 
       // Erase scene settings
       app->setCURSCENE(0);
@@ -3054,16 +3071,16 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       // Erase all loops!
       // printf("DEBUG: ERASE LOOPS!\n");
       for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) 
-	DeleteLoop(i);
+        DeleteLoop(i);
       // And all pulses!
       // printf("DEBUG: ERASE PULSES!\n");
       for (int i = 0; i < MAX_PULSES; i++)
-	DeletePulse(i);
+        DeletePulse(i);
       // printf("DEBUG: DONE!\n\n");
       // And all snapshots!
       Snapshot *s = app->getSNAPS();
       for (int i = 0; i < app->getCFG()->GetMaxSnapshots(); i++)
-	s[i].DeleteSnapshot();
+        s[i].DeleteSnapshot();
     }
     break;
 
@@ -3071,10 +3088,10 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       // OK!
       if (CRITTERS)
-	printf("CORE: Received SlideLoopAmpStopAll\n");
+        printf("CORE: Received SlideLoopAmpStopAll\n");
 
       for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) 
-	SetLoopdVolume(i,1.0);
+        SetLoopdVolume(i,1.0);
     }
     break;
 
@@ -3198,28 +3215,28 @@ BED_MarkerPoints *Fweelin::getAMPEAKSPULSE() {
 AudioBlock *Fweelin::getAMPEAKS() { 
   return 
     dynamic_cast<PeaksAvgsManager *>(bmg->GetBlockManager(audiomem,
-							  T_MC_PeaksAvgs))->
+                                                          T_MC_PeaksAvgs))->
     GetPeaks();
 };
 
 AudioBlock *Fweelin::getAMAVGS() { 
   return 
     dynamic_cast<PeaksAvgsManager *>(bmg->GetBlockManager(audiomem,
-							  T_MC_PeaksAvgs))->
+                                                          T_MC_PeaksAvgs))->
     GetAvgs();
   };
 
 AudioBlockIterator *Fweelin::getAMPEAKSI() { 
   return
     dynamic_cast<PeaksAvgsManager *>(bmg->GetBlockManager(audiomem,
-							  T_MC_PeaksAvgs))->
+                                                          T_MC_PeaksAvgs))->
     GetPeaksI();
 };
 
 AudioBlockIterator *Fweelin::getAMAVGSI() { 
   return
     dynamic_cast<PeaksAvgsManager *>(bmg->GetBlockManager(audiomem,
-							  T_MC_PeaksAvgs))->
+                                                          T_MC_PeaksAvgs))->
     GetAvgsI();
 };
 
@@ -3231,7 +3248,7 @@ Browser *Fweelin::GetBrowserFromConfig(BrowserItemType b) {
   FloDisplay *cur = cfg->displays;
   while (cur != 0) {
     if (cur->GetFloDisplayType() == FD_Browser &&
-	((Browser *) cur)->GetType() == b)
+        ((Browser *) cur)->GetType() == b)
       return (Browser *) cur;
     cur = cur->next;
   }
@@ -3246,31 +3263,31 @@ void Fweelin::ToggleDiskOutput()
     char go = 1;
     do {
       snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s%d%s",
-	       cfg->GetLibraryPath(),FWEELIN_OUTPUT_STREAM_NAME,writenum,
-	       getCFG()->GetAudioFileExt(getCFG()->GetStreamOutFormat()));
+               cfg->GetLibraryPath(),FWEELIN_OUTPUT_STREAM_NAME,writenum,
+               getCFG()->GetAudioFileExt(getCFG()->GetStreamOutFormat()));
       struct stat st;
       printf("DISK: Opening '%s' for streaming.\n",tmp);
       if (stat(tmp,&st) == 0) {
-	printf("DISK: File exists, trying another.\n");
-	writenum++;
+        printf("DISK: File exists, trying another.\n");
+        writenum++;
       } else {
-	// Also check for timing data file- don't overwrite that
-	snprintf(timingname,FWEELIN_OUTNAME_LEN,"%s/%s%d%s",
-		 cfg->GetLibraryPath(),FWEELIN_OUTPUT_STREAM_NAME,
-		 writenum,FWEELIN_OUTPUT_TIMING_EXT);
-	if (stat(timingname,&st) == 0) {
-	  printf("DISK: Timing file exists, trying another.\n");
-	  writenum++;
-	} else
-	  go = 0;
+        // Also check for timing data file- don't overwrite that
+        snprintf(timingname,FWEELIN_OUTNAME_LEN,"%s/%s%d%s",
+                 cfg->GetLibraryPath(),FWEELIN_OUTPUT_STREAM_NAME,
+                 writenum,FWEELIN_OUTPUT_TIMING_EXT);
+        if (stat(timingname,&st) == 0) {
+          printf("DISK: Timing file exists, trying another.\n");
+          writenum++;
+        } else
+          go = 0;
       }
     } while (go);
 
     // Compose filename & start writing
     strcpy(streamoutname,tmp);
     snprintf(timingname,FWEELIN_OUTNAME_LEN,"%s/%s%d%s",
-	     cfg->GetLibraryPath(),FWEELIN_OUTPUT_STREAM_NAME,
-	     writenum,FWEELIN_OUTPUT_TIMING_EXT);
+             cfg->GetLibraryPath(),FWEELIN_OUTPUT_STREAM_NAME,
+             writenum,FWEELIN_OUTPUT_TIMING_EXT);
     fs->StartWriting(streamoutname,timingname,getCFG()->GetStreamOutFormat());
   } else {
     // Stop disk output
@@ -3418,31 +3435,31 @@ int Fweelin::setup()
 
   // Preallocated type managers
   pre_audioblock = new PreallocatedType(mmg, ::new AudioBlock(),
-					sizeof(AudioBlock),
-					FloConfig::
-					NUM_PREALLOCATED_AUDIO_BLOCKS);
+                                        sizeof(AudioBlock),
+                                        FloConfig::
+                                        NUM_PREALLOCATED_AUDIO_BLOCKS);
 
   if (cfg->IsStereoMaster()) 
     // Only preallocate for stereo blocks if we are running in stereo
     pre_extrachannel = new PreallocatedType(mmg, ::new BED_ExtraChannel(),
-					    sizeof(BED_ExtraChannel),
-					    FloConfig::
-					    NUM_PREALLOCATED_AUDIO_BLOCKS);
+                                            sizeof(BED_ExtraChannel),
+                                            FloConfig::
+                                            NUM_PREALLOCATED_AUDIO_BLOCKS);
   else 
     pre_extrachannel = 0;
   pre_timemarker = new PreallocatedType(mmg,::new TimeMarker(),
-					sizeof(TimeMarker),
-					FloConfig::
-					NUM_PREALLOCATED_TIME_MARKERS);
+                                        sizeof(TimeMarker),
+                                        FloConfig::
+                                        NUM_PREALLOCATED_TIME_MARKERS);
 
   rp = new RootProcessor(this,iset);
   // Add monitor mix
   float *inputvol = &(rp->inputvol); // Where to get input vol from
   rp->AddChild(new PassthroughProcessor(this,iset,inputvol),
-	       ProcessorItem::TYPE_GLOBAL);
+               ProcessorItem::TYPE_GLOBAL);
   // Add disk writer
   rp->AddChild(fs = new FileStreamer(this),
-	       ProcessorItem::TYPE_FINAL);
+               ProcessorItem::TYPE_FINAL);
   writenum = 1;
   strcpy(streamoutname,"");
   curscene = 0;
@@ -3454,7 +3471,7 @@ int Fweelin::setup()
 
   // Fixed audio memory
   nframes_t memlen = (nframes_t) (audio->get_srate() * 
-				  cfg->AUDIO_MEMORY_LEN),
+                                  cfg->AUDIO_MEMORY_LEN),
     scopelen = cfg->GetScopeSampleLen(),
     chunksize = memlen/scopelen;
   // Note here we bypass using Preallocated RTNew because we want
@@ -3482,11 +3499,11 @@ int Fweelin::setup()
   // Because some functions depend on using audiomem as a basis
   // to access RTNew
   audiomem->SetupPreallocated(pre_audioblock,
-			      Preallocated::PREALLOC_BASE_INSTANCE);
+                              Preallocated::PREALLOC_BASE_INSTANCE);
 
   // Begin recording into audio memory (use mono/stereo memory as appropriate)
   amrec = new RecordProcessor(this,iset,inputvol,audiomem,
-			      cfg->IsStereoMaster());
+                              cfg->IsStereoMaster());
   if (amrec == 0) {
     printf("CORE: ERROR: Can't create core RecordProcessor!\n");
     exit(1);
@@ -3503,9 +3520,9 @@ int Fweelin::setup()
   avgs->Zero();
   // **BUG-- small leak-- the above two are never deleted
   peaks->SetupPreallocated(pre_audioblock,
-			   Preallocated::PREALLOC_BASE_INSTANCE);
+                           Preallocated::PREALLOC_BASE_INSTANCE);
   avgs->SetupPreallocated(pre_audioblock,
-			  Preallocated::PREALLOC_BASE_INSTANCE);
+                          Preallocated::PREALLOC_BASE_INSTANCE);
   audiomem->AddExtendedData(new BED_PeaksAvgs(peaks,avgs,chunksize));
   bmg->PeakAvgOn(audiomem,amrec->GetIterator());
 
@@ -3554,71 +3571,71 @@ int Fweelin::setup()
   
   // Linkup system variables
   cfg->LinkSystemVariable("SYSTEM_num_midi_outs",T_int,
-			  (char *) &(cfg->midiouts));
+                          (char *) &(cfg->midiouts));
   cfg->LinkSystemVariable("SYSTEM_midi_transpose",T_int,
-			  (char *) &(cfg->transpose));
+                          (char *) &(cfg->transpose));
   cfg->LinkSystemVariable("SYSTEM_master_in_volume",T_float,
-			  (char *) &(rp->inputvol));
+                          (char *) &(rp->inputvol));
   cfg->LinkSystemVariable("SYSTEM_master_out_volume",T_float,
-			  (char *) &(rp->outputvol));
+                          (char *) &(rp->outputvol));
   cfg->LinkSystemVariable("SYSTEM_cur_pitchbend",T_int,
-			  (char *) &(midi->curbender));
+                          (char *) &(midi->curbender));
   cfg->LinkSystemVariable("SYSTEM_bender_tune",T_int,
-			  (char *) &(midi->bendertune));
+                          (char *) &(midi->bendertune));
   cfg->LinkSystemVariable("SYSTEM_cur_limiter_gain",T_float,
-			  (char *) &(rp->curlimitvol));
+                          (char *) &(rp->curlimitvol));
   cfg->LinkSystemVariable("SYSTEM_audio_cpu_load",T_float,
-			  (char *) &(audio->cpuload));
+                          (char *) &(audio->cpuload));
   cfg->LinkSystemVariable("SYSTEM_sync_active",T_char,
-			  (char *) &(audio->sync_active));
+                          (char *) &(audio->sync_active));
   cfg->LinkSystemVariable("SYSTEM_sync_transmit",T_char,
-			  (char *) &(audio->timebase_master));
+                          (char *) &(audio->timebase_master));
   cfg->LinkSystemVariable("SYSTEM_midisync_transmit",T_char,
-			  (char *) &(midi->midisyncxmit));
+                          (char *) &(midi->midisyncxmit));
 #if USE_FLUIDSYNTH
   cfg->LinkSystemVariable("SYSTEM_fluidsynth_enabled",T_char,
-			  (char *) &(fluidp->enable));
+                          (char *) &(fluidp->enable));
 #endif
   cfg->LinkSystemVariable("SYSTEM_num_help_pages",T_int,
-			  (char *) &(vid->numhelppages));
+                          (char *) &(vid->numhelppages));
   cfg->LinkSystemVariable("SYSTEM_num_loops_in_map",T_int,
-			  (char *) &(loopmgr->numloops));
+                          (char *) &(loopmgr->numloops));
   cfg->LinkSystemVariable("SYSTEM_num_recording_loops_in_map",T_int,
-			  (char *) &(loopmgr->numrecordingloops));
+                          (char *) &(loopmgr->numrecordingloops));
   cfg->LinkSystemVariable("SYSTEM_num_recording_loops_in_map",T_int,
-			  (char *) &(loopmgr->numrecordingloops));
+                          (char *) &(loopmgr->numrecordingloops));
   if (browsers[B_Patch] != 0) {
     cfg->LinkSystemVariable("SYSTEM_num_patchbanks",T_int,
-			  (char *) &(((PatchBrowser *) browsers[B_Patch])->
-				     num_pb));
+                          (char *) &(((PatchBrowser *) browsers[B_Patch])->
+                                     num_pb));
     cfg->LinkSystemVariable("SYSTEM_cur_patchbank_tag",T_int,
-			  (char *) &(((PatchBrowser *) browsers[B_Patch])->
-				     pb_cur_tag));
+                          (char *) &(((PatchBrowser *) browsers[B_Patch])->
+                                     pb_cur_tag));
   }
   cfg->LinkSystemVariable("SYSTEM_num_switchable_interfaces",T_int,
-			  (char *) &(cfg->numinterfaces));
+                          (char *) &(cfg->numinterfaces));
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
     cfg->LinkSystemVariable(tmp,T_int,
-			    (char *) &(loopmgr->lastrecidx[i]));
+                            (char *) &(loopmgr->lastrecidx[i]));
   }
   for (int i = 0; i < iset->numins; i++) {
     snprintf(tmp,255,"SYSTEM_in_%d_volume",i+1);
     cfg->LinkSystemVariable(tmp,T_float,
-			    (char *) &(iset->invols[i]));
+                            (char *) &(iset->invols[i]));
     snprintf(tmp,255,"SYSTEM_in_%d_peak",i+1);
     cfg->LinkSystemVariable(tmp,T_float,
-			    (char *) &(iset->inpeak[i]));
+                            (char *) &(iset->inpeak[i]));
     snprintf(tmp,255,"SYSTEM_in_%d_record",i+1);
     cfg->LinkSystemVariable(tmp,T_char,
-			    (char *) &(iset->selins[i]));
+                            (char *) &(iset->selins[i]));
   }
   {
     FloDisplaySnapshots *sn = 
       (FloDisplaySnapshots *) cfg->GetDisplayByType(FD_Snapshots);
     if (sn != 0)
       cfg->LinkSystemVariable("SYSTEM_snapshot_page_firstidx",T_int,
-			      (char *) &(sn->firstidx));
+                              (char *) &(sn->firstidx));
   }
 
   // Finally, final Config start
@@ -3642,19 +3659,19 @@ void Fweelin::ItemSelected(BrowserItem *i) {
     if (br != 0) {
       PatchBank *pb = br->GetCurPatchBank();
       if (pb->port == 0) {
-	// We are selecting in a Fluidsynth bank-- send patch change
+        // We are selecting in a Fluidsynth bank-- send patch change
 #if USE_FLUIDSYNTH
-	getFLUIDP()->SendPatchChange((PatchItem *) i);
+        getFLUIDP()->SendPatchChange((PatchItem *) i);
 #else
-	printf("CORE: ERROR: Can't change FluidSynth patches- no FluidSynth "
-	       "support!\n");
+        printf("CORE: ERROR: Can't change FluidSynth patches- no FluidSynth "
+               "support!\n");
 #endif
       } else {
-	// Check if change messages to be sent?
-	if (!pb->suppresschg) {
-	  // Tell MIDI to send out bank/program change(s) for new patch
-	  getMIDI()->SendBankProgramChange((PatchItem *) i);
-	}
+        // Check if change messages to be sent?
+        if (!pb->suppresschg) {
+          // Tell MIDI to send out bank/program change(s) for new patch
+          getMIDI()->SendBankProgramChange((PatchItem *) i);
+        }
       }
     }
   }

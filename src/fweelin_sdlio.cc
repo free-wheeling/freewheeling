@@ -408,9 +408,9 @@ int SDLIO::activate() {
 
   sdlthreadgo = 1;
   int ret = pthread_create(&sdl_thread,
-			   &attr,
-			   run_sdl_thread,
-			   this);
+                           &attr,
+                           run_sdl_thread,
+                           this);
   if (ret != 0) {
     printf("SDLIO: (SDL input) pthread_create failed, exiting");
     return 1;
@@ -466,13 +466,13 @@ void SDLIO::handle_key(int keycode, char press) {
     if (keycode == 51) {
       // Backslash freezes & resets limiter
       if (sets.leftshift || sets.rightshift) {
-	// Reset limiter
-	app->getRP()->ResetLimiter();
+        // Reset limiter
+        app->getRP()->ResetLimiter();
       } else {
-	// Toggle limiter freeze
-	char limiterfreeze = app->getRP()->GetLimiterFreeze();
-	limiterfreeze = (limiterfreeze == 0 ? 1 : 0); 
-	app->getRP()->SetLimiterFreeze(limiterfreeze);
+        // Toggle limiter freeze
+        char limiterfreeze = app->getRP()->GetLimiterFreeze();
+        limiterfreeze = (limiterfreeze == 0 ? 1 : 0); 
+        app->getRP()->SetLimiterFreeze(limiterfreeze);
       }
     }
     else if (keycode == 108) {
@@ -524,26 +524,26 @@ void SDLIO::handle_key(int keycode, char press) {
     } else {
       // This keyrange (F1-F10) is set to select pulses
       if ((keycode >= 67 &&
-	   keycode <= 76)) {
-	if (sets.leftshift || sets.rightshift) {
-	  // Set subdivide
+           keycode <= 76)) {
+        if (sets.leftshift || sets.rightshift) {
+          // Set subdivide
 
-	  // Old method (F1=1, F2=2, F3=4, F4=8, F5=16..)
-	  // app->getLOOPMGR()->SetSubdivide((int) pow(2,keycode-67));
+          // Old method (F1=1, F2=2, F3=4, F4=8, F5=16..)
+          // app->getLOOPMGR()->SetSubdivide((int) pow(2,keycode-67));
 
-	  // New method- Fn is translated to subdivide directly
-	  // And amplified by repeat presses of Fn
-	  int newsub = (prevcnt+1) * (keycode-67+1);
-	  app->getLOOPMGR()->SetSubdivide(newsub);
-	}
+          // New method- Fn is translated to subdivide directly
+          // And amplified by repeat presses of Fn
+          int newsub = (prevcnt+1) * (keycode-67+1);
+          app->getLOOPMGR()->SetSubdivide(newsub);
+        }
       }
 
 #if 0
       if (keycode == 95) {
-	// Toggle metronome on current pulse (F11)
-	Pulse *a = app->getLOOPMGR()->GetCurPulse();
-	if (a != 0)
-	  a->SwitchMetronome((a->IsMetronomeActive() ? 0 : 1));
+        // Toggle metronome on current pulse (F11)
+        Pulse *a = app->getLOOPMGR()->GetCurPulse();
+        if (a != 0)
+          a->SwitchMetronome((a->IsMetronomeActive() ? 0 : 1));
       }
 #endif
     }
@@ -622,116 +622,116 @@ void *SDLIO::run_sdl_thread(void *ptr)
       switch (event.type) {
       case SDL_JOYBUTTONDOWN :
       case SDL_JOYBUTTONUP :
-	{
-	  JoystickButtonInputEvent *jevt = (JoystickButtonInputEvent *) 
-	      Event::GetEventByType(T_EV_Input_JoystickButton);
-	    
-	  jevt->joystick = event.jbutton.which;
-	  jevt->button = event.jbutton.button;
-	  jevt->down = (event.type == SDL_JOYBUTTONUP ? 0 : 1);
-	  inst->app->getEMG()->BroadcastEventNow(jevt, inst);
-	    
-	  if (inst->app->getCFG()->IsDebugInfo())
-	    printf("JOYSTICK: Joystick #%d, button #%d %s\n",
-		   jevt->joystick,jevt->button,
-		   (jevt->down ? "pressed" : "released"));
-	}
-	break;
+        {
+          JoystickButtonInputEvent *jevt = (JoystickButtonInputEvent *) 
+              Event::GetEventByType(T_EV_Input_JoystickButton);
+            
+          jevt->joystick = event.jbutton.which;
+          jevt->button = event.jbutton.button;
+          jevt->down = (event.type == SDL_JOYBUTTONUP ? 0 : 1);
+          inst->app->getEMG()->BroadcastEventNow(jevt, inst);
+            
+          if (inst->app->getCFG()->IsDebugInfo())
+            printf("JOYSTICK: Joystick #%d, button #%d %s\n",
+                   jevt->joystick,jevt->button,
+                   (jevt->down ? "pressed" : "released"));
+        }
+        break;
 
       case SDL_MOUSEMOTION :
-	{
-	  MouseMotionInputEvent *mevt = (MouseMotionInputEvent *) 
-	      Event::GetEventByType(T_EV_Input_MouseMotion);
-	    
-	  mevt->x = event.motion.x;
-	  mevt->y = event.motion.y;
-	  inst->app->getEMG()->BroadcastEventNow(mevt, inst);
-	    
-	  // No debug info for mouse motion
+        {
+          MouseMotionInputEvent *mevt = (MouseMotionInputEvent *) 
+              Event::GetEventByType(T_EV_Input_MouseMotion);
+            
+          mevt->x = event.motion.x;
+          mevt->y = event.motion.y;
+          inst->app->getEMG()->BroadcastEventNow(mevt, inst);
+            
+          // No debug info for mouse motion
 #if 0
-	  if (inst->app->getCFG()->IsDebugInfo())
-	    printf("MOUSE: Motion: (%d,%d)\n",
-		   mevt->x, mevt->y);
+          if (inst->app->getCFG()->IsDebugInfo())
+            printf("MOUSE: Motion: (%d,%d)\n",
+                   mevt->x, mevt->y);
 #endif
-	}
+        }
 
-	//	printf("x: %d y: %d\n",
-	//      event.motion.x,event.motion.y);
-	break;
+        //      printf("x: %d y: %d\n",
+        //      event.motion.x,event.motion.y);
+        break;
 
       case SDL_MOUSEBUTTONDOWN :
       case SDL_MOUSEBUTTONUP :
-	{
-	  MouseButtonInputEvent *mevt = (MouseButtonInputEvent *) 
-	      Event::GetEventByType(T_EV_Input_MouseButton);
-	    
-	  mevt->button = event.button.button;
-	  mevt->down = (event.type == SDL_MOUSEBUTTONUP ? 0 : 1);
-	  mevt->x = event.button.x;
-	  mevt->y = event.button.y;
-	  inst->app->getEMG()->BroadcastEventNow(mevt, inst);
-	    
-	  if (inst->app->getCFG()->IsDebugInfo())
-	    printf("MOUSE: Button #%d %s @ (%d,%d)\n",
-		   mevt->button,
-		   (mevt->down ? "pressed" : "released"),
-		   mevt->x, mevt->y);
-	}
+        {
+          MouseButtonInputEvent *mevt = (MouseButtonInputEvent *) 
+              Event::GetEventByType(T_EV_Input_MouseButton);
+            
+          mevt->button = event.button.button;
+          mevt->down = (event.type == SDL_MOUSEBUTTONUP ? 0 : 1);
+          mevt->x = event.button.x;
+          mevt->y = event.button.y;
+          inst->app->getEMG()->BroadcastEventNow(mevt, inst);
+            
+          if (inst->app->getCFG()->IsDebugInfo())
+            printf("MOUSE: Button #%d %s @ (%d,%d)\n",
+                   mevt->button,
+                   (mevt->down ? "pressed" : "released"),
+                   mevt->x, mevt->y);
+        }
 
-	//printf("button: %d x: %d y: %d\n",
-	//        event.button.button, 
-	//        event.button.x,event.button.y);
-	break;
+        //printf("button: %d x: %d y: %d\n",
+        //        event.button.button, 
+        //        event.button.x,event.button.y);
+        break;
 
       case SDL_KEYDOWN : 
-	{
-	  SDLKey sym = event.key.keysym.sym;
-	  if (sym >= SDLK_FIRST && sym < SDLK_LAST) {
-	    // Mark the key as held down
-	    inst->keyheld[sym] = 1;
-	    
-	    // Now generate an input event..
-	    KeyInputEvent *kevt = (KeyInputEvent *) 
-	      Event::GetEventByType(T_EV_Input_Key);
-	    
-	    kevt->down = 1;
-	    kevt->keysym = sym;
-	    kevt->unicode = event.key.keysym.unicode;
-	    inst->app->getEMG()->BroadcastEventNow(kevt, inst);
-	    
-	    if (inst->app->getCFG()->IsDebugInfo())
-	      printf("KEYBOARD: Key pressed: %d (%s)\n",
-		     kevt->keysym, GetSDLName(sym));
-	    inst->handle_key(event.key.keysym.scancode,1);
-	  } else {
-	    printf("KEYBOARD: Invalid key\n");
-	  }
-	}
-	break;
+        {
+          SDLKey sym = event.key.keysym.sym;
+          if (sym >= SDLK_FIRST && sym < SDLK_LAST) {
+            // Mark the key as held down
+            inst->keyheld[sym] = 1;
+            
+            // Now generate an input event..
+            KeyInputEvent *kevt = (KeyInputEvent *) 
+              Event::GetEventByType(T_EV_Input_Key);
+            
+            kevt->down = 1;
+            kevt->keysym = sym;
+            kevt->unicode = event.key.keysym.unicode;
+            inst->app->getEMG()->BroadcastEventNow(kevt, inst);
+            
+            if (inst->app->getCFG()->IsDebugInfo())
+              printf("KEYBOARD: Key pressed: %d (%s)\n",
+                     kevt->keysym, GetSDLName(sym));
+            inst->handle_key(event.key.keysym.scancode,1);
+          } else {
+            printf("KEYBOARD: Invalid key\n");
+          }
+        }
+        break;
       case SDL_KEYUP :
-	{
-	  SDLKey sym = event.key.keysym.sym;
-	  if (sym >= SDLK_FIRST && sym < SDLK_LAST) {
-	    // Mark the key as unheld
-	    inst->keyheld[sym] = 0;
-	    
-	    // Now generate an input event..
-	    KeyInputEvent *kevt = (KeyInputEvent *) 
-	      Event::GetEventByType(T_EV_Input_Key);
-	    kevt->down = 0;
-	    kevt->keysym = sym;
-	    kevt->unicode = event.key.keysym.unicode;
-	    inst->app->getEMG()->BroadcastEventNow(kevt, inst);
-	    
-	    if (inst->app->getCFG()->IsDebugInfo())
-	      printf("KEYBOARD: Key released: %d (%s)\n",
-		     kevt->keysym, GetSDLName(sym));
-	    inst->handle_key(event.key.keysym.scancode,0);
-	    break;
-	  } else
-	    printf("KEYBOARD: Invalid key\n");
-	}
-	break;
+        {
+          SDLKey sym = event.key.keysym.sym;
+          if (sym >= SDLK_FIRST && sym < SDLK_LAST) {
+            // Mark the key as unheld
+            inst->keyheld[sym] = 0;
+            
+            // Now generate an input event..
+            KeyInputEvent *kevt = (KeyInputEvent *) 
+              Event::GetEventByType(T_EV_Input_Key);
+            kevt->down = 0;
+            kevt->keysym = sym;
+            kevt->unicode = event.key.keysym.unicode;
+            inst->app->getEMG()->BroadcastEventNow(kevt, inst);
+            
+            if (inst->app->getCFG()->IsDebugInfo())
+              printf("KEYBOARD: Key released: %d (%s)\n",
+                     kevt->keysym, GetSDLName(sym));
+            inst->handle_key(event.key.keysym.scancode,0);
+            break;
+          } else
+            printf("KEYBOARD: Invalid key\n");
+        }
+        break;
       }
     }
     /*else {

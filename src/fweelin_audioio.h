@@ -54,8 +54,8 @@ public:
 
   // Timebase (jack transport sync) callback
   static void timebase_callback(jack_transport_state_t state, 
-				jack_nframes_t nframes, 
-				jack_position_t *pos, int new_pos, void *arg);
+                                jack_nframes_t nframes, 
+                                jack_position_t *pos, int new_pos, void *arg);
     
   // Sampling rate change callback
   static int srate_callback (nframes_t nframes, void *arg);

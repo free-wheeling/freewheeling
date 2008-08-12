@@ -96,8 +96,8 @@ char AudioBuffers::IsStereoMaster() {
 // *** Glitch/inefficiency: MixInputs is called for each RecordProcessor
 // And for PassthroughProcessor- DC offsets are recomputed, etc
 void AudioBuffers::MixInputs (nframes_t len, sample_t **dest, 
-			      InputSettings *iset, float inputvol,
-			      char compute_stats) {
+                              InputSettings *iset, float inputvol,
+                              char compute_stats) {
   const static int DCOFS_MINIMUM_SAMPLE_COUNT = 10000;
   const static float DCOFS_LOWPASS_COEFF = 0.99,
     DCOFS_ONEMINUS_LOWPASS_COEFF = 1.0-DCOFS_LOWPASS_COEFF;
@@ -116,84 +116,84 @@ void AudioBuffers::MixInputs (nframes_t len, sample_t **dest,
   for (int i = 0; i < numins; i++) {
     if (iset->selins[i]) { // If input is selected!
       for (int j = 0; j <= stereomix; j++) {
-	// Left & right channels
-	sample_t *in = ins[j][i];
-	float vol = iset->invols[i] * inputvol;
+        // Left & right channels
+        sample_t *in = ins[j][i];
+        float vol = iset->invols[i] * inputvol;
       
-	// DC offset compute
-	sample_t sum = 0, 
-	  peak = 0,
-	  dcofs = iset->insavg[j][i];
-	nframes_t peaktime = 0;
-	int cnt = 0;
+        // DC offset compute
+        sample_t sum = 0, 
+          peak = 0,
+          dcofs = iset->insavg[j][i];
+        nframes_t peaktime = 0;
+        int cnt = 0;
 
-	if (compute_stats) {
-	  cnt = iset->inscnt[i];
-	  sum = iset->insums[j][i];
-	  peaktime = iset->inpeaktime[i];
-	  if (cnt-peaktime > phold)
-	    // Old peak- fall to zero
-	    peak = 0;
-	  else
-	    // Retain peak
-	    peak = iset->inpeak[i];
-	}
-	if (j == 0) {
-	  // Left
-	  if (compute_stats) {
-	    // Stats
-	    for (nframes_t idx = 0; idx < len; idx++) {
-	      sample_t s = in[idx],
-		sabs = fabs(s);
-	      sum += s;
-	      if (sabs > peak) {
-		peak = sabs;
-		peaktime = cnt;
-	      }
-	      cnt++;
-	      dest[0][idx] += (s-dcofs) * vol; 
-	    }
-	    iset->inscnt[i] = cnt;
-	  } else {
-	    // No stats
-	    for (nframes_t idx = 0; idx < len; idx++)
-	      dest[0][idx] += (in[idx]-dcofs) * vol; 
-	  }
-	} else {
-	  // If input is mono, take signal from left channel and
-	  // use it for the right output
-	  if (in == 0) 
-	    in = ins[0][i];
+        if (compute_stats) {
+          cnt = iset->inscnt[i];
+          sum = iset->insums[j][i];
+          peaktime = iset->inpeaktime[i];
+          if (cnt-peaktime > phold)
+            // Old peak- fall to zero
+            peak = 0;
+          else
+            // Retain peak
+            peak = iset->inpeak[i];
+        }
+        if (j == 0) {
+          // Left
+          if (compute_stats) {
+            // Stats
+            for (nframes_t idx = 0; idx < len; idx++) {
+              sample_t s = in[idx],
+                sabs = fabs(s);
+              sum += s;
+              if (sabs > peak) {
+                peak = sabs;
+                peaktime = cnt;
+              }
+              cnt++;
+              dest[0][idx] += (s-dcofs) * vol; 
+            }
+            iset->inscnt[i] = cnt;
+          } else {
+            // No stats
+            for (nframes_t idx = 0; idx < len; idx++)
+              dest[0][idx] += (in[idx]-dcofs) * vol; 
+          }
+        } else {
+          // If input is mono, take signal from left channel and
+          // use it for the right output
+          if (in == 0) 
+            in = ins[0][i];
 
-	  if (compute_stats) {
-	    // Stats
-	    for (nframes_t idx = 0; idx < len; idx++) {
-	      sample_t s = in[idx],
-		sabs = fabs(s);		
-	      sum += s;
-	      if (sabs > peak) {
-		peak = sabs;
-		peaktime = cnt;
-	      }
-	      dest[j][idx] += (s-dcofs) * vol; 
-	    }
-	  } else {
-	    // No stats
-	    for (nframes_t idx = 0; idx < len; idx++)
-	      dest[j][idx] += (in[idx]-dcofs) * vol; 
-	  }
-	}
+          if (compute_stats) {
+            // Stats
+            for (nframes_t idx = 0; idx < len; idx++) {
+              sample_t s = in[idx],
+                sabs = fabs(s);         
+              sum += s;
+              if (sabs > peak) {
+                peak = sabs;
+                peaktime = cnt;
+              }
+              dest[j][idx] += (s-dcofs) * vol; 
+            }
+          } else {
+            // No stats
+            for (nframes_t idx = 0; idx < len; idx++)
+              dest[j][idx] += (in[idx]-dcofs) * vol; 
+          }
+        }
  
-	// DC offset adjust
-	if (compute_stats) {
-	  iset->insums[j][i] = sum;
-	  iset->inpeak[i] = peak;
-	  iset->inpeaktime[i] = peaktime;
-	  if (cnt > DCOFS_MINIMUM_SAMPLE_COUNT)
-	    iset->insavg[j][i] = 
-	      (DCOFS_LOWPASS_COEFF*iset->insavg[j][i]) + 
-	      (DCOFS_ONEMINUS_LOWPASS_COEFF*sum/cnt);
-	}
+        // DC offset adjust
+        if (compute_stats) {
+          iset->insums[j][i] = sum;
+          iset->inpeak[i] = peak;
+          iset->inpeaktime[i] = peaktime;
+          if (cnt > DCOFS_MINIMUM_SAMPLE_COUNT)
+            iset->insavg[j][i] = 
+              (DCOFS_LOWPASS_COEFF*iset->insavg[j][i]) + 
+              (DCOFS_ONEMINUS_LOWPASS_COEFF*sum/cnt);
+        }
       }
     }
   }
@@ -268,19 +268,19 @@ void Processor::fadepreandcurrent(AudioBuffers *ab) {
     for (int i = 0; i < ab->numouts; i++) {
       int stereo = (ab->outs[1][i] != 0 ? 1 : 0);
       for (int j = 0; j <= stereo; j++) {
-	// Fade between preprocessed and current output
-	sample_t *out = ab->outs[j][i];
-	if (out != 0) {
-	  // Do the pre-buffers match the outputs in channels?
-	  sample_t *pre = preab->outs[j][i];
-	  if (pre == 0) {
-	    printf("DSP: ERROR: Pre buffers are null for active output.\n");
-	  } else {
-	    float ramp = 0.0;
-	    for (nframes_t l = 0; l < prelen; l++, ramp += dr)
-	      out[l] = (out[l]*ramp) + (pre[l]*(1.0-ramp));
-	  }
-	}
+        // Fade between preprocessed and current output
+        sample_t *out = ab->outs[j][i];
+        if (out != 0) {
+          // Do the pre-buffers match the outputs in channels?
+          sample_t *pre = preab->outs[j][i];
+          if (pre == 0) {
+            printf("DSP: ERROR: Pre buffers are null for active output.\n");
+          } else {
+            float ramp = 0.0;
+            for (nframes_t l = 0; l < prelen; l++, ramp += dr)
+              out[l] = (out[l]*ramp) + (pre[l]*(1.0-ramp));
+          }
+        }
       }
     }
 
@@ -324,7 +324,7 @@ void Pulse::SetMIDIClock (char start) {
 
       // Send MIDI stop for pulse
       MIDIStartStopInputEvent *ssevt = 
-	(MIDIStartStopInputEvent *) Event::GetEventByType(T_EV_Input_MIDIStartStop);
+        (MIDIStartStopInputEvent *) Event::GetEventByType(T_EV_Input_MIDIStartStop);
       ssevt->start = 0;
       app->getEMG()->BroadcastEventNow(ssevt, this);         
     }
@@ -349,7 +349,7 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
     char sync_type = app->GetSyncType();
     int sync_speed = app->GetSyncSpeed();
     if (sync_type != prev_sync_type ||
-	sync_speed != prev_sync_speed) {
+        sync_speed != prev_sync_speed) {
       // Make sure we recalculate length / wrap if sync params changed
       prevbpm = 0;
       prev_sync_bb = -1;
@@ -362,24 +362,24 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
     if (bpm != prevbpm) {
       // Adjust pulse length from BPM
       float mult = (sync_type ?
-		    sync_speed :
-		    app->getAUDIO()->GetTransport_BPB()*
-		    sync_speed);
+                    sync_speed :
+                    app->getAUDIO()->GetTransport_BPB()*
+                    sync_speed);
       len = (nframes_t) ((double) 60.*app->getAUDIO()->get_srate()*mult/bpm);
-		 	  
+                          
       // printf("slave to bpm: %lf, len: %d\n",bpm,len);
       prevbpm = bpm;
     }
 
     int sync_bb = (sync_type ?
-		   app->getAUDIO()->GetTransport_Beat() :
-		   app->getAUDIO()->GetTransport_Bar());
+                   app->getAUDIO()->GetTransport_Beat() :
+                   app->getAUDIO()->GetTransport_Bar());
     if (sync_bb != prev_sync_bb) {
       sync_cnt++;
       if (sync_cnt >= sync_speed) {       
-	// Wrap pulse- enough bars or beats has passed
-	sync_cnt = 0;
-	Wrap();
+        // Wrap pulse- enough bars or beats has passed
+        sync_cnt = 0;
+        Wrap();
       }
 
       // printf("slave to sync: %d\n",sync_bb);
@@ -412,33 +412,33 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
       // In sync-bar mode, each pulse is one bar, so MIDI_CLOCK_FREQUENCY*BeatsPerBar*SyncSpeed clocks to send
       int clocksperpulse = MIDI_CLOCK_FREQUENCY*sync_speed;
       if (!sync_type)
-	clocksperpulse *= SYNC_BEATS_PER_BAR;
+        clocksperpulse *= SYNC_BEATS_PER_BAR;
       
       // Check timing of pulse
       float framesperclock = (float) len/clocksperpulse;
       int oldclock = (int) ((float) oldpos/framesperclock),
-	newclock = (int) ((float) curpos/framesperclock);
+        newclock = (int) ((float) curpos/framesperclock);
       if ((clockrun == SS_BEAT && newclock != oldclock) || curpos >= len) {
-	// printf("CLOCKY-OO %d!\n",newclock);
-	
-	if (clockrun == SS_START) {
-	  // Send MIDI start for pulse
-	  MIDIStartStopInputEvent *ssevt = 
-	    (MIDIStartStopInputEvent *) Event::GetEventByType(T_EV_Input_MIDIStartStop);
-	  ssevt->start = 1;
-	  app->getEMG()->BroadcastEventNow(ssevt, this);    
-	}
-	
-	// Time for another clock message
-	MIDIClockInputEvent *clkevt = (MIDIClockInputEvent *) Event::GetEventByType(T_EV_Input_MIDIClock);
-	// *** Broadcast immediately-- this will yield lowest MIDI sync latency, 
-	// but may cause problems if MIDI transmit code blocks/conflicts with RT audio thread
-	// (which it very well might)
-	// _experimental_
-	app->getEMG()->BroadcastEventNow(clkevt, this);    
-	
-	// If this is the first downbeat, start the clock proper
-	clockrun = SS_BEAT;
+        // printf("CLOCKY-OO %d!\n",newclock);
+        
+        if (clockrun == SS_START) {
+          // Send MIDI start for pulse
+          MIDIStartStopInputEvent *ssevt = 
+            (MIDIStartStopInputEvent *) Event::GetEventByType(T_EV_Input_MIDIStartStop);
+          ssevt->start = 1;
+          app->getEMG()->BroadcastEventNow(ssevt, this);    
+        }
+        
+        // Time for another clock message
+        MIDIClockInputEvent *clkevt = (MIDIClockInputEvent *) Event::GetEventByType(T_EV_Input_MIDIClock);
+        // *** Broadcast immediately-- this will yield lowest MIDI sync latency, 
+        // but may cause problems if MIDI transmit code blocks/conflicts with RT audio thread
+        // (which it very well might)
+        // _experimental_
+        app->getEMG()->BroadcastEventNow(clkevt, this);    
+        
+        // If this is the first downbeat, start the clock proper
+        clockrun = SS_BEAT;
       }
     }
     
@@ -450,7 +450,7 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
 
       // Send out a pulse sync event
       PulseSyncEvent *pevt = (PulseSyncEvent *) 
-	Event::GetEventByType(T_EV_PulseSync);
+        Event::GetEventByType(T_EV_PulseSync);
       pevt->syncidx = -1; // Builtin sync (on the downbeat)
       app->getEMG()->BroadcastEventNow(pevt, this);
 
@@ -471,12 +471,12 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
     // Send out user-define pulse syncs 
     for (int i = 0; i < numsyncpos; i++) {
       if (syncpos[i] != 0 && oldpos < syncpos[i] &&
-	  (curpos >= syncpos[i] || wrapped)) {
-	// Send out a pulse sync event
-	PulseSyncEvent *pevt = (PulseSyncEvent *) 
-	  Event::GetEventByType(T_EV_PulseSync);
-	pevt->syncidx = i; // User-define sync
-	app->getEMG()->BroadcastEventNow(pevt, this);
+          (curpos >= syncpos[i] || wrapped)) {
+        // Send out a pulse sync event
+        PulseSyncEvent *pevt = (PulseSyncEvent *) 
+          Event::GetEventByType(T_EV_PulseSync);
+        pevt->syncidx = i; // User-define sync
+        app->getEMG()->BroadcastEventNow(pevt, this);
       }
     }
   }
@@ -486,9 +486,9 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
     if (metroactive && metrovol > 0.0) {
       nframes_t i = 0;
       for (; i < l && metroofs+i<metrolen; i++)
-	out[ofs+i] = metro[metroofs+i] * metrovol;
+        out[ofs+i] = metro[metroofs+i] * metrovol;
       for (; i < l; i++)
-	out[ofs+i] = 0;
+        out[ofs+i] = 0;
     }
     else
       memset(&out[ofs],0,sizeof(sample_t) * l);
@@ -520,9 +520,9 @@ RootProcessor::RootProcessor(Fweelin *app, InputSettings *iset) :
 
   // Start a new thread for cleanup
   int ret = pthread_create(&cleanup_thread,
-			   &attr,
-			   run_cleanup_thread,
-			   static_cast<void *>(this));
+                           &attr,
+                           run_cleanup_thread,
+                           static_cast<void *>(this));
   if (ret != 0) {
     printf("(rootprocessor) pthread_create failed, exiting\n");
     exit(1);
@@ -543,7 +543,7 @@ RootProcessor::RootProcessor(Fweelin *app, InputSettings *iset) :
   }
 
   //printf (" :: Processor: RootProcessor begin (block size: %d)\n",
-  //	  app->getBUFSZ());
+  //      app->getBUFSZ());
 };
 
 RootProcessor::~RootProcessor() {
@@ -632,25 +632,25 @@ void RootProcessor::DelChild (Processor *o) {
 }
 
 void RootProcessor::processchain(char pre, nframes_t len, AudioBuffers *ab,
-				 AudioBuffers *abchild, const int ptype, 
-				 const char mixintoout) {
+                                 AudioBuffers *abchild, const int ptype, 
+                                 const char mixintoout) {
   int stereo = (ab->outs[1][0] != 0 && abchild->outs[1][0] != 0 ? 1 : 0);
 
   // Go through all children of type 'ptype' and mix 
   ProcessorItem *cur = firstchild;
   while (cur != 0) {
     if (cur->status == ProcessorItem::STATUS_GO &&
-	cur->type == ptype) {
+        cur->type == ptype) {
       cur->p -> process(pre, len, abchild);
 
       // Sum from temporary output into actual output 
       if (mixintoout) {
-	for (int chan = 0; chan <= stereo; chan++) {
-	  sample_t *sumout = ab->outs[chan][0],
-	    *out = abchild->outs[chan][0];
-	  for (nframes_t j = 0; j < len; j++)
-	    sumout[j] += out[j];
-	}
+        for (int chan = 0; chan <= stereo; chan++) {
+          sample_t *sumout = ab->outs[chan][0],
+            *out = abchild->outs[chan][0];
+          for (nframes_t j = 0; j < len; j++)
+            sumout[j] += out[j];
+        }
       }
     }
 
@@ -679,19 +679,19 @@ void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
       
       // Apply delta
       if (doutputvol > 1.0 && outputvol < MIN_VOL)
-	outputvol = MIN_VOL;
+        outputvol = MIN_VOL;
       if (outputvol < MAX_VOL)
-	outputvol *= doutputvol;
+        outputvol *= doutputvol;
       if (dinputvol > 1.0 && inputvol < MIN_VOL)
-	inputvol = MIN_VOL;
+        inputvol = MIN_VOL;
       if (inputvol < MAX_VOL)
-	inputvol *= dinputvol;
+        inputvol *= dinputvol;
     }
     
     // Adjust individual input volumes
     for (int i = 0; i < iset->numins; i++) {
       if (iset->dinvols[i] > 1.0 && iset->invols[i] < MIN_VOL)
-	iset->invols[i] = MIN_VOL;
+        iset->invols[i] = MIN_VOL;
       iset->invols[i] *= iset->dinvols[i];
     }
   }
@@ -760,143 +760,143 @@ void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
     if (stereo) {
       // Stereo limit
       for (nframes_t l = 0; l < len; l++, s_left++, s_right++) {
-	float abssamp_l = fabs(*s_left),
-	  abssamp_r = fabs(*s_right);
-	
-	// Volume scale
-	*s_left *= curlimitvol;
-	*s_right *= curlimitvol;
-	
-	float abssamp2_l = fabs(*s_left),
-	  abssamp2_r = fabs(*s_right);
-	
-	if (!limiterfreeze) {
-	  // Find local maxima
-	  if (abssamp_l > localmaxvol)
-	    localmaxvol = abssamp_l;
-	  if (abssamp_r > localmaxvol)
-	    localmaxvol = abssamp_r;
-	  
-	  // Find clipping after limit
-	  if (abssamp2_l > limitthresh) 
-	    clipcnt++; // Force limit
-	  if (abssamp2_r > limitthresh) 
-	    clipcnt++; // Force limit
-	  
-	  // Adjust volume scale
-	  curlimitvol += dlimitvol;
-	}
-	
-	// Clipping kludge-- 
-	// Some output formats clip near 1.0.. brickwall limit to 1.0
-	if (abssamp2_l > 0.99) {
-	  // Absolute clip! Truncate
-	  if (*s_left > 0.0)
-	    *s_left = 0.99;
-	  else
-	    *s_left = -0.99;
-	}
-	if (abssamp2_r > 0.99) {
-	  // Absolute clip! Truncate
-	  if (*s_right > 0.0)
-	    *s_right = 0.99;
-	  else
-	    *s_right = -0.99;
-	}
-	
-	if (l+1 == len || l % LIMITER_ADJUST_PERIOD == 0) {
-	  // Time to check & adjust limit parameters
-	  
-	  if (clipcnt > 0 || localmaxvol > maxvol) {
-	    // We got more clipping!
-	    clipcnt = 0;
-	    
-	    float newlimitvol = limitthresh/localmaxvol;
-	    
-	    // Compute volume reduction necessary to bring in peak
-	    limitvol = newlimitvol;
-	    
-	    // Compute delta (speed) to get to that reduction (attack time)
-	    dlimitvol = (limitvol-curlimitvol)/LIMITER_ATTACK_LENGTH; 
-	    
-	    // Store new max
-	    maxvol = localmaxvol;
-	  }
-	  
-	  if (dlimitvol < 0.0 && curlimitvol <= limitvol) {
-	    // We are done the attack phase- switch to release!
-	    dlimitvol = limitrr;
-	  }
-	  
-	  if (dlimitvol > 0.0 && curlimitvol > maxamp) {
-	    // Too much amp!
-	    dlimitvol = 0.0;
-	  }
-	}
+        float abssamp_l = fabs(*s_left),
+          abssamp_r = fabs(*s_right);
+        
+        // Volume scale
+        *s_left *= curlimitvol;
+        *s_right *= curlimitvol;
+        
+        float abssamp2_l = fabs(*s_left),
+          abssamp2_r = fabs(*s_right);
+        
+        if (!limiterfreeze) {
+          // Find local maxima
+          if (abssamp_l > localmaxvol)
+            localmaxvol = abssamp_l;
+          if (abssamp_r > localmaxvol)
+            localmaxvol = abssamp_r;
+          
+          // Find clipping after limit
+          if (abssamp2_l > limitthresh) 
+            clipcnt++; // Force limit
+          if (abssamp2_r > limitthresh) 
+            clipcnt++; // Force limit
+          
+          // Adjust volume scale
+          curlimitvol += dlimitvol;
+        }
+        
+        // Clipping kludge-- 
+        // Some output formats clip near 1.0.. brickwall limit to 1.0
+        if (abssamp2_l > 0.99) {
+          // Absolute clip! Truncate
+          if (*s_left > 0.0)
+            *s_left = 0.99;
+          else
+            *s_left = -0.99;
+        }
+        if (abssamp2_r > 0.99) {
+          // Absolute clip! Truncate
+          if (*s_right > 0.0)
+            *s_right = 0.99;
+          else
+            *s_right = -0.99;
+        }
+        
+        if (l+1 == len || l % LIMITER_ADJUST_PERIOD == 0) {
+          // Time to check & adjust limit parameters
+          
+          if (clipcnt > 0 || localmaxvol > maxvol) {
+            // We got more clipping!
+            clipcnt = 0;
+            
+            float newlimitvol = limitthresh/localmaxvol;
+            
+            // Compute volume reduction necessary to bring in peak
+            limitvol = newlimitvol;
+            
+            // Compute delta (speed) to get to that reduction (attack time)
+            dlimitvol = (limitvol-curlimitvol)/LIMITER_ATTACK_LENGTH; 
+            
+            // Store new max
+            maxvol = localmaxvol;
+          }
+          
+          if (dlimitvol < 0.0 && curlimitvol <= limitvol) {
+            // We are done the attack phase- switch to release!
+            dlimitvol = limitrr;
+          }
+          
+          if (dlimitvol > 0.0 && curlimitvol > maxamp) {
+            // Too much amp!
+            dlimitvol = 0.0;
+          }
+        }
       }
     } else {
       // Mono limit
       for (nframes_t l = 0; l < len; l++, s_left++) {
-	float abssamp_l = fabs(*s_left);
-	
-	// Volume scale
-	*s_left *= curlimitvol;
-	
-	float abssamp2_l = fabs(*s_left);
-	
-	if (!limiterfreeze) {
-	  // Find local maxima
-	  if (abssamp_l > localmaxvol)
-	    localmaxvol = abssamp_l;
-	  
-	  // Find clipping after limit
-	  if (abssamp2_l > limitthresh) 
-	    clipcnt++; // Force limit
-	  
-	  // Adjust volume scale
-	  curlimitvol += dlimitvol;
-	}
-	
-	// Vorbis clipping kludge-- 
-	// Vorbis clips near 1.0.. 1st step is brickwall at 1.0
-	// then scale down.. (scaling happens in FileStreamer)
-	if (abssamp2_l > 0.99) {
-	  // Absolute clip! Truncate
-	  if (*s_left > 0.0)
-	    *s_left = 0.99;
-	  else
-	    *s_left = -0.99;
-	}
-	
-	if (l+1 == len || l % LIMITER_ADJUST_PERIOD == 0) {
-	  // Time to check & adjust limit parameters
-	  
-	  if (clipcnt > 0 || localmaxvol > maxvol) {
-	    // We got more clipping!
-	    clipcnt = 0;
-	    
-	    float newlimitvol = limitthresh/localmaxvol;
-	    
-	    // Compute volume reduction necessary to bring in peak
-	    limitvol = newlimitvol;
-	    
-	    // Compute delta (speed) to get to that reduction (attack time)
-	    dlimitvol = (limitvol-curlimitvol)/LIMITER_ATTACK_LENGTH; 
-	    
-	    // Store new max
-	    maxvol = localmaxvol;
-	  }
-	  
-	  if (dlimitvol < 0.0 && curlimitvol <= limitvol) {
-	    // We are done the attack phase- switch to release!
-	    dlimitvol = limitrr;
-	  }
-	  
-	  if (dlimitvol > 0.0 && curlimitvol > maxamp) {
-	    // Too much amp!
-	    dlimitvol = 0.0;
-	  }
-	}
+        float abssamp_l = fabs(*s_left);
+        
+        // Volume scale
+        *s_left *= curlimitvol;
+        
+        float abssamp2_l = fabs(*s_left);
+        
+        if (!limiterfreeze) {
+          // Find local maxima
+          if (abssamp_l > localmaxvol)
+            localmaxvol = abssamp_l;
+          
+          // Find clipping after limit
+          if (abssamp2_l > limitthresh) 
+            clipcnt++; // Force limit
+          
+          // Adjust volume scale
+          curlimitvol += dlimitvol;
+        }
+        
+        // Vorbis clipping kludge-- 
+        // Vorbis clips near 1.0.. 1st step is brickwall at 1.0
+        // then scale down.. (scaling happens in FileStreamer)
+        if (abssamp2_l > 0.99) {
+          // Absolute clip! Truncate
+          if (*s_left > 0.0)
+            *s_left = 0.99;
+          else
+            *s_left = -0.99;
+        }
+        
+        if (l+1 == len || l % LIMITER_ADJUST_PERIOD == 0) {
+          // Time to check & adjust limit parameters
+          
+          if (clipcnt > 0 || localmaxvol > maxvol) {
+            // We got more clipping!
+            clipcnt = 0;
+            
+            float newlimitvol = limitthresh/localmaxvol;
+            
+            // Compute volume reduction necessary to bring in peak
+            limitvol = newlimitvol;
+            
+            // Compute delta (speed) to get to that reduction (attack time)
+            dlimitvol = (limitvol-curlimitvol)/LIMITER_ATTACK_LENGTH; 
+            
+            // Store new max
+            maxvol = localmaxvol;
+          }
+          
+          if (dlimitvol < 0.0 && curlimitvol <= limitvol) {
+            // We are done the attack phase- switch to release!
+            dlimitvol = limitrr;
+          }
+          
+          if (dlimitvol > 0.0 && curlimitvol > maxamp) {
+            // Too much amp!
+            dlimitvol = 0.0;
+          }
+        }
       }
     }
 
@@ -922,7 +922,7 @@ void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
   for (int i = 1; i < ab->numouts; i++) {
     for (int chan = 0; chan <= stereo; chan++) {
       if (ab->outs[chan][i] != 0)
-	memcpy(ab->outs[chan][i],ab->outs[chan][0],sizeof(sample_t) * len);
+        memcpy(ab->outs[chan][i],ab->outs[chan][0],sizeof(sample_t) * len);
     }
   }
 }
@@ -938,22 +938,22 @@ void *RootProcessor::run_cleanup_thread (void *ptr) {
     while (cur != 0) {
       // Search for any processor pending delete in our list
       while (cur != 0 && cur->status !=
-	     ProcessorItem::STATUS_PENDING_DELETE) {
-	prev = cur;
-	cur = cur->next;
+             ProcessorItem::STATUS_PENDING_DELETE) {
+        prev = cur;
+        cur = cur->next;
       }
       
       if (cur != 0) {
-	// Got one to delete, unlink!
-	if (prev != 0)
-	  prev->next = cur->next;
-	else
-	  inst->firstchild = cur->next;
-	
-	ProcessorItem *tmp = cur->next;
-	delete cur->p;
-	delete cur;
-	cur = tmp;
+        // Got one to delete, unlink!
+        if (prev != 0)
+          prev->next = cur->next;
+        else
+          inst->firstchild = cur->next;
+        
+        ProcessorItem *tmp = cur->next;
+        delete cur->p;
+        delete cur;
+        cur = tmp;
       }
     }
 
@@ -979,12 +979,12 @@ void *RootProcessor::run_cleanup_thread (void *ptr) {
 
 // Overdubbing version of record into existing loop
 RecordProcessor::RecordProcessor(Fweelin *app,
-				 InputSettings *iset, 
-				 float *inputvol,
-				 Loop *od_loop,
-				 float od_playvol,
-				 nframes_t od_startofs,
-				 float *od_feedback) : 
+                                 InputSettings *iset, 
+                                 float *inputvol,
+                                 Loop *od_loop,
+                                 float od_playvol,
+                                 nframes_t od_startofs,
+                                 float *od_feedback) : 
   Processor(app), sync_state(SS_NONE), 
   iset(iset), inputvol(inputvol), nbeats(0), endsyncidx(-2), endsyncwait(0), 
   stopped(0), pa_mgr(0), od_loop(od_loop), od_playvol(od_playvol), 
@@ -1020,10 +1020,10 @@ RecordProcessor::RecordProcessor(Fweelin *app,
 
   // Create an audioblock iterator to move through that memory
   i = new AudioBlockIterator(recblk,app->getBUFSZ(),
-			     app->getPRE_EXTRACHANNEL());
+                             app->getPRE_EXTRACHANNEL());
   // And a temporary iterator for overdub jumps
   tmpi = new AudioBlockIterator(recblk,app->getBUFSZ(),
-				app->getPRE_EXTRACHANNEL());
+                                app->getPRE_EXTRACHANNEL());
 
   // Check for quantize to pulse
   sync = od_loop->pulse;
@@ -1057,9 +1057,9 @@ RecordProcessor::RecordProcessor(Fweelin *app,
 // If we don't specify stereo/mono, RecordProcessor decides automatically
 // based on the existing 'dest'
 RecordProcessor::RecordProcessor(Fweelin *app,
-				 InputSettings *iset, 
-				 float *inputvol,
-				 AudioBlock *dest, int suggest_stereo) :
+                                 InputSettings *iset, 
+                                 float *inputvol,
+                                 AudioBlock *dest, int suggest_stereo) :
   Processor(app), sync_state(SS_NONE),
   iset(iset), inputvol(inputvol), sync(0), tmpi(0), nbeats(0), 
   stopped(0), pa_mgr(0), od_loop(0), od_feedback(0), od_fadeout(0), od_stop(0), 
@@ -1079,7 +1079,7 @@ RecordProcessor::RecordProcessor(Fweelin *app,
   
   // Create an audioblock iterator to move through that memory
   i = new AudioBlockIterator(recblk,app->getBUFSZ(),
-			     app->getPRE_EXTRACHANNEL());
+                             app->getPRE_EXTRACHANNEL());
 };
 
 // ISSUES-
@@ -1091,14 +1091,14 @@ RecordProcessor::RecordProcessor(Fweelin *app,
 // Tricky stuff with those block managers
 //
 
-// Recording new blocks, growing size as necessary	       
+// Recording new blocks, growing size as necessary             
 RecordProcessor::RecordProcessor(Fweelin *app,
-				 InputSettings *iset, 
-				 float *inputvol,
-				 Pulse *sync, 
-				 AudioBlock *audiomem,
-				 AudioBlockIterator *audiomemi,
-				 nframes_t peaksavgs_chunksize) : 
+                                 InputSettings *iset, 
+                                 float *inputvol,
+                                 Pulse *sync, 
+                                 AudioBlock *audiomem,
+                                 AudioBlockIterator *audiomemi,
+                                 nframes_t peaksavgs_chunksize) : 
   Processor(app), sync_state(SS_NONE),
   iset(iset), inputvol(inputvol), sync(sync), tmpi(0), 
   nbeats(0), endsyncidx(-2), endsyncwait(0), 
@@ -1131,7 +1131,7 @@ RecordProcessor::RecordProcessor(Fweelin *app,
 
   // Create an audioblock iterator to move through that memory
   i = new AudioBlockIterator(recblk,app->getBUFSZ(),
-			     app->getPRE_EXTRACHANNEL());
+                             app->getPRE_EXTRACHANNEL());
   
   // Check for sync to an pulse
   if (sync != 0) {
@@ -1147,37 +1147,37 @@ RecordProcessor::RecordProcessor(Fweelin *app,
       
       // Use BED_MarkerPoints in audiomem to get chunk
       BED_MarkerPoints *mp = (BED_MarkerPoints *)
-	(audiomem->GetExtendedData(T_BED_MarkerPoints));
+        (audiomem->GetExtendedData(T_BED_MarkerPoints));
       if (mp == 0) {
-	// No marker block
-	printf("Err (SYNCREC): No markers striped in Audio Mem!\n");
-	exit(1);
+        // No marker block
+        printf("Err (SYNCREC): No markers striped in Audio Mem!\n");
+        exit(1);
       } else {
-	// Get a sub block from the previous downbeat
-	nframes_t curofs = audiomemi->GetTotalLength2Cur(),
-	  prevofs;
-	TimeMarker *prevm = mp->GetMarkerNBeforeCur(1,curofs);
-	if (prevm != 0) {
-	  prevofs = prevm->markofs;
-	  
-	  AudioBlock *beginblk = 
-	    audiomem->GenerateSubChain(prevofs,curofs,stereo);
-	  if (beginblk == 0) {
-	    printf("Err: Problem generating subchain from audiomemory.\n");
-	    exit(1);
-	  }
-	  
-	  // Now reorganize the block chain to put beginblk first
-	  recblk = recblk->InsertFirst(beginblk);
-	  
-	  // Recalculate iterator constants-- iterator should
-	  // start recording at end of block ripped from audiomemory
-	  i->GenConstants();
-	}
-	else {
-	  // Bad markers (not fatal!)- just don't copy from audiomem
-	  printf("SYNCREC: Previous markers in Audio Mem unknown!\n");
-	}
+        // Get a sub block from the previous downbeat
+        nframes_t curofs = audiomemi->GetTotalLength2Cur(),
+          prevofs;
+        TimeMarker *prevm = mp->GetMarkerNBeforeCur(1,curofs);
+        if (prevm != 0) {
+          prevofs = prevm->markofs;
+          
+          AudioBlock *beginblk = 
+            audiomem->GenerateSubChain(prevofs,curofs,stereo);
+          if (beginblk == 0) {
+            printf("Err: Problem generating subchain from audiomemory.\n");
+            exit(1);
+          }
+          
+          // Now reorganize the block chain to put beginblk first
+          recblk = recblk->InsertFirst(beginblk);
+          
+          // Recalculate iterator constants-- iterator should
+          // start recording at end of block ripped from audiomemory
+          i->GenConstants();
+        }
+        else {
+          // Bad markers (not fatal!)- just don't copy from audiomem
+          printf("SYNCREC: Previous markers in Audio Mem unknown!\n");
+        }
       }
       
       // Notify Pulse to call us every beat
@@ -1197,7 +1197,7 @@ RecordProcessor::RecordProcessor(Fweelin *app,
     }
     
     recblk->AddExtendedData(new BED_PeaksAvgs(peaks,avgs,
-					      peaksavgs_chunksize));
+                                              peaksavgs_chunksize));
     pa_mgr = app->getBMG()->PeakAvgOn(recblk,i,1);
   }
   
@@ -1281,18 +1281,18 @@ void RecordProcessor::EndNow() {
       i->EndChain();
       
       if (growchain) {
-	// Stop expanding this recording
-	app->getBMG()->GrowChainOff(recblk);
+        // Stop expanding this recording
+        app->getBMG()->GrowChainOff(recblk);
       }
 
       // For new non syncronized loops--
       // Bend our strip of audio into a loop
       // Smooth beginning into end, shorten loop-
       if (sync == 0)
-	recblk->Smooth();
+        recblk->Smooth();
       /* else
-	printf("reclen: %d, synclen: %d\n",recblk->GetTotalLen(),
-	sync->GetLength()); */
+        printf("reclen: %d, synclen: %d\n",recblk->GetTotalLen(),
+        sync->GetLength()); */
     }
 
     // End peaks avgs compute now
@@ -1346,56 +1346,56 @@ void RecordProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       PulseSyncEvent *pev = (PulseSyncEvent *) ev;
       if (pev->syncidx == -1) {
-	switch (sync_state) { 
-	case SS_START:
-	  if (od_loop != 0) {
-	    // Overdub record, fade to start since we are syncing with pulse
-	    Jump(od_loop->pulse->GetPos());
-	  }
-	  else {
-	    // Start record now
-	    stopped = 0;
-	  }
-	  
-	  sync_state = SS_BEAT;
-	  break;
-	  
-	case SS_END:
-	  nbeats++;
-	  endsyncwait = 1;
-	  break;
-	  
-	case SS_BEAT:
-	  if (od_loop != 0) {
-	    // Overdub record
-	    od_curbeat++;
-	    if (od_curbeat >= od_loop->nbeats) {
-	      // Quantize loop by restarting
-	      Jump(od_loop->pulse->GetPos());
-	      od_curbeat = 0;
-	    }
-	  } else {
-	    // Regular grow record
-	    nbeats++;
-	  }
-	  
-	  // Call us on further beats
-	  sync_state = SS_BEAT;
-	  break;
-	  
-	case SS_ENDED:
-	  break;
-	  
-	default:
-	  break;
-	}
+        switch (sync_state) { 
+        case SS_START:
+          if (od_loop != 0) {
+            // Overdub record, fade to start since we are syncing with pulse
+            Jump(od_loop->pulse->GetPos());
+          }
+          else {
+            // Start record now
+            stopped = 0;
+          }
+          
+          sync_state = SS_BEAT;
+          break;
+          
+        case SS_END:
+          nbeats++;
+          endsyncwait = 1;
+          break;
+          
+        case SS_BEAT:
+          if (od_loop != 0) {
+            // Overdub record
+            od_curbeat++;
+            if (od_curbeat >= od_loop->nbeats) {
+              // Quantize loop by restarting
+              Jump(od_loop->pulse->GetPos());
+              od_curbeat = 0;
+            }
+          } else {
+            // Regular grow record
+            nbeats++;
+          }
+          
+          // Call us on further beats
+          sync_state = SS_BEAT;
+          break;
+          
+        case SS_ENDED:
+          break;
+          
+        default:
+          break;
+        }
       } else if (pev->syncidx == endsyncidx && endsyncwait) {
-	// End record now
-	EndNow();
-	// Remove user-defined sync point
-	sync->DelSyncPos(endsyncidx);
-	// Stop calling us!
-	sync_state = SS_ENDED;
+        // End record now
+        EndNow();
+        // Remove user-defined sync point
+        sync->DelSyncPos(endsyncidx);
+        // Stop calling us!
+        sync_state = SS_ENDED;
       }
     }
     break;
@@ -1412,12 +1412,12 @@ int RecordProcessor::ProcessorCall(void *trigger, int data) {
     switch (data) {
     case PC_START:
       if (od_loop != 0) {
-	// Overdub record, fade to start since we are syncing with pulse
-	Jump(od_loop->pulse->GetPos());
+        // Overdub record, fade to start since we are syncing with pulse
+        Jump(od_loop->pulse->GetPos());
       }
       else {
-	// Start record now
-	stopped = 0;
+        // Start record now
+        stopped = 0;
       }
 
       // Notify Pulse to call us every beat
@@ -1432,16 +1432,16 @@ int RecordProcessor::ProcessorCall(void *trigger, int data) {
 
     case PC_BEAT:
       if (od_loop != 0) {
-	// Overdub record
-	od_curbeat++;
-	if (od_curbeat >= od_loop->nbeats) {
-	  // Quantize loop by restarting
-	  Jump(od_loop->pulse->GetPos());
-	  od_curbeat = 0;
-	}
+        // Overdub record
+        od_curbeat++;
+        if (od_curbeat >= od_loop->nbeats) {
+          // Quantize loop by restarting
+          Jump(od_loop->pulse->GetPos());
+          od_curbeat = 0;
+        }
       } else {
-	// Regular grow record
-	nbeats++;
+        // Regular grow record
+        nbeats++;
       }
 
       // Call us on further beats
@@ -1461,20 +1461,20 @@ void RecordProcessor::End() {
     if (sync != 0) {
       // Sync, so check timing
       if (sync->GetPct() >= 0.5 || sync->GetPos() < REC_TAIL_LEN) {
-	// Delay record til slightly after downbeat-- we 
-	// want to capture an extra 'tail' for crossfading.
-	if (sync->GetPos() < REC_TAIL_LEN)
-	  endsyncwait = 1; // Past the downbeat
-	endsyncidx = sync->AddSyncPos(REC_TAIL_LEN);
-	sync_state = SS_END;
+        // Delay record til slightly after downbeat-- we 
+        // want to capture an extra 'tail' for crossfading.
+        if (sync->GetPos() < REC_TAIL_LEN)
+          endsyncwait = 1; // Past the downbeat
+        endsyncidx = sync->AddSyncPos(REC_TAIL_LEN);
+        sync_state = SS_END;
       } else {
-	// Close to previous downbeat- end record now & crop extra chunk
-	EndNow();
-	
-	// Now hack off end of recording to downbeat
-	// *** To be tested ***
-	/*if (recblk->HackTotalLengthBy(sync->GetPos()))
-	  printf("Err (SYNCREC): Problem cutting length of record\n");*/
+        // Close to previous downbeat- end record now & crop extra chunk
+        EndNow();
+        
+        // Now hack off end of recording to downbeat
+        // *** To be tested ***
+        /*if (recblk->HackTotalLengthBy(sync->GetPos()))
+          printf("Err (SYNCREC): Problem cutting length of record\n");*/
       }
     } else {
       // No sync, stop recording now!
@@ -1485,10 +1485,10 @@ void RecordProcessor::End() {
 
 // Fades input samples out of mix- writing to 'dest'
 void RecordProcessor::FadeOut_Input(nframes_t len, 
-				    sample_t *input_l, sample_t *input_r,
-				    sample_t *loop_l, sample_t *loop_r, 
-				    float old_fb, float new_fb, float fb_delta,
-				    sample_t *dest_l, sample_t *dest_r) {
+                                    sample_t *input_l, sample_t *input_r,
+                                    sample_t *loop_l, sample_t *loop_r, 
+                                    float old_fb, float new_fb, float fb_delta,
+                                    sample_t *dest_l, sample_t *dest_r) {
   // Fade out input samples
   // (feedback to 1.0)
 
@@ -1500,12 +1500,12 @@ void RecordProcessor::FadeOut_Input(nframes_t len,
   if (fb_delta == 0.0) {
     for (; l < prelen; l++, ramp += dr, negramp -= dr) {
       dest_l[l] = (input_l[l]*negramp) +
-	(loop_l[l]*(ramp+negramp*cur_fb));
+        (loop_l[l]*(ramp+negramp*cur_fb));
     }
   } else {
     for (; l < prelen; l++, ramp += dr, negramp -= dr, cur_fb += fb_delta) {
       dest_l[l] = (input_l[l]*negramp) +
-	(loop_l[l]*(ramp+negramp*cur_fb));
+        (loop_l[l]*(ramp+negramp*cur_fb));
     }
   }
   
@@ -1520,13 +1520,13 @@ void RecordProcessor::FadeOut_Input(nframes_t len,
     cur_fb = old_fb;
     if (fb_delta == 0.0) {
       for (l = 0; l < prelen; l++, ramp += dr, negramp -= dr) {
-	dest_r[l] = (input_r[l]*negramp) +
-	  (loop_r[l]*(ramp+negramp*cur_fb));
+        dest_r[l] = (input_r[l]*negramp) +
+          (loop_r[l]*(ramp+negramp*cur_fb));
       }
     } else {
       for (l = 0; l < prelen; l++, ramp += dr, negramp -= dr, cur_fb += fb_delta) {
-	dest_r[l] = (input_r[l]*negramp) +
-	  (loop_r[l]*(ramp+negramp*cur_fb));
+        dest_r[l] = (input_r[l]*negramp) +
+          (loop_r[l]*(ramp+negramp*cur_fb));
       }
     }
     
@@ -1538,10 +1538,10 @@ void RecordProcessor::FadeOut_Input(nframes_t len,
 
 // Fades input samples into mix- writing to 'dest'
 void RecordProcessor::FadeIn_Input(nframes_t len, 
-				   sample_t *input_l, sample_t *input_r,
-				   sample_t *loop_l, sample_t *loop_r, 
-				   float old_fb, float new_fb, float fb_delta,
-				   sample_t *dest_l, sample_t *dest_r) {
+                                   sample_t *input_l, sample_t *input_r,
+                                   sample_t *loop_l, sample_t *loop_r, 
+                                   float old_fb, float new_fb, float fb_delta,
+                                   sample_t *dest_l, sample_t *dest_r) {
   // Left
 
   // Fade in input samples
@@ -1552,7 +1552,7 @@ void RecordProcessor::FadeIn_Input(nframes_t len,
   if (fb_delta == 0.0) {
     for (; l < prelen; l++, ramp += dr, negramp -= dr) {
       dest_l[l] = (input_l[l]*ramp) +
-	(loop_l[l]*(negramp+ramp*cur_fb));
+        (loop_l[l]*(negramp+ramp*cur_fb));
     }
     
     // Proceed as regular mix
@@ -1561,7 +1561,7 @@ void RecordProcessor::FadeIn_Input(nframes_t len,
   } else {
     for (; l < prelen; l++, ramp += dr, negramp -= dr, cur_fb += fb_delta) {
       dest_l[l] = (input_l[l]*ramp) +
-	(loop_l[l]*(negramp+ramp*cur_fb));
+        (loop_l[l]*(negramp+ramp*cur_fb));
     }
     
     // Proceed as regular mix
@@ -1578,22 +1578,22 @@ void RecordProcessor::FadeIn_Input(nframes_t len,
     cur_fb = old_fb;
     if (fb_delta == 0.0) {
       for (l = 0; l < prelen; l++, ramp += dr, negramp -= dr) {
-	dest_r[l] = (input_r[l]*ramp) +
-	  (loop_r[l]*(negramp+ramp*cur_fb));
+        dest_r[l] = (input_r[l]*ramp) +
+          (loop_r[l]*(negramp+ramp*cur_fb));
       }
 
       // Proceed as regular mix
       for (; l < len; l++)
-	dest_r[l] = input_r[l] + loop_r[l] * cur_fb; 
+        dest_r[l] = input_r[l] + loop_r[l] * cur_fb; 
     } else {
       for (l = 0; l < prelen; l++, ramp += dr, negramp -= dr, cur_fb += fb_delta) {
-	dest_r[l] = (input_r[l]*ramp) +
-	(loop_r[l]*(negramp+ramp*cur_fb));
+        dest_r[l] = (input_r[l]*ramp) +
+        (loop_r[l]*(negramp+ramp*cur_fb));
       }
       
       // Proceed as regular mix
       for (; l < len; l++, cur_fb += fb_delta)
-	dest_r[l] = input_r[l] + loop_r[l] * cur_fb; 
+        dest_r[l] = input_r[l] + loop_r[l] * cur_fb; 
     }
   }  
 };
@@ -1609,7 +1609,7 @@ void RecordProcessor::Jump(nframes_t ofs) {
 #if 0
       printf("Overdub jump: %d -> %d\n",curofs,ofs);
       printf("looplen: %d pulselen: %d\n",od_loop->blocks->GetTotalLen(),
-	     od_loop->pulse->GetLength());
+             od_loop->pulse->GetLength());
 
       // Since we are jumping in overdub, we need to fade out/in input
 
@@ -1618,10 +1618,10 @@ void RecordProcessor::Jump(nframes_t ofs) {
 
       // So go back to the last processed fragment and fade out input samples
       FadeOut_Input(app->getBUFSZ(), 
-		    od_last_mbuf[0], od_last_mbuf[1],
-		    od_last_lpbuf[0], od_last_lpbuf[1],
-		    od_feedback, 
-		    od_last_mbuf[0], od_last_mbuf[1]);
+                    od_last_mbuf[0], od_last_mbuf[1],
+                    od_last_lpbuf[0], od_last_lpbuf[1],
+                    od_feedback, 
+                    od_last_mbuf[0], od_last_mbuf[1]);
 
       // Store in last processed fragment
       tmpi->Jump(od_lastofs);
@@ -1676,80 +1676,80 @@ void RecordProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
 
       // Adjust volume
       if (!pre)
-	od_loop->UpdateVolume();
+        od_loop->UpdateVolume();
 
       // Check if we need to fade-out at a previous position
       if (!pre && od_prefadeout) {
-	// We jumped to a new position in overdub.. fadeout at 
-	// old position
-	tmpi->Jump(od_lastofs);
-	
-	// Get audio from the block
-	if (stereo)
-	  tmpi->GetFragment(&lpbuf[0],&lpbuf[1]);
-	else 
-	  tmpi->GetFragment(&lpbuf[0],0);
-	
-	// Mix selected inputs
-	ab->MixInputs(len,mbuf,iset,*inputvol,compute_stats);
-	
-	FadeOut_Input(len, mbuf[0], mbuf[1],
-		      lpbuf[0], lpbuf[1], 
-		      old_fb, new_fb, fb_delta,
-		      mbuf[0], mbuf[1]);
+        // We jumped to a new position in overdub.. fadeout at 
+        // old position
+        tmpi->Jump(od_lastofs);
+        
+        // Get audio from the block
+        if (stereo)
+          tmpi->GetFragment(&lpbuf[0],&lpbuf[1]);
+        else 
+          tmpi->GetFragment(&lpbuf[0],0);
+        
+        // Mix selected inputs
+        ab->MixInputs(len,mbuf,iset,*inputvol,compute_stats);
+        
+        FadeOut_Input(len, mbuf[0], mbuf[1],
+                      lpbuf[0], lpbuf[1], 
+                      old_fb, new_fb, fb_delta,
+                      mbuf[0], mbuf[1]);
 
-	if (stereo) 
-	  tmpi->PutFragment(mbuf[0],mbuf[1]);
-	else
-	  tmpi->PutFragment(mbuf[0],0);
+        if (stereo) 
+          tmpi->PutFragment(mbuf[0],mbuf[1]);
+        else
+          tmpi->PutFragment(mbuf[0],0);
 
-	od_prefadeout = 0;
+        od_prefadeout = 0;
       }
       
       // Get audio from the block
       if (stereo)
-	i->GetFragment(&lpbuf[0],&lpbuf[1]);
+        i->GetFragment(&lpbuf[0],&lpbuf[1]);
       else 
-	i->GetFragment(&lpbuf[0],0);
+        i->GetFragment(&lpbuf[0],0);
 
       // Scale volume
       float vol = od_loop->vol * od_playvol;
       // Protect our ears!
       float maxvol = app->getCFG()->GetMaxPlayVol();
       if (vol > maxvol)
-	vol = maxvol;
+        vol = maxvol;
       if (vol < 0)
-	vol = 0;
+        vol = 0;
       
       // Play to output
       if (stereo) {
-	sample_t *o_l = out[0],
-	  *o_r = out[1],
-	  *lpb_l = lpbuf[0],
-	  *lpb_r = lpbuf[1];
-	for (nframes_t l = 0; l < len; l++, o_l++, o_r++, lpb_l++, lpb_r++) {
-	  *o_l = *lpb_l * vol;
-	  *o_r = *lpb_r * vol;
-	}
+        sample_t *o_l = out[0],
+          *o_r = out[1],
+          *lpb_l = lpbuf[0],
+          *lpb_r = lpbuf[1];
+        for (nframes_t l = 0; l < len; l++, o_l++, o_r++, lpb_l++, lpb_r++) {
+          *o_l = *lpb_l * vol;
+          *o_r = *lpb_r * vol;
+        }
       } else {
-	sample_t *o_l = out[0],
-	  *lpb_l = lpbuf[0];
-	for (nframes_t l = 0; l < len; l++, o_l++, lpb_l++)
-	  *o_l = *lpb_l * vol;
-	if (out[1] != 0)
-	  // Mono loop into stereo outs- duplicate
-	  memcpy(out[1],out[0],sizeof(sample_t) * len);
+        sample_t *o_l = out[0],
+          *lpb_l = lpbuf[0];
+        for (nframes_t l = 0; l < len; l++, o_l++, lpb_l++)
+          *o_l = *lpb_l * vol;
+        if (out[1] != 0)
+          // Mono loop into stereo outs- duplicate
+          memcpy(out[1],out[0],sizeof(sample_t) * len);
       }
 
       if (!pre) {
-	// Fade together current with preprocessed to create smoothed
-	fadepreandcurrent(ab);
+        // Fade together current with preprocessed to create smoothed
+        fadepreandcurrent(ab);
       }
     } else {
       // No overdub- not playing- zero outputs
       memset(out[0],0,sizeof(sample_t) * len);
       if (out[1] != 0)
-	memset(out[1],0,sizeof(sample_t) * len);
+        memset(out[1],0,sizeof(sample_t) * len);
     }
 
     // ** Record part
@@ -1758,80 +1758,80 @@ void RecordProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
       ab->MixInputs(len,mbuf,iset,*inputvol,compute_stats);
       
       if (od_loop != 0) {
-	// Overdub- mix new input with loop
-	
-	// First, make copies of buffers incase we have an overdub jump
-	memcpy(od_last_lpbuf[0],lpbuf[0],sizeof(sample_t) * len);
-	memcpy(od_last_mbuf[0],mbuf[0],sizeof(sample_t) * len);
-	if (stereo) {
-	  memcpy(od_last_lpbuf[1],lpbuf[1],sizeof(sample_t) * len);
-	  memcpy(od_last_mbuf[1],mbuf[1],sizeof(sample_t) * len);
-	}
-	// od_lastofs = i->GetTotalLength2Cur();
-		
-	if (!od_fadeout && !od_fadein) {
-	  // Regular case mix
-	  if (stereo) {
-	    sample_t *m_l = mbuf[0],
-	      *m_r = mbuf[1],
-	      *lpb_l = lpbuf[0],
-	      *lpb_r = lpbuf[1];
-	    if (fb_delta == 0.0) {
-	      for (nframes_t l = 0; l < len; l++, m_l++, m_r++, lpb_l++, 
-		   lpb_r++) {
-		*m_l += *lpb_l * old_fb;
-		*m_r += *lpb_r * old_fb;
-	      }
-	    } else {
-	      for (nframes_t l = 0; l < len; l++, m_l++, m_r++, lpb_l++, 
-		   lpb_r++, old_fb += fb_delta) {
-		*m_l += *lpb_l * old_fb;
-		*m_r += *lpb_r * old_fb;
-	      }
-	    }
-	  } else {
-	    sample_t *m_l = mbuf[0],
-	      *lpb_l = lpbuf[0];
-	    if (fb_delta == 0.0) {
-	      for (nframes_t l = 0; l < len; l++, m_l++, lpb_l++)
-		*m_l += *lpb_l * old_fb;
-	    } else {
-	      for (nframes_t l = 0; l < len; l++, m_l++, lpb_l++, old_fb += fb_delta)
-		*m_l += *lpb_l * old_fb;
-	    }
-	  }
-	} else if (od_fadein) {
-	  // Fade in input samples
-	  FadeIn_Input(len, mbuf[0], mbuf[1],
-		       lpbuf[0], lpbuf[1], 
-		       old_fb, new_fb, fb_delta,
-		       mbuf[0], mbuf[1]);
+        // Overdub- mix new input with loop
+        
+        // First, make copies of buffers incase we have an overdub jump
+        memcpy(od_last_lpbuf[0],lpbuf[0],sizeof(sample_t) * len);
+        memcpy(od_last_mbuf[0],mbuf[0],sizeof(sample_t) * len);
+        if (stereo) {
+          memcpy(od_last_lpbuf[1],lpbuf[1],sizeof(sample_t) * len);
+          memcpy(od_last_mbuf[1],mbuf[1],sizeof(sample_t) * len);
+        }
+        // od_lastofs = i->GetTotalLength2Cur();
+                
+        if (!od_fadeout && !od_fadein) {
+          // Regular case mix
+          if (stereo) {
+            sample_t *m_l = mbuf[0],
+              *m_r = mbuf[1],
+              *lpb_l = lpbuf[0],
+              *lpb_r = lpbuf[1];
+            if (fb_delta == 0.0) {
+              for (nframes_t l = 0; l < len; l++, m_l++, m_r++, lpb_l++, 
+                   lpb_r++) {
+                *m_l += *lpb_l * old_fb;
+                *m_r += *lpb_r * old_fb;
+              }
+            } else {
+              for (nframes_t l = 0; l < len; l++, m_l++, m_r++, lpb_l++, 
+                   lpb_r++, old_fb += fb_delta) {
+                *m_l += *lpb_l * old_fb;
+                *m_r += *lpb_r * old_fb;
+              }
+            }
+          } else {
+            sample_t *m_l = mbuf[0],
+              *lpb_l = lpbuf[0];
+            if (fb_delta == 0.0) {
+              for (nframes_t l = 0; l < len; l++, m_l++, lpb_l++)
+                *m_l += *lpb_l * old_fb;
+            } else {
+              for (nframes_t l = 0; l < len; l++, m_l++, lpb_l++, old_fb += fb_delta)
+                *m_l += *lpb_l * old_fb;
+            }
+          }
+        } else if (od_fadein) {
+          // Fade in input samples
+          FadeIn_Input(len, mbuf[0], mbuf[1],
+                       lpbuf[0], lpbuf[1], 
+                       old_fb, new_fb, fb_delta,
+                       mbuf[0], mbuf[1]);
 
-	  // Proceed as regular overdub
-	  od_fadein = 0;
-	} else if (od_fadeout) {
-	  // Fade out input samples
-	  FadeOut_Input(len, mbuf[0], mbuf[1],
-			lpbuf[0], lpbuf[1], 
-			old_fb, new_fb, fb_delta,
-			mbuf[0], mbuf[1]);
-	}
+          // Proceed as regular overdub
+          od_fadein = 0;
+        } else if (od_fadeout) {
+          // Fade out input samples
+          FadeOut_Input(len, mbuf[0], mbuf[1],
+                        lpbuf[0], lpbuf[1], 
+                        old_fb, new_fb, fb_delta,
+                        mbuf[0], mbuf[1]);
+        }
       }
       
       // Record
       if (stereo) 
-	i->PutFragment(mbuf[0],mbuf[1]);
+        i->PutFragment(mbuf[0],mbuf[1]);
       else
-	i->PutFragment(mbuf[0],0);
+        i->PutFragment(mbuf[0],0);
 
       if (!pre) {
-	if (od_fadeout) {
-	  // Now end!
-	  EndNow();
-	}
-	
-	// Move along
-	i->NextFragment();
+        if (od_fadeout) {
+          // Now end!
+          EndNow();
+        }
+        
+        // Move along
+        i->NextFragment();
       }
     } else if (!pre && od_stop) {
       // Ended, no record but just advance
@@ -1845,7 +1845,7 @@ void RecordProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
 }
 
 PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
-			     nframes_t startofs) :
+                             nframes_t startofs) :
   Processor(app), sync_state(SS_NONE), 
   stopped(0), playloop(playloop), playvol(playvol), curbeat(0) {
   // Stereo?
@@ -1869,10 +1869,10 @@ PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
       
       // Start play now at the right place
       if (startofs == 0)
-	i->Jump(sync->GetPos());
+        i->Jump(sync->GetPos());
       else {
-	// Calculate correct current beat based on startofs
-	curbeat = startofs/sync->GetLength();
+        // Calculate correct current beat based on startofs
+        curbeat = startofs/sync->GetLength();
       }
 
       // Notify Pulse to call us every beat
@@ -1916,40 +1916,40 @@ void PlayProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       PulseSyncEvent *pev = (PulseSyncEvent *) ev;
       if (pev->syncidx == -1) {
-	switch (sync_state) { 
-	case SS_START:
-	  // Start play now
-	  dopreprocess(); // Fade to start
-	  i->Jump(sync->GetPos());
-	  stopped = 0;
-	  
-	  // Call us every beat
-	  sync_state = SS_BEAT;
-	  break;
-	  
-	case SS_BEAT:
-	  curbeat++;
-	  if (curbeat >= playloop->nbeats) {
-	    // Quantize loop by restarting
-	    dopreprocess(); // Fade to loop point
-	    i->Jump(sync->GetPos());
-	    curbeat = 0;
-	  }
-	  
-	  // Call us on further beats
-	  sync_state = SS_BEAT;
-	  break;
-	  
-	case SS_ENDED:
-	  break;
-	  
-	default:
-	  break;
-	}
+        switch (sync_state) { 
+        case SS_START:
+          // Start play now
+          dopreprocess(); // Fade to start
+          i->Jump(sync->GetPos());
+          stopped = 0;
+          
+          // Call us every beat
+          sync_state = SS_BEAT;
+          break;
+          
+        case SS_BEAT:
+          curbeat++;
+          if (curbeat >= playloop->nbeats) {
+            // Quantize loop by restarting
+            dopreprocess(); // Fade to loop point
+            i->Jump(sync->GetPos());
+            curbeat = 0;
+          }
+          
+          // Call us on further beats
+          sync_state = SS_BEAT;
+          break;
+          
+        case SS_ENDED:
+          break;
+          
+        default:
+          break;
+        }
       }
     }
     break;
-	
+        
   default:
     break;
   }
@@ -1984,21 +1984,21 @@ void PlayProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
     // Play
     if (stereo) {
       sample_t *o_l = out[0],
-	*o_r = out[1],
-	*b_l = buf[0],
-	*b_r = buf[1];
+        *o_r = out[1],
+        *b_l = buf[0],
+        *b_r = buf[1];
       for (nframes_t l = 0; l < len; l++, o_l++, o_r++, b_l++, b_r++) {
-	*o_l = *b_l * vol;
-	*o_r = *b_r * vol;
+        *o_l = *b_l * vol;
+        *o_r = *b_r * vol;
       }
     } else {
       sample_t *o_l = out[0],
-	*b_l = buf[0];
+        *b_l = buf[0];
       for (nframes_t l = 0; l < len; l++, o_l++, b_l++)
-	*o_l = *b_l * vol;
+        *o_l = *b_l * vol;
       if (out[1] != 0)
-	// Mono loop into stereo outs- duplicate
-	memcpy(out[1],out[0],sizeof(sample_t) * len);
+        // Mono loop into stereo outs- duplicate
+        memcpy(out[1],out[0],sizeof(sample_t) * len);
     }
 
     if (!pre) {
@@ -2029,9 +2029,9 @@ FileStreamer::FileStreamer(Fweelin *app, nframes_t outbuflen) :
 
   // Start encoding thread
   int ret = pthread_create(&encode_thread,
-			   &attr,
-			   run_encode_thread,
-			   static_cast<void *>(this));
+                           &attr,
+                           run_encode_thread,
+                           static_cast<void *>(this));
   if (ret != 0) {
     printf("(FILESTREAMER) pthread_create failed, exiting\n");
     exit(1);
@@ -2111,44 +2111,44 @@ void FileStreamer::process(char pre, nframes_t len, AudioBuffers *ab) {
       enc->Preprocess(b_l,b_r,len);
 
       if (outpos + len < outbuflen) {
-	memcpy(&outbuf[0][outpos],in[0],sizeof(sample_t) * len);
-	memcpy(&outbuf[1][outpos],in[1],sizeof(sample_t) * len);
-	outpos += len;
+        memcpy(&outbuf[0][outpos],in[0],sizeof(sample_t) * len);
+        memcpy(&outbuf[1][outpos],in[1],sizeof(sample_t) * len);
+        outpos += len;
       }
       else {
-	// Wrap case- byte-by-byte
-	nframes_t n;
-	sample_t *o_l = outbuf[0],
-	  *o_r = outbuf[1];
-	for (n = 0; outpos < outbuflen; outpos++, n++) {
-	  o_l[outpos] = b_l[n];
-	  o_r[outpos] = b_r[n];
-	}
-	outpos = 0;
-	wrap = 1; 
-	for (; n < len; outpos++, n++) {
-	  o_l[outpos] = b_l[n];
-	  o_r[outpos] = b_r[n];
-	}
+        // Wrap case- byte-by-byte
+        nframes_t n;
+        sample_t *o_l = outbuf[0],
+          *o_r = outbuf[1];
+        for (n = 0; outpos < outbuflen; outpos++, n++) {
+          o_l[outpos] = b_l[n];
+          o_r[outpos] = b_r[n];
+        }
+        outpos = 0;
+        wrap = 1; 
+        for (; n < len; outpos++, n++) {
+          o_l[outpos] = b_l[n];
+          o_r[outpos] = b_r[n];
+        }
       }
     } else {
       // Mono
       enc->Preprocess(b_l,0,len);
 
       if (outpos + len < outbuflen) {
-	memcpy(&outbuf[0][outpos],in[0],sizeof(sample_t) * len);
-	outpos += len;
+        memcpy(&outbuf[0][outpos],in[0],sizeof(sample_t) * len);
+        outpos += len;
       }
       else {
-	// Wrap case- byte-by-byte
-	nframes_t n;
-	sample_t *o_l = outbuf[0];
-	for (n = 0; outpos < outbuflen; outpos++, n++)
-	  o_l[outpos] = b_l[n];
-	outpos = 0;
-	wrap = 1; 
-	for (; n < len; outpos++, n++)
-	  o_l[outpos] = b_l[n];
+        // Wrap case- byte-by-byte
+        nframes_t n;
+        sample_t *o_l = outbuf[0];
+        for (n = 0; outpos < outbuflen; outpos++, n++)
+          o_l[outpos] = b_l[n];
+        outpos = 0;
+        wrap = 1; 
+        for (; n < len; outpos++, n++)
+          o_l[outpos] = b_l[n];
       }
     }
   }
@@ -2169,7 +2169,7 @@ void FileStreamer::ReceiveEvent(Event *ev, EventProducer *from) {
       marks[mkwriteidx].data = nbeats;
       mkwriteidx++;
       if (mkwriteidx >= MARKERBUFLEN)
-	mkwriteidx = 0;
+        mkwriteidx = 0;
     }
     break;
 
@@ -2192,43 +2192,43 @@ void *FileStreamer::run_encode_thread (void *ptr) {
       // during this loop!-- RT thread
       curpos = inst->outpos;
       if (curpos != inst->encodepos) {
-	nframes_t num;
-	if (inst->wrap) {
-	  // Wrap case- so take from the end & beginning of circular buffer 
-	  nframes_t numend = inst->outbuflen - inst->encodepos;
-	  num = curpos + numend;
+        nframes_t num;
+        if (inst->wrap) {
+          // Wrap case- so take from the end & beginning of circular buffer 
+          nframes_t numend = inst->outbuflen - inst->encodepos;
+          num = curpos + numend;
 
-	  if (numend > 0) {
+          if (numend > 0) {
             inst->outputsize += inst->enc->WriteSamplesToDisk (inst->outbuf, inst->encodepos, numend);
-	  }
-	  if (curpos > 0) {
+          }
+          if (curpos > 0) {
              inst->outputsize += inst->enc->WriteSamplesToDisk (inst->outbuf, 0, curpos);
-	  }
+          }
 
-	  inst->wrap = 0;
-	} else {
-	  if (curpos > inst->encodepos) {	    
-	    num = curpos - inst->encodepos;
-	    inst->outputsize += inst->enc->WriteSamplesToDisk (inst->outbuf, inst->encodepos, num);
-	  } else {
-	    // Wrap not set but buffer seems wrapped- this could be caused
-	    // by extreme processor load and this thread not keeping up with
-	    // RT- print warning
-	    printf("STREAMER: WARNING: Buffer wrap possible?\n");
-	  }
-	}
+          inst->wrap = 0;
+        } else {
+          if (curpos > inst->encodepos) {           
+            num = curpos - inst->encodepos;
+            inst->outputsize += inst->enc->WriteSamplesToDisk (inst->outbuf, inst->encodepos, num);
+          } else {
+            // Wrap not set but buffer seems wrapped- this could be caused
+            // by extreme processor load and this thread not keeping up with
+            // RT- print warning
+            printf("STREAMER: WARNING: Buffer wrap possible?\n");
+          }
+        }
 
-	inst->encodepos = curpos;
+        inst->encodepos = curpos;
       }
       
       // Now dump markers to gnusound USX for later edit points
       while (inst->mkreadidx != inst->mkwriteidx) {
-	fprintf(inst->timingfd,"%ld=4 0 0.000000 lb%d\n",
-		(long int) inst->marks[inst->mkreadidx].markofs,
-		(int) inst->marks[inst->mkreadidx].data);
-	inst->mkreadidx++;
-	if (inst->mkreadidx >= MARKERBUFLEN)
-	  inst->mkreadidx = 0;
+        fprintf(inst->timingfd,"%ld=4 0 0.000000 lb%d\n",
+                (long int) inst->marks[inst->mkreadidx].markofs,
+                (int) inst->marks[inst->mkreadidx].data);
+        inst->mkreadidx++;
+        if (inst->mkreadidx >= MARKERBUFLEN)
+          inst->mkreadidx = 0;
       }
 
       break;
@@ -2239,49 +2239,49 @@ void *FileStreamer::run_encode_thread (void *ptr) {
       inst->outfd = fopen(inst->outname,"wb");
       inst->timingfd = fopen(inst->timingname,"wb");
       if (inst->outfd != 0 && inst->timingfd != 0) {
-	// Setup vorbis lib
-	printf("DISK: Initialize streamer.\n");
-	inst->InitStreamer();
-	
-	// Write header block for GNUSound
-	fprintf(inst->timingfd,
-		"[Mixer]\n"
-		"0=1.000000\n"
-		"1=1.000000\n"
-		"Source Is Mute=0\n"
-		"Source Is Solo=0\n\n"
-		"[Markers for track 0]\n");
-	
-	// Setup beat counting
-	inst->nbeats = 0;
-	inst->mkwriteidx = 0;
-	inst->mkreadidx = 0;
-	
-	// Notify us on ALL pulse beats... we will stripe them all!
-	inst->app->getEMG()->ListenEvent(inst,0,T_EV_PulseSync);
-	
-	// Set encoder to dump to file we have opened
-	inst->enc->SetupFileForWriting(inst->outfd);
-	
-	inst->outputsize = 0;
-	inst->outpos = 0;
-	inst->encodepos = 0;
-	inst->wrap = 0;
-	inst->startcnt = inst->app->getRP()->GetSampleCnt();
-	inst->writerstatus = STATUS_RUNNING;
-	
-	// printf("DISK: Streamer encoding.\n");
+        // Setup vorbis lib
+        printf("DISK: Initialize streamer.\n");
+        inst->InitStreamer();
+        
+        // Write header block for GNUSound
+        fprintf(inst->timingfd,
+                "[Mixer]\n"
+                "0=1.000000\n"
+                "1=1.000000\n"
+                "Source Is Mute=0\n"
+                "Source Is Solo=0\n\n"
+                "[Markers for track 0]\n");
+        
+        // Setup beat counting
+        inst->nbeats = 0;
+        inst->mkwriteidx = 0;
+        inst->mkreadidx = 0;
+        
+        // Notify us on ALL pulse beats... we will stripe them all!
+        inst->app->getEMG()->ListenEvent(inst,0,T_EV_PulseSync);
+        
+        // Set encoder to dump to file we have opened
+        inst->enc->SetupFileForWriting(inst->outfd);
+        
+        inst->outputsize = 0;
+        inst->outpos = 0;
+        inst->encodepos = 0;
+        inst->wrap = 0;
+        inst->startcnt = inst->app->getRP()->GetSampleCnt();
+        inst->writerstatus = STATUS_RUNNING;
+        
+        // printf("DISK: Streamer encoding.\n");
       } else {
-	printf("DISK: Error writing output file.\n");
-	if (inst->outfd != 0)
-	  fclose(inst->outfd);
+        printf("DISK: Error writing output file.\n");
+        if (inst->outfd != 0)
+          fclose(inst->outfd);
         if (inst->timingfd != 0)
-	  fclose(inst->timingfd);
-	inst->writerstatus = STATUS_STOPPED;
-	inst->timingfd = 0;
-	inst->outname = 0;
-	inst->timingname = 0;
-	inst->app->FlushStreamOutName();
+          fclose(inst->timingfd);
+        inst->writerstatus = STATUS_STOPPED;
+        inst->timingfd = 0;
+        inst->outname = 0;
+        inst->timingname = 0;
+        inst->app->FlushStreamOutName();
       }
       break; 
 
@@ -2317,7 +2317,7 @@ void *FileStreamer::run_encode_thread (void *ptr) {
 };
 
 PassthroughProcessor::PassthroughProcessor(Fweelin *app, InputSettings *iset,
-					   float *inputvol) : 
+                                           float *inputvol) : 
   Processor(app), iset(iset), inputvol(inputvol) {
   // Create input settings for all inputs set
   alliset = new InputSettings(app,app->getABUFS()->numins);

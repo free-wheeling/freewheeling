@@ -127,7 +127,7 @@ class ItemRenamer : public EventHook {
       rui.rename_cursor_blinktime = t;
       rui.rename_cursor_toggle = (rui.rename_cursor_toggle ? 0 : 1);
     }
-	  
+          
     return &rui;
   };
   inline char IsRenaming() { return renaming; };
@@ -159,11 +159,11 @@ class ItemRenamer : public EventHook {
 };
 
 class Browser : public FloDisplay, public EventListener, public EventProducer,
-		public RenameCallback {
+                public RenameCallback {
  public:
   Browser (int iid, 
-	   BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
-	   int xpand_x2, int xpand_y2, float xpand_delay) : 
+           BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
+           int xpand_x2, int xpand_y2, float xpand_delay) : 
     FloDisplay(iid),
     renamer(0), app(0), btype(btype), callback(0), first(0), cur(0),
     xpand_x1(xpand_x1), xpand_y1(xpand_y1), 
@@ -208,7 +208,7 @@ class Browser : public FloDisplay, public EventListener, public EventProducer,
   // Write the name to outbuf, with max maxlen characters.
   // Returns nonzero if we used a 'default' name.
   char GetDisplayName(char *filename, time_t *filetime,
-		      char *outbuf, int maxlen);
+                      char *outbuf, int maxlen);
 
   ItemRenamer *renamer; // Renamer instance, or null if we are not renaming
   virtual void ItemRenamed(char *nw); // Callback for renamer
@@ -217,7 +217,7 @@ class Browser : public FloDisplay, public EventListener, public EventProducer,
   // of an item. For example, when a Loop in memory is renamed, we also
   // rename it on disk, and the loop browser must be notified of this new name.
   void ItemRenamedOnDisk(char *old_filename, char *new_filename, 
-			 char *new_name);
+                         char *new_name);
 
   inline BrowserItemType GetType() { return btype; };
   virtual FloDisplayType GetFloDisplayType() { return FD_Browser; };
@@ -328,8 +328,8 @@ class Browser : public FloDisplay, public EventListener, public EventProducer,
 class LoopTray : public Browser {
  public:
   LoopTray (int iid,
-	    BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
-	    int xpand_x2, int xpand_y2, int loopsize) : 
+            BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
+            int xpand_x2, int xpand_y2, int loopsize) : 
     Browser(iid,btype,xpand,xpand_x1,xpand_y1,xpand_x2,xpand_y2,0.0),
     loopsize(loopsize), basepos(0), iconsize(0), 
     resize_win(RS_Off), touchtray(0), loopmap(0) {};
@@ -374,8 +374,8 @@ class LoopTray : public Browser {
 class CombiZone {
  public:
   void SetupZone (int kr_lo = 0, int kr_hi = 0,
-		  char port_r = 0, int port = 0,
-		  int bank = -1, int prog = -1, int channel = 0) {
+                  char port_r = 0, int port = 0,
+                  int bank = -1, int prog = -1, int channel = 0) {
     this->kr_lo = kr_lo;
     this->kr_hi = kr_hi;
     this->port_r = port_r;
@@ -402,7 +402,7 @@ class PatchItem : public BrowserItem {
 public:
 
   PatchItem (int id = 0, int bank = 0, int prog = 0, int channel = 0,
-	     char *name = 0) :
+             char *name = 0) :
     BrowserItem(name), id(id), bank(bank), prog(prog), channel(channel),
     zones(0), numzones(0) {};
   virtual ~PatchItem() {
@@ -474,8 +474,8 @@ class PatchBrowser : public Browser {
   const static int DIV_SPACING = 10;
   
   PatchBrowser (int iid,
-		BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
-		int xpand_x2, int xpand_y2, float xpand_delay) : 
+                BrowserItemType btype, char xpand, int xpand_x1, int xpand_y1,
+                int xpand_x2, int xpand_y2, float xpand_delay) : 
     Browser(iid,btype,xpand,xpand_x1,xpand_y1,xpand_x2,xpand_y2,xpand_delay),
     pb_first(0), pb_cur(0), pb_cur_tag(-1), num_pb(0) {};
   virtual ~PatchBrowser();
@@ -501,7 +501,7 @@ class PatchBrowser : public Browser {
     else {
       PatchBank *pb_i = pb_first;
       while (pb_i->next != 0)
-	pb_i = pb_i->next;
+        pb_i = pb_i->next;
       pb_i->next = pb_cur = pb;
     }
     
@@ -562,6 +562,47 @@ class PatchBrowser : public Browser {
     *pb_cur;           // Current patchbank
   int pb_cur_tag,      // Tag from current patchbank 
     num_pb;            // Number of patchbanks defined
+};
+
+class FloDisplaySnapshots : public FloDisplay, public RenameCallback
+{
+ public:
+  FloDisplaySnapshots (Fweelin *app, int iid) : FloDisplay(iid), renamer(0),
+    app(app), firstidx(0), numdisp(-1) {
+    pthread_mutex_init (&snaps_lock,0);
+  };
+  ~FloDisplaySnapshots() { 
+     pthread_mutex_destroy (&snaps_lock);
+  };
+  
+  virtual FloDisplayType GetFloDisplayType() { return FD_Snapshots; };
+
+  virtual void Draw(SDL_Surface *screen);
+
+  ItemRenamer *renamer; // Renamer instance, or null if we are not renaming
+  int rename_idx;       // Index of snapshot we are renaming
+  virtual void ItemRenamed(char *nw); // Callback for renamer
+  
+  // Rename the snapshot with given index
+  void Rename (int idx);
+
+  inline void LockSnaps() {
+    pthread_mutex_lock (&snaps_lock);
+  };
+  inline void UnlockSnaps() {
+    pthread_mutex_unlock (&snaps_lock);
+  };
+
+  Fweelin *app;
+  int firstidx,          // Index of first snapshot to display
+    numdisp;             // Number of snapshots to display
+  int sx, sy,            // Size of snapshots list
+    margin;              // Margin for text
+    
+  protected:
+  
+  pthread_mutex_t snaps_lock; // A way to lock up snapshot display so two threads
+                              // don't race on it
 };
 
 #endif

@@ -9,6 +9,13 @@
     <declare var="VAR_bcf2000_looppage" type="int" init="0"/>
     <declare var="VAR_loopidrangechange" type="int" init="8"/>
 
+    <!-- Trigger selected loop MIDI controller # -->
+    <declare var="VAR_bcf2000_triggerselected_midicontrol" type="int" init="122"/>
+
+    <!-- Select none/all playing loops MIDI controller # -->
+    <declare var="VAR_bcf2000_selectnone_midicontrol" type="int" init="123"/>
+    <declare var="VAR_bcf2000_selectallplay_midicontrol" type="int" init="124"/>
+
     <!-- Pulse create/select MIDI controller # -->
     <declare var="VAR_bcf2000_pulseselect_midicontrol" type="int" init="125"/>
 
@@ -26,15 +33,15 @@
     <declare var="VAR_keyheld_midishift" type="char" init="0"/>
 
     <!-- Which MIDI controller # controls overdub feedback. -->
-    <declare var="VAR_bcf2000_overdubfeedback_midicontrol" type="int" init="87"/>
+    <declare var="VAR_bcf2000_overdubfeedback_midicontrol" type="int" init="86"/>
 
     <!-- MIDI controller # to fade trigger volume of selected loops -->
     <declare var="VAR_bcf2000_triggervol_selected_midicontrol" type="int" init="89"/>
 
     <!-- MIDI controller #s for patchbank select -->
-    <declare var="VAR_bcf2000_patchbank_midicontrol" type="int" init="88"/>
-    <declare var="VAR_bcf2000_patchbank_back_midicontrol" type="int" init="53"/>
-    <declare var="VAR_bcf2000_patchbank_forward_midicontrol" type="int" init="54"/>
+    <declare var="VAR_bcf2000_patchbank_midicontrol" type="int" init="31"/>
+    <declare var="VAR_bcf2000_patchbank_back_midicontrol" type="int" init="32"/>
+    <declare var="VAR_bcf2000_patchbank_forward_midicontrol" type="int" init="33"/>
 
     <!-- MIDI controller # for undo -->
     <declare var="VAR_bcf2000_undo_midicontrol" type="int" init="118"/>
@@ -43,10 +50,33 @@
     <declare var="VAR_bcf2000range" type="range" init="0>7"/>
     <declare var="VAR_bcf2000controlrange1" type="range" init="0>7"/>
     <declare var="VAR_bcf2000controlrange2" type="range" init="8>15"/>
-    <declare var="VAR_bcf2000auxtriggercc" type="int" init="100"/>
-    <declare var="VAR_bcf2000capturecc" type="int" init="110"/>
-    <declare var="VAR_bcf2000ampcc" type="int" init="90"/>
+
+    <!-- Speed of amplitude variation for knob twisting -->
     <declare var="VAR_damp_speed" type="float" init="0.04"/>
+
+    <!-- How much are loop amplitudes adjusted when operating on entire
+         selections? -->
+    <declare var="VAR_bcf2000_loopamp_adj" type="float" init="0.05"/>
+
+    <!-- The following controls are given as the bottommost MIDI CC. 
+	 8 MIDI CCs ascend from there to control each loop/scene. -->
+
+    <!-- First MIDI control for selection -->
+    <declare var="VAR_bcf2000selectcc" type="int" init="40"/>
+
+    <!-- First MIDI control for misc knobs -->
+    <declare var="VAR_bcf2000miscknobcc" type="int" init="50"/>
+
+    <!-- First MIDI control for auxiliary (overdub) trigger -->
+    <declare var="VAR_bcf2000auxtriggercc" type="int" init="100"/>
+
+    <!-- First MIDI control for main trigger -->
+    <declare var="VAR_bcf2000capturecc" type="int" init="110"/>
+
+    <!-- First MIDI control for loop amp trigger -->
+    <declare var="VAR_bcf2000ampcc" type="int" init="90"/>
+
+    <!-- First MIDI control for faders -->
     <declare var="VAR_bcf2000fadercc" type="int" init="80"/>
         
     <!-- Fadermode 0 - loops -->
@@ -141,15 +171,21 @@
                  controlval=VAR_switch_on"
      output="toggle-variable" parameters="var=VAR_fadermode and maxvalue=1"/>
 
-    <!-- Fader 1: Master in volume -->
-    <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+6" 
+    <!-- Fader 8: Browse/Patch change -->
+    <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+7" 
+     output="browser-move-to-item-absolute" 
+     parameters="browserid=VAR_cur_browser and
+		 idx=controlval/127.*16"/>
+
+    <!-- Fader 5: Master in volume -->
+    <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+4" 
      output="set-master-in-volume" parameters="vol=controlval/127.0*2.0"/>
 
-    <!-- Fader 2: Master out volume -->
-    <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+7" 
+    <!-- Fader 6: Master out volume -->
+    <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+5" 
      output="set-master-out-volume" parameters="vol=controlval/127.0*2.0"/>
 
-    <!-- Faders 3-6: Input volumes -->
+    <!-- Faders 1-4: Input volumes -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+0" 
      output="set-in-volume" parameters="input=1 and vol=controlval/127.0*2.0"/>
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+1" 
@@ -333,6 +369,69 @@
      output="create-snapshot"
      parameters="snapid=controlnum-VAR_bcf2000auxtriggercc+
 		 SYSTEM_snapshot_page_firstidx"/>
+
+    <!-- Trigger selected loops -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and
+		 controlnum=VAR_bcf2000_triggerselected_midicontrol and
+                 controlval=VAR_switch_on"
+     output="trigger-selected-loops" parameters="setid=0 and vol=1.0 and
+						 toggleloops=1"/>
+
+    <!-- Select loops -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and
+		 VAR_keyheld_space=1 and
+		 controlnum=VAR_bcf2000_selectnone_midicontrol and
+                 controlval=VAR_switch_on"
+     output="select-all-loops"
+     parameters="setid=0 and select=1"/>
+
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and
+		 VAR_keyheld_space=1 and
+		 controlnum=VAR_bcf2000_selectallplay_midicontrol and
+                 controlval=VAR_switch_on"
+     output="invert-selection"
+     parameters="setid=0"/>
+
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and
+		 controlnum=VAR_bcf2000_selectnone_midicontrol and
+                 controlval=VAR_switch_on"
+     output="select-all-loops"
+     parameters="setid=0 and select=0"/>
+
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and
+		 controlnum=VAR_bcf2000_selectallplay_midicontrol and
+                 controlval=VAR_switch_on"
+     output="select-only-playing-loops"
+     parameters="setid=0 and playing=1"/>
+
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and
+		 controlnum=VAR_bcf2000range+VAR_bcf2000selectcc and
+                 controlval=VAR_switch_on"
+     output="toggle-select-loop"
+     parameters="setid=0 and loopid=controlnum-VAR_bcf2000selectcc+
+		 VAR_loopid_bcf2000"/>
+
+    <!-- Adjust amplitude of selected -->
+    <binding input="midicontroller" 
+	     conditions="midichannel=VAR_bcf2000_channel and 
+			 controlnum=VAR_bcf2000range+VAR_bcf2000miscknobcc and 
+			 controlval=0>64" 
+     output="adjust-selected-loops-amp"
+     parameters="setid=0 and
+                 ampfactor=controlval*VAR_bcf2000_loopamp_adj+1.0"/>
+    <binding input="midicontroller" 
+	     conditions="midichannel=VAR_bcf2000_channel and 
+			 controlnum=VAR_bcf2000range+VAR_bcf2000miscknobcc and 
+			 controlval=64>127" 
+     output="adjust-selected-loops-amp"
+     parameters="setid=0 and
+                 ampfactor=controlval-128*VAR_bcf2000_loopamp_adj+1.0"/>
 
     <!-- Erase Loops -->
     <binding input="midicontroller" 

@@ -173,6 +173,7 @@ enum EventType {
   T_EV_InvertSelection,
   
   T_EV_CreateSnapshot,
+  T_EV_RenameSnapshot,
   T_EV_TriggerSnapshot,
 
   T_EV_SetTriggerVolume,
@@ -223,8 +224,8 @@ class EventParameter {
   // size of data type, and max index (-1 by default if parameter
   // is not indexed)
   EventParameter (char *name = 0, long ofs = 0, 
-		  CoreDataType dtype = T_char,
-		  int max_index = -1) :
+                  CoreDataType dtype = T_char,
+                  int max_index = -1) :
     name(name), ofs(ofs), dtype(dtype), max_index(max_index) {};
 
   char *name; // Name of event parameter
@@ -239,7 +240,7 @@ class EventParameter {
 class EventTypeTable {
  public:
   EventTypeTable (char *name = 0, PreallocatedType *mgr = 0,
-		  Event *proto = 0, int paramidx = -1, char slowdelivery = 0) :
+                  Event *proto = 0, int paramidx = -1, char slowdelivery = 0) :
     name(name), mgr(mgr), proto(proto), paramidx(paramidx), 
     slowdelivery(slowdelivery) {};
 
@@ -524,7 +525,7 @@ class MIDIControllerInputEvent : public Event {
       return EventParameter("midichannel",FWEELIN_GETOFS(channel),T_int);
     case 2:
       return EventParameter("controlnum",FWEELIN_GETOFS(ctrl),T_int,
-			    MAX_MIDI_CONTROLLERS);
+                            MAX_MIDI_CONTROLLERS);
     case 3:
       return EventParameter("controlval",FWEELIN_GETOFS(val),T_int);
     case 4:
@@ -543,7 +544,7 @@ class MIDIControllerInputEvent : public Event {
 class MIDIChannelPressureInputEvent : public Event {
  public:   
   EVT_DEFINE(MIDIChannelPressureInputEvent,
-	     T_EV_Input_MIDIChannelPressure);
+             T_EV_Input_MIDIChannelPressure);
   virtual void Recycle() {
     outport = 1;
     Event::Recycle();
@@ -562,7 +563,7 @@ class MIDIChannelPressureInputEvent : public Event {
       return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
     case 1:
       return EventParameter("midichannel",FWEELIN_GETOFS(channel),T_int,
-			    MAX_MIDI_CHANNELS);
+                            MAX_MIDI_CHANNELS);
     case 2:
       return EventParameter("pressureval",FWEELIN_GETOFS(val),T_int);
     case 3:
@@ -580,7 +581,7 @@ class MIDIChannelPressureInputEvent : public Event {
 class MIDIProgramChangeInputEvent : public Event {
  public:   
   EVT_DEFINE(MIDIProgramChangeInputEvent,
-	     T_EV_Input_MIDIProgramChange);
+             T_EV_Input_MIDIProgramChange);
   virtual void Recycle() {
     outport = 1;
     Event::Recycle();
@@ -599,7 +600,7 @@ class MIDIProgramChangeInputEvent : public Event {
       return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
     case 1:
       return EventParameter("midichannel",FWEELIN_GETOFS(channel),T_int,
-			    MAX_MIDI_CHANNELS);
+                            MAX_MIDI_CHANNELS);
     case 2:
       return EventParameter("programval",FWEELIN_GETOFS(val),T_int);
     case 3:
@@ -635,7 +636,7 @@ class MIDIPitchBendInputEvent : public Event {
       return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
     case 1:
       return EventParameter("midichannel",FWEELIN_GETOFS(channel),T_int,
-			    MAX_MIDI_CHANNELS);
+                            MAX_MIDI_CHANNELS);
     case 2:
       return EventParameter("pitchval",FWEELIN_GETOFS(val),T_int);
     case 3:
@@ -675,7 +676,7 @@ class MIDIKeyInputEvent : public Event {
       return EventParameter("keydown",FWEELIN_GETOFS(down),T_char);
     case 2:
       return EventParameter("midichannel",FWEELIN_GETOFS(channel),T_int,
-			    MAX_MIDI_CHANNELS);
+                            MAX_MIDI_CHANNELS);
     case 3:
       return EventParameter("notenum",FWEELIN_GETOFS(notenum),T_int);
     case 4:
@@ -709,7 +710,7 @@ public:
   virtual EventParameter GetParam(int n) { 
     switch (n) {
       case 0:
-	return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
+        return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
     }
     
     return EventParameter();
@@ -735,9 +736,9 @@ public:
   virtual EventParameter GetParam(int n) { 
     switch (n) {
       case 0:
-	return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
+        return EventParameter("outport",FWEELIN_GETOFS(outport),T_int);
       case 1:
-	return EventParameter("start",FWEELIN_GETOFS(start),T_char);
+        return EventParameter("start",FWEELIN_GETOFS(start),T_char);
     }
     
     return EventParameter();
@@ -781,10 +782,10 @@ class SetVariableEvent : public Event {
 
   UserVariable *var;  // Variable to set
   UserVariable value, // Value to set it to
-    maxjump;	      // Maximum jump in variable between current value and new value
-		      // Jumps beyond maxjump cause the variable not to be set
+    maxjump;          // Maximum jump in variable between current value and new value
+                      // Jumps beyond maxjump cause the variable not to be set
   char maxjumpcheck;  // Nonzero if we should check variable change against maxjump-
-		      // If maxjumpcheck is zero, the variable is always set
+                      // If maxjumpcheck is zero, the variable is always set
 };
 
 class ToggleVariableEvent : public Event {
@@ -1052,7 +1053,7 @@ class VideoFullScreenEvent : public Event {
     switch (n) {
     case 0:
       return EventParameter("fullscreen",FWEELIN_GETOFS(fullscreen),
-			    T_char);
+                            T_char);
     }
 
     return EventParameter();
@@ -1654,7 +1655,7 @@ class SetLoadLoopIdEvent : public Event {
 class SetDefaultLoopPlacementEvent : public Event {
  public:
   EVT_DEFINE_NO_CONSTR(SetDefaultLoopPlacementEvent,
-		       T_EV_SetDefaultLoopPlacement);
+                       T_EV_SetDefaultLoopPlacement);
   SetDefaultLoopPlacementEvent() : looprange(0,0) { Recycle(); };
   virtual void Recycle() {
     looprange = Range(0,0);
@@ -1839,7 +1840,7 @@ class PatchBrowserMoveToBankEvent : public Event {
 class PatchBrowserMoveToBankByIndexEvent : public Event {
  public:
   EVT_DEFINE(PatchBrowserMoveToBankByIndexEvent,
-	     T_EV_PatchBrowserMoveToBankByIndex);
+             T_EV_PatchBrowserMoveToBankByIndex);
   virtual void Recycle() {
     index = 0;
     Event::Recycle();
@@ -2030,7 +2031,7 @@ public:
   virtual EventParameter GetParam(int n) { 
     switch (n) {
       case 0:
-	return EventParameter("midisync",FWEELIN_GETOFS(midisync),T_int);
+        return EventParameter("midisync",FWEELIN_GETOFS(midisync),T_int);
     }
     
     return EventParameter();
@@ -2124,7 +2125,7 @@ public:
   virtual EventParameter GetParam(int n) { 
     switch (n) {
       case 0:
-	return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
+        return EventParameter("setid",FWEELIN_GETOFS(setid),T_int);
     }
     
     return EventParameter();
@@ -2148,13 +2149,37 @@ public:
   virtual EventParameter GetParam(int n) { 
     switch (n) {
       case 0:
-	return EventParameter("snapid",FWEELIN_GETOFS(snapid),T_int);
+        return EventParameter("snapid",FWEELIN_GETOFS(snapid),T_int);
     }
     
     return EventParameter();
   };    
   
   int snapid; // Create and store snapshot #snapid
+};
+
+class RenameSnapshotEvent : public Event {
+public:
+  EVT_DEFINE(RenameSnapshotEvent,T_EV_RenameSnapshot);
+  virtual void Recycle() {
+    snapid = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    RenameSnapshotEvent &s = (RenameSnapshotEvent &) src;
+    snapid = s.snapid;
+  };
+  virtual int GetNumParams() { return 1; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+      case 0:
+        return EventParameter("snapid",FWEELIN_GETOFS(snapid),T_int);
+    }
+    
+    return EventParameter();
+  };    
+  
+  int snapid; // Rename snapshot #snapid
 };
 
 class TriggerSnapshotEvent : public Event {
@@ -2172,7 +2197,7 @@ public:
   virtual EventParameter GetParam(int n) { 
     switch (n) {
       case 0:
-	return EventParameter("snapid",FWEELIN_GETOFS(snapid),T_int);
+        return EventParameter("snapid",FWEELIN_GETOFS(snapid),T_int);
     }
     
     return EventParameter();
@@ -2249,7 +2274,7 @@ class SetSelectedLoopsTriggerVolumeEvent : public Event {
 class AdjustSelectedLoopsAmpEvent : public Event {
  public:
   EVT_DEFINE(AdjustSelectedLoopsAmpEvent,
-	     T_EV_AdjustSelectedLoopsAmp);
+             T_EV_AdjustSelectedLoopsAmp);
   virtual void Recycle() {
     setid = 0;
     ampfactor = 1.0;
@@ -2313,7 +2338,7 @@ class SceneMarkerEvent : public Event {
     Event::Recycle();
   };
   
-  char s_filename[FWEELIN_OUTNAME_LEN];	// Filename of scene on disk
+  char s_filename[FWEELIN_OUTNAME_LEN]; // Filename of scene on disk
 };
 
 class PulseSyncEvent : public Event {
@@ -2341,8 +2366,8 @@ class TriggerSetEvent : public Event {
 class EventListenerItem {
  public:
   EventListenerItem(EventListener *callwhom, 
-		    EventProducer *eventsfrom,
-		    EventType oftype, char block_self_calls) :
+                    EventProducer *eventsfrom,
+                    EventType oftype, char block_self_calls) :
     callwhom(callwhom), eventsfrom(eventsfrom), oftype(oftype),
     block_self_calls(block_self_calls), next(0) {};
 
@@ -2396,9 +2421,9 @@ class EventManager {
 
     // Start an event dispatch thread
     int ret = pthread_create(&dispatch_thread,
-			     &attr,
-			     run_dispatch_thread,
-			     static_cast<void *>(this));
+                             &attr,
+                             run_dispatch_thread,
+                             static_cast<void *>(this));
     if (ret != 0) {
       printf("(eventmanager) pthread_create failed, exiting");
       exit(1);
@@ -2440,7 +2465,7 @@ class EventManager {
       *first = nw;
     else {
       while (cur->next != 0)
-	cur = cur->next;
+        cur = cur->next;
 
       cur->next = nw;
     }
@@ -2458,9 +2483,9 @@ class EventManager {
 
   // Broadcast immediately!
   inline void BroadcastEventNow(Event *ev, 
-				EventProducer *source,
-				char allowslowdelivery = 1,
-				char deleteonsend = 1) {
+                                EventProducer *source,
+                                char allowslowdelivery = 1,
+                                char deleteonsend = 1) {
     int evnum = (int) ev->GetType();
     
     // Check if this event is slow-delivery only
@@ -2470,16 +2495,16 @@ class EventManager {
       // Scan through the listeners to see who to call
       EventListenerItem *cur = listeners[evnum];
       while (cur != 0) {
-	if ((cur->eventsfrom == 0 && 
-	     (!cur->block_self_calls || source != (void *) cur->callwhom)) ||
-	    source == 0 || cur->eventsfrom == source)
-	  cur->callwhom->ReceiveEvent(ev,source);
-	cur = cur->next;
+        if ((cur->eventsfrom == 0 && 
+             (!cur->block_self_calls || source != (void *) cur->callwhom)) ||
+            source == 0 || cur->eventsfrom == source)
+          cur->callwhom->ReceiveEvent(ev,source);
+        cur = cur->next;
       }
       
       // This event has been broadcast.. erase it!.. use RTDelete()
       if (deleteonsend)
-	ev->RTDelete();
+        ev->RTDelete();
     }
   };
 
@@ -2489,7 +2514,7 @@ class EventManager {
   // *** Rewrite with one lockless ringbuffer for each broadcasting thread
   // EMG reads all ringbuffers
   void BroadcastEvent(Event *ev, 
-		      EventProducer *source) {
+                      EventProducer *source) {
     // printf("*** THREAD (BROADCAST): %li\n",pthread_self());
     
     ev->from = source;
@@ -2513,10 +2538,10 @@ class EventManager {
   // Listen for the given event (optionally from the given producer) and callme
   // when it occurs-- optionally, block calls from myself
   void ListenEvent(EventListener *callme, 
-		   EventProducer *from, EventType type, 
-		   char block_self_calls = 0) {
+                   EventProducer *from, EventType type, 
+                   char block_self_calls = 0) {
     EventListenerItem *nw = new EventListenerItem(callme,from,type,
-						  block_self_calls);
+                                                  block_self_calls);
 
     pthread_mutex_lock(&listener_list_lock);
 
@@ -2527,7 +2552,7 @@ class EventManager {
       listeners[evnum] = nw; // That was easy, now we have 1 item
     else {
       while (cur->next != 0)
-	cur = cur->next;
+        cur = cur->next;
       cur->next = nw; // Link up the last item to new1
     }
 
@@ -2536,7 +2561,7 @@ class EventManager {
 
   // Not RT safe!
   void UnlistenEvent(EventListener *callme,
-		     EventProducer *from, EventType type) {
+                     EventProducer *from, EventType type) {
     pthread_mutex_lock(&listener_list_lock);
 
     // Remove from the listeners list
@@ -2546,7 +2571,7 @@ class EventManager {
 
     // Search for those listening to 'from' & 'type'
     while (cur != 0 && (cur->callwhom != callme || 
-		        cur->eventsfrom != from)) {
+                        cur->eventsfrom != from)) {
       prev = cur;
       cur = cur->next;
     }
@@ -2554,9 +2579,9 @@ class EventManager {
     if (cur != 0) {
       // Got it, unlink!
       if (prev != 0) 
-	prev->next = cur->next;
+        prev->next = cur->next;
       else 
-	listeners[evnum] = cur->next;
+        listeners[evnum] = cur->next;
       delete cur;
     }
 
@@ -2572,21 +2597,21 @@ class EventManager {
       // Scan through all events
       Event *cur = inst->events;
       while (cur != 0) {
-	//printf("broadcast thread\n");
-	// Print time elapsed since broadcast
-	//double dt = (mygettime()-cur->time) * 1000; 
-	//printf("Evt dispatch- dt: %2.2f ms\n",dt);
+        //printf("broadcast thread\n");
+        // Print time elapsed since broadcast
+        //double dt = (mygettime()-cur->time) * 1000; 
+        //printf("Evt dispatch- dt: %2.2f ms\n",dt);
 
-	if (cur->GetMgr() == 0)
-	  printf("EVENT: WARNING: Broadcast from RT nonRT event!!\n");
+        if (cur->GetMgr() == 0)
+          printf("EVENT: WARNING: Broadcast from RT nonRT event!!\n");
 
-	// printf("EVENT: DISPATCH: %s!\n",Event::ett[(int) cur->GetType()].name);
-	inst->BroadcastEventNow(cur,cur->from,0,0); // Force delivery now,
+        // printf("EVENT: DISPATCH: %s!\n",Event::ett[(int) cur->GetType()].name);
+        inst->BroadcastEventNow(cur,cur->from,0,0); // Force delivery now,
                                                     // don't erase til we 
-	                                            // advance
-	Event *tmp = cur->next;
-	cur->RTDelete();
-	cur = tmp;
+                                                    // advance
+        Event *tmp = cur->next;
+        cur->RTDelete();
+        cur = tmp;
       }
 
       // Potentially a problem right here-- 

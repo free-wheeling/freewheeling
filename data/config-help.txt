@@ -664,6 +664,18 @@ Event "save-current-scene"
   A scene is a snapshot of all loaded loops and levels.
   It is like a save of the complete session.
  
+Event "create-snapshot"
+  Create a snapshot. A snapshot is a memory of all playing and idle loops and their levels.
+  This allows you to easily create and switch between song 'sections'.
+  
+  "snapid": ID # of snapshot to save
+
+Event "rename-snapshot"
+  "snapid": ID # of snapshot to rename
+
+Event "trigger-snapshot"
+  "snapid": ID # of snapshot to trigger
+
 Event "switch-metronome"
   Switches an audible metronome on or off for the given pulse. The metronome
   sounds on the downbeat of the pulse.

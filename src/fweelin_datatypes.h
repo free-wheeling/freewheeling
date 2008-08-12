@@ -61,23 +61,23 @@ class UserVariable {
       break;
     case T_int :
       if (type == T_char) {
-	int tmp = (int) *this;
-	type = T_int;
-	*this = tmp;
+        int tmp = (int) *this;
+        type = T_int;
+        *this = tmp;
       }
       break;
     case T_long :
       if (type == T_char || type == T_int) {
-	long tmp = (long) *this;
-	type = T_long;
-	*this = tmp;
+        long tmp = (long) *this;
+        type = T_long;
+        *this = tmp;
       }
       break;
     case T_float : 
       if (type == T_char || type == T_int || type == T_long) {
-	float tmp = (float) *this;
-	type = T_float;
-	*this = tmp;
+        float tmp = (float) *this;
+        type = T_float;
+        *this = tmp;
       }
       break;
     default :
@@ -92,24 +92,24 @@ class UserVariable {
       return 0;
     switch (type) {
       case T_char : 
-	return (*((char *) value) > (char) cmp);
+        return (*((char *) value) > (char) cmp);
       case T_int : 
-	return (*((int *) value) > (int) cmp);
+        return (*((int *) value) > (int) cmp);
       case T_long : 
-	return (*((long *) value) > (long) cmp);
+        return (*((long *) value) > (long) cmp);
       case T_float : 
-	return (*((float *) value) > (float) cmp);
+        return (*((float *) value) > (float) cmp);
       case T_variable :
       case T_variableref :
-	printf(" UserVariable: WARNING: Compare T_variable or T_variableref "
-	       " not implemented!\n");
-	return 0;      
+        printf(" UserVariable: WARNING: Compare T_variable or T_variableref "
+               " not implemented!\n");
+        return 0;      
       case T_range : 
-	printf(" UserVariable: WARNING: Can't compare range variable!\n");
-	return 0;
+        printf(" UserVariable: WARNING: Can't compare range variable!\n");
+        return 0;
       case T_invalid : 
-	printf(" UserVariable: WARNING: Can't compare invalid variable!\n");
-	return 0;
+        printf(" UserVariable: WARNING: Can't compare invalid variable!\n");
+        return 0;
     }
     
     return 0;
@@ -140,14 +140,14 @@ class UserVariable {
       return (*((float *) value) == (float) cmp);
     case T_range : 
       {
-	Range r = (Range) cmp;
-	return (*((int *) value) == r.lo && 
-		*(((int *) value)+1) == r.hi);
+        Range r = (Range) cmp;
+        return (*((int *) value) == r.lo && 
+                *(((int *) value)+1) == r.hi);
       }
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Compare T_variable or T_variableref "
-	     " not implemented!\n");
+             " not implemented!\n");
       return 0;      
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't compare invalid variable!\n");
@@ -178,15 +178,15 @@ class UserVariable {
       break;
     case T_range : 
       {
-	Range r = (Range) src;
-	*((int *) value) += r.lo; 
-	*(((int *) value)+1) += r.hi;
+        Range r = (Range) src;
+        *((int *) value) += r.lo; 
+        *(((int *) value)+1) += r.hi;
       }
       break;
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Algebra on T_variable or T_variableref "
-	     " not possible!\n");
+             " not possible!\n");
       break;
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't operate on invalid variable!\n");
@@ -203,20 +203,20 @@ class UserVariable {
     
     switch (ret.type) {
       case T_char :
-	ret = (char) abs((char) arg - (char) *this);
-	break;
+        ret = (char) abs((char) arg - (char) *this);
+        break;
       case T_int :
-	ret = (int) abs((int) arg - (int) *this);
-	break;
+        ret = (int) abs((int) arg - (int) *this);
+        break;
       case T_long :
-	ret = (long) labs((long) arg - (long) *this);
-	break;
+        ret = (long) labs((long) arg - (long) *this);
+        break;
       case T_float :
-	ret = (float) fabsf((float) arg - (float) *this);
-	break;
+        ret = (float) fabsf((float) arg - (float) *this);
+        break;
       default :
-	printf(" UserVariable: WARNING: GetDelta() doesn't work on this type of variable!\n");
-	break;
+        printf(" UserVariable: WARNING: GetDelta() doesn't work on this type of variable!\n");
+        break;
     }
     
     return ret;
@@ -239,15 +239,15 @@ class UserVariable {
       break;
     case T_range : 
       {
-	Range r = (Range) src;
-	*((int *) value) -= r.lo; 
-	*(((int *) value)+1) -= r.hi;
+        Range r = (Range) src;
+        *((int *) value) -= r.lo; 
+        *(((int *) value)+1) -= r.hi;
       }
       break;
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Algebra on T_variable or T_variableref "
-	     " not possible!\n");
+             " not possible!\n");
       break;
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't operate on invalid variable!\n");
@@ -272,15 +272,15 @@ class UserVariable {
       break;
     case T_range : 
       {
-	Range r = (Range) src;
-	*((int *) value) *= r.lo; 
-	*(((int *) value)+1) *= r.hi;
+        Range r = (Range) src;
+        *((int *) value) *= r.lo; 
+        *(((int *) value)+1) *= r.hi;
       }
       break;
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Algebra on T_variable or T_variableref "
-	     " not possible!\n");
+             " not possible!\n");
       break;
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't operate on invalid variable!\n");
@@ -295,30 +295,30 @@ class UserVariable {
     case T_long :
     case T_float :
       {
-	// Special case- when dividing a scalar by another scalar, the 
-	// result is always evaluated to a float!!
-	float t = (float) src;
-	
-	// Convert this variable to a float
-	if (t != 0) {
-	  *((float *) value) = (float) *this / t;
-	  type = T_float;
-	}
+        // Special case- when dividing a scalar by another scalar, the 
+        // result is always evaluated to a float!!
+        float t = (float) src;
+        
+        // Convert this variable to a float
+        if (t != 0) {
+          *((float *) value) = (float) *this / t;
+          type = T_float;
+        }
       }
       break;
     case T_range : 
       {
-	Range r = (Range) src;
-	if (r.lo != 0)
-	  *((int *) value) /= r.lo; 
-	if (r.hi != 0)
-	  *(((int *) value)+1) /= r.hi;
+        Range r = (Range) src;
+        if (r.lo != 0)
+          *((int *) value) /= r.lo; 
+        if (r.hi != 0)
+          *(((int *) value)+1) /= r.hi;
       }
       break;
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Algebra on T_variable or T_variableref "
-	     " not possible!\n");
+             " not possible!\n");
       break;
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't operate on invalid variable!\n");
@@ -360,7 +360,7 @@ class UserVariable {
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Can't convert T_variable or "
-	     "T_variableref!\n");
+             "T_variableref!\n");
       return 0;      
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't convert invalid variable!\n");
@@ -381,7 +381,7 @@ class UserVariable {
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Can't convert T_variable or "
-	     "T_variableref!\n");
+             "T_variableref!\n");
       return 0;      
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't convert invalid variable!\n");
@@ -402,7 +402,7 @@ class UserVariable {
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Can't convert T_variable or "
-	     "T_variableref!\n");
+             "T_variableref!\n");
       return 0;      
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't convert invalid variable!\n");
@@ -423,7 +423,7 @@ class UserVariable {
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Can't convert T_variable or "
-	     "T_variableref!\n");
+             "T_variableref!\n");
       return 0;      
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't convert invalid variable!\n");
@@ -438,12 +438,12 @@ class UserVariable {
     case T_int : return Range(*((int *) value), *((int *) value));
     case T_long : return Range(*((long *) value), *((long *) value));
     case T_float : return Range((int) *((float *) value), 
-				(int) *((float *) value));
+                                (int) *((float *) value));
     case T_range : return Range(*((int *) value),*(((int *) value)+1));
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Can't convert T_variable or "
-	     "T_variableref!\n");
+             "T_variableref!\n");
       return Range(0,0);      
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't convert invalid variable!\n");
