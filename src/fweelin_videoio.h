@@ -50,9 +50,9 @@ public:
   // of the given dimensions-- the output surface location is specified when
   // actually mapping
   CircularMap(SDL_Surface *in, 
-	      int map_xs, int map_ys,
-	      int in_xs, int in_ys,
-	      int rinner, int rsize);
+              int map_xs, int map_ys,
+              int in_xs, int in_ys,
+              int rinner, int rsize);
   // Frees this map
   ~CircularMap();
   
@@ -106,8 +106,8 @@ public:
 
   // Draw text, and optionally return size of text drawn in sx and sy
   static int draw_text(SDL_Surface *out, TTF_Font *font,
-		       char *str, int x, int y, SDL_Color clr, char centerx = 0,
-		       char centery = 0, int *sx = 0, int *sy = 0);
+                       char *str, int x, int y, SDL_Color clr, char centerx = 0,
+                       char centery = 0, int *sx = 0, int *sy = 0);
 
   // If no suitable map exists in list 'cmaps', creates a planar>circular map
   // of diameter 'sz', mapping from the given surface. 
@@ -121,15 +121,15 @@ public:
   // and position.
   // Returns nonzero if loop not drawn
   char DrawLoop(LoopManager *loopmgr, int i, 
-		SDL_Surface *screen, SDL_Surface *lscopepic,
-		SDL_Color *loopcolors, float colormag,
-		FloConfig *fs, FloLayoutElement *curel,
-		
-		CircularMap *direct_map, int direct_xpos,
-		int direct_ypos,
-		
-		float lvol,
-		char drawtext = 1);
+                SDL_Surface *screen, SDL_Surface *lscopepic,
+                SDL_Color *loopcolors, float colormag,
+                FloConfig *fs, FloLayoutElement *curel,
+                
+                CircularMap *direct_map, int direct_xpos,
+                int direct_ypos,
+                
+                float lvol,
+                char drawtext = 1);
 
  protected:
 
@@ -144,10 +144,10 @@ public:
   // memory writes and thus avoids the strange video glitch of introducing
   // audio pops on some machines-- some loss in performance!
   void Custom_BlitSurface(SDL_Surface *in, SDL_Surface *out,
-			  SDL_Rect *dstrect);
+                          SDL_Rect *dstrect);
 
   void Squeeze_BlitSurface(SDL_Surface *in, SDL_Surface *out,
-			   SDL_Rect *dstrect);
+                           SDL_Rect *dstrect);
 
 #ifdef __MACOSX__
   FweelinMac cocoa; // Cocoa thread setup
@@ -192,8 +192,8 @@ public:
   inline void LCD_Send (unsigned char dat) {
     if (lcd_handle)
       while (write(lcd_handle, &dat, 1) != 1) {
-	printf("LCD_Send failed\n");
-	usleep(1000);
+        printf("LCD_Send failed\n");
+        usleep(1000);
       }
   };
   

@@ -36,7 +36,7 @@
 const double ItemRenamer::BLINK_DELAY = 0.5;
 
 ItemRenamer::ItemRenamer (Fweelin *app, RenameCallback *cb, 
-			  char *oldname) : app(app), cb(cb) {
+                          char *oldname) : app(app), cb(cb) {
   if (oldname == 0)
     strcpy(rename_tmpbuf,"");
   else if (strlen(oldname)+1 >= (unsigned int) RENAME_BUF_SIZE) {
@@ -64,41 +64,41 @@ char ItemRenamer::HookEvent(Event *ev, EventProducer *from) {
 
       // Intercept alphanumeric keys (use UNICODE translation)
       if ((kev->unicode > 32 &&
-	   kev->unicode < 127) || 
-	  (kev->unicode > 160 &&
-	   kev->unicode < 256)) {
-	if (kev->down) 
-	  Rename_Append((char) (kev->unicode & 0xFF)); 
-	return 1;
+           kev->unicode < 127) || 
+          (kev->unicode > 160 &&
+           kev->unicode < 256)) {
+        if (kev->down) 
+          Rename_Append((char) (kev->unicode & 0xFF)); 
+        return 1;
       } else if (kev->keysym == SDLK_BACKSPACE) {
-	if (kev->down) 
-	  Rename_Backspace();
-	return 1;
+        if (kev->down) 
+          Rename_Backspace();
+        return 1;
       } else if (kev->keysym == SDLK_SPACE) {
-	if (kev->down)
-	  Rename_Append(' ');
+        if (kev->down)
+          Rename_Append(' ');
 
       } else if (kev->keysym == SDLK_RETURN ||
-		 kev->keysym == SDLK_KP_ENTER) {
-	if (kev->down) {
-	  app->getCFG()->RemoveEventHook(this);
-	  app->getSDLIO()->EnableUNICODE(0);
-	  app->getSDLIO()->EnableKeyRepeat(0);
+                 kev->keysym == SDLK_KP_ENTER) {
+        if (kev->down) {
+          app->getCFG()->RemoveEventHook(this);
+          app->getSDLIO()->EnableUNICODE(0);
+          app->getSDLIO()->EnableKeyRepeat(0);
 
-	  // Notify callback that item has been renamed
-	  cb->ItemRenamed(rename_tmpbuf); // Callback may delete -this-
-	}
-	return 1;
+          // Notify callback that item has been renamed
+          cb->ItemRenamed(rename_tmpbuf); // Callback may delete -this-
+        }
+        return 1;
       } else if (kev->keysym == SDLK_ESCAPE) {
-	if (kev->down) {
-	  app->getCFG()->RemoveEventHook(this);
-	  app->getSDLIO()->EnableUNICODE(0);
-	  app->getSDLIO()->EnableKeyRepeat(0);
+        if (kev->down) {
+          app->getCFG()->RemoveEventHook(this);
+          app->getSDLIO()->EnableUNICODE(0);
+          app->getSDLIO()->EnableKeyRepeat(0);
 
-	  // Stop
-	  cb->ItemRenamed(0); // Callback may delete -this-
-	}
-	return 1;
+          // Stop
+          cb->ItemRenamed(0); // Callback may delete -this-
+        }
+        return 1;
       }
 
       return 0;
@@ -129,21 +129,21 @@ void Browser::AddItem(BrowserItem *nw, char sort) {
       nw->next = first;
       nw->prev = 0;
       first->prev = nw;
-      first = nw;	
+      first = nw;       
     } else {
       // Insert at end or in the right place if sorting
       if (sort) {
-	while (cur->next != 0 && nw->Compare(cur->next) >= 0)
-	  cur = cur->next;
+        while (cur->next != 0 && nw->Compare(cur->next) >= 0)
+          cur = cur->next;
       } else {
-	while (cur->next != 0) 
-	  cur = cur->next;
+        while (cur->next != 0) 
+          cur = cur->next;
       }
       
       // Insert after cur
       nw->next = cur->next;
       if (cur->next != 0)
-	cur->next->prev = nw;
+        cur->next->prev = nw;
       nw->prev = cur;
       cur->next = nw;
     }
@@ -186,7 +186,7 @@ void Browser::ItemRenamed(char *nw) {
   if (nw != 0) {
     // Assign new name and stop
     RenameItem(cur,nw);
-	
+        
     delete renamer;
     renamer = 0;
 
@@ -199,13 +199,13 @@ void Browser::ItemRenamed(char *nw) {
       char tmp[FWEELIN_OUTNAME_LEN];
 
       if (GetType() == B_Loop) 
-	GetDisplayName(((LoopBrowserItem *) cur)->filename,
-		       &((LoopBrowserItem *) cur)->time,
-		       tmp,FWEELIN_OUTNAME_LEN);
+        GetDisplayName(((LoopBrowserItem *) cur)->filename,
+                       &((LoopBrowserItem *) cur)->time,
+                       tmp,FWEELIN_OUTNAME_LEN);
       else if (GetType() == B_Scene)
-	GetDisplayName(((SceneBrowserItem *) cur)->filename,
-		       &((SceneBrowserItem *) cur)->time,
-		       tmp,FWEELIN_OUTNAME_LEN);
+        GetDisplayName(((SceneBrowserItem *) cur)->filename,
+                       &((SceneBrowserItem *) cur)->time,
+                       tmp,FWEELIN_OUTNAME_LEN);
 
       RenameItem(cur,tmp);
       cur->default_name = 1;
@@ -222,7 +222,7 @@ void Browser::ItemRenamed(char *nw) {
 // of an item. For example, when a Loop in memory is renamed, we also
 // rename it on disk, and the loop browser must be notified of this new name.
 void Browser::ItemRenamedOnDisk(char *old_filename, char *new_filename,
-				char *new_name) {
+                                char *new_name) {
   if (old_filename == 0 ||
       new_filename == 0)
     return;
@@ -265,19 +265,19 @@ void Browser::ItemRenamedOnDisk(char *old_filename, char *new_filename,
     
     // Assign new name and stop
     RenameItem(cur,new_name);
-	
+        
     // If new name is blank, assign default name for onscreen display
     if (cur->name == 0 || strlen(cur->name) == 0) {
       char tmp[FWEELIN_OUTNAME_LEN];
 
       if (GetType() == B_Loop) 
-	GetDisplayName(((LoopBrowserItem *) cur)->filename,
-		       &((LoopBrowserItem *) cur)->time,
-		       tmp,FWEELIN_OUTNAME_LEN);
+        GetDisplayName(((LoopBrowserItem *) cur)->filename,
+                       &((LoopBrowserItem *) cur)->time,
+                       tmp,FWEELIN_OUTNAME_LEN);
       else if (GetType() == B_Scene)
-	GetDisplayName(((SceneBrowserItem *) cur)->filename,
-		       &((SceneBrowserItem *) cur)->time,
-		       tmp,FWEELIN_OUTNAME_LEN);
+        GetDisplayName(((SceneBrowserItem *) cur)->filename,
+                       &((SceneBrowserItem *) cur)->time,
+                       tmp,FWEELIN_OUTNAME_LEN);
       
       RenameItem(cur,tmp);
       cur->default_name = 1;
@@ -292,8 +292,8 @@ void Browser::ItemRenamedOnDisk(char *old_filename, char *new_filename,
 // Write the name to outbuf, with max maxlen characters.
 // Returns nonzero if we used a 'default' name.
 char Browser::GetDisplayName(char *filename, 
-			     time_t *filetime,
-			     char *outbuf, int maxlen) {
+                             time_t *filetime,
+                             char *outbuf, int maxlen) {
   // Loop exists, use combination of time and hash as name
   int baselen = strlen(app->getCFG()->GetLibraryPath()) + 1;
   if (btype == B_Loop)
@@ -302,7 +302,7 @@ char Browser::GetDisplayName(char *filename,
     baselen += strlen(FWEELIN_OUTPUT_SCENE_NAME);
   else {
     printf("BROWSER: We don't support getting a display name for type %d\n",
-	   btype);
+           btype);
     return 1;
   }
 
@@ -311,7 +311,7 @@ char Browser::GetDisplayName(char *filename,
     sf_objname[FWEELIN_OUTNAME_LEN];
 
   if (Saveable::SplitFilename(filename, baselen, sf_basename, sf_hash, 
-			      sf_objname,FWEELIN_OUTNAME_LEN) || 
+                              sf_objname,FWEELIN_OUTNAME_LEN) || 
       strlen(sf_objname) == 0) {
     // No object name given in filename
     // Compute default name
@@ -382,23 +382,23 @@ void Browser::AddDivisions(int maxdelta) {
     char go = 1;
     do {
       while (cur->next != 0 && cur->next->Compare(cur) < maxdelta &&
-	     ((cur->default_name && cur->next->default_name) || 
-	      cur->GetType() == B_Division || 
-	      cur->next->GetType() == B_Division)) 
-	cur = cur->next;
+             ((cur->default_name && cur->next->default_name) || 
+              cur->GetType() == B_Division || 
+              cur->next->GetType() == B_Division)) 
+        cur = cur->next;
 
       if (cur->next != 0) {
-	// Add a division between cur and cur->next
-	BrowserItem *div = new BrowserDivision();
-	div->prev = cur;
-	div->next = cur->next;
-	cur->next->prev = div;
-	cur->next = div;
+        // Add a division between cur and cur->next
+        BrowserItem *div = new BrowserDivision();
+        div->prev = cur;
+        div->next = cur->next;
+        cur->next->prev = div;
+        cur->next = div;
 
-	cur = div->next;
+        cur = div->next;
       } else
-	// Done
-	go = 0;
+        // Done
+        go = 0;
     } while (go);
   }
 };
@@ -423,17 +423,17 @@ void Browser::MoveTo(int adjust, int jumpadjust) {
       prev = cur;
 
       while (cur != 0 && cur->GetType() != B_Division) 
-	cur = (adjdir == 1 ? cur->next : cur->prev);
+        cur = (adjdir == 1 ? cur->next : cur->prev);
       if (cur != 0)
-	// We are on the division, skip over it which way?
-	cur = (adjdir == 1 || i+1 >= adjmag ? cur->next : cur->prev);
+        // We are on the division, skip over it which way?
+        cur = (adjdir == 1 || i+1 >= adjmag ? cur->next : cur->prev);
       if (cur == 0) {
-	if (adjdir == -1 && i+1 >= adjmag) {
-	  // Going back to beginning of list
-	  cur = first;
-	} else
-	  // Went too far, go back
-	  cur = prev;
+        if (adjdir == -1 && i+1 >= adjmag) {
+          // Going back to beginning of list
+          cur = first;
+        } else
+          // Went too far, go back
+          cur = prev;
       }
     }
 
@@ -444,13 +444,13 @@ void Browser::MoveTo(int adjust, int jumpadjust) {
       prev = cur;
       cur = (adjdir == 1 ? cur->next : cur->prev);
       if (cur != 0 && cur->GetType() == B_Division)
-	i--; // Don't count divisions
+        i--; // Don't count divisions
     }
     if (cur == 0)
       cur = prev;
   } else {
     printf("BROWSER: No elements to move to for browser '%s'\n",
-	   GetTypeName(GetType()));
+           GetTypeName(GetType()));
   }
 
   // Call browser virtual method for item browsed-
@@ -495,12 +495,12 @@ void Browser::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // Meant for this browser?
       if (bev->browserid == id) {
-	if (CRITTERS)
-	  printf("BROWSER: Received BrowserMoveToItem "
-		 "(browser id: %d, adjust: %d, jumpadjust: %d)\n",
-		 bev->browserid, bev->adjust, bev->jumpadjust);
-	
-	MoveTo(bev->adjust, bev->jumpadjust);
+        if (CRITTERS)
+          printf("BROWSER: Received BrowserMoveToItem "
+                 "(browser id: %d, adjust: %d, jumpadjust: %d)\n",
+                 bev->browserid, bev->adjust, bev->jumpadjust);
+        
+        MoveTo(bev->adjust, bev->jumpadjust);
       }
     }
     break;
@@ -508,17 +508,17 @@ void Browser::ReceiveEvent(Event *ev, EventProducer *from) {
   case T_EV_BrowserMoveToItemAbsolute :
     {
       BrowserMoveToItemAbsoluteEvent *bev = 
-	(BrowserMoveToItemAbsoluteEvent *) ev;
+        (BrowserMoveToItemAbsoluteEvent *) ev;
       
       // Meant for this browser?
       if (bev->browserid == id) {
-	if (CRITTERS)
-	  printf("BROWSER: Received BrowserMoveToItemAbsolute "
-		 "(browser id: %d, idx: %d)\n",
-		 bev->browserid, bev->idx);
-	
-	MoveToBeginning();
-	MoveTo(bev->idx, 0);
+        if (CRITTERS)
+          printf("BROWSER: Received BrowserMoveToItemAbsolute "
+                 "(browser id: %d, idx: %d)\n",
+                 bev->browserid, bev->idx);
+        
+        MoveToBeginning();
+        MoveTo(bev->idx, 0);
       }
     }
     break;
@@ -529,10 +529,10 @@ void Browser::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // Meant for this browser?
       if (bev->browserid == id) {
-	if (CRITTERS)
-	  printf("BROWSER: Received BrowserSelectItem\n");
-	
-	Select();
+        if (CRITTERS)
+          printf("BROWSER: Received BrowserSelectItem\n");
+        
+        Select();
       }
     }
     break;
@@ -543,10 +543,10 @@ void Browser::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // Meant for this browser?
       if (bev->browserid == id) {
-	if (CRITTERS)
-	  printf("BROWSER: Received BrowserRenameItem\n");
-	
-	Rename();
+        if (CRITTERS)
+          printf("BROWSER: Received BrowserRenameItem\n");
+        
+        Rename();
       }
     }
     break;
@@ -582,37 +582,37 @@ void LoopTray::ReceiveEvent(Event *ev, EventProducer *from) {
       // printf("tmap set: %d->%p\n",tev->idx,tev->nw);
 
       if (tev->nw == 0) {
-	// Delete,
-	// Scan for a LoopTrayItem corresponding to this index
-	RemoveItem(tev->idx);
-	touchtray = 1;
+        // Delete,
+        // Scan for a LoopTrayItem corresponding to this index
+        RemoveItem(tev->idx);
+        touchtray = 1;
       } else {
-	// Get the placename- where the loop is mapped
-	char *pname = 0;
-	FloLayout *curl = app->getCFG()->GetLayouts();
-	while (curl != 0) {
-	  if (tev->idx >= curl->loopids.lo &&
-	      tev->idx <= curl->loopids.hi) {
-	    // Loop is mapped to an element in this layout- get the name
-	    int firstid = curl->loopids.lo;
-	    FloLayoutElement *curel = curl->elems;
-	    while (curel != 0 && firstid + curel->id != tev->idx)
-	      curel = curel->next;
+        // Get the placename- where the loop is mapped
+        char *pname = 0;
+        FloLayout *curl = app->getCFG()->GetLayouts();
+        while (curl != 0) {
+          if (tev->idx >= curl->loopids.lo &&
+              tev->idx <= curl->loopids.hi) {
+            // Loop is mapped to an element in this layout- get the name
+            int firstid = curl->loopids.lo;
+            FloLayoutElement *curel = curl->elems;
+            while (curel != 0 && firstid + curel->id != tev->idx)
+              curel = curel->next;
 
-	    if (curel != 0)
-	      pname = curel->name;
-	  }
+            if (curel != 0)
+              pname = curel->name;
+          }
 
-	  curl = curl->next;
-	}
+          curl = curl->next;
+        }
 
-	// Add,
-	LoopTrayItem *nw = new LoopTrayItem(tev->nw,tev->idx,
-					    tev->nw->name,
-					    (tev->nw->name == 0 ? 1 : 0),
-					    pname);
-	AddItem(nw,1);
-	touchtray = 1;
+        // Add,
+        LoopTrayItem *nw = new LoopTrayItem(tev->nw,tev->idx,
+                                            tev->nw->name,
+                                            (tev->nw->name == 0 ? 1 : 0),
+                                            pname);
+        AddItem(nw,1);
+        touchtray = 1;
       }
     }
     break;
@@ -622,9 +622,9 @@ void LoopTray::ReceiveEvent(Event *ev, EventProducer *from) {
       RenameLoopEvent *rev = (RenameLoopEvent *) ev;
 
       if (rev->in == 0) {
-	Rename(rev->loopid);
-	if (CRITTERS)
-	  printf("LOOPTRAY: Received RenameLoop(loopid: %d)\n",rev->loopid);	
+        Rename(rev->loopid);
+        if (CRITTERS)
+          printf("LOOPTRAY: Received RenameLoop(loopid: %d)\n",rev->loopid);    
       }
     }
     break;
@@ -645,7 +645,7 @@ void LoopTray::ItemRenamedFromOutside(Loop *l, char *nw) {
     {
       LoopTrayItem *curl = (LoopTrayItem *) first;
       while (curl != 0 && curl->l != l)
-	curl = (LoopTrayItem *) curl->next;
+        curl = (LoopTrayItem *) curl->next;
       
       cur = curl;
     }
@@ -685,18 +685,18 @@ void LoopTray::Rename(int loopid) {
     {
       LoopTrayItem *curl = (LoopTrayItem *) first;
       while (curl != 0 && curl->loopid != loopid)
-	curl = (LoopTrayItem *) curl->next;
+        curl = (LoopTrayItem *) curl->next;
       
       cur = curl;
     }
     
     if (cur != 0) {
       if (CRITTERS)
-	printf("RENAME: Item: %p\n",cur);
+        printf("RENAME: Item: %p\n",cur);
       renamer = new ItemRenamer(app,this,(cur->default_name ? 0 : cur->name));
       if (!renamer->IsRenaming()) {
-	delete renamer;
-	renamer = 0;
+        delete renamer;
+        renamer = 0;
       }
     }
   }
@@ -714,23 +714,23 @@ char LoopTray::MouseMotion(MouseMotionInputEvent *mev) {
       xpand_y2 = old_xpand_y2 + ydelta;
     } else {
       if ((resize_win == RS_Right || resize_win == RS_TopRight ||
-	   resize_win == RS_BottomRight) &&
-	  xpand_x1+basepos*2 <= old_xpand_x2+xdelta) {
-	xpand_x2 = old_xpand_x2 + xdelta;
+           resize_win == RS_BottomRight) &&
+          xpand_x1+basepos*2 <= old_xpand_x2+xdelta) {
+        xpand_x2 = old_xpand_x2 + xdelta;
       } else if ((resize_win == RS_Left || resize_win == RS_TopLeft ||
-		  resize_win == RS_BottomLeft) &&
-		 old_xpand_x1+xdelta+basepos*2 <= xpand_x2) {
-	xpand_x1 = old_xpand_x1 + xdelta;
+                  resize_win == RS_BottomLeft) &&
+                 old_xpand_x1+xdelta+basepos*2 <= xpand_x2) {
+        xpand_x1 = old_xpand_x1 + xdelta;
       }
 
       if ((resize_win == RS_Bottom || resize_win == RS_BottomLeft ||
-	   resize_win == RS_BottomRight) &&
-	  xpand_y1+basepos*2 <= old_xpand_y2+ydelta) {
-	xpand_y2 = old_xpand_y2 + ydelta;
+           resize_win == RS_BottomRight) &&
+          xpand_y1+basepos*2 <= old_xpand_y2+ydelta) {
+        xpand_y2 = old_xpand_y2 + ydelta;
       } else if ((resize_win == RS_Top || resize_win == RS_TopLeft ||
-		  resize_win == RS_TopRight) &&
-		 old_xpand_y1+ydelta+basepos*2 <= xpand_y2) {
-	xpand_y1 = old_xpand_y1 + ydelta;
+                  resize_win == RS_TopRight) &&
+                 old_xpand_y1+ydelta+basepos*2 <= xpand_y2) {
+        xpand_y1 = old_xpand_y1 + ydelta;
       }
 
       touchtray = 1;
@@ -757,135 +757,135 @@ char LoopTray::MouseButton(MouseButtonInputEvent *mev) {
       my >= xpand_y1 && my <= xpand_y2) {
     // Mouse inside tray
     if (mx > xpand_x1+basepos && my > xpand_y1+basepos &&
-	mx < xpand_x2-basepos && my < xpand_y2-basepos) {
+        mx < xpand_x2-basepos && my < xpand_y2-basepos) {
       // Mouse in inner region
       if (mev->down) {
-	// Check if the mouse is clicking in any loop
-	LoopTrayItem *curl = (LoopTrayItem *) first;
-	char go = 1, found = 0;
-	while (curl != 0 && go) {
-	  if (curl->xpos != -1) {
-	    int relx = mx-xpand_x1-(curl->xpos+loopmap->map_xs/2),
-	      rely = my-xpand_y1-(curl->ypos+loopmap->map_ys/2);
-	    if (relx*relx+rely*rely <= loopsize*loopsize/4) {
-	      // Mouse is clicking within this loop
-	      found = 1;
+        // Check if the mouse is clicking in any loop
+        LoopTrayItem *curl = (LoopTrayItem *) first;
+        char go = 1, found = 0;
+        while (curl != 0 && go) {
+          if (curl->xpos != -1) {
+            int relx = mx-xpand_x1-(curl->xpos+loopmap->map_xs/2),
+              rely = my-xpand_y1-(curl->ypos+loopmap->map_ys/2);
+            if (relx*relx+rely*rely <= loopsize*loopsize/4) {
+              // Mouse is clicking within this loop
+              found = 1;
 
-	      // Issue 'loop clicked' event
-	      LoopClickedEvent *lcevt = (LoopClickedEvent *) 
-		Event::GetEventByType(T_EV_LoopClicked);
-	      
-	      lcevt->button = mev->button;
-	      lcevt->down = mev->down;
-	      lcevt->loopid = curl->loopid;
-	      lcevt->in = 0; // In=0 means clicked in looptray
-	      app->getEMG()->BroadcastEvent(lcevt, this);
-	    } 
-	  } else
-	    go = 0;
-	  
-	  curl = (LoopTrayItem *) curl->next;
-	}
+              // Issue 'loop clicked' event
+              LoopClickedEvent *lcevt = (LoopClickedEvent *) 
+                Event::GetEventByType(T_EV_LoopClicked);
+              
+              lcevt->button = mev->button;
+              lcevt->down = mev->down;
+              lcevt->loopid = curl->loopid;
+              lcevt->in = 0; // In=0 means clicked in looptray
+              app->getEMG()->BroadcastEvent(lcevt, this);
+            } 
+          } else
+            go = 0;
+          
+          curl = (LoopTrayItem *) curl->next;
+        }
 
-	if (!found) {
-	  // Not clicking inside any loop--
+        if (!found) {
+          // Not clicking inside any loop--
 
-	  // Start moving
-	  resize_win = RS_Move;
-	  resize_button = mev->button;
-	  resize_xhand = mx;
-	  resize_yhand = my;
-	  old_xpand_x1 = xpand_x1;
-	  old_xpand_y1 = xpand_y1;
-	  old_xpand_x2 = xpand_x2;
-	  old_xpand_y2 = xpand_y2;
-	}
+          // Start moving
+          resize_win = RS_Move;
+          resize_button = mev->button;
+          resize_xhand = mx;
+          resize_yhand = my;
+          old_xpand_x1 = xpand_x1;
+          old_xpand_y1 = xpand_y1;
+          old_xpand_x2 = xpand_x2;
+          old_xpand_y2 = xpand_y2;
+        }
       }
     } else {
       // Mouse in border region
       if (mev->down) {
-	// Start resizing
-	char bord_l = 0,
-	  bord_lm = 0,
-	  bord_r = 0,
-	  bord_rm = 0,
-	  bord_t = 0,
-	  bord_tm = 0,
-	  bord_b = 0,
-	  bord_bm = 0;
-	int bord_mid_thresh = basepos*3;
+        // Start resizing
+        char bord_l = 0,
+          bord_lm = 0,
+          bord_r = 0,
+          bord_rm = 0,
+          bord_t = 0,
+          bord_tm = 0,
+          bord_b = 0,
+          bord_bm = 0;
+        int bord_mid_thresh = basepos*3;
 
-	if (mx >= xpand_x1 && mx <= xpand_x1+basepos) {
-	  bord_l = 1;
-	  bord_lm = 1;
-	} else if (mx >= xpand_x2-basepos && mx <= xpand_x2) {
-	  bord_r = 1;
-	  bord_rm = 1;
-	} else if (mx >= xpand_x1 && mx <= xpand_x1+bord_mid_thresh) {
-	  bord_lm = 1;
-	} else if (mx >= xpand_x2-bord_mid_thresh && mx <= xpand_x2) {
-	  bord_rm = 1;
-	}
+        if (mx >= xpand_x1 && mx <= xpand_x1+basepos) {
+          bord_l = 1;
+          bord_lm = 1;
+        } else if (mx >= xpand_x2-basepos && mx <= xpand_x2) {
+          bord_r = 1;
+          bord_rm = 1;
+        } else if (mx >= xpand_x1 && mx <= xpand_x1+bord_mid_thresh) {
+          bord_lm = 1;
+        } else if (mx >= xpand_x2-bord_mid_thresh && mx <= xpand_x2) {
+          bord_rm = 1;
+        }
 
-	if (my >= xpand_y1 && my <= xpand_y1+basepos) {
-	  bord_t = 1;
-	  bord_tm = 1;
-	} else if (my >= xpand_y2-basepos && my <= xpand_y2) {
-	  bord_b = 1;
-	  bord_bm = 1;
-	} else if (my >= xpand_y1 && my <= xpand_y1+bord_mid_thresh) {
-	  bord_tm = 1;
-	} else if (my >= xpand_y2-bord_mid_thresh && my <= xpand_y2) {
-	  bord_bm = 1;
-	}
+        if (my >= xpand_y1 && my <= xpand_y1+basepos) {
+          bord_t = 1;
+          bord_tm = 1;
+        } else if (my >= xpand_y2-basepos && my <= xpand_y2) {
+          bord_b = 1;
+          bord_bm = 1;
+        } else if (my >= xpand_y1 && my <= xpand_y1+bord_mid_thresh) {
+          bord_tm = 1;
+        } else if (my >= xpand_y2-bord_mid_thresh && my <= xpand_y2) {
+          bord_bm = 1;
+        }
 
-	if (bord_l) {
-	  if (bord_tm)
-	    resize_win = RS_TopLeft;
-	  else if (bord_bm)
-	    resize_win = RS_BottomLeft;
-	  else
-	    resize_win = RS_Left;
-	} else if (bord_r) {
-	  if (bord_tm)
-	    resize_win = RS_TopRight;
-	  else if (bord_bm)
-	    resize_win = RS_BottomRight;
-	  else
-	    resize_win = RS_Right;
-	} else if (bord_t) {
-	  if (bord_lm)
-	    resize_win = RS_TopLeft;
-	  else if (bord_rm)
-	    resize_win = RS_TopRight;
-	  else
-	    resize_win = RS_Top;
-	} else if (bord_b) {
-	  if (bord_lm)
-	    resize_win = RS_BottomLeft;
-	  else if (bord_rm)
-	    resize_win = RS_BottomRight;
-	  else
-	    resize_win = RS_Bottom;
-	} else {
-	  printf("BROWSER: Error in mouse border algorithm!\n");
-	  resize_win = RS_Off;
-	}
-	  
-	resize_button = mev->button;
-	resize_xhand = mev->x;
-	resize_yhand = mev->y;
-	old_xpand_x1 = xpand_x1;
-	old_xpand_y1 = xpand_y1;
-	old_xpand_x2 = xpand_x2;
-	old_xpand_y2 = xpand_y2;
+        if (bord_l) {
+          if (bord_tm)
+            resize_win = RS_TopLeft;
+          else if (bord_bm)
+            resize_win = RS_BottomLeft;
+          else
+            resize_win = RS_Left;
+        } else if (bord_r) {
+          if (bord_tm)
+            resize_win = RS_TopRight;
+          else if (bord_bm)
+            resize_win = RS_BottomRight;
+          else
+            resize_win = RS_Right;
+        } else if (bord_t) {
+          if (bord_lm)
+            resize_win = RS_TopLeft;
+          else if (bord_rm)
+            resize_win = RS_TopRight;
+          else
+            resize_win = RS_Top;
+        } else if (bord_b) {
+          if (bord_lm)
+            resize_win = RS_BottomLeft;
+          else if (bord_rm)
+            resize_win = RS_BottomRight;
+          else
+            resize_win = RS_Bottom;
+        } else {
+          printf("BROWSER: Error in mouse border algorithm!\n");
+          resize_win = RS_Off;
+        }
+          
+        resize_button = mev->button;
+        resize_xhand = mev->x;
+        resize_yhand = mev->y;
+        old_xpand_x1 = xpand_x1;
+        old_xpand_y1 = xpand_y1;
+        old_xpand_x2 = xpand_x2;
+        old_xpand_y2 = xpand_y2;
       } 
     }
 
     // Eat event
     return 1;
   } else if (mx >= xpos && mx <= xpos+iconsize &&
-	     my >= ypos && my <= ypos+iconsize) {
+             my >= ypos && my <= ypos+iconsize) {
     if (mev->down) {
       // Mouse clicked on icon
       xpanded = (xpanded ? 0 : 1);
@@ -957,14 +957,14 @@ void PatchBrowser::PB_MoveTo (int direction) {
     if (direction > 0) {
       // Forward
       if (pb_cur->next != 0) 
-	pb_cur = pb_cur->next;
+        pb_cur = pb_cur->next;
     } else {
       // Slow way to move backwards in a singly linked list
       PatchBank *tmp = pb_first;
       while (tmp != 0 && tmp->next != pb_cur) 
-	tmp = tmp->next;
+        tmp = tmp->next;
       if (tmp != 0)
-	pb_cur = tmp;
+        pb_cur = tmp;
     }
   
     // Assign patch 'cur' and 'first' pointers based on this patch bank
@@ -1031,20 +1031,20 @@ void PatchBrowser::ReceiveEvent(Event *ev, EventProducer *from) {
       
       PB_MoveTo(pbev->direction);
       if (CRITTERS)
-	printf("PATCH BROWSER: Received PatchBrowserMoveToBank "
-	       "(direction: %d)\n", pbev->direction);
+        printf("PATCH BROWSER: Received PatchBrowserMoveToBank "
+               "(direction: %d)\n", pbev->direction);
     }
     break;
 
   case T_EV_PatchBrowserMoveToBankByIndex :
     {
       PatchBrowserMoveToBankByIndexEvent *pbev = 
-	(PatchBrowserMoveToBankByIndexEvent *) ev;
+        (PatchBrowserMoveToBankByIndexEvent *) ev;
       
       PB_MoveToIndex(pbev->index);
       if (CRITTERS)
-	printf("PATCH BROWSER: Received PatchBrowserMoveToBankByIndex "
-	       "(index: %d)\n", pbev->index);
+        printf("PATCH BROWSER: Received PatchBrowserMoveToBankByIndex "
+               "(index: %d)\n", pbev->index);
     }
     break;
 
@@ -1065,6 +1065,52 @@ void PatchBrowser::SetMIDIEcho() {
 
   if (app != 0 && app->getMIDI() != 0)
     app->getMIDI()->SetMIDIEcho((pb_cur == 0 ? 0 : pb_cur->port),
-				(cur != 0 && cur->GetType() == B_Patch ?
-				 (PatchItem *) cur : 0));
+                                (cur != 0 && cur->GetType() == B_Patch ?
+                                 (PatchItem *) cur : 0));
 };
+
+void FloDisplaySnapshots::Rename (int idx) {
+  Snapshot *s = app->getSNAP(idx);
+  if (renamer == 0 && s != 0 && s->exists) {
+    renamer = new ItemRenamer(app,this,s->name);
+    rename_idx = idx;
+    
+    if (!renamer->IsRenaming()) {
+      delete renamer;
+      renamer = 0;
+    }
+    
+    // Keep display showing while we interactively rename
+    forceshow = 1;
+  }
+};
+
+void FloDisplaySnapshots::ItemRenamed(char *nw) {
+  forceshow = 0;
+  
+  if (nw != 0) {
+    // printf("NEW SNAPSHOT NAME: %s\n",nw);
+    
+    Snapshot *s = app->getSNAP(rename_idx);
+    if (s != 0) {
+      LockSnaps();
+      if (s->name != 0) 
+        delete[] s->name;
+      if (nw != 0) {
+        s->name = new char[strlen(nw)+1];
+        strcpy(s->name,nw);
+      } else
+        s->name = 0;
+      UnlockSnaps();
+    }
+      
+    delete renamer;
+    renamer = 0;
+  } else {
+    // Rename was aborted
+    delete renamer;
+    renamer = 0;
+  }
+};
+
+

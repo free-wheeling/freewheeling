@@ -87,7 +87,7 @@ public:
   inline void EnableKeyRepeat(int enable) { 
     if (enable)
       SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,
-			  SDL_DEFAULT_REPEAT_INTERVAL);
+                          SDL_DEFAULT_REPEAT_INTERVAL);
     else 
       SDL_EnableKeyRepeat(0,0);
   };

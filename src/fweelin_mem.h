@@ -38,10 +38,10 @@ class PreallocatedType {
   // If block_mode is 1, an array of instances is used, and unused instances
   // are recycled instead of new ones constructed.
   PreallocatedType(MemoryManager *mmgr, Preallocated *prealloc_base,
-		   int instance_size,
-		   int prealloc_num_instances = 
-		   PREALLOC_DEFAULT_NUM_INSTANCES,
-		   char block_mode = 0);
+                   int instance_size,
+                   int prealloc_num_instances = 
+                   PREALLOC_DEFAULT_NUM_INSTANCES,
+                   char block_mode = 0);
   // Stops preallocating this type
   ~PreallocatedType();
 
@@ -174,7 +174,7 @@ class Preallocated {
   // after a new instance of Preallocated is created.
   // It sets up the internal variables in this instance.
   void SetupPreallocated(PreallocatedType *mgr,
-			 char status) {
+                         char status) {
     prealloc_mgr = mgr;
     prealloc_status = status;
     predata.prealloc_next = 0;

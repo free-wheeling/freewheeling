@@ -263,7 +263,7 @@ class InputMatrix : public EventProducer, public EventListener {
   // The expression may also reference parameters in event 'ref'
   // and these references will be extracted
   ParsedExpression *ParseExpression(char *str, Event *ref, 
-				    char enable_keynames = 0);
+                                    char enable_keynames = 0);
 
  private:
 
@@ -283,7 +283,7 @@ class InputMatrix : public EventProducer, public EventListener {
   // Parses the given token (no math ops!) into dst
   // Correctly identifies when variables or event parameters are referenced
   void ParseToken(char *str, CfgToken *dst, Event *ref, 
-		  char enable_keynames = 0);
+                  char enable_keynames = 0);
 
   // Stores in ptr the value val given that ptr is of type dtype
   void StoreParameter(char *ptr, CoreDataType dtype, UserVariable *val);
@@ -295,15 +295,15 @@ class InputMatrix : public EventProducer, public EventListener {
   // Scans in the given binding for settings for output event parameters
   // and sets us up to handle those
   void CreateParameterSets (int interfaceid,
-			    EventBinding *bind, xmlNode *binding, 
-			    Event *input, int contnum);
+                            EventBinding *bind, xmlNode *binding, 
+                            Event *input, int contnum);
 
   // Scans in the given binding for conditions on input event parameters 
   // or user variables, and sets us up to handle those
   // Returns the hash index for this binding, based on an indexed parameter,
   // or 0 if this binding is not indexed
   int CreateConditions (int interfaceid, EventBinding *bind, 
-			xmlNode *binding, Event *input, int paramidx);
+                        xmlNode *binding, Event *input, int paramidx);
 
   // Traverses through the list of event bindings beginning at 'start'
   // looking for a binding that matches current user variables and input
@@ -344,7 +344,7 @@ class FloLayoutBox : public FloLayoutElementGeometry {
   // element geometry
   virtual char Inside(int x, int y) {
     if (x >= left && x <= right &&
-	y >= top && y <= bottom)
+        y >= top && y <= bottom)
       return 1;
     else
       return 0;
@@ -378,7 +378,7 @@ class FloLayoutElement {
     FloLayoutElementGeometry *cur = geo;
     while (cur != 0) {
       if (cur->Inside(x,y))
-	return 1; // Inside this geo, so inside this element
+        return 1; // Inside this geo, so inside this element
       cur = cur->next;
     }    
 
@@ -485,7 +485,7 @@ enum FloDisplayType {
 class FloDisplay {
  public:
   FloDisplay (int iid) : iid(iid), 
-    id(-1), exp(0), font(0), title(0), xpos(0), ypos(0), show(1),
+    id(-1), exp(0), font(0), title(0), xpos(0), ypos(0), show(1), forceshow(0),
     next(0) {};
   virtual ~FloDisplay() {
     if (title != 0)
@@ -508,8 +508,9 @@ class FloDisplay {
   FloFont *font;         // Font for text
   char *title;           // Title to be displayed
   int xpos, ypos;        // Onscreen location for display
-  char show;             // Show (nonzero) or hide (zero) display
-
+  char show,             // Show (nonzero) or hide (zero) display
+    forceshow;           // Force display to show?
+    
   FloDisplay *next;
 };
 
@@ -617,23 +618,6 @@ class FloDisplaySquares : public FloDisplay
   int sx, sy;            // Square size
 };
 
-class FloDisplaySnapshots : public FloDisplay
-{
- public:
-  FloDisplaySnapshots (Fweelin *app, int iid) : FloDisplay(iid), app(app),
-    firstidx(0), numdisp(-1) {};
-
-  virtual FloDisplayType GetFloDisplayType() { return FD_Snapshots; };
-
-  virtual void Draw(SDL_Surface *screen);
-
-  Fweelin *app;
-  int firstidx,          // Index of first snapshot to display
-    numdisp;             // Number of snapshots to display
-  int sx, sy,            // Size of snapshots list
-    margin;              // Margin for text
-};
-
 // FluidSynth config
 #include "fweelin_fluidsynth.h"
 
@@ -737,18 +721,18 @@ class FloConfig {
   
   // Configure bindings between events and their triggers
   void ConfigureEventBindings(xmlDocPtr doc, xmlNode *events, 
-			      int interfaceid = 0, char firstpass = 0);
+                              int interfaceid = 0, char firstpass = 0);
 
   void ConfigureElement(xmlDocPtr doc, xmlNode *elemn, 
-			FloLayoutElement *elem, float xscale, float yscale);
+                        FloLayoutElement *elem, float xscale, float yscale);
   void ConfigureLayout(xmlDocPtr doc, xmlNode *layn, 
-		       FloLayout *lay, float xscale, float yscale);
+                       FloLayout *lay, float xscale, float yscale);
   void ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br);
   void ConfigureGraphics(xmlDocPtr doc, xmlNode *vid, int interfaceid = 0);
   void ConfigureBasics(xmlDocPtr doc, xmlNode *gen);
   void ConfigureInterfaces (xmlDocPtr doc, xmlNode *ifs, char firstpass);
   void ConfigureRoot (xmlDocPtr doc, xmlNode *root, int interfaceid = 0,
-		      char firstpass = 0);
+                      char firstpass = 0);
   
   // Is node 'n' a comment with help information? If so, add to our
   // internal help list
@@ -871,7 +855,7 @@ class FloConfig {
   inline codec GetCodecFromName (const char *n) {
     for (codec i = FIRST_FORMAT; i < END_OF_FORMATS; i = (codec) (i+1))
       if (!strcasecmp(n,GetCodecName(i)))
-	return i;
+        return i;
     
     return UNKNOWN;
   };
@@ -936,7 +920,7 @@ class FloConfig {
     FloDisplay *cur = displays;
     while (cur != 0) {
       if (cur->iid == iid && cur->id == id)
-	return cur;
+        return cur;
       cur = cur->next;
     }
     return 0;
@@ -945,7 +929,7 @@ class FloConfig {
     FloDisplay *cur = displays;
     while (cur != 0) {
       if (cur->GetFloDisplayType() == typ)
-	return cur;
+        return cur;
       cur = cur->next;
     }
     return 0;
@@ -996,7 +980,7 @@ class FloConfig {
     else {
       FluidSynthParam *cur = fsparam;
       while (cur->next != 0)
-	cur = cur->next;
+        cur = cur->next;
       cur->next = nw;
     }
   };
@@ -1007,7 +991,7 @@ class FloConfig {
     else {
       FluidSynthSoundFont *cur = fsfont;
       while (cur->next != 0)
-	cur = cur->next;
+        cur = cur->next;
       cur->next = nw;
     }
   };

@@ -66,9 +66,9 @@ int AudioIO::process (nframes_t nframes, void *arg) {
       (sample_t *) jack_port_get_buffer (inst->iport[0][i], nframes);
     // Right channel
     ab->ins[1][i] = (inst->iport[1][i] != 0 ?
-		     (sample_t *) 
-		     jack_port_get_buffer (inst->iport[1][i], nframes) :
-		     0);
+                     (sample_t *) 
+                     jack_port_get_buffer (inst->iport[1][i], nframes) :
+                     0);
   }
   for (int i = 0; i < ab->numouts; i++) {
     // Left/mono channel
@@ -76,16 +76,16 @@ int AudioIO::process (nframes_t nframes, void *arg) {
       (sample_t *) jack_port_get_buffer (inst->oport[0][i], nframes);
     // Right channel
     ab->outs[1][i] = (inst->oport[1][i] != 0 ?
-		      (sample_t *) 
-		      jack_port_get_buffer (inst->oport[1][i], nframes) :
-		      0);
+                      (sample_t *) 
+                      jack_port_get_buffer (inst->oport[1][i], nframes) :
+                      0);
   }
 
   if (inst->rp != 0) {
     if (nframes != inst->app->getBUFSZ()) {
       printf("AUDIO: We've got a problem, honey!--\n");
       printf("Audio buffer size has changed: %d->%d\n",
-	     inst->app->getBUFSZ(),nframes);
+             inst->app->getBUFSZ(),nframes);
       exit(1);
     }
 
@@ -109,8 +109,8 @@ void AudioIO::RelocateTransport(nframes_t pos) {
 };
 
 void AudioIO::timebase_callback(jack_transport_state_t state, 
-				jack_nframes_t nframes, 
-				jack_position_t *pos, int new_pos, void *arg) {
+                                jack_nframes_t nframes, 
+                                jack_position_t *pos, int new_pos, void *arg) {
   AudioIO *inst = static_cast<AudioIO *>(arg);
 
   // Set timebase master flag
@@ -125,24 +125,24 @@ void AudioIO::timebase_callback(jack_transport_state_t state,
   if (p != 0) {
     if (new_pos) {
       if (inst->repos) 
-	inst->repos = 0; // JACK telling us we have moved- but we initiated
+        inst->repos = 0; // JACK telling us we have moved- but we initiated
                          // the move, so ignore
       else {
-	// Somebody has started the transport at a new position-
-	// signal back that we want to start at a new position--
-	// based on the current pulse position.
+        // Somebody has started the transport at a new position-
+        // signal back that we want to start at a new position--
+        // based on the current pulse position.
 
-	// printf("relocate: posframe: %d to %d\n",pos->frame,p->GetPos()); 
-	jack_transport_locate(inst->client,p->GetPos());
-	inst->repos = 1;
-	
+        // printf("relocate: posframe: %d to %d\n",pos->frame,p->GetPos()); 
+        jack_transport_locate(inst->client,p->GetPos());
+        inst->repos = 1;
+        
 #if 0
-	inst->sync_start_frame = pos->frame + (p->GetLength()-p->GetPos());
-	printf("posframe: %d syncstartframe set: %d\n",pos->frame,
-	       inst->sync_start_frame);
+        inst->sync_start_frame = pos->frame + (p->GetLength()-p->GetPos());
+        printf("posframe: %d syncstartframe set: %d\n",pos->frame,
+               inst->sync_start_frame);
 #endif
-	
-	inst->sync_start_frame = 0; //pos->frame;
+        
+        inst->sync_start_frame = 0; //pos->frame;
       }
     }
 
@@ -160,7 +160,7 @@ void AudioIO::timebase_callback(jack_transport_state_t state,
     pos->beats_per_bar = SYNC_BEATS_PER_BAR;
     if (inst->app->GetSyncType() == 0)
       pos->beats_per_minute = SYNC_BEATS_PER_BAR*
-	60.0*(double) pos->frame_rate/p->GetLength();
+        60.0*(double) pos->frame_rate/p->GetLength();
     else
       pos->beats_per_minute = 60.0*(double) pos->frame_rate/p->GetLength();
     pos->beat_type = SYNC_BEATS_PER_BAR;
@@ -176,7 +176,7 @@ void AudioIO::timebase_callback(jack_transport_state_t state,
 
     //printf("ticks per beat: %f\n",pos->ticks_per_beat);
     //printf("rel bar: %f, bar: %d, beat: %d, tick: %d\n",rel_bar, pos->bar,
-    //	     pos->beat, pos->tick);
+    //       pos->beat, pos->tick);
   }
 }
 
@@ -218,7 +218,7 @@ int AudioIO::activate (Processor *rp) {
   for (int i = 0; i < ab->numins_ext && ports[i] != 0; i++)
     if (jack_connect (client, ports[i], jack_port_name (iport[i]))) {
       printf("AUDIO: Cannot connect input port %d->%s!\n",i,
-	     jack_port_name(iport[i]));
+             jack_port_name(iport[i]));
     }
 #endif
 
@@ -232,7 +232,7 @@ int AudioIO::activate (Processor *rp) {
   for (int i = 0; i < ab->numouts && ports[i] != 0; i++)
     if (jack_connect (client, jack_port_name (oport[i]), ports[i])) {
       printf("AUDIO: Cannot connect output port %d->%s!\n",i,
-	     jack_port_name(oport[i]));
+             jack_port_name(oport[i]));
     }
 #endif
 
@@ -304,7 +304,7 @@ int AudioIO::open () {
   AudioBuffers *ab = app->getABUFS();
 
   printf("AUDIO: Using %d external inputs, %d total inputs\n",
-	 ab->numins_ext,ab->numins);
+         ab->numins_ext,ab->numins);
   iport[0] = new jack_port_t *[ab->numins_ext];
   iport[1] = new jack_port_t *[ab->numins_ext];
   oport[0] = new jack_port_t *[ab->numouts];
@@ -316,11 +316,11 @@ int AudioIO::open () {
     char stereo = ab->IsStereoInput(i);
     snprintf(tmp,255,"in_%d%s",i+1,(stereo ? "L" : ""));
     iport[0][i] = jack_port_register(client, tmp, JACK_DEFAULT_AUDIO_TYPE, 
-				     JackPortIsInput, 0);
+                                     JackPortIsInput, 0);
     if (stereo) {
       snprintf(tmp,255,"in_%d%s",i+1,"R");
       iport[1][i] = jack_port_register(client, tmp, JACK_DEFAULT_AUDIO_TYPE, 
-				       JackPortIsInput, 0);
+                                       JackPortIsInput, 0);
     } else
       iport[1][i] = 0;
   }
@@ -329,11 +329,11 @@ int AudioIO::open () {
     char stereo = ab->IsStereoOutput(i);
     snprintf(tmp,255,"out_%d%s",i+1,(stereo ? "L" : ""));
     oport[0][i] = jack_port_register(client, tmp, JACK_DEFAULT_AUDIO_TYPE, 
-				     JackPortIsOutput, 0);
+                                     JackPortIsOutput, 0);
     if (stereo) {
       snprintf(tmp,255,"out_%d%s",i+1,"R");
       oport[1][i] = jack_port_register(client, tmp, JACK_DEFAULT_AUDIO_TYPE, 
-				       JackPortIsOutput, 0);
+                                       JackPortIsOutput, 0);
     } else
       oport[1][i] = 0;
   }

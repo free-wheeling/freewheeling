@@ -113,11 +113,11 @@ class Saveable {
       htmp[2] = '\0';
       
       for (int i = 0, j = 0; i < slen; i += 2, j++) {
-	htmp[0] = stext[i];
-	htmp[1] = stext[i+1];
-	int sh_tmp;
-	sscanf(htmp,"%X",&sh_tmp);
-	savehash[j] = (unsigned char) sh_tmp;
+        htmp[0] = stext[i];
+        htmp[1] = stext[i+1];
+        int sh_tmp;
+        sscanf(htmp,"%X",&sh_tmp);
+        savehash[j] = (unsigned char) sh_tmp;
       }
       
       SetSaveStatus(SAVE_DONE);
@@ -130,8 +130,8 @@ class Saveable {
   //
   // Returns zero on success
   static char SplitFilename(char *filename, int baselen, char *basename, 
-			    char *hash, char *objname,
-			    int maxlen);
+                            char *hash, char *objname,
+                            int maxlen);
   
   // Rename the file with name *filename_ptr to a new name
   // use the format 'basename-hash-objectname'
@@ -142,7 +142,7 @@ class Saveable {
   //
   // This is for renaming an item on disk
   static void RenameSaveable(char **filename_ptr, int baselen, char *newname,
-			     const char **exts, int num_exts);
+                             const char **exts, int num_exts);
 
   // Renames -this- saveable object on disk to correspond with the new name
   // given. Any files having an MD5 corresponding to this saveable are
@@ -154,15 +154,15 @@ class Saveable {
   // *Old_filename and *new_filename are set to point to the old and new
   // filename-- you must delete[] the memory that is allocated for these
   void RenameSaveable(char *librarypath, char *basename, 
-		      char *old_objname, char *nw_objname,
-		      const char **exts, int num_exts,
-		      char **old_filename, char **new_filename);
+                      char *old_objname, char *nw_objname,
+                      const char **exts, int num_exts,
+                      char **old_filename, char **new_filename);
 
   // Gets the first two characters of the hash in the given filename,
   // given the base length-- store in *c1 and *c2-- only if the
   // filename contains a valid hash
   inline static void GetHashFirst(char *filename, int baselen, 
-				  char *c1, char *c2) {
+                                  char *c1, char *c2) {
     char *c = filename + baselen + 1;
     if (c < filename+strlen(filename)) {
       *c1 = *c++;
@@ -172,15 +172,15 @@ class Saveable {
       char *slashptr = strchr(c,'-');
 
       if (slashptr == 0) // If name is not in filename
-	slashptr = strrchr(filename,'.'); // Use extension to get hash
+        slashptr = strrchr(filename,'.'); // Use extension to get hash
 
       printf("c1 - %d vs %d\n",slashptr-c,SAVEABLE_HASH_LENGTH*2);
 
       if (slashptr != 0 && slashptr-c == SAVEABLE_HASH_LENGTH*2) {
-	printf("set\n");
+        printf("set\n");
 
-	*c1 = *c++;
-	*c2 = *c;
+        *c1 = *c++;
+        *c2 = *c;
       }
 #endif
     }
@@ -205,7 +205,7 @@ public:
   const static float MIN_VOL;
 
   Loop (AudioBlock *blocks, Pulse *pulse, float quant, float vol, 
-	long nbeats, codec format) : 
+        long nbeats, codec format) : 
     name(0), format(format), blocks(blocks), pulse(pulse), quant(quant), 
     vol(vol), dvol(1.0), nbeats(nbeats), selcnt(0) {};
   virtual ~Loop () {
@@ -221,7 +221,7 @@ public:
     if (dvol != 1.0) {
       // Apply delta
       if (dvol > 1.0 && vol < MIN_VOL)
-	vol = MIN_VOL;
+        vol = MIN_VOL;
       vol *= dvol;
     }
   };
@@ -256,7 +256,7 @@ class LoopSnapshot {
  public:
   
   LoopSnapshot (int l_idx = -1, LoopStatus status = T_LS_Off, 
-		float l_vol = 0.0, float t_vol = 0.0) :
+                float l_vol = 0.0, float t_vol = 0.0) :
   l_idx(l_idx), status(status), l_vol(l_vol), t_vol(t_vol) {};
 
   int l_idx;    // Loop index
@@ -333,14 +333,14 @@ public:
   static LoopList *Remove (LoopList *first, LoopList *ll, LoopList *prev) {
     if (ll != 0) {
       if (ll == first) {
-	LoopList *nwfirst = ll->next;
-	delete ll;
-	return nwfirst; 
+        LoopList *nwfirst = ll->next;
+        delete ll;
+        return nwfirst; 
       } else {
-	if (prev != 0) 
-	  prev->next = ll->next;
-	delete ll;
-	return first;
+        if (prev != 0) 
+          prev->next = ll->next;
+        delete ll;
+        return first;
       }
     }
 
@@ -405,7 +405,7 @@ public:
   inline int SearchMap (Loop *l) {
     for (int i = 0; i < mapsize; i++)
       if (map[i] == l)
-	return i;
+        return i;
     return -1;
   };
 
@@ -426,7 +426,7 @@ public:
 
     for (int i = i_start; i <= i_end; i++)
       if (map[i] == 0)
-	return i;
+        return i;
 
     return -1;
   };
@@ -436,8 +436,8 @@ public:
   inline int ScanForHash (unsigned char *hash) {
     for (int i = 0; i < mapsize; i++)
       if (map[i] != 0 && map[i]->GetSaveStatus() == SAVE_DONE &&
-	  !map[i]->CompareHash(hash))
-	return i;
+          !map[i]->CompareHash(hash))
+        return i;
     return -1;
   };
 
@@ -453,7 +453,7 @@ public:
     int cnt = 0;
     for (int i = 0; i < mapsize; i++)
       if (map[i] != 0)
-	cnt++;
+        cnt++;
 
     return cnt;
   };
@@ -472,7 +472,7 @@ private:
 class LoopTrayItem : public BrowserItem {
  public: 
   LoopTrayItem(Loop *l, int loopid, char *name, char default_name,
-	       char *placename) : 
+               char *placename) : 
     BrowserItem(name,default_name), l(l), loopid(loopid),
     xpos(-1), ypos(-1), placename(placename) {};
 
@@ -513,7 +513,7 @@ class LoopBrowserItem : public BrowserItem {
       // Remove extension
       char *ext_ptr = strrchr(filename,'.');
       if (ext_ptr != 0)
-	*ext_ptr = '\0';
+        *ext_ptr = '\0';
     }
   };
   virtual ~LoopBrowserItem() {
@@ -547,7 +547,7 @@ class SceneBrowserItem : public BrowserItem {
       // Remove extension
       char *ext_ptr = strrchr(filename,'.');
       if (ext_ptr != 0)
-	*ext_ptr = '\0';
+        *ext_ptr = '\0';
     }
   };
   virtual ~SceneBrowserItem() {
@@ -571,8 +571,8 @@ class SceneBrowserItem : public BrowserItem {
 // LoopManager contains all loops, and wraps up recording, playing, and
 // other RT & non-RT processing on loops
 class LoopManager : public EventListener, public AutoWriteControl, 
-		    public AutoReadControl, public BrowserCallback,
-		    public RenameCallback {
+                    public AutoReadControl, public BrowserCallback,
+                    public RenameCallback {
   friend class Loop;
 
 public:
@@ -720,7 +720,7 @@ public:
   // The exact behavior varies depending on what is already happening with
   // this loop and the settings passed- see ~/.fweelin/.fweelin.rc
   void Activate (int index, char shot = 0, float vol = 1.0, nframes_t ofs = 0,
-		 char overdub = 0, float *od_feedback = 0);
+                 char overdub = 0, float *od_feedback = 0);
 
   void Deactivate (int index);
 
@@ -739,7 +739,7 @@ public:
   // We receive calls periodically for saving of loops-
   // here, we return blocks to save from loops which need saving
   virtual void GetWriteBlock(FILE **out, AudioBlock **b, 
-			     AudioBlockIterator **i, nframes_t *len);
+                             AudioBlockIterator **i, nframes_t *len);
 
   // We receive calls periodically for loading of loops-
   virtual void GetReadBlock(FILE **in, char *smooth_end);
@@ -804,12 +804,12 @@ public:
 
   // Saves loop XML data & prepares to save loop audio
   void SetupSaveLoop(Loop *l, int l_idx, FILE **out, AudioBlock **b, 
-		     AudioBlockIterator **i, nframes_t *len);
+                     AudioBlockIterator **i, nframes_t *len);
   // Loads loop XML data & prepares to load loop audio-
   // returns nonzero on error
   int SetupLoadLoop(FILE **in, char *smooth_end, 
-		    Loop **new_loop, int l_idx, float l_vol,
-		    char *l_filename);
+                    Loop **new_loop, int l_idx, float l_vol,
+                    char *l_filename);
 
   // Setup time marker striping on audio memory when a new
   // pulse is selected

@@ -21,14 +21,14 @@
 #ifdef __MACOSX__
 #include <CoreMIDI/MIDIServices.h>
 // Small MIDI output buffer- must be large enough to hold any one MIDI message
-#define OBUF_LEN 128	
+#define OBUF_LEN 128    
 #else
 #include <alsa/asoundlib.h>
 #endif
 
 #include "fweelin_event.h"
 
-#define MIDI_CLOCK_FREQUENCY 24	  // 24 MIDI clock messages per quarter note (beat) MIDI standard
+#define MIDI_CLOCK_FREQUENCY 24   // 24 MIDI clock messages per quarter note (beat) MIDI standard
 
 class Fweelin;
 class PatchItem;
@@ -149,18 +149,18 @@ protected:
 
   // Send bank and program change message to port/channel
   void SendBankProgramChangeToPortChannel (int bank, int program, 
-					   int port, int channel);
+                                           int port, int channel);
  
 #ifdef __MACOSX__
   MIDIClientRef client;
   MIDIPortRef *in_ports, *out_ports;
   MIDIEndpointRef *out_sources;
-  MIDIEndpointRef dest;	// Deprecated
-  int inputidx;		// Index of last selected MIDI input source
+  MIDIEndpointRef dest; // Deprecated
+  int inputidx;         // Index of last selected MIDI input source
   
-  MIDIPacket *curPacket;	
+  MIDIPacket *curPacket;        
   MIDIPacketList *packetList;  
-  Byte obuf[OBUF_LEN];	// Small MIDI event output buffer
+  Byte obuf[OBUF_LEN];  // Small MIDI event output buffer
 
   void static MidiInputProc (const MIDIPacketList *pktlist, void *refCon, void *connRefCon);  
 #else

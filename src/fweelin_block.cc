@@ -40,7 +40,7 @@
 iFileDecoder::iFileDecoder(Fweelin *app) : app(app), infd(0) {};
 
 SndFileDecoder::SndFileDecoder(Fweelin *app, codec type) : iFileDecoder(app), 
-							   filetype(type)
+                                                           filetype(type)
 {
   memset (&sfinfo, 0, sizeof (sfinfo)) ;
   samplesize = sizeof(float);
@@ -73,9 +73,9 @@ int SndFileDecoder::ReadFromFile(FILE *in, nframes_t rbuf_len) {
 
   if (sfinfo.samplerate != (signed int) app->getAUDIO()->get_srate()) {
     printf("DISK: (SndFile) Audio encoded at %dHz but we are running at "
-	   "%dHz.\n"
-	   "Samplerate conversion not yet supported.\n",
-	   (int) sfinfo.samplerate, app->getAUDIO()->get_srate());
+           "%dHz.\n"
+           "Samplerate conversion not yet supported.\n",
+           (int) sfinfo.samplerate, app->getAUDIO()->get_srate());
     return 1;
   }
     
@@ -134,7 +134,7 @@ VorbisDecoder::~VorbisDecoder() {};
 int VorbisDecoder::ReadFromFile(FILE *in, nframes_t rbuf_len) {
   if (ov_open(in, &vf, NULL, 0) < 0) {
     printf("DISK: (VorbisFile) Input does not appear to be an Ogg "
-	   "bitstream.\n");
+           "bitstream.\n");
     return 1;
   }
 
@@ -155,9 +155,9 @@ int VorbisDecoder::ReadFromFile(FILE *in, nframes_t rbuf_len) {
 
   if (vi->rate != (signed int) app->getAUDIO()->get_srate()) {
     printf("DISK: (VorbisFile) Audio encoded at %dHz but we are running at "
-	   "%dHz.\n"
-	   "Samplerate conversion not yet supported.\n",
-	   (int) vi->rate,app->getAUDIO()->get_srate());
+           "%dHz.\n"
+           "Samplerate conversion not yet supported.\n",
+           (int) vi->rate,app->getAUDIO()->get_srate());
     return 1;
   }
     
@@ -184,24 +184,24 @@ int VorbisDecoder::ReadSamples(AudioBlockIterator *i, nframes_t max_len) {
 // };
 
 iFileEncoder::iFileEncoder(Fweelin *app, char stereo) : app(app), 
-							stereo(stereo),
-							outfd(0) {
+                                                        stereo(stereo),
+                                                        outfd(0) {
 };
 
 SndFileEncoder::SndFileEncoder (Fweelin *app, nframes_t maxframes,
-				char stereo, codec format) : 
+                                char stereo, codec format) : 
   iFileEncoder(app,stereo), tbuf(0) {
   filetype = format;
   memset(&sfinfo, 0, sizeof (sfinfo)) ;
 
   // set params
-  sfinfo.samplerate	= app->getAUDIO()->get_srate();
-  sfinfo.frames		= 0x7FFFFFFF;
+  sfinfo.samplerate     = app->getAUDIO()->get_srate();
+  sfinfo.frames         = 0x7FFFFFFF;
   if (stereo) {
-    sfinfo.channels	= 2;
+    sfinfo.channels     = 2;
     tbuf = new float[maxframes*sfinfo.channels];
   } else 
-    sfinfo.channels	= 1;
+    sfinfo.channels     = 1;
 
   if (filetype == FLAC)
     sfinfo.format = (SF_FORMAT_FLAC | SF_FORMAT_PCM_24);
@@ -222,8 +222,8 @@ int SndFileEncoder::SetupFileForWriting (FILE *file) {
 };
 
 long int SndFileEncoder::WriteSamplesToDisk (sample_t **ibuf, 
-					     nframes_t startframe, 
-					     nframes_t numframes) {
+                                             nframes_t startframe, 
+                                             nframes_t numframes) {
   if (stereo) {
     for (nframes_t i = 0; i < numframes; i++) {
       tbuf[2*i] = ibuf[0][startframe+i];
@@ -234,7 +234,7 @@ long int SndFileEncoder::WriteSamplesToDisk (sample_t **ibuf,
       sf_write_float(sndoutfd, tbuf, numframes*sfinfo.channels); 
     else
       sf_write_raw(sndoutfd, static_cast<void *>(tbuf),
-		   numframes*samplesize*sfinfo.channels);
+                   numframes*samplesize*sfinfo.channels);
   } else {
     if (filetype == FLAC)
       // FIXME: perhaps some error checking
@@ -254,7 +254,7 @@ VorbisEncoder::VorbisEncoder(Fweelin *app, char stereo) : iFileEncoder(app,stere
   // Setup vorbis
   vorbis_info_init(&vi);
   if (vorbis_encode_init_vbr(&vi,(stereo ? 2 : 1),app->getAUDIO()->get_srate(),
-			     app->getCFG()->GetVorbisEncodeQuality()))
+                             app->getCFG()->GetVorbisEncodeQuality()))
     return;
   
   // Comment
@@ -306,8 +306,8 @@ int VorbisEncoder::SetupFileForWriting(FILE *out) {
 
 
 long int VorbisEncoder::WriteSamplesToDisk (sample_t **ibuf, 
-					    nframes_t startframe, 
-					    nframes_t numframes) {
+                                            nframes_t startframe, 
+                                            nframes_t numframes) {
   // Here we make assumption that sample_t is equivalent to float
   // And that there is only 1 vorbis channel of data
   float **obuf = GetAnalysisBuffer(numframes);
@@ -336,25 +336,25 @@ long int VorbisEncoder::Encode() {
       vorbis_bitrate_addblock(&vb);
       
       while(vorbis_bitrate_flushpacket(&vd,&op)) {
-	/* weld the packet into the bitstream */
-	ogg_stream_packetin(&os,&op);
-	
-	/* write out pages (if any) */
-	char eos = 0;
-	while (!eos) {
-	  int result = ogg_stream_pageout(&os,&og);
-	  if (result == 0)
-	    break;
-	  fwrite(og.header,1,og.header_len,outfd);
-	  fwrite(og.body,1,og.body_len,outfd);
-	  
-	  // Add to the output size
-	  outputsize += og.header_len;
-	  outputsize += og.body_len;
-	  
-	  if (ogg_page_eos(&og))
-	    eos = 1;
-	}
+        /* weld the packet into the bitstream */
+        ogg_stream_packetin(&os,&op);
+        
+        /* write out pages (if any) */
+        char eos = 0;
+        while (!eos) {
+          int result = ogg_stream_pageout(&os,&og);
+          if (result == 0)
+            break;
+          fwrite(og.header,1,og.header_len,outfd);
+          fwrite(og.body,1,og.body_len,outfd);
+          
+          // Add to the output size
+          outputsize += og.header_len;
+          outputsize += og.body_len;
+          
+          if (ogg_page_eos(&og))
+            eos = 1;
+        }
       }
     }
 
@@ -378,8 +378,8 @@ void VorbisEncoder::Preprocess(sample_t *l, sample_t *r, nframes_t len) {
 };
 
 BlockReadManager::BlockReadManager(FILE *in, AutoReadControl *arc, 
-				   BlockManager *bmg, 
-				   nframes_t peaksavgs_chunksize) :
+                                   BlockManager *bmg, 
+                                   nframes_t peaksavgs_chunksize) :
   ManagedChain(0,0), in(in), smooth_end(0), 
   arc(arc), dec(0), bmg(bmg), pa_mgr(0),
   peaksavgs_chunksize(peaksavgs_chunksize)
@@ -431,22 +431,22 @@ void BlockReadManager::Start(FILE *new_in) {
     }
     b = (AudioBlock *) bmg->GetApp()->getPRE_AUDIOBLOCK()->RTNewWithWait();
     i = new AudioBlockIterator(b,DECODE_CHUNKSIZE,
-			       bmg->GetApp()->getPRE_EXTRACHANNEL());
+                               bmg->GetApp()->getPRE_EXTRACHANNEL());
     
     // Compute audio peaks & averages for display
     if (peaksavgs_chunksize != 0) {
       AudioBlock *peaks = (AudioBlock *) b->RTNew(),
-	*avgs = (AudioBlock *) b->RTNew();
+        *avgs = (AudioBlock *) b->RTNew();
       if (peaks == 0 || avgs == 0) {
-	printf("BlockReadManager: ERROR: No free blocks for peaks/avgs\n");
-	if (peaks != 0)
-	  peaks->RTDelete();
-	if (avgs != 0)
-	  avgs->RTDelete();
-	pa_mgr = 0;
+        printf("BlockReadManager: ERROR: No free blocks for peaks/avgs\n");
+        if (peaks != 0)
+          peaks->RTDelete();
+        if (avgs != 0)
+          avgs->RTDelete();
+        pa_mgr = 0;
       } else {
-	b->AddExtendedData(new BED_PeaksAvgs(peaks,avgs,peaksavgs_chunksize));
-	pa_mgr = bmg->PeakAvgOn(b,i,1);
+        b->AddExtendedData(new BED_PeaksAvgs(peaks,avgs,peaksavgs_chunksize));
+        pa_mgr = bmg->PeakAvgOn(b,i,1);
       }
     }
     
@@ -497,13 +497,13 @@ void BlockReadManager::End(char error) {
     } else {
       // Finished read, handle looppoint smoothing
       if (smooth_end)
-	// New way
-	printf("blen: %d\n",b->GetTotalLen()); // b->Smooth(0,BlockWriteManager::ENCODE_CROSSOVER_LEN);
+        // New way
+        printf("blen: %d\n",b->GetTotalLen()); // b->Smooth(0,BlockWriteManager::ENCODE_CROSSOVER_LEN);
       else {
-	// Old way
-	b->Smooth(1,BlockReadManager::SMOOTH_FIX_LEN);
-	// We will have to adjust the pulselength because we are changing the
-	// length of the loop here
+        // Old way
+        b->Smooth(1,BlockReadManager::SMOOTH_FIX_LEN);
+        // We will have to adjust the pulselength because we are changing the
+        // length of the loop here
 
       }
     }
@@ -526,8 +526,8 @@ int BlockReadManager::Manage() {
       arc->GetReadBlock(&in,&smooth_end);
       
       if (in != 0)
-	// We got a chain to load, so begin
-	Start();
+        // We got a chain to load, so begin
+        Start();
     } else {
       // No callback, so we are done!
       return 1;
@@ -545,29 +545,29 @@ int BlockReadManager::Manage() {
     // Now that we have the lock, make sure we are still active
     if (in != 0) {
       for (int pass = 0; in != 0 && pass < NUM_DECODE_PASSES; pass++) {
-	// Make sure we have an extra block in our chain
-	if (i->GetCurBlock()->next == 0) {
-	  AudioBlock *nw = (AudioBlock *) i->GetCurBlock()->RTNew();
-	  if (nw == 0) {
-	    // Pause decode until block is here
-	    printf("BlockReadManager: Waiting for block.\n");
-	    pthread_mutex_unlock (&decode_lock);
-	    return 0;
-	  }
-	  
-	  i->GetCurBlock()->Link(nw);
-	}
-	
-	// Decode samples
-	int len = dec->ReadSamples(i,DECODE_CHUNKSIZE);
+        // Make sure we have an extra block in our chain
+        if (i->GetCurBlock()->next == 0) {
+          AudioBlock *nw = (AudioBlock *) i->GetCurBlock()->RTNew();
+          if (nw == 0) {
+            // Pause decode until block is here
+            printf("BlockReadManager: Waiting for block.\n");
+            pthread_mutex_unlock (&decode_lock);
+            return 0;
+          }
+          
+          i->GetCurBlock()->Link(nw);
+        }
+        
+        // Decode samples
+        int len = dec->ReadSamples(i,DECODE_CHUNKSIZE);
         if (len == 0) {
-	  // EOF
-	  pthread_mutex_unlock (&decode_lock);
-	  End(0);
-	} else if (len < 0) {
-	  // Stream error- just continue
-	  printf("BlockReadManager: Stream read error!\n");
-	}
+          // EOF
+          pthread_mutex_unlock (&decode_lock);
+          End(0);
+        } else if (len < 0) {
+          // Stream error- just continue
+          printf("BlockReadManager: Stream read error!\n");
+        }
       }
 
     }
@@ -579,8 +579,8 @@ int BlockReadManager::Manage() {
 };
 
 BlockWriteManager::BlockWriteManager(FILE *out, AutoWriteControl *awc, 
-				     BlockManager *bmg, AudioBlock *b, 
-				     AudioBlockIterator *i) : 
+                                     BlockManager *bmg, AudioBlock *b, 
+                                     AudioBlockIterator *i) : 
   ManagedChain(b,i), out(out), len(0), awc(awc), enc(0), bmg(bmg)
 {
   pthread_mutex_init(&encode_lock,0);
@@ -596,8 +596,8 @@ BlockWriteManager::~BlockWriteManager() {
 
 // Start encoding the given block chain to the given file
 void BlockWriteManager::Start(FILE *new_out, AudioBlock *new_b, 
-			      AudioBlockIterator *new_i,
-			      nframes_t new_len) {
+                              AudioBlockIterator *new_i,
+                              nframes_t new_len) {
   if (enc != 0)
     return; // Already running
 
@@ -680,8 +680,8 @@ int BlockWriteManager::Manage() {
       awc->GetWriteBlock(&out,&b,&i,&len);
       
       if (b != 0)
-	// We got a chain to save, so begin
-	Start();
+        // We got a chain to save, so begin
+        Start();
     } else {
       // No callback, so we are done!
       return 1;
@@ -699,26 +699,26 @@ int BlockWriteManager::Manage() {
     // Now that we have the lock, make sure we are still active
     if (b != 0) {
       nframes_t remaining = len-pos,
-	num = MIN(ENCODE_CHUNKSIZE,remaining);
+        num = MIN(ENCODE_CHUNKSIZE,remaining);
       
       sample_t *ibuf[2];
       if (enc->IsStereo()) {
-	// Stereo
-	ei->GetFragment(&ibuf[0],&ibuf[1]);
+        // Stereo
+        ei->GetFragment(&ibuf[0],&ibuf[1]);
         pos += enc->WriteSamplesToDisk(ibuf,0,num);
       } else {
-	// Mono
-	ei->GetFragment(&ibuf[0],0);
+        // Mono
+        ei->GetFragment(&ibuf[0],0);
         pos += enc->WriteSamplesToDisk(ibuf,0,num);
       }
 
       if (remaining <= ENCODE_CHUNKSIZE) {
-	// Finished encoding
-	pthread_mutex_unlock (&encode_lock);
-	End();
+        // Finished encoding
+        pthread_mutex_unlock (&encode_lock);
+        End();
       }
       else
-	ei->NextFragment();
+        ei->NextFragment();
     }
 
     pthread_mutex_unlock (&encode_lock);
@@ -811,7 +811,7 @@ BED_ExtraChannel::~BED_ExtraChannel() {
 
 // Create a new audioblock as the beginning of a block list
 AudioBlock::AudioBlock(nframes_t len) : len(len), next(0),
-					first(this), xt(0)
+                                        first(this), xt(0)
 {
   if (len > 0)
     origbuf = buf = new sample_t[len];
@@ -857,7 +857,7 @@ void AudioBlock::ChopChain() {
     AudioBlock *tmp = cur->next;
     if (cur->xt != 0)
       printf("BLOCK: WARNING: XT data not freed in ChopChain! "
-	     "Possible leak.\n");
+             "Possible leak.\n");
 
     cur->RTDelete();
     cur = tmp;
@@ -901,21 +901,21 @@ void AudioBlock::Smooth(char smoothtype, nframes_t smoothlen) {
   float mix = 0.0,
     dmix = 1./(float)smoothlen;
   for (nframes_t i = 0; i < smoothlen; i++, 
-	 mix += dmix) {
+         mix += dmix) {
     if (smoothtype) {
       // Write beginning into end
       smoothblk->buf[smoothofs] = mix*startblk->buf[startofs] + 
-	(1.0-mix)*smoothblk->buf[smoothofs];
+        (1.0-mix)*smoothblk->buf[smoothofs];
       if (stereo)
-	rightsmoothblk->buf[smoothofs] = mix*rightstartblk->buf[startofs] + 
-	  (1.0-mix)*rightsmoothblk->buf[smoothofs];
+        rightsmoothblk->buf[smoothofs] = mix*rightstartblk->buf[startofs] + 
+          (1.0-mix)*rightsmoothblk->buf[smoothofs];
     } else {
       // Write end into beginning
       startblk->buf[startofs] = mix*startblk->buf[startofs] + 
-	(1.0-mix)*smoothblk->buf[smoothofs];
+        (1.0-mix)*smoothblk->buf[smoothofs];
       if (stereo)
-	rightstartblk->buf[startofs] = mix*rightstartblk->buf[startofs] + 
-	  (1.0-mix)*rightsmoothblk->buf[smoothofs];
+        rightstartblk->buf[startofs] = mix*rightstartblk->buf[startofs] + 
+          (1.0-mix)*rightsmoothblk->buf[smoothofs];
     }
 
     smoothofs++;
@@ -924,45 +924,45 @@ void AudioBlock::Smooth(char smoothtype, nframes_t smoothlen) {
       smoothblk = smoothblk->next;
       smoothofs = 0;
       if (smoothblk == 0) {
-	if (i+1 < smoothlen) {
-	  // Shouldn't happen
-	  printf("AudioBlock: ERROR: (smoothblk) Block size mismatch in "
-		 "Smooth: i: %d\n", i);
-	  exit(1);
-	}
-	
-	rightsmoothblk = 0;
+        if (i+1 < smoothlen) {
+          // Shouldn't happen
+          printf("AudioBlock: ERROR: (smoothblk) Block size mismatch in "
+                 "Smooth: i: %d\n", i);
+          exit(1);
+        }
+        
+        rightsmoothblk = 0;
       } else {
-	rightsmoothblk = (BED_ExtraChannel *)
-	  smoothblk->GetExtendedData(T_BED_ExtraChannel);
-	if (stereo && rightsmoothblk == 0) {
-	  // Shouldn't happen
-	  printf("AudioBlock: ERROR: (smoothblk) Right channel "
-		 "disappeared!\n");
-	  exit(1);
-	}
+        rightsmoothblk = (BED_ExtraChannel *)
+          smoothblk->GetExtendedData(T_BED_ExtraChannel);
+        if (stereo && rightsmoothblk == 0) {
+          // Shouldn't happen
+          printf("AudioBlock: ERROR: (smoothblk) Right channel "
+                 "disappeared!\n");
+          exit(1);
+        }
       }
     }
     if (startofs >= startblk->len) {
       startblk = startblk->next;
       startofs = 0;
       if (startblk == 0) {
-	if (i+1 < smoothlen) {
-	  // Shouldn't happen
-	  printf("AudioBlock: ERROR: (startblk) Block size mismatch in "
-		 "Smooth.\n");
-	  exit(1);
-	}
-	
-	rightstartblk = 0;
+        if (i+1 < smoothlen) {
+          // Shouldn't happen
+          printf("AudioBlock: ERROR: (startblk) Block size mismatch in "
+                 "Smooth.\n");
+          exit(1);
+        }
+        
+        rightstartblk = 0;
       } else {
-	rightstartblk = (BED_ExtraChannel *)
-	  startblk->GetExtendedData(T_BED_ExtraChannel);
-	if (stereo && rightstartblk == 0) {
-	  // Shouldn't happen
-	  printf("AudioBlock: ERROR: (startblk) Right channel disappeared!\n");
-	  exit(1);
-	}
+        rightstartblk = (BED_ExtraChannel *)
+          startblk->GetExtendedData(T_BED_ExtraChannel);
+        if (stereo && rightstartblk == 0) {
+          // Shouldn't happen
+          printf("AudioBlock: ERROR: (startblk) Right channel disappeared!\n");
+          exit(1);
+        }
       }
     }
   }
@@ -971,15 +971,15 @@ void AudioBlock::Smooth(char smoothtype, nframes_t smoothlen) {
     // Adjust first buf to skip samples that were smoothed into end
     if (first->len < smoothlen) {
       printf("AudioBlock: WARNING: First block is very short, "
-	     "no adjust in Smooth.\n");
+             "no adjust in Smooth.\n");
     } else {
       first->buf += smoothlen;
       first->len -= smoothlen;
       
       BED_ExtraChannel *rightfirst = 
-	(BED_ExtraChannel *) first->GetExtendedData(T_BED_ExtraChannel);
+        (BED_ExtraChannel *) first->GetExtendedData(T_BED_ExtraChannel);
       if (rightfirst != 0) 
-	rightfirst->buf += smoothlen;
+        rightfirst->buf += smoothlen;
     }
   } else {
     // Shorten the chain to skip end which is now smoothed into beginning
@@ -987,7 +987,7 @@ void AudioBlock::Smooth(char smoothtype, nframes_t smoothlen) {
   }
 
   //printf("endsmooth: startofs: %d smoothofs: %d len: %d\n",
-  //	 startofs, smoothofs, totallen);
+  //     startofs, smoothofs, totallen);
 }
 
 // not RT safe
@@ -1038,7 +1038,7 @@ void AudioBlock::AddExtendedData(BlockExtendedData *nw) {
 // Finds the audioblock and offset into that block that correspond
 // to the provided absolute offset into this chain 
 void AudioBlock::SetPtrsFromAbsOffset(AudioBlock **ptr, nframes_t *blkofs, 
-				      nframes_t absofs) {
+                                      nframes_t absofs) {
   AudioBlock *cur = first,
     *prev = 0;
   nframes_t curofs = 0,
@@ -1071,7 +1071,7 @@ void AudioBlock::SetPtrsFromAbsOffset(AudioBlock **ptr, nframes_t *blkofs,
 // Flag sets whether to copy stereo channel if there is one
 // Realtime safe?
 AudioBlock *AudioBlock::GenerateSubChain(nframes_t fromofs, nframes_t toofs,
-					 char copystereo) {
+                                         char copystereo) {
   if (toofs == fromofs)
     return 0;
   // Handle wrap case
@@ -1092,15 +1092,15 @@ AudioBlock *AudioBlock::GenerateSubChain(nframes_t fromofs, nframes_t toofs,
     if (subfirst == 0) {
       subcur = subfirst = (AudioBlock *)RTNew();
       if (subfirst == 0) {
-	printf("Err: GenerateSubChain- No new blocks available\n");
-	return 0;
+        printf("Err: GenerateSubChain- No new blocks available\n");
+        return 0;
       }
     }
     else {
       AudioBlock *tmp = (AudioBlock *)RTNew();
       if (tmp == 0) {
-	printf("Err: GenerateSubChain- No new blocks available\n");
-	return 0;
+        printf("Err: GenerateSubChain- No new blocks available\n");
+        return 0;
       }
       subcur->Link(tmp);
       subcur = subcur->next;
@@ -1109,8 +1109,8 @@ AudioBlock *AudioBlock::GenerateSubChain(nframes_t fromofs, nframes_t toofs,
     if (stereo) {
       BED_ExtraChannel *rightsub = (BED_ExtraChannel*)rightfirst->RTNew(); 
       if (rightsub == 0) {
-	printf("Err: GenerateSubChain- No new right blocks available\n");
-	return 0;
+        printf("Err: GenerateSubChain- No new right blocks available\n");
+        return 0;
       }
       subcur->AddExtendedData(rightsub);
     }
@@ -1150,26 +1150,26 @@ AudioBlock *AudioBlock::GenerateSubChain(nframes_t fromofs, nframes_t toofs,
       cur = cur->next;
       curofs = 0;
       if (cur == 0)
-	// Past the end of the block chain-- wrap around to first
-	cur = first;
+        // Past the end of the block chain-- wrap around to first
+        cur = first;
 
       if (stereo)
-	right = (BED_ExtraChannel *) cur->GetExtendedData(T_BED_ExtraChannel);
+        right = (BED_ExtraChannel *) cur->GetExtendedData(T_BED_ExtraChannel);
     }
 
     if (subofs >= subcur->len) {
       subcur = subcur->next;
       subofs = 0;
       if (subcur == 0 && remaining) {
-	// This should never happen, because we make the destination
-	// chain long enough to hold the subblock
-	printf("Err: GenerateSubChain destination block size mismatch\n");
-	exit(1);
+        // This should never happen, because we make the destination
+        // chain long enough to hold the subblock
+        printf("Err: GenerateSubChain destination block size mismatch\n");
+        exit(1);
       }
 
       if (stereo)
-	subright = (BED_ExtraChannel *) 
-	  subcur->GetExtendedData(T_BED_ExtraChannel);
+        subright = (BED_ExtraChannel *) 
+          subcur->GetExtendedData(T_BED_ExtraChannel);
     }
   } while (remaining);
 
@@ -1248,8 +1248,8 @@ AudioBlock *AudioBlock::InsertFirst(AudioBlock *nw) {
 };
 
 AudioBlockIterator::AudioBlockIterator(AudioBlock *firstblock,  
-				       nframes_t fragmentsize,
-				       PreallocatedType *pre_extrachannel) :
+                                       nframes_t fragmentsize,
+                                       PreallocatedType *pre_extrachannel) :
   pre_extrachannel(pre_extrachannel), 
 
   currightblock(0), nextrightblock(0), curblock(firstblock), nextblock(0), 
@@ -1271,7 +1271,7 @@ AudioBlockIterator::~AudioBlockIterator() {
 // Stores in cnt the absolute count corresponding to the given
 // block and offset
 void AudioBlockIterator::GenCnt(AudioBlock *blk, nframes_t blkofs, 
-				nframes_t *cnt) {
+                                nframes_t *cnt) {
   AudioBlock *cur = curblock->first;
   nframes_t curofs = 0;
   while (cur != 0 && cur != blk) {
@@ -1323,7 +1323,7 @@ void AudioBlockIterator::GenConstants() {
 void AudioBlockIterator::Zero() {
   currightblock = 0;
   nextrightblock = 0;
-  curblock = curblock->first;	  
+  curblock = curblock->first;     
   curblkofs = 0; 
   curcnt = 0;
   nextblock = 0;
@@ -1360,8 +1360,8 @@ void AudioBlockIterator::NextFragment() {
 // PutFragment stores the specified fragment into this AudioBlock
 // returns nonzero if the end of the block is reached, and we wrap to next
 int AudioBlockIterator::PutFragment (sample_t *frag_l, sample_t *frag_r,
-				     nframes_t size_override, 
-				     char wait_alloc) {
+                                     nframes_t size_override, 
+                                     char wait_alloc) {
   nframes_t fragofs = 0;
   nframes_t n = (size_override == 0 ? fragmentsize : size_override);
   int wrap = 0;
@@ -1398,43 +1398,43 @@ int AudioBlockIterator::PutFragment (sample_t *frag_l, sample_t *frag_r,
 
     // Left
     memcpy(&lclblock->buf[lclblkofs_d],
-	   &frag_l[fragofs],
-	   sizeof(sample_t)*nextbit);
+           &frag_l[fragofs],
+           sizeof(sample_t)*nextbit);
 
     // If right channel is given and we don't know the right block, find it
     if (frag_r != 0) {
       if (lclrightblock == 0) {
-	lclrightblock = (BED_ExtraChannel *) 
-	  lclblock->GetExtendedData(T_BED_ExtraChannel);
-	if (lclrightblock == 0) {
-	  // No right channel exists but we are being told to put data there--
-	  // so create a right channel!
-	  if (pre_extrachannel == 0) {
-	    printf("BLOCK: ERROR: Need to make right channel buffer but no "
-		   "preallocator was passed!\n");
-	    return 0;
-	  } else {
-	    do {
-	      lclrightblock = (BED_ExtraChannel *) pre_extrachannel->RTNew();
-	      if (lclrightblock == 0 && wait_alloc) {
-		printf("BLOCK: Waiting for BED_ExtraChannel.\n");
-		usleep(10000); // Wait then try again
-	      }
-	    } while (lclrightblock == 0 && wait_alloc);
-	    if (lclrightblock != 0)
-	      lclblock->AddExtendedData(lclrightblock);
-	    else {
-	      printf("BLOCK: ERROR: RTNew() failed for BED_ExtraChannel.\n");
-	      return 0;
-	    }
-	  }
-	}
+        lclrightblock = (BED_ExtraChannel *) 
+          lclblock->GetExtendedData(T_BED_ExtraChannel);
+        if (lclrightblock == 0) {
+          // No right channel exists but we are being told to put data there--
+          // so create a right channel!
+          if (pre_extrachannel == 0) {
+            printf("BLOCK: ERROR: Need to make right channel buffer but no "
+                   "preallocator was passed!\n");
+            return 0;
+          } else {
+            do {
+              lclrightblock = (BED_ExtraChannel *) pre_extrachannel->RTNew();
+              if (lclrightblock == 0 && wait_alloc) {
+                printf("BLOCK: Waiting for BED_ExtraChannel.\n");
+                usleep(10000); // Wait then try again
+              }
+            } while (lclrightblock == 0 && wait_alloc);
+            if (lclrightblock != 0)
+              lclblock->AddExtendedData(lclrightblock);
+            else {
+              printf("BLOCK: ERROR: RTNew() failed for BED_ExtraChannel.\n");
+              return 0;
+            }
+          }
+        }
       }
       
       // Right
       memcpy(&lclrightblock->buf[lclblkofs_d],
-	     &frag_r[fragofs],
-	     sizeof(sample_t)*nextbit);
+             &frag_r[fragofs],
+             sizeof(sample_t)*nextbit);
     }
     
     fragofs += nextbit;
@@ -1448,16 +1448,16 @@ int AudioBlockIterator::PutFragment (sample_t *frag_l, sample_t *frag_r,
       
       wrap = 1;
       if (lclblock->next == 0) {
-	// END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
-	lclblock = lclblock->first;
-	lclblkofs = 0;
-	lclcnt = lclblkofs;
+        // END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
+        lclblock = lclblock->first;
+        lclblkofs = 0;
+        lclcnt = lclblkofs;
         lclrightblock = 0;
       }
       else {
-	lclblock = lclblock->next;
-	lclblkofs = 0; 
-	lclrightblock = 0;
+        lclblock = lclblock->next;
+        lclblkofs = 0; 
+        lclrightblock = 0;
       }
     }
   } while (n);
@@ -1498,111 +1498,111 @@ void AudioBlockIterator::GetFragment(sample_t **frag_l, sample_t **frag_r) {
       // Wrap happens here- check bounds in loop
 
       for (nframes_t cnt = 0; cnt < fragmentsize; cnt++) {
-	// Linear interpolation rate scale
-	nframes_t decofs = (nframes_t) lclblkofs;
-	float fracofs = lclblkofs - decofs;
+        // Linear interpolation rate scale
+        nframes_t decofs = (nframes_t) lclblkofs;
+        float fracofs = lclblkofs - decofs;
 
-	if (frag_r != 0) {
-	  if (lclrightblock == 0) {
-	    lclrightblock = (BED_ExtraChannel *) 
-	      lclblock->GetExtendedData(T_BED_ExtraChannel);
-	    if (lclrightblock == 0) {
-	      // No right channel exists but we are being told to get data--
-	      printf("BLOCK: ERROR: Iterator asked for right channel but none "
-		     "exists!\n");
-	      return;
-	    }
-	  }
-	}
+        if (frag_r != 0) {
+          if (lclrightblock == 0) {
+            lclrightblock = (BED_ExtraChannel *) 
+              lclblock->GetExtendedData(T_BED_ExtraChannel);
+            if (lclrightblock == 0) {
+              // No right channel exists but we are being told to get data--
+              printf("BLOCK: ERROR: Iterator asked for right channel but none "
+                     "exists!\n");
+              return;
+            }
+          }
+        }
        
-	sample_t s1 = lclblock->buf[decofs],
-	  s2,
-	  s1r,
-	  s2r;
-	if (frag_r != 0)
-	  s1r = lclrightblock->buf[decofs];
+        sample_t s1 = lclblock->buf[decofs],
+          s2,
+          s1r,
+          s2r;
+        if (frag_r != 0)
+          s1r = lclrightblock->buf[decofs];
 
-	nframes_t decofs_p1 = decofs+1;
-	if (decofs_p1 < lclblock->len) {
-	  s2 = lclblock->buf[decofs_p1];
-	  if (frag_r != 0)
-	    s2r = lclrightblock->buf[decofs_p1];
-	} else {
-	  AudioBlock *next_b;
-	  if (lclblock->next != 0)
-	    next_b = lclblock->next;
-	  else
-	    next_b = lclblock->first;
+        nframes_t decofs_p1 = decofs+1;
+        if (decofs_p1 < lclblock->len) {
+          s2 = lclblock->buf[decofs_p1];
+          if (frag_r != 0)
+            s2r = lclrightblock->buf[decofs_p1];
+        } else {
+          AudioBlock *next_b;
+          if (lclblock->next != 0)
+            next_b = lclblock->next;
+          else
+            next_b = lclblock->first;
 
-	  s2 = next_b->buf[0];
-	  if (frag_r != 0) {
-	    BED_ExtraChannel *tmp_r = (BED_ExtraChannel *) 
-	      next_b->GetExtendedData(T_BED_ExtraChannel);
-	    if (tmp_r != 0)
-	      s2r = tmp_r->buf[0];
-	    else
-	      s2r = s1r;
-	  }
-	}
+          s2 = next_b->buf[0];
+          if (frag_r != 0) {
+            BED_ExtraChannel *tmp_r = (BED_ExtraChannel *) 
+              next_b->GetExtendedData(T_BED_ExtraChannel);
+            if (tmp_r != 0)
+              s2r = tmp_r->buf[0];
+            else
+              s2r = s1r;
+          }
+        }
 
-	float fracofs_om = 1.0-fracofs;
-	fragment[0][cnt] = fracofs*s2 + fracofs_om*s1;
-	if (frag_r != 0)
-	  fragment[1][cnt] = fracofs*s2r + fracofs_om*s1r;
+        float fracofs_om = 1.0-fracofs;
+        fragment[0][cnt] = fracofs*s2 + fracofs_om*s1;
+        if (frag_r != 0)
+          fragment[1][cnt] = fracofs*s2r + fracofs_om*s1r;
 
-	lclblkofs += rate;
-	lclcnt += rate;
-	if (lclblkofs >= lclblock->len) {
-	  // If we get here, it means this block is at an end
-	  // so we need the next block  
-	  lclblkofs -= lclblock->len;
-	  
-	  if (lclblock->next == 0) {
-	    // END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
-	    lclcnt = lclblkofs;
-	    lclblock = lclblock->first;
-	    lclrightblock = 0;
-	  } else {
-	    lclblock = lclblock->next;
-	    lclrightblock = 0;
-	  }
-	}
+        lclblkofs += rate;
+        lclcnt += rate;
+        if (lclblkofs >= lclblock->len) {
+          // If we get here, it means this block is at an end
+          // so we need the next block  
+          lclblkofs -= lclblock->len;
+          
+          if (lclblock->next == 0) {
+            // END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
+            lclcnt = lclblkofs;
+            lclblock = lclblock->first;
+            lclrightblock = 0;
+          } else {
+            lclblock = lclblock->next;
+            lclrightblock = 0;
+          }
+        }
       }
     } else {
       // No wrap- don't check bounds
 
       for (nframes_t cnt = 0; cnt < fragmentsize; cnt++, lclblkofs += rate,
-	   lclcnt += rate) {
-	// Linear interpolation rate scale
-	nframes_t decofs = (nframes_t) lclblkofs;
-	float fracofs = lclblkofs - decofs;
+           lclcnt += rate) {
+        // Linear interpolation rate scale
+        nframes_t decofs = (nframes_t) lclblkofs;
+        float fracofs = lclblkofs - decofs;
 
-	if (frag_r != 0) {
-	  if (lclrightblock == 0) {
-	    lclrightblock = (BED_ExtraChannel *) 
-	      lclblock->GetExtendedData(T_BED_ExtraChannel);
-	    if (lclrightblock == 0) {
-	      // No right channel exists but we are being told to get data--
-	      printf("BLOCK: ERROR: Iterator asked for right channel but none "
-		     "exists!\n");
-	      return;
-	    }
-	  }
-	}
-	
-	nframes_t decofs_p1 = decofs+1;
-	sample_t s1 = lclblock->buf[decofs],
-	  s2 = lclblock->buf[decofs_p1];
+        if (frag_r != 0) {
+          if (lclrightblock == 0) {
+            lclrightblock = (BED_ExtraChannel *) 
+              lclblock->GetExtendedData(T_BED_ExtraChannel);
+            if (lclrightblock == 0) {
+              // No right channel exists but we are being told to get data--
+              printf("BLOCK: ERROR: Iterator asked for right channel but none "
+                     "exists!\n");
+              return;
+            }
+          }
+        }
+        
+        nframes_t decofs_p1 = decofs+1;
+        sample_t s1 = lclblock->buf[decofs],
+          s2 = lclblock->buf[decofs_p1];
 
-	float fracofs_om = 1.0-fracofs;
-	fragment[0][cnt] = fracofs*s2 + fracofs_om*s1;
+        float fracofs_om = 1.0-fracofs;
+        fragment[0][cnt] = fracofs*s2 + fracofs_om*s1;
 
-	if (frag_r != 0) {
-	  sample_t s1r = lclrightblock->buf[decofs],
-	    s2r = lclrightblock->buf[decofs_p1];
+        if (frag_r != 0) {
+          sample_t s1r = lclrightblock->buf[decofs],
+            s2r = lclrightblock->buf[decofs_p1];
 
-	  fragment[1][cnt] = fracofs*s2r + fracofs_om*s1r;
-	}
+          fragment[1][cnt] = fracofs*s2r + fracofs_om*s1r;
+        }
       }
     }
   } else {
@@ -1616,52 +1616,52 @@ void AudioBlockIterator::GetFragment(sample_t **frag_l, sample_t **frag_r) {
       nextbit = MIN((nframes_t) n, lclblock->len - lclblkofs_d);
       
       if (nextbit) {
-	// Left
-	memcpy(&fragment[0][fragofs],
-	       &lclblock->buf[lclblkofs_d],
-	       sizeof(sample_t)*nextbit);
-	
-	// If right channel is given and we don't know the right block, find it
-	if (frag_r != 0) {
-	  if (lclrightblock == 0) {
-	    lclrightblock = (BED_ExtraChannel *) 
-	      lclblock->GetExtendedData(T_BED_ExtraChannel);
-	    if (lclrightblock == 0) {
-	      // No right channel exists but we are being told to get data--
-	      printf("BLOCK: ERROR: Iterator asked for right channel but none "
-		     "exists!\n");
-	      return;
-	    }
-	  }
-	  
-	  // Right
-	  memcpy(&fragment[1][fragofs],
-		 &lclrightblock->buf[lclblkofs_d],
-		 sizeof(sample_t)*nextbit);
-	} else
-	  // Make -sure- we don't jump blocks and keep old rightblock
-	  lclrightblock = 0;
-	
-	fragofs += nextbit;
-	lclblkofs += nextbit;
-	lclcnt += nextbit;
-	n -= nextbit;
+        // Left
+        memcpy(&fragment[0][fragofs],
+               &lclblock->buf[lclblkofs_d],
+               sizeof(sample_t)*nextbit);
+        
+        // If right channel is given and we don't know the right block, find it
+        if (frag_r != 0) {
+          if (lclrightblock == 0) {
+            lclrightblock = (BED_ExtraChannel *) 
+              lclblock->GetExtendedData(T_BED_ExtraChannel);
+            if (lclrightblock == 0) {
+              // No right channel exists but we are being told to get data--
+              printf("BLOCK: ERROR: Iterator asked for right channel but none "
+                     "exists!\n");
+              return;
+            }
+          }
+          
+          // Right
+          memcpy(&fragment[1][fragofs],
+                 &lclrightblock->buf[lclblkofs_d],
+                 sizeof(sample_t)*nextbit);
+        } else
+          // Make -sure- we don't jump blocks and keep old rightblock
+          lclrightblock = 0;
+        
+        fragofs += nextbit;
+        lclblkofs += nextbit;
+        lclcnt += nextbit;
+        n -= nextbit;
       }
       
       if (lclblkofs >= lclblock->len) {
-	// If we get here, it means this block is at an end
-	// so we need the next block  
-	if (lclblock->next == 0) {
-	  // END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
-	  lclblock = lclblock->first;
-	  lclblkofs = 0;
-	  lclcnt = lclblkofs;
-	  lclrightblock = 0;
-	} else {
-	  lclblock = lclblock->next;
-	  lclblkofs = 0; // Beginning of next block
-	  lclrightblock = 0;
-	}
+        // If we get here, it means this block is at an end
+        // so we need the next block  
+        if (lclblock->next == 0) {
+          // END OF AUDIOBLOCK LIST, LOOP TO BEGINNING
+          lclblock = lclblock->first;
+          lclblkofs = 0;
+          lclcnt = lclblkofs;
+          lclrightblock = 0;
+        } else {
+          lclblock = lclblock->next;
+          lclblkofs = 0; // Beginning of next block
+          lclrightblock = 0;
+        }
       }
     } while (n);
   }
@@ -1703,8 +1703,8 @@ int GrowChainManager::Manage() {
       // of this chain! Get another and link it up.
       AudioBlock *nw = (AudioBlock *) i->GetCurBlock()->RTNew();
       if (nw == 0) {
-	printf("GrowChainManager: ERROR: No free blocks to grow chain\n");
-	return 0;
+        printf("GrowChainManager: ERROR: No free blocks to grow chain\n");
+        return 0;
       }
       i->GetCurBlock()->Link(nw);
 
@@ -1783,57 +1783,57 @@ int PeaksAvgsManager::Manage() {
       sample_t *sptr[2];
       sample_t s_l, s_r;
       if (stereo) {
-	mi->GetFragment(&sptr[0],&sptr[1]);	
-	s_l = *sptr[0];
-	s_r = *sptr[1];
+        mi->GetFragment(&sptr[0],&sptr[1]);     
+        s_l = *sptr[0];
+        s_r = *sptr[1];
       } else {
-	mi->GetFragment(&sptr[0],0);	
-	s_l = *sptr[0];
-	s_r = 0;
+        mi->GetFragment(&sptr[0],0);    
+        s_l = *sptr[0];
+        s_r = 0;
       }
 
       // If chunkcnt is -1, we have temporarily stopped until a wrap
       if (go) {
-	if (s_l > runmax)
-	  runmax = s_l;
-	if (s_l < runmin)
-	  runmin = s_l;
+        if (s_l > runmax)
+          runmax = s_l;
+        if (s_l < runmin)
+          runmin = s_l;
 
-	if (stereo) {
-	  if (s_r > runmax)
-	    runmax = s_r;
-	  if (s_r < runmin)
-	    runmin = s_r;
+        if (stereo) {
+          if (s_r > runmax)
+            runmax = s_r;
+          if (s_r < runmin)
+            runmin = s_r;
 
-	  runtally += (fabs(s_l)+fabs(s_r))/2;
-	}
-	else
-	  runtally += fabs(s_l);
-	  
-	chunkcnt++;
-	
-	if (chunkcnt >= pa->chunksize) {
-	  // One chunk done
-	  sample_t peak = runmax-runmin,
-	    avg = (sample_t) (runtally/pa->chunksize);
-	  
-	  if (peaksi->PutFragment(&peak,0) || 
-	      avgsi->PutFragment(&avg,0)) {
-	    // Peaks should not be wrapping before main buf, stop!
-	    //
-	    // Note that this does happen!!
-	    go = 0;
-	  }
-	  else {
-	    peaksi->NextFragment();
-	    avgsi->NextFragment();
-	    chunkcnt = 0;
-	  }
-	  
-	  runtally = 0;
-	  runmax = 0;
-	  runmin = 0;
-	}
+          runtally += (fabs(s_l)+fabs(s_r))/2;
+        }
+        else
+          runtally += fabs(s_l);
+          
+        chunkcnt++;
+        
+        if (chunkcnt >= pa->chunksize) {
+          // One chunk done
+          sample_t peak = runmax-runmin,
+            avg = (sample_t) (runtally/pa->chunksize);
+          
+          if (peaksi->PutFragment(&peak,0) || 
+              avgsi->PutFragment(&avg,0)) {
+            // Peaks should not be wrapping before main buf, stop!
+            //
+            // Note that this does happen!!
+            go = 0;
+          }
+          else {
+            peaksi->NextFragment();
+            avgsi->NextFragment();
+            chunkcnt = 0;
+          }
+          
+          runtally = 0;
+          runmax = 0;
+          runmin = 0;
+        }
       }
       
       mi->NextFragment();
@@ -1842,9 +1842,9 @@ int PeaksAvgsManager::Manage() {
     
     if (wrap) {
       /* printf("Main wrap!: MI: %ld PI: %ld AI: %ld\n",
-	 mi->GetTotalLength2Cur(),
-	 peaksi->GetTotalLength2Cur(),
-	 avgsi->GetTotalLength2Cur()); */
+         mi->GetTotalLength2Cur(),
+         peaksi->GetTotalLength2Cur(),
+         avgsi->GetTotalLength2Cur()); */
       mi->Zero();
       peaksi->Zero();
       avgsi->Zero();
@@ -1898,13 +1898,13 @@ int StripeBlockManager::Manage() {
       // On 2nd pass, delete markers at 0.
       wrap = 0;
       while (cur != 0 && cur->markofs < lastcnt) {
-	prev = cur;
-	cur = cur->next;
+        prev = cur;
+        cur = cur->next;
       }
     } else {
       while (cur != 0 && cur->markofs <= lastcnt) {
-	prev = cur;
-	cur = cur->next;
+        prev = cur;
+        cur = cur->next;
       }
     }
 
@@ -1915,9 +1915,9 @@ int StripeBlockManager::Manage() {
       
       cur = tmp;
       if (prev != 0)
-	prev->next = cur;
+        prev->next = cur;
       else
-	mp->markers = cur;
+        mp->markers = cur;
     } 
 
     if (!wrap) {
@@ -1925,15 +1925,15 @@ int StripeBlockManager::Manage() {
       // Use realtime new method- no problem
       TimeMarker *nw = (TimeMarker *) pre_tm->RTNew();
       if (nw == 0) {
-	printf("StripeBlockManager: ERROR: No free TimeMarkers\n");
-	return 0;
+        printf("StripeBlockManager: ERROR: No free TimeMarkers\n");
+        return 0;
       }
       nw->markofs = curcnt;
       nw->next = cur;
       if (prev != 0)
-	prev->next = nw;
+        prev->next = nw;
       else
-	mp->markers = nw;
+        mp->markers = nw;
       
       // Update counters
       lastcnt = curcnt;
@@ -1948,17 +1948,17 @@ int StripeBlockManager::Manage() {
 BlockManager::BlockManager (Fweelin *app) : 
   manageblocks(0), himanageblocks(0), threadgo(1), app(app) {
   pre_growchain = new PreallocatedType(app->getMMG(),
-				       ::new GrowChainManager(),
-				       sizeof(GrowChainManager));
+                                       ::new GrowChainManager(),
+                                       sizeof(GrowChainManager));
   pre_peaksavgs = new PreallocatedType(app->getMMG(),
-				       ::new PeaksAvgsManager(),
-				       sizeof(PeaksAvgsManager));
+                                       ::new PeaksAvgsManager(),
+                                       sizeof(PeaksAvgsManager));
   pre_hipri = new PreallocatedType(app->getMMG(),
-				   ::new HiPriManagedChain(),
-				   sizeof(HiPriManagedChain));
+                                   ::new HiPriManagedChain(),
+                                   sizeof(HiPriManagedChain));
   pre_stripeblock = new PreallocatedType(app->getMMG(),
-					 ::new StripeBlockManager(),
-					 sizeof(StripeBlockManager));
+                                         ::new StripeBlockManager(),
+                                         sizeof(StripeBlockManager));
 
   pthread_mutex_init(&manage_thread_lock,0);
 
@@ -1970,9 +1970,9 @@ BlockManager::BlockManager (Fweelin *app) :
 
   // Start a block managing thread
   int ret = pthread_create(&manage_thread,
-			   &attr,
-			   run_manage_thread,
-			   static_cast<void *>(this));
+                           &attr,
+                           run_manage_thread,
+                           static_cast<void *>(this));
   if (ret != 0) {
     printf("(blockmanager) pthread_create failed, exiting");
     exit(1);
@@ -2023,8 +2023,8 @@ void BlockManager::GrowChainOff (AudioBlock *b) {
 // for the specified Block & Iterator
 // We compute as the currenty iterated position advances
 PeaksAvgsManager *BlockManager::PeakAvgOn (AudioBlock *b, 
-					   AudioBlockIterator *i,
-					   char grow) {
+                                           AudioBlockIterator *i,
+                                           char grow) {
   // Check if the block is already being watched
   DelManager(&manageblocks,b,T_MC_PeaksAvgs);
   // Tell the manage thread to compute peaks & averages
@@ -2044,7 +2044,7 @@ void BlockManager::PeakAvgOff (AudioBlock *b) {
 }
 
 void BlockManager::StripeBlockOn (void *trigger, AudioBlock *b, 
-				  AudioBlockIterator *i) {
+                                  AudioBlockIterator *i) {
   // Check if the block is already being watched
   DelHiManager(&himanageblocks,b,T_MC_StripeBlock,trigger);
   // Tell the manage thread to stripe beats on blocks
@@ -2124,11 +2124,11 @@ void BlockManager::HiPriTrigger (void *trigger) {
   cur = himanageblocks;
   while (cur != 0) {
     if (cur->status == T_MC_Running &&
-	(cur->trigger == trigger || cur->trigger == 0))
+        (cur->trigger == trigger || cur->trigger == 0))
       // Ok, right trigger or no trigger specified, call 'em!
       if (cur->Manage()) 
-	// Flag for delete
-	cur->status = T_MC_PendingDelete;
+        // Flag for delete
+        cur->status = T_MC_PendingDelete;
 
     // Next chain
     cur = (HiPriManagedChain *) cur->next;
@@ -2138,12 +2138,12 @@ void BlockManager::HiPriTrigger (void *trigger) {
 // Returns the 1st chain manager associated with block b
 // that has type t
 ManagedChain *BlockManager::GetBlockManager(AudioBlock *o, 
-					    ManagedChainType t) {
+                                            ManagedChainType t) {
   ManagedChain *cur = manageblocks;
   
   // Search for block 'o' && type t in our list
   while (cur != 0 && (cur->status == T_MC_PendingDelete ||
-		      cur->b != o || cur->GetType() != t)) 
+                      cur->b != o || cur->GetType() != t)) 
     cur = cur->next;
   
   return cur;
@@ -2161,7 +2161,7 @@ void BlockManager::AddManager (ManagedChain **first, ManagedChain *nw) {
       *first = nw; // That was easy, now we have 1 item
     else {
       while (cur->next != 0)
-	cur = cur->next;
+        cur = cur->next;
       cur->next = nw; // Link up the last item to new1
     }
     
@@ -2173,7 +2173,7 @@ void BlockManager::AddManager (ManagedChain **first, ManagedChain *nw) {
 }
 
 void BlockManager::AddHiManager (HiPriManagedChain **first, 
-				 HiPriManagedChain *nw) {
+                                 HiPriManagedChain *nw) {
   nw->status = T_MC_Running;
 
   // Possibility of priority inversion if AddHiManager is run in RT,
@@ -2185,7 +2185,7 @@ void BlockManager::AddHiManager (HiPriManagedChain **first,
       *first = nw; // That was easy, now we have 1 item
     else {
       while (cur->next != 0)
-	cur = (HiPriManagedChain *) cur->next;
+        cur = (HiPriManagedChain *) cur->next;
       cur->next = nw; // Link up the last item to new1
     }
     
@@ -2199,13 +2199,13 @@ void BlockManager::AddHiManager (HiPriManagedChain **first,
 // If t is T_MC_None, removes the first managed chain for 'o' 
 // of any type
 void BlockManager::DelManager (ManagedChain **first, AudioBlock *o,
-			       ManagedChainType t) {
+                               ManagedChainType t) {
   ManagedChain *cur = *first;
   
   // Search for block 'o' in our list of type 't'
   while (cur != 0 && (cur->status == T_MC_PendingDelete ||
-		      cur->b != o || (cur->GetType() != t &&
-				      t != T_MC_None))) 
+                      cur->b != o || (cur->GetType() != t &&
+                                      t != T_MC_None))) 
     cur = cur->next;
   
   if (cur != 0)
@@ -2218,14 +2218,14 @@ void BlockManager::DelManager (ManagedChain **first, AudioBlock *o,
 // If t is T_MC_None, removes the first managed chain for 'o' 
 // with specified trigger, of any type
 void BlockManager::DelHiManager (HiPriManagedChain **first, 
-				 AudioBlock *o,
-				 ManagedChainType t, void *trigger) {
+                                 AudioBlock *o,
+                                 ManagedChainType t, void *trigger) {
   HiPriManagedChain *cur = *first;
   
   // Search for block 'o' in our list of type 't'
   while (cur != 0 && (cur->status == T_MC_PendingDelete ||
-		      cur->b != o || cur->trigger != trigger ||
-		      (cur->GetType() != t && t != T_MC_None)))
+                      cur->b != o || cur->trigger != trigger ||
+                      (cur->GetType() != t && t != T_MC_None)))
     cur = (HiPriManagedChain *) cur->next;
   
   if (cur != 0)
@@ -2241,9 +2241,9 @@ void *BlockManager::run_manage_thread (void *ptr) {
     ManagedChain *cur = inst->manageblocks;
     while (cur != 0) {
       if (cur->status == T_MC_Running)
-	if (cur->Manage())
-	  // Flag for deletion
-	  cur->status = T_MC_PendingDelete;
+        if (cur->Manage())
+          // Flag for deletion
+          cur->status = T_MC_PendingDelete;
 
       // Next chain
       cur = cur->next;
@@ -2254,24 +2254,24 @@ void *BlockManager::run_manage_thread (void *ptr) {
     ManagedChain *prev = 0;
     while (cur != 0) {
       if (cur->status == T_MC_PendingDelete) {
-	// printf("MGR %p DELETE\n",cur);
+        // printf("MGR %p DELETE\n",cur);
 
-	// Remove chain
-	pthread_mutex_lock (&inst->manage_thread_lock);
-	ManagedChain *tmp = cur->next;
-	if (prev != 0) 
-	  prev->next = tmp;
-	else 
-	  inst->manageblocks = tmp;
-	pthread_mutex_unlock (&inst->manage_thread_lock);
-	//printf("end mgr\n");
-	cur->RTDelete();
+        // Remove chain
+        pthread_mutex_lock (&inst->manage_thread_lock);
+        ManagedChain *tmp = cur->next;
+        if (prev != 0) 
+          prev->next = tmp;
+        else 
+          inst->manageblocks = tmp;
+        pthread_mutex_unlock (&inst->manage_thread_lock);
+        //printf("end mgr\n");
+        cur->RTDelete();
 
-	cur = tmp;
+        cur = tmp;
       } else {
-	// Next chain
-	prev = cur;
-	cur = cur->next;
+        // Next chain
+        prev = cur;
+        cur = cur->next;
       }
     }
 
@@ -2279,24 +2279,24 @@ void *BlockManager::run_manage_thread (void *ptr) {
       *hprev = 0;
     while (hcur != 0) {
       if (hcur->status == T_MC_PendingDelete) {
-	// printf("HI-MGR %p DELETE\n",hcur);
+        // printf("HI-MGR %p DELETE\n",hcur);
 
-	// Remove chain
-	pthread_mutex_lock (&inst->manage_thread_lock);
-	HiPriManagedChain *tmp = (HiPriManagedChain *) hcur->next;
-	if (hprev != 0) 
-	  hprev->next = tmp;
-	else 
-	  inst->himanageblocks = tmp;
-	pthread_mutex_unlock (&inst->manage_thread_lock);
-	//printf("end mgr\n");
-	hcur->RTDelete();
+        // Remove chain
+        pthread_mutex_lock (&inst->manage_thread_lock);
+        HiPriManagedChain *tmp = (HiPriManagedChain *) hcur->next;
+        if (hprev != 0) 
+          hprev->next = tmp;
+        else 
+          inst->himanageblocks = tmp;
+        pthread_mutex_unlock (&inst->manage_thread_lock);
+        //printf("end mgr\n");
+        hcur->RTDelete();
 
-	hcur = tmp;
+        hcur = tmp;
       } else {
-	// Next chain
-	hprev = hcur;
-	hcur = (HiPriManagedChain *) hcur->next;
+        // Next chain
+        hprev = hcur;
+        hcur = (HiPriManagedChain *) hcur->next;
       }
     }
 
@@ -2308,15 +2308,15 @@ void *BlockManager::run_manage_thread (void *ptr) {
       printf("BLOCKMANAGER REPORT:\n");
       ManagedChain *cur = inst->manageblocks;
       while (cur != 0) {
-	printf(" bmg mgr: type(%d) status(%d)\n",cur->GetType(),cur->status);
-	cur = cur->next;
+        printf(" bmg mgr: type(%d) status(%d)\n",cur->GetType(),cur->status);
+        cur = cur->next;
       }
 
       cur = inst->himanageblocks;
       while (cur != 0) {
-	printf(" bmg HiPrimgr: type(%d) status(%d)\n",cur->GetType(),
-	       cur->status);
-	cur = cur->next;
+        printf(" bmg HiPrimgr: type(%d) status(%d)\n",cur->GetType(),
+               cur->status);
+        cur = cur->next;
       }
     }
 

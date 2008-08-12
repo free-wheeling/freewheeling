@@ -71,21 +71,21 @@ FluidSynthProcessor::FluidSynthProcessor(Fweelin *app, char stereo) :
   }
   // Set sampling rate
   fluid_settings_setnum(settings, "synth.sample-rate", 
-			app->getAUDIO()->get_srate());  
+                        app->getAUDIO()->get_srate());  
   // Create synth
   synth = new_fluid_synth(settings);
 
   // Set interpolation quality
   printf("FLUID: Setting interpolation quality: %d\n",
-	 app->getCFG()->GetFluidInterpolation());
+         app->getCFG()->GetFluidInterpolation());
   fluid_synth_set_interp_method(synth,-1,
-				app->getCFG()->GetFluidInterpolation());
+                                app->getCFG()->GetFluidInterpolation());
 
   // User-specified global fluidsynth tuning
   float tuning = app->getCFG()->GetFluidTuning();
   if (tuning != 0.0) {
     printf("FLUID: Setting pitch tuning: %.2f cents\n",
-	   tuning);
+           tuning);
 
     // Create tuning for each key in octave
     double pitches[12];
@@ -123,7 +123,7 @@ FluidSynthProcessor::~FluidSynthProcessor() {
 };
 
 void FluidSynthProcessor::process(char pre, nframes_t len, 
-				  AudioBuffers *ab) {
+                                  AudioBuffers *ab) {
   if (!pre) {
     // Map our output to the end of the external inputs
     ab->ins[0][ab->numins_ext] = leftbuf;
@@ -135,19 +135,19 @@ void FluidSynthProcessor::process(char pre, nframes_t len,
     if (enable) {
       // Run synth DSP
       fluid_synth_write_float(synth, len, 
-			      leftbuf, 0, 1,
-			      rightbuf, 0, 1);
+                              leftbuf, 0, 1,
+                              rightbuf, 0, 1);
     
       if (!stereo) {
-	// Mono, so fold the right channel into the left like pudding
-	for (nframes_t l = 0; l < len; l++)
-	  leftbuf[l] = (leftbuf[l] + rightbuf[l]) / 2;
+        // Mono, so fold the right channel into the left like pudding
+        for (nframes_t l = 0; l < len; l++)
+          leftbuf[l] = (leftbuf[l] + rightbuf[l]) / 2;
       }
     } else {
       // Silence, not enabled
       memset(leftbuf,0,sizeof(sample_t) * len);
       if (stereo)
-	memset(rightbuf,0,sizeof(sample_t) * len);
+        memset(rightbuf,0,sizeof(sample_t) * len);
     }
   }
 };
@@ -155,7 +155,7 @@ void FluidSynthProcessor::process(char pre, nframes_t len,
 // Read new current patch from 'patches' and send patch change to synth
 void FluidSynthProcessor::SendPatchChange(PatchItem *p) {
   fluid_synth_program_select(synth, p->channel, 
-			     p->id, p->bank, p->prog);
+                             p->id, p->bank, p->prog);
 };
 
 // Sets up our internal patch list based on loaded soundfonts
@@ -175,15 +175,15 @@ void FluidSynthProcessor::SetupPatches() {
       fluid_sfont_t *curfont = fluid_synth_get_sfont(synth,i);
       fluid_sfont_iteration_start(curfont);
       while (fluid_sfont_iteration_next(curfont, &preset))
-	br->AddItem(new PatchItem(fluid_sfont_get_id(curfont),
-				  fluid_preset_get_banknum(&preset),
-				  fluid_preset_get_num(&preset),
-				  fluidchan,
-				  fluid_preset_get_name(&preset)));
+        br->AddItem(new PatchItem(fluid_sfont_get_id(curfont),
+                                  fluid_preset_get_banknum(&preset),
+                                  fluid_preset_get_num(&preset),
+                                  fluidchan,
+                                  fluid_preset_get_name(&preset)));
 
       if (i+1 < sfcnt) {
-	// End of soundfont- put in a divider
-	br->AddItem(new BrowserDivision());
+        // End of soundfont- put in a divider
+        br->AddItem(new BrowserDivision());
       }
     }
   }
@@ -198,7 +198,7 @@ void FluidSynthProcessor::ReceiveMIDIEvent(Event *ev) {
     {
       MIDIControllerInputEvent *mcev = (MIDIControllerInputEvent *) ev;
       fluid_synth_cc(synth,app->getCFG()->GetFluidChannel(),
-		     mcev->ctrl,mcev->val);
+                     mcev->ctrl,mcev->val);
     }
     break;
 
@@ -207,7 +207,7 @@ void FluidSynthProcessor::ReceiveMIDIEvent(Event *ev) {
     {
       MIDIPitchBendInputEvent *mpev = (MIDIPitchBendInputEvent *) ev;
       fluid_synth_pitch_bend(synth,app->getCFG()->GetFluidChannel(),
-			     mpev->val + FLUIDSYNTH_PITCHBEND_CENTER);
+                             mpev->val + FLUIDSYNTH_PITCHBEND_CENTER);
     }
     break;
       
@@ -216,14 +216,14 @@ void FluidSynthProcessor::ReceiveMIDIEvent(Event *ev) {
     {
       MIDIKeyInputEvent *mkev = (MIDIKeyInputEvent *) ev;
       if (mkev->down)
-	fluid_synth_noteon(synth,
-			   app->getCFG()->GetFluidChannel(),
-			   mkev->notenum+fs->transpose,
-			   mkev->vel);
+        fluid_synth_noteon(synth,
+                           app->getCFG()->GetFluidChannel(),
+                           mkev->notenum+fs->transpose,
+                           mkev->vel);
       else
-	fluid_synth_noteoff(synth,
-			    app->getCFG()->GetFluidChannel(),
-			    mkev->notenum+fs->transpose);
+        fluid_synth_noteoff(synth,
+                            app->getCFG()->GetFluidChannel(),
+                            mkev->notenum+fs->transpose);
     }
     break;
 
@@ -240,8 +240,8 @@ void FluidSynthProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // OK!
       if (CRITTERS)
-	printf("FLUID: Received FluidSynthEnable (%s)\n",
-	       (fev->enable ? "on" : "off"));
+        printf("FLUID: Received FluidSynthEnable (%s)\n",
+               (fev->enable ? "on" : "off"));
       SetEnable(fev->enable);
     }
     break;

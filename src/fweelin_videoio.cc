@@ -108,35 +108,35 @@ void LoopTray::Draw(SDL_Surface *screen) {
 
   // Draw iconified version
   boxRGBA(screen,xpos,ypos,xpos+iconsize,ypos+iconsize,
-	  borderclr.r,borderclr.g,borderclr.b,255);
+          borderclr.r,borderclr.g,borderclr.b,255);
   hlineRGBA(screen,xpos,xpos+iconsize,ypos,40,40,40,255);
   hlineRGBA(screen,xpos,xpos+iconsize,ypos+iconsize,40,40,40,255);
   vlineRGBA(screen,xpos,ypos,ypos+iconsize,40,40,40,255);
   vlineRGBA(screen,xpos+iconsize,ypos,ypos+iconsize,40,40,40,255);
   FILLED_PIE(screen,xpos+iconsize/2,ypos+iconsize/2,
-	     iconsize*3/8,
-	     30,359,
-	     0xF9,0xE6,0x13,255);
+             iconsize*3/8,
+             30,359,
+             0xF9,0xE6,0x13,255);
   circleRGBA(screen,xpos+iconsize/2,ypos+iconsize/2,
-	     iconsize*3/8,
-	     40,40,40, 255); // Outline
+             iconsize*3/8,
+             40,40,40, 255); // Outline
 
   if (xpanded) {
     // Draw background
     {
       int xpand_yb1 = xpand_y1+basepos,
-	xpand_yb2 = xpand_y2-basepos,
-	xpand_xb1 = xpand_x1+basepos,
-	xpand_xb2 = xpand_x2-basepos;
+        xpand_yb2 = xpand_y2-basepos,
+        xpand_xb1 = xpand_x1+basepos,
+        xpand_xb2 = xpand_x2-basepos;
       
       boxRGBA(screen,xpand_x1,xpand_y1,xpand_xb1,xpand_y2,
-	      borderclr.r,borderclr.g,borderclr.b,255);
+              borderclr.r,borderclr.g,borderclr.b,255);
       boxRGBA(screen,xpand_xb1,xpand_y1,xpand_x2,xpand_y2,
-	      borderclr.r,borderclr.g,borderclr.b,255);
+              borderclr.r,borderclr.g,borderclr.b,255);
       boxRGBA(screen,xpand_x1,xpand_y1,xpand_x2,xpand_yb1,
-	      borderclr.r,borderclr.g,borderclr.b,255);
+              borderclr.r,borderclr.g,borderclr.b,255);
       boxRGBA(screen,xpand_x1,xpand_yb2,xpand_x2,xpand_y2,
-	      borderclr.r,borderclr.g,borderclr.b,255);
+              borderclr.r,borderclr.g,borderclr.b,255);
       boxRGBA(screen,xpand_xb1,xpand_yb1,xpand_xb2,xpand_yb2,0,0,0,255);
     }
     
@@ -155,28 +155,28 @@ void LoopTray::Draw(SDL_Surface *screen) {
       
       // Space for loops?
       if (curx >= xpand_x2-xpand_x1-loopjump ||
-	  cury >= xpand_y2-xpand_y1-loopjump)
-	go = 0;
+          cury >= xpand_y2-xpand_y1-loopjump)
+        go = 0;
 
       while (curl != 0) {
-	if (go) {
-	  curl->xpos = curx;
-	  curl->ypos = cury;
-	  
-	  // Move to next spot
-	  curx += loopjump;
-	  if (curx >= xpand_x2-xpand_x1-loopjump) {
-	    curx = basepos;
-	    cury += loopjump;
-	    if (cury >= xpand_y2-xpand_y1-loopjump)
-	      go = 0;
-	  }
-	} else {
-	  curl->xpos = -1;
-	  curl->ypos = -1;
-	}
-	
-	curl = (LoopTrayItem *) curl->next;
+        if (go) {
+          curl->xpos = curx;
+          curl->ypos = cury;
+          
+          // Move to next spot
+          curx += loopjump;
+          if (curx >= xpand_x2-xpand_x1-loopjump) {
+            curx = basepos;
+            cury += loopjump;
+            if (cury >= xpand_y2-xpand_y1-loopjump)
+              go = 0;
+          }
+        } else {
+          curl->xpos = -1;
+          curl->ypos = -1;
+        }
+        
+        curl = (LoopTrayItem *) curl->next;
       }
 
       touchtray = 0;
@@ -187,9 +187,9 @@ void LoopTray::Draw(SDL_Surface *screen) {
     char go = 1;
     while (curl != 0 && go) {
       if (curl->xpos != -1)
-	Draw_Item(screen,curl,xpand_x1+curl->xpos,xpand_y1+curl->ypos);
+        Draw_Item(screen,curl,xpand_x1+curl->xpos,xpand_y1+curl->ypos);
       else
-	go = 0;
+        go = 0;
 
       curl = (LoopTrayItem *) curl->next;
     }
@@ -203,9 +203,9 @@ void LoopTray::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
   const static SDL_Color white = { 0xEF, 0xAF, 0xFF, 0 };
   const static SDL_Color cursorclr = { 0xEF, 0x11, 0x11, 0 };
   static SDL_Color loop_color[4] = { { 0x62, 0x62, 0x62, 0 }, 
-				     { 0xF9, 0xE6, 0x13, 0 },
-				     { 0xFF, 0xFF, 0xFF, 0 },
-				     { 0xE0, 0xDA, 0xD5, 0 } };
+                                     { 0xF9, 0xE6, 0x13, 0 },
+                                     { 0xFF, 0xFF, 0xFF, 0 },
+                                     { 0xE0, 0xDA, 0xD5, 0 } };
 
   LoopManager *loopmgr = app->getLOOPMGR();
   LoopTrayItem *li = (LoopTrayItem *) i;
@@ -225,42 +225,42 @@ void LoopTray::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
   // Draw loop
   if (loopexists) {
     if (!app->getVIDEO()->
-	DrawLoop(loopmgr,li->loopid,screen,app->getVIDEO()->getLSCOPEPIC(),
-		 loop_color,colormag,app->getCFG(),0,loopmap,x,y,
-		 app->getRP()->GetLimiterVolume(),0)) {
+        DrawLoop(loopmgr,li->loopid,screen,app->getVIDEO()->getLSCOPEPIC(),
+                 loop_color,colormag,app->getCFG(),0,loopmap,x,y,
+                 app->getRP()->GetLimiterVolume(),0)) {
       // Place name
       if (li->placename != 0)
-	VideoIO::draw_text(screen,font->font,li->placename,x,y,white);
+        VideoIO::draw_text(screen,font->font,li->placename,x,y,white);
 
       // Loop name
       if (xpand_liney == -1)
-	TTF_SizeText(font->font,VERSION,0,&xpand_liney);
+        TTF_SizeText(font->font,VERSION,0,&xpand_liney);
       
       // printf("cur: %p\n",cur);
       if (i == cur && renamer != 0) {
-	RenameUIVars *rui = renamer->UpdateUIVars();
-	
-	// Draw text with cursor
-	int sx, sy;
-	int txty = y+loopsize-xpand_liney;
-	char *curn = renamer->GetCurName();
-	if (*curn != '\0')
-	  VideoIO::draw_text(screen,font->font,curn,
-			     x,txty,white,0,0,&sx,&sy);
-	else {
-	  sx = 0;
-	  sy = xpand_liney;
-	}
+        RenameUIVars *rui = renamer->UpdateUIVars();
+        
+        // Draw text with cursor
+        int sx, sy;
+        int txty = y+loopsize-xpand_liney;
+        char *curn = renamer->GetCurName();
+        if (*curn != '\0')
+          VideoIO::draw_text(screen,font->font,curn,
+                             x,txty,white,0,0,&sx,&sy);
+        else {
+          sx = 0;
+          sy = xpand_liney;
+        }
 
-	if (rui->rename_cursor_toggle)
-	  boxRGBA(screen,
-		  x+sx,txty,
-		  x+sx+sy/2,txty+sy,
-		  cursorclr.r,cursorclr.g,cursorclr.b,255);
+        if (rui->rename_cursor_toggle)
+          boxRGBA(screen,
+                  x+sx,txty,
+                  x+sx+sy/2,txty+sy,
+                  cursorclr.r,cursorclr.g,cursorclr.b,255);
       } else if (li->name != 0)
-	VideoIO::draw_text(screen,font->font,li->name,
-			   x,y+loopsize-xpand_liney,
-			   white);
+        VideoIO::draw_text(screen,font->font,li->name,
+                           x,y+loopsize-xpand_liney,
+                           white);
     }
   }
 
@@ -277,14 +277,14 @@ void Browser::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
     switch (i->GetType()) {
     case B_Patch :
       {
-	PatchItem *p = (PatchItem *) i;
-	
-	// Current patch
-	snprintf(tmp,255,"%02d: %s",
-		 p->id,
-		 p->name);
-	tmp[254] = '\0';
-	VideoIO::draw_text(screen,font->font,tmp,x,y,white);
+        PatchItem *p = (PatchItem *) i;
+        
+        // Current patch
+        snprintf(tmp,255,"%02d: %s",
+                 p->id,
+                 p->name);
+        tmp[254] = '\0';
+        VideoIO::draw_text(screen,font->font,tmp,x,y,white);
       }
       break;
 
@@ -293,34 +293,34 @@ void Browser::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
 
     default : 
       {
-	if (i->GetType() == B_Loop)
-	  snprintf(tmp,255,"%s-",FWEELIN_OUTPUT_LOOP_NAME);
-	else if (i->GetType() == B_Scene)
-	  snprintf(tmp,255,"%s-",FWEELIN_OUTPUT_SCENE_NAME);
-	else
-	  tmp[0] = '\0';
+        if (i->GetType() == B_Loop)
+          snprintf(tmp,255,"%s-",FWEELIN_OUTPUT_LOOP_NAME);
+        else if (i->GetType() == B_Scene)
+          snprintf(tmp,255,"%s-",FWEELIN_OUTPUT_SCENE_NAME);
+        else
+          tmp[0] = '\0';
 
-	if (i == cur && renamer != 0) {
-	  RenameUIVars *rui = renamer->UpdateUIVars();
+        if (i == cur && renamer != 0) {
+          RenameUIVars *rui = renamer->UpdateUIVars();
 
-	  strncat(tmp,renamer->GetCurName(),255);
-	  tmp[254] = '\0';
-	  
-	  // Draw text with cursor
-	  int sx, sy;
-	  VideoIO::draw_text(screen,font->font,tmp,x,y,white,0,0,
-			     &sx,&sy);
-	  
-	  if (rui->rename_cursor_toggle)
-	    boxRGBA(screen,
-		    x+sx,y,
-		    x+sx+sy/2,y+sy,
-		    cursorclr.r,cursorclr.g,cursorclr.b,255);
-	} else if (i->name != 0) {
-	  strncat(tmp,i->name,255);
-	  tmp[254] = '\0';
-	  VideoIO::draw_text(screen,font->font,tmp,x,y,white);
-	}
+          strncat(tmp,renamer->GetCurName(),255);
+          tmp[254] = '\0';
+          
+          // Draw text with cursor
+          int sx, sy;
+          VideoIO::draw_text(screen,font->font,tmp,x,y,white,0,0,
+                             &sx,&sy);
+          
+          if (rui->rename_cursor_toggle)
+            boxRGBA(screen,
+                    x+sx,y,
+                    x+sx+sy/2,y+sy,
+                    cursorclr.r,cursorclr.g,cursorclr.b,255);
+        } else if (i->name != 0) {
+          strncat(tmp,i->name,255);
+          tmp[254] = '\0';
+          VideoIO::draw_text(screen,font->font,tmp,x,y,white);
+        }
       }
       break;
     }
@@ -344,39 +344,39 @@ void Browser::Draw(SDL_Surface *screen) {
     
     if (cur != 0) {
       BrowserItem *sp_1 = cur,
-	*sp_2 = cur;
+        *sp_2 = cur;
 
       // Compute text height and center of expanded window-- once!
       if (xpand_liney == -1) {
-	TTF_SizeText(font->font,VERSION,0,&xpand_liney);
-	xpand_centery = (xpand_y1+xpand_y2)/2;
-	xpand_spread = MIN(xpand_centery-xpand_y1,
-			   xpand_y2-xpand_centery);
-	xpand_spread /= xpand_liney;
+        TTF_SizeText(font->font,VERSION,0,&xpand_liney);
+        xpand_centery = (xpand_y1+xpand_y2)/2;
+        xpand_spread = MIN(xpand_centery-xpand_y1,
+                           xpand_y2-xpand_centery);
+        xpand_spread /= xpand_liney;
 
-	// printf("compute xpand_liney: %d xpand_centery: %d\n",
-	//    xpand_liney, xpand_centery);
+        // printf("compute xpand_liney: %d xpand_centery: %d\n",
+        //    xpand_liney, xpand_centery);
       }
 
       int ofs_1 = 0;
       boxRGBA(screen,
-	      xpand_x1,xpand_centery,
-	      xpand_x2,xpand_centery+xpand_liney,
-	      127,0,0,255);
+              xpand_x1,xpand_centery,
+              xpand_x2,xpand_centery+xpand_liney,
+              127,0,0,255);
       Draw_Item(screen,sp_1,xpand_x1,
-		xpand_centery-xpand_liney*ofs_1);
+                xpand_centery-xpand_liney*ofs_1);
       while (ofs_1 < xpand_spread && sp_1->prev != 0) {
-	sp_1 = sp_1->prev;
-	ofs_1++;
-	Draw_Item(screen,sp_1,xpand_x1,
-		  xpand_centery-xpand_liney*ofs_1);
+        sp_1 = sp_1->prev;
+        ofs_1++;
+        Draw_Item(screen,sp_1,xpand_x1,
+                  xpand_centery-xpand_liney*ofs_1);
       }
       int ofs_2 = 0;
       while (ofs_2 < xpand_spread-1 && sp_2->next != 0) {
-	sp_2 = sp_2->next;
-	ofs_2++;
-	Draw_Item(screen,sp_2,xpand_x1,
-		  xpand_centery+xpand_liney*ofs_2);
+        sp_2 = sp_2->next;
+        ofs_2++;
+        Draw_Item(screen,sp_2,xpand_x1,
+                  xpand_centery+xpand_liney*ofs_2);
       }
     }
 
@@ -404,14 +404,14 @@ void FloDisplayText::Draw(SDL_Surface *screen) {
     // Draw title
     if (title != 0)
       VideoIO::draw_text(screen,font->font,
-			 title,xpos,ypos,titleclr,0,1,
-			 &xofs,&yofs);
+                         title,xpos,ypos,titleclr,0,1,
+                         &xofs,&yofs);
 
     // Draw value
     UserVariable val = exp->Evaluate(0);
     val.Print(tmp,255);
     VideoIO::draw_text(screen,font->font,
-		       tmp,xpos+xofs,ypos,valclr,0,1);
+                       tmp,xpos+xofs,ypos,valclr,0,1);
   }
 };
 
@@ -427,7 +427,7 @@ void FloDisplaySwitch::Draw(SDL_Surface *screen) {
 
     // Draw title
     VideoIO::draw_text(screen,font->font,
-		       title,xpos,ypos,(nonz ? title1clr : title0clr),0,1);
+                       title,xpos,ypos,(nonz ? title1clr : title0clr),0,1);
   }
 };
 
@@ -454,12 +454,12 @@ void FloDisplayCircleSwitch::Draw(SDL_Surface *screen) {
   // Draw circle
   SDL_Color *c = (nonz && flashon ? &c1clr : &c0clr);
   filledCircleRGBA(screen,xpos,ypos,(nonz && flashon ? rad1 : rad0),
-		   c->r, c->g, c->b, 255);
+                   c->r, c->g, c->b, 255);
 
   if (font != 0 && font->font != 0 && title != 0) {
     // Draw title
     VideoIO::draw_text(screen,font->font,
-		       title,xpos+2*rad0,ypos,titleclr,0,1);
+                       title,xpos+2*rad0,ypos,titleclr,0,1);
   }
 };
 
@@ -477,8 +477,8 @@ void FloDisplayTextSwitch::Draw(SDL_Surface *screen) {
   char *dtxt = (nonz ? text1 : text0);
   if (dtxt != 0)
     VideoIO::draw_text(screen,font->font,dtxt,
-		       xpos,ypos,
-		       (nonz ? c1clr : c0clr),0,1);
+                       xpos,ypos,
+                       (nonz ? c1clr : c0clr),0,1);
 };
 
 // Draw text display
@@ -490,9 +490,9 @@ void FloDisplayBar::Draw(SDL_Surface *screen) {
     // Draw title
     if (title != 0)
       VideoIO::draw_text(screen,font->font,
-			 title,xpos,ypos,titleclr,
-			 (orient == O_Vertical ? 1 : 2),
-			 (orient == O_Horizontal ? 1 : 0));
+                         title,xpos,ypos,titleclr,
+                         (orient == O_Vertical ? 1 : 2),
+                         (orient == O_Horizontal ? 1 : 0));
   }
   
   // Get value of expression
@@ -505,37 +505,37 @@ void FloDisplayBar::Draw(SDL_Surface *screen) {
 
     // Show calibration
     boxRGBA(screen,
-	    xpos-thickness/2,ypos,
-	    xpos+thickness/2,(int) (ypos-barscale),
-	    barclr.r/2,barclr.g/2,barclr.b/2,255);
+            xpos-thickness/2,ypos,
+            xpos+thickness/2,(int) (ypos-barscale),
+            barclr.r/2,barclr.g/2,barclr.b/2,255);
 
     // Bar
     boxRGBA(screen,
-	    xpos-thickness,ypos,
-	    xpos+thickness,(int) (ypos-fval*barscale),
-	    barclr.r/2,barclr.g/2,barclr.b/2,255);
+            xpos-thickness,ypos,
+            xpos+thickness,(int) (ypos-fval*barscale),
+            barclr.r/2,barclr.g/2,barclr.b/2,255);
     boxRGBA(screen,
-	    xpos-thickness/2,ypos,
-	    xpos+thickness/2,(int) (ypos-fval*barscale),
-	    barclr.r,barclr.g,barclr.b,255);
+            xpos-thickness/2,ypos,
+            xpos+thickness/2,(int) (ypos-fval*barscale),
+            barclr.r,barclr.g,barclr.b,255);
   } else {
     // Horizontal
 
     // Show calibration
     boxRGBA(screen,
-	    xpos,ypos-thickness/2,
-	    (int) (xpos+barscale),ypos+thickness/2,
-	    barclr.r/2,barclr.g/2,barclr.b/2,255);
+            xpos,ypos-thickness/2,
+            (int) (xpos+barscale),ypos+thickness/2,
+            barclr.r/2,barclr.g/2,barclr.b/2,255);
 
     // Bar
     boxRGBA(screen,
-	    xpos,ypos-thickness,
-	    (int) (xpos+fval*barscale),ypos+thickness,
-	    barclr.r/2,barclr.g/2,barclr.b/2,255);
+            xpos,ypos-thickness,
+            (int) (xpos+fval*barscale),ypos+thickness,
+            barclr.r/2,barclr.g/2,barclr.b/2,255);
     boxRGBA(screen,
-	    xpos,ypos-thickness/2,
-	    (int) (xpos+fval*barscale),ypos+thickness/2,
-	    barclr.r,barclr.g,barclr.b,255);
+            xpos,ypos-thickness/2,
+            (int) (xpos+fval*barscale),ypos+thickness/2,
+            barclr.r,barclr.g,barclr.b,255);
   }
 };
 
@@ -543,7 +543,7 @@ void FloDisplayBar::Draw(SDL_Surface *screen) {
 void FloDisplayBarSwitch::Draw(SDL_Surface *screen) {
   const static SDL_Color titleclr = { 0x77, 0x88, 0x99, 0 };
   const static SDL_Color barclr[2] = { { 0xEF, 0xAF, 0xFF, 0 },
-				       { 0xCF, 0x4F, 0xFC, 0 } };
+                                       { 0xCF, 0x4F, 0xFC, 0 } };
   
   const SDL_Color *bc = (color == 2 ? &barclr[1] : &barclr[0]);
 
@@ -551,9 +551,9 @@ void FloDisplayBarSwitch::Draw(SDL_Surface *screen) {
     // Draw title
     if (title != 0)
       VideoIO::draw_text(screen,font->font,
-			 title,xpos,ypos,titleclr,
-			 (orient == O_Vertical ? 1 : 2),
-			 (orient == O_Horizontal ? 1 : 0));
+                         title,xpos,ypos,titleclr,
+                         (orient == O_Vertical ? 1 : 2),
+                         (orient == O_Horizontal ? 1 : 0));
   }
   
   // Get value of expression
@@ -568,31 +568,31 @@ void FloDisplayBarSwitch::Draw(SDL_Surface *screen) {
 
     // Bar
     boxRGBA(screen,
-	    xpos-thickness/2,ypos,
-	    xpos+thickness/2,(int) (ypos-fval*barscale),
-	    bc->r,bc->g,bc->b,(sw ? 255 : 127));
+            xpos-thickness/2,ypos,
+            xpos+thickness/2,(int) (ypos-fval*barscale),
+            bc->r,bc->g,bc->b,(sw ? 255 : 127));
     // Calibrate
     if (calibrate)
       hlineRGBA(screen,
-		xpos-thickness/2,
-		xpos+thickness/2,
-		(int) (ypos-cval*barscale),
-		255,255,255,(sw ? 255 : 127));
+                xpos-thickness/2,
+                xpos+thickness/2,
+                (int) (ypos-cval*barscale),
+                255,255,255,(sw ? 255 : 127));
   } else {
     // Horizontal
 
     // Bar
     boxRGBA(screen,
-	    xpos,ypos-thickness/2,
-	    (int) (xpos+fval*barscale),ypos+thickness/2,
-	    bc->r,bc->g,bc->b,(sw ? 255 : 127));
+            xpos,ypos-thickness/2,
+            (int) (xpos+fval*barscale),ypos+thickness/2,
+            bc->r,bc->g,bc->b,(sw ? 255 : 127));
     // Calibrate
     if (calibrate)
       vlineRGBA(screen,
-		(int) (xpos+cval*barscale),
-		ypos-thickness/2,
-		ypos+thickness/2,
-		255,255,255,(sw ? 255 : 127));
+                (int) (xpos+cval*barscale),
+                ypos-thickness/2,
+                ypos+thickness/2,
+                255,255,255,(sw ? 255 : 127));
   }
 };
 
@@ -601,8 +601,8 @@ void FloDisplayBarSwitch::Draw(SDL_Surface *screen) {
 void FloLayoutBox::Draw(SDL_Surface *screen, SDL_Color clr) {
   // Solid box
   boxRGBA(screen,
-	  left,top,right,bottom,
-	  clr.r,clr.g,clr.b,255);
+          left,top,right,bottom,
+          clr.r,clr.g,clr.b,255);
   // Outline
   if (lineleft)
     vlineRGBA(screen,left,top,bottom,0,0,0,255);
@@ -618,29 +618,32 @@ void FloLayoutBox::Draw(SDL_Surface *screen, SDL_Color clr) {
 void FloDisplaySnapshots::Draw(SDL_Surface *screen) {
   const static SDL_Color titleclr = { 0x77, 0x88, 0x99, 0 };
   const static SDL_Color borderclr = { 0xFF, 0x50, 0x20, 0 };
+  const static SDL_Color cursorclr = { 0x77, 0x77, 0x77, 0 };
 
+  LockSnaps();
+  
   if (numdisp == -1) {
     int height = TTF_FontHeight(font->font);
     numdisp = sy/height;
   }
 
   boxRGBA(screen,
-	  xpos,ypos,xpos+sx,ypos+sy,
-	  0,0,0,190);
+          xpos,ypos,xpos+sx,ypos+sy,
+          0,0,0,190);
   vlineRGBA(screen,xpos,ypos,ypos+sy,
-	    borderclr.r,borderclr.g,borderclr.b,255);
+            borderclr.r,borderclr.g,borderclr.b,255);
   vlineRGBA(screen,xpos+sx,ypos,ypos+sy,
-	    borderclr.r,borderclr.g,borderclr.b,255);
+            borderclr.r,borderclr.g,borderclr.b,255);
   hlineRGBA(screen,xpos,xpos+sx,ypos,
-	    borderclr.r,borderclr.g,borderclr.b,255);
+            borderclr.r,borderclr.g,borderclr.b,255);
   hlineRGBA(screen,xpos,xpos+sx,ypos+sy,
-	    borderclr.r,borderclr.g,borderclr.b,255);
+            borderclr.r,borderclr.g,borderclr.b,255);
 
   if (font != 0 && font->font != 0) {
     // Draw title
     if (title != 0)
       VideoIO::draw_text(screen,font->font,
-			 title,xpos+sx/2,ypos,titleclr,1,2);
+                         title,xpos+sx/2,ypos,titleclr,1,2);
   }
 
   // Draw items
@@ -652,23 +655,41 @@ void FloDisplaySnapshots::Draw(SDL_Surface *screen) {
     char buf[SNAP_NAME_LEN];
     Snapshot *sn = app->getSNAP(i);
     if (sn != 0) {
+      RenameUIVars *rui = 0;
       char *nm = sn->name;
+
+      if (renamer != 0 && i == rename_idx) {
+        // Use current name from renamer
+        rui = renamer->UpdateUIVars();
+        nm = renamer->GetCurName();
+      }
+      
       if (nm != 0)
-	snprintf(buf,SNAP_NAME_LEN,"%2d %s",i+1,nm);
+        snprintf(buf,SNAP_NAME_LEN,"%2d %s",i+1,nm);
       else if (sn->exists != 0)
-	snprintf(buf,SNAP_NAME_LEN,"%2d **",i+1);      
+        snprintf(buf,SNAP_NAME_LEN,"%2d **",i+1);      
       else
-	snprintf(buf,SNAP_NAME_LEN,"%2d",i+1);
+        snprintf(buf,SNAP_NAME_LEN,"%2d",i+1);
+        
+      int sx, sy;
       VideoIO::draw_text(screen,font->font,
-			 buf,xpos+margin,cury,titleclr,0,0);
+                         buf,xpos+margin,cury,titleclr,0,0,&sx,&sy);
+
+      if (rui != 0 && rui->rename_cursor_toggle)
+          boxRGBA(screen,
+                  xpos+margin+sx,cury,
+                  xpos+margin+sx+sy/2,cury+sy,
+                  cursorclr.r,cursorclr.g,cursorclr.b,255);
     }
   }
+  
+  UnlockSnaps();
 };
 
 CircularMap::CircularMap(SDL_Surface *in,
-			 int map_xs, int map_ys,
-			 int in_xs, int in_ys,
-			 int rinner, int rsize) :
+                         int map_xs, int map_ys,
+                         int in_xs, int in_ys,
+                         int rinner, int rsize) :
   in(in), map_xs(map_xs), map_ys(map_ys), in_xs(in_xs), in_ys(in_ys),
   rinner(rinner), rsize(rsize), next(0) {
   // Allocate memory for maps
@@ -692,61 +713,61 @@ CircularMap::CircularMap(SDL_Surface *in,
     for (int x = 0; x < map_xs; x++) {
       //printf("%d %d\n", x, y);
       int yofs = y-map_yc,
-	xofs = map_xc-x;
+        xofs = map_xc-x;
       float theta = atan2(yofs,xofs),
-	in_x = in_xs*(theta+M_PI)/(2*M_PI);
+        in_x = in_xs*(theta+M_PI)/(2*M_PI);
 
       // Now that we know x mapping, based on calculated theta (see theta)
       // Let's get y mapping
       float in_y;
       if (sin(theta) == 0) {
-	// This fixes an annoying horizontal crack in the map
-	in_y = (xofs-rinner)*in_ys/rsize;
-	//printf("xofs: %d yofs: %d inx: %f iny: %f\n",xofs,yofs,in_x,in_y);
+        // This fixes an annoying horizontal crack in the map
+        in_y = (xofs-rinner)*in_ys/rsize;
+        //printf("xofs: %d yofs: %d inx: %f iny: %f\n",xofs,yofs,in_x,in_y);
       }
       else
-	in_y = (yofs/sin(theta)-rinner)*in_ys/rsize;
+        in_y = (yofs/sin(theta)-rinner)*in_ys/rsize;
 
       // Are we in range, honey?
       int idx = y*map_xs + x;
       if (in_x >= 0 & in_y >= 0 &&
-	  in_x < in_xs && in_y < in_ys) {
+          in_x < in_xs && in_y < in_ys) {
         /*printf("%d %d\n", x, y);
-	  printf(" in[%d,%d]\n",(int)in_x,(int)in_y);*/
+          printf(" in[%d,%d]\n",(int)in_x,(int)in_y);*/
 
-	// Yup-- write the map
-	map[idx] = in_base + round(in_y)*pitch + round(in_x)*bpp;
-	
-	// Generate scan map
-	if (pixelscount <= 0) {
-	  // OK start of run
+        // Yup-- write the map
+        map[idx] = in_base + round(in_y)*pitch + round(in_x)*bpp;
+        
+        // Generate scan map
+        if (pixelscount <= 0) {
+          // OK start of run
 
-	  // Write number of empty pixels from last run to here
-	  scanmap[y*4 + runnum] = -pixelscount;
-	  //printf("Y:%d r:%d cnt: %d\n",y,runnum,-pixelscount);
+          // Write number of empty pixels from last run to here
+          scanmap[y*4 + runnum] = -pixelscount;
+          //printf("Y:%d r:%d cnt: %d\n",y,runnum,-pixelscount);
 
-	  runnum++;
-	  pixelscount = 0;
-	}
-	pixelscount++;
+          runnum++;
+          pixelscount = 0;
+        }
+        pixelscount++;
       } else {
-	//printf(" none\n");
+        //printf(" none\n");
 
-	// Mapping is empty for this location
-	map[idx] = 0;
+        // Mapping is empty for this location
+        map[idx] = 0;
 
-	// Generate scan map
-	if (pixelscount > 0) {
-	  // OK end of run
+        // Generate scan map
+        if (pixelscount > 0) {
+          // OK end of run
 
-	  // Write number of pixels written from beginning of run to here
-	  scanmap[y*4 + runnum] = pixelscount;
-	  //printf("Y:%d r:%d cnt: %d\n",y,runnum,pixelscount);
-	  
-	  runnum++;
-	  pixelscount = 0;
-	}
-	pixelscount--;
+          // Write number of pixels written from beginning of run to here
+          scanmap[y*4 + runnum] = pixelscount;
+          //printf("Y:%d r:%d cnt: %d\n",y,runnum,pixelscount);
+          
+          runnum++;
+          pixelscount = 0;
+        }
+        pixelscount--;
       }
     }
 
@@ -784,8 +805,8 @@ char CircularMap::Map(SDL_Surface *out, int dstx, int dsty) {
   bpp = out->format->BytesPerPixel;
   if (bpp != in->format->BytesPerPixel) {
     printf("VIDEO: ERROR: Temporary buffer & video screen not "
-	   "matching depth (in: %d out: %d).\n", 
-	   in->format->BytesPerPixel,bpp);
+           "matching depth (in: %d out: %d).\n", 
+           in->format->BytesPerPixel,bpp);
     return 1;
   }
 
@@ -814,7 +835,7 @@ char CircularMap::Map(SDL_Surface *out, int dstx, int dsty) {
   int ofs,
     scanleft; 
   for (int y = 0; y < map_ys; y++, ptr += map_xs, optr += out_pitch,
-	 tmpscan += scanleft) {
+         tmpscan += scanleft) {
     scanleft = 4;
     ptr2 = ptr;
     optr2 = optr;
@@ -838,49 +859,49 @@ char CircularMap::Map(SDL_Surface *out, int dstx, int dsty) {
       // differently-- optimized subroutines follow..
       switch (bpp) {
       case 1:
-	{
-	  for (int i = 0; i < ofs; i++, ptr2++, optr2 += bpp)
-	    // Copy 1 byte pixels
-	    *optr2 = **ptr2;
-	}
-	break;
+        {
+          for (int i = 0; i < ofs; i++, ptr2++, optr2 += bpp)
+            // Copy 1 byte pixels
+            *optr2 = **ptr2;
+        }
+        break;
       case 2:
-	{
-	  for (int i = 0; i < ofs; i++, ptr2++, optr2 += bpp)
-	    // Copy 2 byte pixels
-	    *((Uint16 *) optr2) = *((Uint16 *) (*ptr2));
-	}
-	break;
+        {
+          for (int i = 0; i < ofs; i++, ptr2++, optr2 += bpp)
+            // Copy 2 byte pixels
+            *((Uint16 *) optr2) = *((Uint16 *) (*ptr2));
+        }
+        break;
       case 3:
-	{
-	  // 3 byte pixels
-	  for (int i = 0; i < ofs; i++, ptr2++, optr2 += bpp) {
-	    // Access the map to find offset into input
-	    ip = *ptr2;
-	    // And output pointer is right there
-	    op = optr2;
+        {
+          // 3 byte pixels
+          for (int i = 0; i < ofs; i++, ptr2++, optr2 += bpp) {
+            // Access the map to find offset into input
+            ip = *ptr2;
+            // And output pointer is right there
+            op = optr2;
 
-	    if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
-	      ip += 2;
-	      // Copy, reversing bit order for this pixel
-	      for (int n = 0; n < bpp; n++)
-		*(op++) = *(ip--);
-	    }
-	    else {
-	      // Copy, regular bit order for this pixel
-	      for (int n = 0; n < bpp; n++)
-		*(op++) = *(ip++);
-	    }
-	  }
-	}
-	break;
+            if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+              ip += 2;
+              // Copy, reversing bit order for this pixel
+              for (int n = 0; n < bpp; n++)
+                *(op++) = *(ip--);
+            }
+            else {
+              // Copy, regular bit order for this pixel
+              for (int n = 0; n < bpp; n++)
+                *(op++) = *(ip++);
+            }
+          }
+        }
+        break;
       case 4:
-	{
-	  for (int i = 0; i < ofs; i++, ptr2++, optr2 += bpp)
-	    // Copy 4 byte pixels
-	    *((Uint32 *) optr2) = *((Uint32 *) (*ptr2));
-	}
-	break;
+        {
+          for (int i = 0; i < ofs; i++, ptr2++, optr2 += bpp)
+            // Copy 4 byte pixels
+            *((Uint32 *) optr2) = *((Uint32 *) (*ptr2));
+        }
+        break;
       }
       
       // Ok, 1 scan run complete, so 2 endpoints less on scanline
@@ -918,9 +939,9 @@ int VideoIO::activate() {
   printf("VIDEO: Stacksize: %d.\n",STACKSIZE);
 
   int ret = pthread_create(&video_thread,
-			   &attr,
-			   run_video_thread,
-			   this);
+                           &attr,
+                           run_video_thread,
+                           this);
   if (ret != 0) {
     printf("VIDEO: (start) pthread_create failed, exiting");
     return 1;
@@ -985,11 +1006,11 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
       FloDisplay *curdisplay = app->getCFG()->GetDisplays();
       char skip = 0;
       while (curdisplay != 0 && !skip) {
-	if (curdisplay->show &&
-	    curdisplay->GetFloDisplayType() == FD_Browser)
-	  skip = ((Browser *) curdisplay)->MouseMotion(mev);
+        if ((curdisplay->show || curdisplay->forceshow) &&
+            curdisplay->GetFloDisplayType() == FD_Browser)
+          skip = ((Browser *) curdisplay)->MouseMotion(mev);
 
-	curdisplay = curdisplay->next;
+        curdisplay = curdisplay->next;
       }
     }
     break;
@@ -1002,53 +1023,53 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
       FloDisplay *curdisplay = app->getCFG()->GetDisplays();
       char skip = 0;
       while (curdisplay != 0 && !skip) {
-	if (curdisplay->show &&
-	    curdisplay->GetFloDisplayType() == FD_Browser)
-	  skip = ((Browser *) curdisplay)->MouseButton(mev);
+        if ((curdisplay->show || curdisplay->forceshow) &&
+            curdisplay->GetFloDisplayType() == FD_Browser)
+          skip = ((Browser *) curdisplay)->MouseButton(mev);
 
-	curdisplay = curdisplay->next;
+        curdisplay = curdisplay->next;
       }
 
       if (!skip) { // Only continue if a browser hasn't eaten the event
-	// Has the mouse button been pressed inside any of the 
-	// on-screen layout elements?
-	FloLayout *cur = app->getCFG()->GetLayouts();
-	while (cur != 0) {
-	  if (cur->show) {
-	    int firstid = cur->loopids.lo, 
-	      curid = firstid,
-	      maxid = cur->loopids.hi;
-	    
-	    // Check each element in this layout
-	    FloLayoutElement *curel = cur->elems;
-	    while (curel != 0 && curid <= maxid) {
-	      if (curel->Inside(mev->x,mev->y)) {
-		// Mouse button inside element-
-		
-		// Issue 'loop clicked' event
-		LoopClickedEvent *lcevt = (LoopClickedEvent *) 
-		  Event::GetEventByType(T_EV_LoopClicked);
-		
-		lcevt->button = mev->button;
-		lcevt->down = mev->down;
-		lcevt->loopid = firstid + curel->id;
-		lcevt->in = 1; // In=1 means clicked in on-screen layout
-		app->getEMG()->BroadcastEventNow(lcevt, this);
-		
-		if (CRITTERS) 
-		  printf("MOUSE: Button #%d %s in element: %s\n",
-			 mev->button,
-			 (mev->down ? "pressed" : "released"),
-			 curel->name);
-	      }
-	      
-	      curid++;
-	      curel = curel->next;
-	    }	    
-	  }
+        // Has the mouse button been pressed inside any of the 
+        // on-screen layout elements?
+        FloLayout *cur = app->getCFG()->GetLayouts();
+        while (cur != 0) {
+          if (cur->show) {
+            int firstid = cur->loopids.lo, 
+              curid = firstid,
+              maxid = cur->loopids.hi;
+            
+            // Check each element in this layout
+            FloLayoutElement *curel = cur->elems;
+            while (curel != 0 && curid <= maxid) {
+              if (curel->Inside(mev->x,mev->y)) {
+                // Mouse button inside element-
+                
+                // Issue 'loop clicked' event
+                LoopClickedEvent *lcevt = (LoopClickedEvent *) 
+                  Event::GetEventByType(T_EV_LoopClicked);
+                
+                lcevt->button = mev->button;
+                lcevt->down = mev->down;
+                lcevt->loopid = firstid + curel->id;
+                lcevt->in = 1; // In=1 means clicked in on-screen layout
+                app->getEMG()->BroadcastEventNow(lcevt, this);
+                
+                if (CRITTERS) 
+                  printf("MOUSE: Button #%d %s in element: %s\n",
+                         mev->button,
+                         (mev->down ? "pressed" : "released"),
+                         curel->name);
+              }
+              
+              curid++;
+              curel = curel->next;
+            }       
+          }
 
-	  cur = cur->next;
-	}
+          cur = cur->next;
+        }
       }
     }
     break;
@@ -1057,29 +1078,29 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       VideoShowSnapshotPageEvent *vev = (VideoShowSnapshotPageEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: %s snapshot page (interface id %d, display id %d)\n",
-	       (vev->page < 0 ? "Previous" : "Next"),
-	       vev->interfaceid,vev->displayid);
+        printf("VIDEO: %s snapshot page (interface id %d, display id %d)\n",
+               (vev->page < 0 ? "Previous" : "Next"),
+               vev->interfaceid,vev->displayid);
       
       // Find the right display
       FloDisplay *cur = app->getCFG()->GetDisplayById(vev->interfaceid,
-						      vev->displayid);
+                                                      vev->displayid);
       if (cur != 0 && cur->GetFloDisplayType() == FD_Snapshots) {
-	FloDisplaySnapshots *sn = (FloDisplaySnapshots *) cur;
-	if (vev->page < 0) {
-	  int newidx = sn->firstidx - sn->numdisp;
-	  if (newidx < 0)
-	    newidx = 0;
-	  sn->firstidx = newidx;
-	} else {
-	  int newidx = sn->firstidx + sn->numdisp;
-	  if (newidx < app->getCFG()->GetMaxSnapshots())
-	    sn->firstidx = newidx;
-	}
+        FloDisplaySnapshots *sn = (FloDisplaySnapshots *) cur;
+        if (vev->page < 0) {
+          int newidx = sn->firstidx - sn->numdisp;
+          if (newidx < 0)
+            newidx = 0;
+          sn->firstidx = newidx;
+        } else {
+          int newidx = sn->firstidx + sn->numdisp;
+          if (newidx < app->getCFG()->GetMaxSnapshots())
+            sn->firstidx = newidx;
+        }
       } else
-	printf("VIDEO: Specified display is not a snapshot display "
-	       "(interface id %d, display id %d)\n",
-	       vev->interfaceid,vev->displayid);
+        printf("VIDEO: Specified display is not a snapshot display "
+               "(interface id %d, display id %d)\n",
+               vev->interfaceid,vev->displayid);
     }
     break;
 
@@ -1087,39 +1108,39 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       VideoShowLoopEvent *vev = (VideoShowLoopEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: Show loop (interface %d layout %d): %d>%d\n",
-	       vev->interfaceid,
-	       vev->layoutid,vev->loopid.lo,vev->loopid.hi);
+        printf("VIDEO: Show loop (interface %d layout %d): %d>%d\n",
+               vev->interfaceid,
+               vev->layoutid,vev->loopid.lo,vev->loopid.hi);
 
       // Error check range
       if (vev->loopid.lo < 0 || vev->loopid.hi < 0 ||
-	  vev->loopid.lo >= app->getCFG()->GetNumTriggers() ||
-	  vev->loopid.hi >= app->getCFG()->GetNumTriggers() ||
-	  vev->loopid.hi < vev->loopid.lo) {
-	printf("VIDEO: Invalid loopid range for interface %d "
-	       "layout %d: %d>%d\n",
-	       vev->interfaceid,
-	       vev->layoutid,vev->loopid.lo,vev->loopid.hi);
+          vev->loopid.lo >= app->getCFG()->GetNumTriggers() ||
+          vev->loopid.hi >= app->getCFG()->GetNumTriggers() ||
+          vev->loopid.hi < vev->loopid.lo) {
+        printf("VIDEO: Invalid loopid range for interface %d "
+               "layout %d: %d>%d\n",
+               vev->interfaceid,
+               vev->layoutid,vev->loopid.lo,vev->loopid.hi);
       } else {
-	// Find the right layout
-	int id = vev->layoutid,
-	  iid = vev->interfaceid;
-	FloLayout *cur = app->getCFG()->GetLayouts();
-	char found = 0;
-	while (cur != 0) {
-	  if (iid == cur->iid && id == cur->id) {
-	    // Match-- change the range of displayed loops for
-	    // this layout
-	    cur->loopids = vev->loopid;
-	    found = 1;
-	  }
-	  
-	  cur = cur->next;
-	}
+        // Find the right layout
+        int id = vev->layoutid,
+          iid = vev->interfaceid;
+        FloLayout *cur = app->getCFG()->GetLayouts();
+        char found = 0;
+        while (cur != 0) {
+          if (iid == cur->iid && id == cur->id) {
+            // Match-- change the range of displayed loops for
+            // this layout
+            cur->loopids = vev->loopid;
+            found = 1;
+          }
+          
+          cur = cur->next;
+        }
 
-	if (!found)
-	  printf("VIDEO: Invalid layoutid %d in interface %d.\n",
-		 vev->layoutid,vev->interfaceid);
+        if (!found)
+          printf("VIDEO: Invalid layoutid %d in interface %d.\n",
+                 vev->layoutid,vev->interfaceid);
       }
     }
     break;
@@ -1128,18 +1149,18 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       VideoShowDisplayEvent *vev = (VideoShowDisplayEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: %s display (interface id %d, display id %d)\n",
-	       (vev->show ? "show" : "hide"),
-	       vev->interfaceid,vev->displayid);
+        printf("VIDEO: %s display (interface id %d, display id %d)\n",
+               (vev->show ? "show" : "hide"),
+               vev->interfaceid,vev->displayid);
       
       // Find the right display
       FloDisplay *cur = app->getCFG()->GetDisplayById(vev->interfaceid,
-						      vev->displayid);
+                                                      vev->displayid);
       if (cur != 0)
-	cur->show = vev->show;
+        cur->show = vev->show;
       else
-	printf("VIDEO: Invalid display (interface id %d, display id %d)\n",
-	       vev->interfaceid,vev->displayid);
+        printf("VIDEO: Invalid display (interface id %d, display id %d)\n",
+               vev->interfaceid,vev->displayid);
     }
     break;
 
@@ -1147,33 +1168,33 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       VideoShowLayoutEvent *vev = (VideoShowLayoutEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: %s layout (interface id %d, layout id %d) %s\n",
-	       (vev->show ? "show" : "hide"),
-	       vev->interfaceid,vev->layoutid,
-	       (vev->hideothers ? "(hide others)" : ""));
+        printf("VIDEO: %s layout (interface id %d, layout id %d) %s\n",
+               (vev->show ? "show" : "hide"),
+               vev->interfaceid,vev->layoutid,
+               (vev->hideothers ? "(hide others)" : ""));
       
       // Find the right layout
       int iid = vev->interfaceid,
-	id = vev->layoutid;
+        id = vev->layoutid;
       FloLayout *cur = app->getCFG()->GetLayouts();
       char found = 0;
       while (cur != 0) {
-	if (iid == cur->iid && id == cur->id) {
-	  // Match!
-	  // Set show or hide
-	  cur->show = vev->show;
-	  found = 1;
-	} else if (vev->hideothers) {
-	  // Hide other layouts
-	  cur->show = 0;
-	}
-	
-	cur = cur->next;
+        if (iid == cur->iid && id == cur->id) {
+          // Match!
+          // Set show or hide
+          cur->show = vev->show;
+          found = 1;
+        } else if (vev->hideothers) {
+          // Hide other layouts
+          cur->show = 0;
+        }
+        
+        cur = cur->next;
       }
 
       if (!found)
-	printf("VIDEO: Invalid layoutid %d in interface %d.\n",
-	       vev->layoutid,vev->interfaceid);
+        printf("VIDEO: Invalid layoutid %d in interface %d.\n",
+               vev->layoutid,vev->interfaceid);
     }
     break;
 
@@ -1185,43 +1206,43 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
       // non-switchable interface
       VideoSwitchInterfaceEvent *vev = (VideoSwitchInterfaceEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: Switch to interface %d\n",vev->interfaceid);
+        printf("VIDEO: Switch to interface %d\n",vev->interfaceid);
       
       // Show/hide layouts
       int iid = vev->interfaceid;
 
       {
-	FloLayout *cur = app->getCFG()->GetLayouts();
-	while (cur != 0) {
-	  if (cur->iid != 0 &&
-	      cur->iid < NS_INTERFACE_START_ID) { // Switchable interface?
-	    if (cur->iid == iid) 
-	      // Layout in matching interface- show
-	      cur->show = 1;
-	    else
-	      // Layout in unmatching interface- hide
-	      cur->show = 0;
-	  }
-	  
-	  cur = cur->next;
-	}
+        FloLayout *cur = app->getCFG()->GetLayouts();
+        while (cur != 0) {
+          if (cur->iid != 0 &&
+              cur->iid < NS_INTERFACE_START_ID) { // Switchable interface?
+            if (cur->iid == iid) 
+              // Layout in matching interface- show
+              cur->show = 1;
+            else
+              // Layout in unmatching interface- hide
+              cur->show = 0;
+          }
+          
+          cur = cur->next;
+        }
       }
 
       {
-	FloDisplay *cur = app->getCFG()->GetDisplays();
-	while (cur != 0) {
-	  if (cur->iid != 0 &&
-	      cur->iid < NS_INTERFACE_START_ID) { // Switchable interface?
-	    if (cur->iid == iid) 
-	      // Display in matching interface- show
-	      cur->show = 1;
-	    else
-	      // Display in unmatching interface- hide
-	      cur->show = 0;
-	  }
+        FloDisplay *cur = app->getCFG()->GetDisplays();
+        while (cur != 0) {
+          if (cur->iid != 0 &&
+              cur->iid < NS_INTERFACE_START_ID) { // Switchable interface?
+            if (cur->iid == iid) 
+              // Display in matching interface- show
+              cur->show = 1;
+            else
+              // Display in unmatching interface- hide
+              cur->show = 0;
+          }
 
-	  cur = cur->next;
-	}
+          cur = cur->next;
+        }
       }
     }
     break;
@@ -1230,14 +1251,14 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       VideoShowHelpEvent *vev = (VideoShowHelpEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: show help page - %d%s\n",
-	       vev->page,(vev->page ? "" : " - off"));
+        printf("VIDEO: show help page - %d%s\n",
+               vev->page,(vev->page ? "" : " - off"));
 
       if (vev->page >= 0 && vev->page <= numhelppages)
-	showhelppage = vev->page;
+        showhelppage = vev->page;
       else
-	printf("VIDEO: invalid help page - %d (valid range: 0-%d)\n",
-	       vev->page,numhelppages);
+        printf("VIDEO: invalid help page - %d (valid range: 0-%d)\n",
+               vev->page,numhelppages);
     }
     break;
 
@@ -1245,8 +1266,8 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
     {
       VideoFullScreenEvent *vev = (VideoFullScreenEvent *) ev;
       if (CRITTERS)
-	printf("VIDEO: set full screen = %s\n",
-	       (vev->fullscreen ? "on" : "off"));
+        printf("VIDEO: set full screen = %s\n",
+               (vev->fullscreen ? "on" : "off"));
 
       SetVideoMode(vev->fullscreen);
     }
@@ -1261,7 +1282,7 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
 // memory writes and thus avoids the strange video glitch of introducing
 // audio pops on some machines-- some loss in performance!
 void VideoIO::Custom_BlitSurface(SDL_Surface *in, SDL_Surface *out,
-				 SDL_Rect *dstrect) {
+                                 SDL_Rect *dstrect) {
   int opitch = out->pitch,
     ipitch = in->pitch,
     bpp = out->format->BytesPerPixel;
@@ -1282,7 +1303,7 @@ void VideoIO::Custom_BlitSurface(SDL_Surface *in, SDL_Surface *out,
   Uint8 *opixels = (Uint8 *)out->pixels + dstrect->y*opitch + dstrect->x*bpp,
     *ipixels = (Uint8 *)in->pixels;
   int xrun = (dstrect->x+dstrect->w <= out->w ? dstrect->w : 
-	      out->w-dstrect->x),
+              out->w-dstrect->x),
     yrun = (dstrect->y+dstrect->h <= out->h ? dstrect->h : out->h-dstrect->y),
     ojump = opitch-xrun*bpp,
     ijump = ipitch-xrun*bpp;
@@ -1290,32 +1311,32 @@ void VideoIO::Custom_BlitSurface(SDL_Surface *in, SDL_Surface *out,
   case 1 :
     {
       for (int i = 0; i < yrun; i++, opixels += ojump, ipixels += ijump)
-	for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
-	  *opixels = *ipixels;
+        for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
+          *opixels = *ipixels;
     }
     break;
   case 2 :
     {
       for (int i = 0; i < yrun; i++, opixels += ojump, ipixels += ijump)
-	for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
-	  *((Uint16 *) opixels) = *((Uint16 *) ipixels);
+        for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
+          *((Uint16 *) opixels) = *((Uint16 *) ipixels);
     }
     break;
   case 3 :
     {
       for (int i = 0; i < yrun; i++, opixels += ojump, ipixels += ijump)
-	for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp) {
-	  *(opixels++) = *(ipixels++);
-	  *(opixels++) = *(ipixels++);
-	  *(opixels++) = *(ipixels++);
-	}
+        for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp) {
+          *(opixels++) = *(ipixels++);
+          *(opixels++) = *(ipixels++);
+          *(opixels++) = *(ipixels++);
+        }
     }
     break;
   case 4 :
     {
       for (int i = 0; i < yrun; i++, opixels += ojump, ipixels += ijump)
-	for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
-	  *((Uint32 *) opixels) = *((Uint32 *) ipixels);
+        for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
+          *((Uint32 *) opixels) = *((Uint32 *) ipixels);
     }
     break;
   }
@@ -1329,7 +1350,7 @@ void VideoIO::Custom_BlitSurface(SDL_Surface *in, SDL_Surface *out,
 };
 
 void VideoIO::Squeeze_BlitSurface(SDL_Surface *in, SDL_Surface *out,
-				  SDL_Rect *dstrect) {
+                                  SDL_Rect *dstrect) {
   int opitch = out->pitch,
     ipitch = in->pitch,
     bpp = out->format->BytesPerPixel;
@@ -1356,63 +1377,63 @@ void VideoIO::Squeeze_BlitSurface(SDL_Surface *in, SDL_Surface *out,
     *ipixels = (Uint8 *)in->pixels;
   float yscale = (float) in->h/dstrect->h;
   int xrun = (dstrect->x+dstrect->w <= out->w ? dstrect->w : 
-	      out->w-dstrect->x),
+              out->w-dstrect->x),
     yh = (dstrect->y+dstrect->h <= out->h ? 
-	  dstrect->h : out->h-dstrect->y),
+          dstrect->h : out->h-dstrect->y),
     yrun = (int) (yh*yscale),
     ojump = opitch-xrun*bpp,
     ijump = ipitch-xrun*bpp,
     ilinejump = ipitch;
 
   /* printf("xrun: %d yrun: %d w: %d h: %d yscale: %.2f ijump: %d\n",
-	 xrun,yrun,
-	 in->w,in->h,
-	 yscale,ijump); */
+         xrun,yrun,
+         in->w,in->h,
+         yscale,ijump); */
   switch (bpp) {
   case 1 :
     {
       for (float i = 0; i < yrun; opixels += ojump) {
-	for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
-	  *opixels = *ipixels;
-	int oldi = (int)i;
-	i += yscale;
-	ipixels += ijump+ilinejump*((int)i-(int)oldi-1);
+        for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
+          *opixels = *ipixels;
+        int oldi = (int)i;
+        i += yscale;
+        ipixels += ijump+ilinejump*((int)i-(int)oldi-1);
       }
     }
     break;
   case 2 :
     {
       for (float i = 0; i < yrun; opixels += ojump) {
-	for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
-	  *((Uint16 *) opixels) = *((Uint16 *) ipixels);
-	int oldi = (int)i;
-	i += yscale;
-	ipixels += ijump+ilinejump*((int)i-(int)oldi-1);
+        for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
+          *((Uint16 *) opixels) = *((Uint16 *) ipixels);
+        int oldi = (int)i;
+        i += yscale;
+        ipixels += ijump+ilinejump*((int)i-(int)oldi-1);
       }
     }
     break;
   case 3 :
     {
       for (float i = 0; i < yrun; opixels += ojump) {
-	for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp) {
-	  *(opixels++) = *(ipixels++);
-	  *(opixels++) = *(ipixels++);
-	  *(opixels++) = *(ipixels++);
-	}
-	int oldi = (int)i;
-	i += yscale;
-	ipixels += ijump+ilinejump*((int)i-(int)oldi-1);
+        for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp) {
+          *(opixels++) = *(ipixels++);
+          *(opixels++) = *(ipixels++);
+          *(opixels++) = *(ipixels++);
+        }
+        int oldi = (int)i;
+        i += yscale;
+        ipixels += ijump+ilinejump*((int)i-(int)oldi-1);
       }
     }
     break;
   case 4 :
     {
       for (float i = 0; i < yrun; opixels += ojump) {
-	for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
-	  *((Uint32 *) opixels) = *((Uint32 *) ipixels);
-	int oldi = (int)i;
-	i += yscale;
-	ipixels += ijump+ilinejump*((int)i-(int)oldi-1);
+        for (int j = 0; j < xrun; j++, opixels += bpp, ipixels += bpp)
+          *((Uint32 *) opixels) = *((Uint32 *) ipixels);
+        int oldi = (int)i;
+        i += yscale;
+        ipixels += ijump+ilinejump*((int)i-(int)oldi-1);
       }
     }
     break;
@@ -1430,8 +1451,8 @@ void VideoIO::Squeeze_BlitSurface(SDL_Surface *in, SDL_Surface *out,
 // Justify is 0 for default justify, 1 for center, and 2 for opposite side
 // Returns size of text drawn in sx and sy (optionally)
 int VideoIO::draw_text(SDL_Surface *out, TTF_Font *font,
-		       char *str, int x, int y, SDL_Color clr, 
-		       char justifyx, char justifyy, int *sx, int *sy) {
+                       char *str, int x, int y, SDL_Color clr, 
+                       char justifyx, char justifyy, int *sx, int *sy) {
   SDL_Surface *text;
   SDL_Rect dstrect;
   SDL_Color black = { 0, 0, 0, 0 };
@@ -1469,24 +1490,24 @@ int VideoIO::draw_text(SDL_Surface *out, TTF_Font *font,
 }
 
 char VideoIO::DrawLoop(LoopManager *loopmgr, int i, 
-		       SDL_Surface *screen, SDL_Surface *lscopepic,
-		       SDL_Color *loopcolors, float colormag,
-		       FloConfig *fs, FloLayoutElement *curel,
+                       SDL_Surface *screen, SDL_Surface *lscopepic,
+                       SDL_Color *loopcolors, float colormag,
+                       FloConfig *fs, FloLayoutElement *curel,
 
-		       CircularMap *direct_map, int direct_xpos,
-		       int direct_ypos,
+                       CircularMap *direct_map, int direct_xpos,
+                       int direct_ypos,
 
-		       float lvol, 
-		       char drawtext) {
+                       float lvol, 
+                       char drawtext) {
   const static SDL_Color txtclr = { 0xFF, 0x50, 0x20, 0 },
     cursorclr = { 0xEF, 0x11, 0x11, 0 },
     txtclr2 = { 0xEF, 0xAF, 0xFF, 0 };
 
   // Color for selected loops
   static SDL_Color selcolor[4] = { { 0xF9, 0xE6, 0x13, 0 }, 
-				   { 0x62, 0x62, 0x62, 0 },
-				   { 0xFF, 0xFF, 0xFF, 0 },
-				   { 0xE0, 0xDA, 0xD5, 0 } };
+                                   { 0x62, 0x62, 0x62, 0 },
+                                   { 0xFF, 0xFF, 0xFF, 0 },
+                                   { 0xE0, 0xDA, 0xD5, 0 } };
   
   const float cpeak_mul = 2.0, // For pulsing loops - magnitude of pulse
     cpeak_base = 0.5; // For pulsing loops - base size of loop 
@@ -1509,13 +1530,13 @@ char VideoIO::DrawLoop(LoopManager *loopmgr, int i,
   if (loopmgr->GetStatus(i) == T_LS_Recording) {
     // Use current record length for visual size
     pa = (BED_PeaksAvgs *) ((RecordProcessor *) loopmgr->
-			    GetProcessor(i))->
+                            GetProcessor(i))->
       GetFirstRecordedBlock()->GetExtendedData(T_BED_PeaksAvgs);
     if (pa != 0) {
       PeaksAvgsManager *pa_mgr = ((RecordProcessor *) loopmgr->
-				  GetProcessor(i))->GetPAMgr();
+                                  GetProcessor(i))->GetPAMgr();
       if (pa_mgr != 0)
-	plen = pa_mgr->GetPeaksI()->GetTotalLength2Cur();
+        plen = pa_mgr->GetPeaksI()->GetTotalLength2Cur();
     }
   } else {
     l = loopmgr->GetSlot(i);
@@ -1541,11 +1562,11 @@ char VideoIO::DrawLoop(LoopManager *loopmgr, int i,
   if (pa != 0) {
     // Background
     SDL_FillRect(lscopepic,NULL,
-		 SDL_MapRGB(lscopepic->format,
-			    (int) (loopcolors[0].r*colormag),
-			    (int) (loopcolors[0].g*colormag),
-			    (int) (loopcolors[0].b*colormag)));
-	      
+                 SDL_MapRGB(lscopepic->format,
+                            (int) (loopcolors[0].r*colormag),
+                            (int) (loopcolors[0].g*colormag),
+                            (int) (loopcolors[0].b*colormag)));
+              
     if (plen > 0) {
       // Access buffers
       peakbuf = pa->peaks->buf;
@@ -1553,33 +1574,33 @@ char VideoIO::DrawLoop(LoopManager *loopmgr, int i,
       loopvol = loopmgr->GetLoopVolume(i);
       loopdvol = loopmgr->GetLoopdVolume(i);
       nframes_t idx = loopmgr->GetCurCnt(i)/
-	fs->loop_peaksavgs_chunksize;
-		
+        fs->loop_peaksavgs_chunksize;
+                
       // Compute current peak
       curpeakidx[i] = idx;
       if (curpeakidx[i] == lastpeakidx[i])
-	curpeak = oldpeak[i]; // No new peak data since last update!
+        curpeak = oldpeak[i]; // No new peak data since last update!
       else {
-	nframes_t j = lastpeakidx[i];
-	if (curpeakidx[i] < lastpeakidx[i])
-	  j = 0;
-	curpeak = 0;
-	for (; j < curpeakidx[i]; j++)
-	  curpeak = MAX(curpeak,peakbuf[j]*loopvol);
-	curpeak *= cpeak_mul;
-	curpeak += cpeak_base;
-	oldpeak[i] = curpeak;
-	lastpeakidx[i] = curpeakidx[i];
+        nframes_t j = lastpeakidx[i];
+        if (curpeakidx[i] < lastpeakidx[i])
+          j = 0;
+        curpeak = 0;
+        for (; j < curpeakidx[i]; j++)
+          curpeak = MAX(curpeak,peakbuf[j]*loopvol);
+        curpeak *= cpeak_mul;
+        curpeak += cpeak_base;
+        oldpeak[i] = curpeak;
+        lastpeakidx[i] = curpeakidx[i];
       }
-		
+                
       float cmag = lvol*loopvol*lscopemag*curpeak;
       
       float rv1 = loopcolors[1].r*colormag,
-	gv1 = loopcolors[1].g*colormag,
-	bv1 = loopcolors[1].b*colormag,
-	rv2 = loopcolors[2].r*colormag,
-	gv2 = loopcolors[2].g*colormag,
-	bv2 = loopcolors[2].b*colormag;
+        gv1 = loopcolors[1].g*colormag,
+        bv1 = loopcolors[1].b*colormag,
+        rv2 = loopcolors[2].r*colormag,
+        gv2 = loopcolors[2].g*colormag,
+        bv2 = loopcolors[2].b*colormag;
       
       int midpt = lscopepic->h/2;
       // Ratio of visual size to audio scope buffer length
@@ -1589,43 +1610,43 @@ char VideoIO::DrawLoop(LoopManager *loopmgr, int i,
       // scope effect
       float pos = -(float)idx*ispd;
       if (pos < 0.)
-	pos += (float)lscopepic->w;
+        pos += (float)lscopepic->w;
       
       for (nframes_t j = 0; j < plen; j++, pos += ispd) {
-	float pbj = peakbuf[j];
-	int peakd = (int) (cmag*pbj);
-	if (peakd > lscope_maxmag)
-	  peakd = lscope_maxmag;
-	if (pos >= (float)lscopepic->w)
-	  pos = 0.;
-		  
-	float peaky = avgbuf[j]/(pbj*pbj + 0.00000001)*2;
-	if (peaky > 1.0)
-	  peaky = 1.0;
-	float rv = rv1 * peaky + rv2 * (1.-peaky),
-	  gv = gv1 * peaky + gv2 * (1.-peaky),
-	  bv = bv1 * peaky + bv2 * (1.-peaky);
-	//if (rv > 255) rv = 255;
-	//if (gv > 255) gv = 255;
-	//if (bv > 255) bv = 255;
-	
-	if (ispd >= 1.) {
-	  int pos1 = (int) pos,
-	    pos2 = (int) (pos+ispd);
-	  
-	  boxRGBA(lscopepic,
-		  (int) pos1,
-		  midpt-peakd,
-		  (int) pos2,
-		  midpt+peakd,
-		  (int) rv, (int) gv, (int) bv, 255);
-	}
-	else
-	  vlineRGBA(lscopepic,
-		    (int) pos,
-		    midpt-peakd,
-		    midpt+peakd,
-		    (int) rv, (int) gv, (int) bv, 255);
+        float pbj = peakbuf[j];
+        int peakd = (int) (cmag*pbj);
+        if (peakd > lscope_maxmag)
+          peakd = lscope_maxmag;
+        if (pos >= (float)lscopepic->w)
+          pos = 0.;
+                  
+        float peaky = avgbuf[j]/(pbj*pbj + 0.00000001)*2;
+        if (peaky > 1.0)
+          peaky = 1.0;
+        float rv = rv1 * peaky + rv2 * (1.-peaky),
+          gv = gv1 * peaky + gv2 * (1.-peaky),
+          bv = bv1 * peaky + bv2 * (1.-peaky);
+        //if (rv > 255) rv = 255;
+        //if (gv > 255) gv = 255;
+        //if (bv > 255) bv = 255;
+        
+        if (ispd >= 1.) {
+          int pos1 = (int) pos,
+            pos2 = (int) (pos+ispd);
+          
+          boxRGBA(lscopepic,
+                  (int) pos1,
+                  midpt-peakd,
+                  (int) pos2,
+                  midpt+peakd,
+                  (int) rv, (int) gv, (int) bv, 255);
+        }
+        else
+          vlineRGBA(lscopepic,
+                    (int) pos,
+                    midpt-peakd,
+                    midpt+peakd,
+                    (int) rv, (int) gv, (int) bv, 255);
       }
     }
   }
@@ -1659,32 +1680,32 @@ char VideoIO::DrawLoop(LoopManager *loopmgr, int i,
   // Show scope
   if (!loopmap->Map(screen,dispx,dispy)) {
     circleRGBA(screen,dispx+halfx,dispy+halfy,halfx, 
-	       0,0,0, 255); // Outline
+               0,0,0, 255); // Outline
     // Show portion played in semitranslucent
     int pieradius = MIN((int) (lvol*looppiemag*curpeak),70);
     FILLED_PIE(screen,dispx+halfx,dispy+halfy,
-	       pieradius,0,
-	       (int) (360*loopmgr->GetPos(i)),
-	       (int) (loopcolors[3].r*colormag),
-	       (int) (loopcolors[3].g*colormag),
-	       (int) (loopcolors[3].b*colormag),127);
+               pieradius,0,
+               (int) (360*loopmgr->GetPos(i)),
+               (int) (loopcolors[3].r*colormag),
+               (int) (loopcolors[3].g*colormag),
+               (int) (loopcolors[3].b*colormag),127);
     
     // Show volume
     float loop_volmag = fullx*0.9/2, // For loop volume bar
       loop_dvolmag = fullx*250; // For loop volume delta bar
     int magbar = (int) (loop_volmag*loopmgr->GetTriggerVol(i));
     boxRGBA(screen,dispx+halfx-magbar,
-	    dispy+halfy-halfy/5,
-	    dispx+halfx+magbar,
-	    dispy+halfy+halfy/5,
-	    (int) (loopcolors[3].r*colormag),0,0, 127);
+            dispy+halfy-halfy/5,
+            dispx+halfx+magbar,
+            dispy+halfy+halfy/5,
+            (int) (loopcolors[3].r*colormag),0,0, 127);
     // Show volume delta
     magbar = (int) ((loopdvol-1.0)*loop_dvolmag);
     boxRGBA(screen,dispx+halfx,
-	    dispy+halfy+halfy/4,
-	    dispx+halfx+magbar,
-	    dispy+halfy+halfy/2,
-	    (int) (loopcolors[3].r*colormag),0,0, 127);
+            dispy+halfy+halfy/4,
+            dispx+halfx+magbar,
+            dispy+halfy+halfy/2,
+            (int) (loopcolors[3].r*colormag),0,0, 127);
     
     // Show if overdub
     if (loopmgr->GetStatus(i) == T_LS_Overdubbing)
@@ -1694,66 +1715,66 @@ char VideoIO::DrawLoop(LoopManager *loopmgr, int i,
       // Show loop name
       ItemRenamer *renamer = loopmgr->GetRenamer();
       if (renamer != 0 && l == loopmgr->GetRenameLoop()) {
-	// This loop is being renamed- show current name
-	RenameUIVars *rui = renamer->UpdateUIVars();
+        // This loop is being renamed- show current name
+        RenameUIVars *rui = renamer->UpdateUIVars();
 
-	if (liney == -1)
-	  TTF_SizeText(smallfont,VERSION,0,&liney);
-	
-	// Draw text with cursor
-	int sx, sy;
-	int txty = dispy+fully;
-	char *curn = renamer->GetCurName();
-	if (*curn != '\0')
-	  VideoIO::draw_text(screen,smallfont,curn,
-			     dispx,txty,txtclr2,0,2,&sx,&sy);
-	else {
-	  sx = 0;
-	  sy = liney;
-	}
+        if (liney == -1)
+          TTF_SizeText(smallfont,VERSION,0,&liney);
+        
+        // Draw text with cursor
+        int sx, sy;
+        int txty = dispy+fully;
+        char *curn = renamer->GetCurName();
+        if (*curn != '\0')
+          VideoIO::draw_text(screen,smallfont,curn,
+                             dispx,txty,txtclr2,0,2,&sx,&sy);
+        else {
+          sx = 0;
+          sy = liney;
+        }
 
-	if (rui->rename_cursor_toggle)
-	  boxRGBA(screen,
-		  dispx+sx,txty,
-		  dispx+sx+sy/2,txty-sy,
-		  cursorclr.r,cursorclr.g,cursorclr.b,255);
+        if (rui->rename_cursor_toggle)
+          boxRGBA(screen,
+                  dispx+sx,txty,
+                  dispx+sx+sy/2,txty-sy,
+                  cursorclr.r,cursorclr.g,cursorclr.b,255);
       } else if (l != 0 && l->name != 0)
-	// Show name
-	draw_text(screen,smallfont,l->name,
-		  dispx,dispy+fully,txtclr2,0,2);
+        // Show name
+        draw_text(screen,smallfont,l->name,
+                  dispx,dispy+fully,txtclr2,0,2);
 
       // Show last recorded loop #
       int cnt = 0;
       for (cnt = 0; cnt < LAST_REC_COUNT && loopmgr->lastrecidx[cnt] != i; 
-	   cnt++);
+           cnt++);
       if (cnt < LAST_REC_COUNT) {
-	char tmp[50];
-	snprintf(tmp,50,"L%d",cnt+1);
-	draw_text(screen,smallfont,tmp,
-		  dispx+fullx,dispy,txtclr2,2,0);
+        char tmp[50];
+        snprintf(tmp,50,"L%d",cnt+1);
+        draw_text(screen,smallfont,tmp,
+                  dispx+fullx,dispy,txtclr2,2,0);
       }
 
 #if 0 
       // Old way to label loop in 'show-all-loops' mode
       if (curel == 0) {
-	char tmp[50];
-	
-	// Show direct-- so label the loop
-	Pulse *a = loopmgr->GetPulse(i);
-	long len;
-	if (a != 0)
-	  len = loopmgr->GetRoundedLength(i)/a->len;
-	else
-	  len = loopmgr->GetRoundedLength(i);
-	if (len != 0)
-	  snprintf(tmp,50,"%03d %ld",i,len);
-	else
-	  snprintf(tmp,50,"%03d",i);
-	
-	SDL_Color tmpclr = { (int) (loopcolors[3].r*colormag), 
-			     (int) (loopcolors[3].g*colormag), 
-			     (int) (loopcolors[3].b*colormag), 0 };
-	draw_text(screen,mainfont,tmp,dispx,dispy+textyofs,tmpclr);
+        char tmp[50];
+        
+        // Show direct-- so label the loop
+        Pulse *a = loopmgr->GetPulse(i);
+        long len;
+        if (a != 0)
+          len = loopmgr->GetRoundedLength(i)/a->len;
+        else
+          len = loopmgr->GetRoundedLength(i);
+        if (len != 0)
+          snprintf(tmp,50,"%03d %ld",i,len);
+        else
+          snprintf(tmp,50,"%03d",i);
+        
+        SDL_Color tmpclr = { (int) (loopcolors[3].r*colormag), 
+                             (int) (loopcolors[3].g*colormag), 
+                             (int) (loopcolors[3].b*colormag), 0 };
+        draw_text(screen,mainfont,tmp,dispx,dispy+textyofs,tmpclr);
       }
 #endif
     }
@@ -1782,9 +1803,9 @@ CircularMap *VideoIO::CreateMap(SDL_Surface *lscopepic, int sz) {
 
     printf("VIDEO: Generating planar->circular map @ size %d\n",sz);
     nw = new CircularMap(lscopepic, 
-			 sz,sz,
-			 lscopewidth,lscopeheight,
-			 lscope_crinner, lscope_crsize);
+                         sz,sz,
+                         lscopewidth,lscopeheight,
+                         lscope_crinner, lscope_crsize);
     // Store a copy in our list
     if (cmaps == 0)
       cmaps = nw;
@@ -1814,12 +1835,12 @@ int VideoIO::InitLCD (char *devname, int baud) {
   
   // Input modes 
   term.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|INPCK|ISTRIP|INLCR|IGNCR|ICRNL
-		    |IXON|IXOFF);
+                    |IXON|IXOFF);
   term.c_iflag |= IGNPAR;
   
   // Output modes 
   term.c_oflag &= ~(OPOST|ONLCR|OCRNL|ONOCR|ONLRET|OFILL
-		    |OFDEL|NLDLY|CRDLY|TABDLY|BSDLY|VTDLY|FFDLY);
+                    |OFDEL|NLDLY|CRDLY|TABDLY|BSDLY|VTDLY|FFDLY);
   term.c_oflag |= NL0|CR0|TAB0|BS0|VT0|FF0;
   
   // Control modes
@@ -1866,30 +1887,30 @@ void VideoIO::LCDB_Dump () {
 
   // Compare old and current buffers
   if (memcmp(&lcd_dat[lcd_curb][0][0],&lcd_dat[oldb][0][0],
-	     sizeof(char) * LCD_ROWS * LCD_COLS) != 0) {
+             sizeof(char) * LCD_ROWS * LCD_COLS) != 0) {
     // Buffers differ, dump difference
     int lu_r = -2, lu_c = -2; // Last update row/col
     for (int r = 0; r < LCD_ROWS; r++)
       for (int c = 0; c < LCD_COLS; c++)
-	if (lcd_dat[lcd_curb][r][c] != lcd_dat[oldb][r][c]) {
-	  // This cell differs- send
-	  if (r != lu_r || c != lu_c+1) {
-	    // Need to reposition- not the next character
-	    // printf("pos: %d %d\n",c,r);
-	    LCD_Send(17);
-	    LCD_Send(c);
-	    LCD_Send(r);
-	  }
+        if (lcd_dat[lcd_curb][r][c] != lcd_dat[oldb][r][c]) {
+          // This cell differs- send
+          if (r != lu_r || c != lu_c+1) {
+            // Need to reposition- not the next character
+            // printf("pos: %d %d\n",c,r);
+            LCD_Send(17);
+            LCD_Send(c);
+            LCD_Send(r);
+          }
 
-	  // Send new character
-	  // printf("%c\n",lcd_dat[lcd_curb][r][c]);
-	  LCD_Send(lcd_dat[lcd_curb][r][c]);
-	  /* printf("BUF#%d Sending: %c @ (%d,%d)\n",lcd_curb,
-	     lcd_dat[lcd_curb][r][c],c,r); */
-	  
-	  lu_r = r;
-	  lu_c = c;
-	}
+          // Send new character
+          // printf("%c\n",lcd_dat[lcd_curb][r][c]);
+          LCD_Send(lcd_dat[lcd_curb][r][c]);
+          /* printf("BUF#%d Sending: %c @ (%d,%d)\n",lcd_curb,
+             lcd_dat[lcd_curb][r][c],c,r); */
+          
+          lu_r = r;
+          lu_c = c;
+        }
   }
 
   // Switch write buffers
@@ -1910,30 +1931,30 @@ void VideoIO::video_event_loop ()
   const static SDL_Color red = { 0xFF, 0x50, 0x20, 0 },
     //blue = { 0x30, 0x20, 0xEF, 0 },
       white = { 0xEF, 0xAF, 0xFF, 0 },
-	truewhite = { 0xFF, 0xFF, 0xFF, 0 },
-	  gray = { 0x77, 0x88, 0x99, 0 },
-	    yellow = { 0xDF, 0xEF, 0x20, 0 },
-	      infobarclr = red;
+        truewhite = { 0xFF, 0xFF, 0xFF, 0 },
+          gray = { 0x77, 0x88, 0x99, 0 },
+            yellow = { 0xDF, 0xEF, 0x20, 0 },
+              infobarclr = red;
 
   int nt = app->getCFG()->GetNumTriggers();
 
   const static int num_loopcolors = 4;
   SDL_Color loopcolors[num_loopcolors][4] = { { { 0x5F, 0x7C, 0x2B, 0 },
-						{ 0xD3, 0xFF, 0x82, 0 },
-						{ 0xFF, 0xFF, 0xFF, 0 },
-						{ 0xDE, 0xE2, 0xD5, 0 } },
-					      { { 0x8E, 0x75, 0x62, 0 }, 
-						{ 0xFF, 0x9C, 0x4C, 0 },
-						{ 0xFF, 0xFF, 0xFF, 0 },
-						{ 0xE0, 0xDA, 0xD5, 0 } },
-					      { { 0x62, 0x8C, 0x85, 0 },
-						{ 0x43, 0xF2, 0xD5, 0 },
-						{ 0xFF, 0xFF, 0xFF, 0 },
-						{ 0xA9, 0xC6, 0xC1, 0 } },
-					      { { 0x69, 0x4B, 0x89, 0 },
-						{ 0xA8, 0x56, 0xFF, 0 },
-						{ 0xFF, 0xFF, 0xFF, 0 },
-						{ 0xDF, 0xCB, 0xF4, 0 } } };
+                                                { 0xD3, 0xFF, 0x82, 0 },
+                                                { 0xFF, 0xFF, 0xFF, 0 },
+                                                { 0xDE, 0xE2, 0xD5, 0 } },
+                                              { { 0x8E, 0x75, 0x62, 0 }, 
+                                                { 0xFF, 0x9C, 0x4C, 0 },
+                                                { 0xFF, 0xFF, 0xFF, 0 },
+                                                { 0xE0, 0xDA, 0xD5, 0 } },
+                                              { { 0x62, 0x8C, 0x85, 0 },
+                                                { 0x43, 0xF2, 0xD5, 0 },
+                                                { 0xFF, 0xFF, 0xFF, 0 },
+                                                { 0xA9, 0xC6, 0xC1, 0 } },
+                                              { { 0x69, 0x4B, 0x89, 0 },
+                                                { 0xA8, 0x56, 0xFF, 0 },
+                                                { 0xFF, 0xFF, 0xFF, 0 },
+                                                { 0xDF, 0xCB, 0xF4, 0 } } };
 
   char tmp[255];
 
@@ -1987,11 +2008,11 @@ void VideoIO::video_event_loop ()
   printf("VIDEO: Creating temporary buffers at %d bits\n",video_bpp);
   lscopepic = 
     SDL_CreateRGBSurface(SDL_HWSURFACE, 
-			 lscopewidth, lscopeheight, video_bpp, 
-			 Rmask, 
-			 Gmask, 
-			 Bmask, 
-			 Amask); // Flat
+                         lscopewidth, lscopeheight, video_bpp, 
+                         Rmask, 
+                         Gmask, 
+                         Bmask, 
+                         Amask); // Flat
 
   // Generate circular maps for all the different sized layout elements
   // as defined in config
@@ -2005,7 +2026,7 @@ void VideoIO::video_event_loop ()
     while (curel != 0) {
       int sz = curel->loopsize;
       if (sz > 0)
-	curel->loopmap = CreateMap(lscopepic,sz);
+        curel->loopmap = CreateMap(lscopepic,sz);
  
       curel = curel->next;
     }
@@ -2019,23 +2040,23 @@ void VideoIO::video_event_loop ()
   SDL_Surface *titlepic = SDL_LoadBMP(FWEELIN_TITLE_IMAGE);
   if (titlepic == 0) {
     printf("Couldn't load title image from: %s\n"
-	   "Did you run 'make install'?\n",
-	   FWEELIN_TITLE_IMAGE);
+           "Did you run 'make install'?\n",
+           FWEELIN_TITLE_IMAGE);
     return;
   }
   SDL_Surface *titletemppic = 
     SDL_CreateRGBSurface(SDL_HWSURFACE, 
-			 titlepic->w, titlepic->h, video_bpp, 
-			 Rmask, 
-			 Gmask, 
-			 Bmask, 
-			 Amask); // Flat
+                         titlepic->w, titlepic->h, video_bpp, 
+                         Rmask, 
+                         Gmask, 
+                         Bmask, 
+                         Amask); // Flat
   // Draw final title image with fweelin version
   SDL_BlitSurface(titlepic, 0, titletemppic, 0);
   int ver_x, ver_y;
   TTF_SizeText(mainfont,VERSION,&ver_x,&ver_y);
   draw_text(titletemppic,mainfont,VERSION,
-	    titletemppic->w-ver_x-15,titletemppic->h-ver_y-15,truewhite);  
+            titletemppic->w-ver_x-15,titletemppic->h-ver_y-15,truewhite);  
   SDL_FreeSurface(titlepic);
 #endif
 
@@ -2046,15 +2067,15 @@ void VideoIO::video_event_loop ()
   else {
     logopic = 
       SDL_CreateRGBSurface(SDL_HWSURFACE, 
-			   fweelin_logo.width, fweelin_logo.height, 32, 
-			   0x000000FF, 
-			   0x0000FF00, 
-			   0x00FF0000, 
-			   0xFF000000);
+                           fweelin_logo.width, fweelin_logo.height, 32, 
+                           0x000000FF, 
+                           0x0000FF00, 
+                           0x00FF0000, 
+                           0xFF000000);
     
     memcpy(logopic->pixels,fweelin_logo.pixel_data,
-	   fweelin_logo.width * fweelin_logo.height * 
-	   fweelin_logo.bytes_per_pixel);
+           fweelin_logo.width * fweelin_logo.height * 
+           fweelin_logo.bytes_per_pixel);
   }
 
   // Help setup
@@ -2077,31 +2098,31 @@ void VideoIO::video_event_loop ()
     char *s1 = fs->GetHelpLine(i,0),
       *s2 = fs->GetHelpLine(i,1);
     if (s1 != 0) {
-      TTF_SizeText(helpfont,s1,&x,&y1);	
+      TTF_SizeText(helpfont,s1,&x,&y1); 
       if (s2 != 0) {
-	helpmaxcol1 = MAX(helpmaxcol1,x);
-	TTF_SizeText(helpfont,s2,&x,&y2);
-	helpmaxcol2 = MAX(helpmaxcol2,x);
+        helpmaxcol1 = MAX(helpmaxcol1,x);
+        TTF_SizeText(helpfont,s2,&x,&y2);
+        helpmaxcol2 = MAX(helpmaxcol2,x);
       } else {
-	y2 = 0;
+        y2 = 0;
       }
       
       if (curhelpy2 + MAX(y1,y2) >= helpmaxy2) {
-	// New page
+        // New page
         helpstartidx[numhelppages] = curstartidx;
-	helpendidx[numhelppages] = i-1;
-	curstartidx = i;
-	numhelppages++;
-	if (numhelppages >= maxhelppages) {
-	  printf("VIDEO: ERROR: Too many help pages!\n");
-	  exit(1);
-	}
-	  
-	helpy2 = MAX(helpy2,curhelpy2);
-	curhelpy2 = helpy + MAX(y1,y2);
+        helpendidx[numhelppages] = i-1;
+        curstartidx = i;
+        numhelppages++;
+        if (numhelppages >= maxhelppages) {
+          printf("VIDEO: ERROR: Too many help pages!\n");
+          exit(1);
+        }
+          
+        helpy2 = MAX(helpy2,curhelpy2);
+        curhelpy2 = helpy + MAX(y1,y2);
       } else {
-	// Same page
-	curhelpy2 += MAX(y1,y2);
+        // Same page
+        curhelpy2 += MAX(y1,y2);
       }
     }
   }
@@ -2143,15 +2164,15 @@ void VideoIO::video_event_loop ()
       // Draw pulse
       Pulse *a = loopmgr->GetPulseByIndex(0);
       if (a != 0) {
-	float pct = a->GetPct();
-	if (pct < prev_pct)
-	  flashcnt = 0;
-	// LCDB_SetChar(0,LCD_COLS-1,'*');
-	if (flashcnt++ < LCD_FLASHLEN)
-	  LCDB_SetStr(0,0,"********************");
-	else
-	  LCDB_SetChar(0,(int) (a->GetPct()*LCD_COLS),'*');
-	prev_pct = pct;
+        float pct = a->GetPct();
+        if (pct < prev_pct)
+          flashcnt = 0;
+        // LCDB_SetChar(0,LCD_COLS-1,'*');
+        if (flashcnt++ < LCD_FLASHLEN)
+          LCDB_SetStr(0,0,"********************");
+        else
+          LCDB_SetChar(0,(int) (a->GetPct()*LCD_COLS),'*');
+        prev_pct = pct;
       }
 
       // Draw loops
@@ -2159,52 +2180,52 @@ void VideoIO::video_event_loop ()
       FloLayout *curlayout = fs->GetLayouts();
       int lc = 0, lr = LOOPROW;
       while (curlayout != 0) {
-	if (curlayout->show && curlayout->elems != 0) {
-	  // Draw each element in this layout
-	  FloLayoutElement *curel = curlayout->elems;
-	  int firstid = curlayout->loopids.lo, 
-	    curid = firstid,
-	    maxid = curlayout->loopids.hi;
+        if (curlayout->show && curlayout->elems != 0) {
+          // Draw each element in this layout
+          FloLayoutElement *curel = curlayout->elems;
+          int firstid = curlayout->loopids.lo, 
+            curid = firstid,
+            maxid = curlayout->loopids.hi;
 
-	  while (curel != 0 && curid <= maxid) {
-	    // Calculate the actual loop ID that corresponds to this element
-	    int i = firstid + curel->id;
+          while (curel != 0 && curid <= maxid) {
+            // Calculate the actual loop ID that corresponds to this element
+            int i = firstid + curel->id;
 
-	    char loopexists;
-	    if (loopmgr->GetSlot(i) || loopmgr->IsActive(i))
-	      loopexists = 1;
-	    else
-	      loopexists = 0;
+            char loopexists;
+            if (loopmgr->GetSlot(i) || loopmgr->IsActive(i))
+              loopexists = 1;
+            else
+              loopexists = 0;
 
-	    // Draw loop for this element
-	    if (loopexists && curlayout->showelabel) {
-	      // printf("el: %s\n",curel->name);
-	      if (loopmgr->IsActive(i)) {
-		/* LCDB_SetChar(lr,lc-1,'-');
-		   char *buf; */
-		LCDB_SetStr(lr,lc,strup(curel->name));
-		// LCDB_SetChar(lr,lc+strlen(buf),'-');
-	      } else
-		LCDB_SetStr(lr,lc,strlwr(curel->name));
-	      lc += strlen(curel->name) + 1;
-	      if (lc >= LCD_COLS - 3) {
-		lc = 0;
-		lr++;
-	      }
-	    }
+            // Draw loop for this element
+            if (loopexists && curlayout->showelabel) {
+              // printf("el: %s\n",curel->name);
+              if (loopmgr->IsActive(i)) {
+                /* LCDB_SetChar(lr,lc-1,'-');
+                   char *buf; */
+                LCDB_SetStr(lr,lc,strup(curel->name));
+                // LCDB_SetChar(lr,lc+strlen(buf),'-');
+              } else
+                LCDB_SetStr(lr,lc,strlwr(curel->name));
+              lc += strlen(curel->name) + 1;
+              if (lc >= LCD_COLS - 3) {
+                lc = 0;
+                lr++;
+              }
+            }
 
-	    /*if (loopexists)
-	      DrawLoop(loopmgr,i,screen,lscopepic,
-		       loopcolors[clrnum],colormag,
-		       fs,curel,0,0,0,
-		       lvol);*/
+            /*if (loopexists)
+              DrawLoop(loopmgr,i,screen,lscopepic,
+                       loopcolors[clrnum],colormag,
+                       fs,curel,0,0,0,
+                       lvol);*/
 
-	    curel = curel->next;
-	    curid++;
-	  }
-	}
-	
-	curlayout = curlayout->next;
+            curel = curel->next;
+            curid++;
+          }
+        }
+        
+        curlayout = curlayout->next;
       }
       loopmgr->UnlockLoops();
 
@@ -2228,78 +2249,78 @@ void VideoIO::video_event_loop ()
     while (curlayout != 0) {
       // Draw this layout, if active
       if (curlayout->show && curlayout->elems != 0) {
-	// Draw each element in this layout
-	FloLayoutElement *curel = curlayout->elems;
-	int firstid = curlayout->loopids.lo, 
-	  curid = firstid,
-	  maxid = curlayout->loopids.hi;
+        // Draw each element in this layout
+        FloLayoutElement *curel = curlayout->elems;
+        int firstid = curlayout->loopids.lo, 
+          curid = firstid,
+          maxid = curlayout->loopids.hi;
 
-	while (curel != 0 && curid <= maxid) {
-	  // Calculate the actual loop ID that corresponds to this element
-	  int i = firstid + curel->id;
+        while (curel != 0 && curid <= maxid) {
+          // Calculate the actual loop ID that corresponds to this element
+          int i = firstid + curel->id;
 
-	  // What color should this element be?
-	  int clrnum = i % num_loopcolors;
+          // What color should this element be?
+          int clrnum = i % num_loopcolors;
 
-	  float colormag;
-	  char loopexists;
-	  if (loopmgr->GetSlot(i) || loopmgr->IsActive(i)) {
-	    loopexists = 1;
-	    colormag = loop_colorbase + loopmgr->GetTriggerVol(i);
-	    if (colormag > 1.0)
-	      colormag = 1.0;
-	  }
-	  else {
-	    loopexists = 0;
-	    colormag = loop_colorbase;
-	  }
+          float colormag;
+          char loopexists;
+          if (loopmgr->GetSlot(i) || loopmgr->IsActive(i)) {
+            loopexists = 1;
+            colormag = loop_colorbase + loopmgr->GetTriggerVol(i);
+            if (colormag > 1.0)
+              colormag = 1.0;
+          }
+          else {
+            loopexists = 0;
+            colormag = loop_colorbase;
+          }
 
-	  SDL_Color elclr;
-	  Loop *l = loopmgr->GetSlot(i);
-	  if (l != 0 && l->selcnt > 0) {
-	    // Selected loop
- 	    static SDL_Color selcolor[4] = { { 0xF9, 0xE6, 0x13, 0 }, 
-					     { 0x62, 0x62, 0x62, 0 },
-					     { 0xFF, 0xFF, 0xFF, 0 },
-					     { 0xE0, 0xDA, 0xD5, 0 } };
-	    elclr.r = selcolor[0].r;
-	    elclr.g = selcolor[0].g;
-	    elclr.b = selcolor[0].b;
-	    elclr.unused = 0;
-	  } else {
-	    elclr.r = (int) (loopcolors[clrnum][0].r*colormag);
-	    elclr.g = (int) (loopcolors[clrnum][0].g*colormag);
-	    elclr.b = (int) (loopcolors[clrnum][0].b*colormag);
-	    elclr.unused = 0;
-	  }
+          SDL_Color elclr;
+          Loop *l = loopmgr->GetSlot(i);
+          if (l != 0 && l->selcnt > 0) {
+            // Selected loop
+            static SDL_Color selcolor[4] = { { 0xF9, 0xE6, 0x13, 0 }, 
+                                             { 0x62, 0x62, 0x62, 0 },
+                                             { 0xFF, 0xFF, 0xFF, 0 },
+                                             { 0xE0, 0xDA, 0xD5, 0 } };
+            elclr.r = selcolor[0].r;
+            elclr.g = selcolor[0].g;
+            elclr.b = selcolor[0].b;
+            elclr.unused = 0;
+          } else {
+            elclr.r = (int) (loopcolors[clrnum][0].r*colormag);
+            elclr.g = (int) (loopcolors[clrnum][0].g*colormag);
+            elclr.b = (int) (loopcolors[clrnum][0].b*colormag);
+            elclr.unused = 0;
+          }
 
-	  // Draw each geometry of this element
-	  FloLayoutElementGeometry *curgeo = curel->geo;
-	  while (curgeo != 0) {
-	    curgeo->Draw(screen,elclr);
-	    curgeo = curgeo->next;
-	  }
+          // Draw each geometry of this element
+          FloLayoutElementGeometry *curgeo = curel->geo;
+          while (curgeo != 0) {
+            curgeo->Draw(screen,elclr);
+            curgeo = curgeo->next;
+          }
 
-	  // Draw loop for this element
-	  if (loopexists)
-	    DrawLoop(loopmgr,i,screen,lscopepic,
-		     loopcolors[clrnum],colormag,
-		     fs,curel,0,0,0,
-		     lvol);
+          // Draw loop for this element
+          if (loopexists)
+            DrawLoop(loopmgr,i,screen,lscopepic,
+                     loopcolors[clrnum],colormag,
+                     fs,curel,0,0,0,
+                     lvol);
 
-	  // Label this element
-	  if (curlayout->showelabel)
-	    draw_text(screen,mainfont,curel->name,curel->nxpos,curel->nypos,
-		      white);
+          // Label this element
+          if (curlayout->showelabel)
+            draw_text(screen,mainfont,curel->name,curel->nxpos,curel->nypos,
+                      white);
 
-	  curel = curel->next;
-	  curid++;
-	}
-	
-	// Label the layout
-	if (curlayout->showlabel)
-	  draw_text(screen,mainfont,curlayout->name,
-		    curlayout->nxpos,curlayout->nypos,white);
+          curel = curel->next;
+          curid++;
+        }
+        
+        // Label the layout
+        if (curlayout->showlabel)
+          draw_text(screen,mainfont,curlayout->name,
+                    curlayout->nxpos,curlayout->nypos,white);
       }
 
       curlayout = curlayout->next;
@@ -2311,19 +2332,19 @@ void VideoIO::video_event_loop ()
     for (int i = 0; i < MAX_PULSES; i++) {
       Pulse *a = loopmgr->GetPulseByIndex(i);
       if (a != 0) {
-	if (loopmgr->GetCurPulseIndex() == i) 
-	  // Selected pulse twice as big!
-	  FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag * 2,0,
-		     (int) (360*a->GetPct()),127,127,127,255);
+        if (loopmgr->GetCurPulseIndex() == i) 
+          // Selected pulse twice as big!
+          FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag * 2,0,
+                     (int) (360*a->GetPct()),127,127,127,255);
         else
-	  FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag,0,
-		     (int) (360*a->GetPct()),127,127,127,255);
+          FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag,0,
+                     (int) (360*a->GetPct()),127,127,127,255);
 
-	sprintf(tmp,"%d",i+1);
-	draw_text(screen,mainfont,tmp,pulsex-pulsepiemag,curpulsey-
-		  pulsepiemag,red);
+        sprintf(tmp,"%d",i+1);
+        draw_text(screen,mainfont,tmp,pulsex-pulsepiemag,curpulsey-
+                  pulsepiemag,red);
 
-	curpulsey += pulsespc;
+        curpulsey += pulsespc;
       }
     }
 
@@ -2346,23 +2367,23 @@ void VideoIO::video_event_loop ()
       int peakd = (int) (mul*pbi);
       //avgd = (int) (mul*1.5*avgbuf[i]);
       if (pos >= (float)scopewidth)
-	pos = 0.;
+        pos = 0.;
 
       float peaky = avgbuf[i]/(pbi*pbi + 0.00000001)*2;
       if (peaky > 1.0)
-      	peaky = 1.0;
+        peaky = 1.0;
       float rv = 0xC2 * peaky + 0xF9 * (1.-peaky),
-	gv = 0x7E * peaky + 0xBB * (1.-peaky),
-      	bv = 0xDD * peaky + 0x2A * (1.-peaky);
+        gv = 0x7E * peaky + 0xBB * (1.-peaky),
+        bv = 0xDD * peaky + 0x2A * (1.-peaky);
       //if (rv > 255) rv = 255;
       //if (gv > 255) gv = 255;
       //if (bv > 255) bv = 255;
     
       vlineRGBA(screen,
-		(int) pos,
-		midpt-peakd,
-		midpt+peakd,
-		(int) rv, (int) gv, (int) bv, 255);
+                (int) pos,
+                midpt-peakd,
+                midpt+peakd,
+                (int) rv, (int) gv, (int) bv, 255);
     }
 
     // Scope meter marks
@@ -2372,16 +2393,16 @@ void VideoIO::video_event_loop ()
       cur = mp->markers;
     while (cur != 0) {      
       pos = (float) ((signed int) cur->markofs - 
-		     (signed int) app->getAMPEAKSI()->GetTotalLength2Cur())
-	*ispd; 
+                     (signed int) app->getAMPEAKSI()->GetTotalLength2Cur())
+        *ispd; 
       if (pos < 0.)
-	pos += (float)scopewidth;
+        pos += (float)scopewidth;
 
       vlineRGBA(screen,
-		(int) pos,
-		tmarky-metermag,
-		tmarky,
-		255,255,255,255);
+                (int) pos,
+                tmarky-metermag,
+                tmarky,
+                255,255,255,255);
      
       cur = cur->next;
     }
@@ -2393,9 +2414,9 @@ void VideoIO::video_event_loop ()
       oy = -1;
     for (nframes_t i = 0; i < app->getSCOPELEN(); i++) {
       int x = oscopex+i*2,
-	y = oscopey+(int) (oscopemag*app->getSCOPE()[i]);
+        y = oscopey+(int) (oscopemag*app->getSCOPE()[i]);
       if (ox != -1) 
-	lineRGBA(screen,ox,oy,x,y,127,127,255,255);
+        lineRGBA(screen,ox,oy,x,y,127,127,255,255);
       ox = x;
       oy = y;
     }
@@ -2410,26 +2431,26 @@ void VideoIO::video_event_loop ()
       checksizecnt = CHECK_SIZE_FRAMES;
     } else {
       if (++checksizecnt >= CHECK_SIZE_FRAMES) {
-	// Stat for size of file
-	checksizecnt = 0;
-	
-	struct stat st;
-	if (stat(app->getSTREAMOUTNAME(),&st) == 0) {
-	  streamoutstatfailed = 0;
-	  streamoutsize = st.st_size;
-	  streamoutfloatsize = streamoutsize / (1024.*1024);
-	} else {
-	  streamoutstatfailed = 1;
-	  streamoutsize = app->getSTREAMER()->GetOutputSize();
-	}
+        // Stat for size of file
+        checksizecnt = 0;
+        
+        struct stat st;
+        if (stat(app->getSTREAMOUTNAME(),&st) == 0) {
+          streamoutstatfailed = 0;
+          streamoutsize = st.st_size;
+          streamoutfloatsize = streamoutsize / (1024.*1024);
+        } else {
+          streamoutstatfailed = 1;
+          streamoutsize = app->getSTREAMER()->GetOutputSize();
+        }
       }
 
       if (streamoutstatfailed) 
-	sprintf(tmp,"%s   %d frames",
-		writename,streamoutsize);
+        sprintf(tmp,"%s   %d frames",
+                writename,streamoutsize);
       else
-	sprintf(tmp,"%s   %.1f mb",
-		writename,streamoutfloatsize);
+        sprintf(tmp,"%s   %.1f mb",
+                writename,streamoutfloatsize);
     }
     draw_text(screen,mainfont,tmp,patchx,patchy-OCY(22),gray);
 
@@ -2444,8 +2465,8 @@ void VideoIO::video_event_loop ()
 #if 1
     FloDisplay *curdisplay = fs->GetDisplays();
     while (curdisplay != 0) {
-      if (curdisplay->show)
-	curdisplay->Draw(screen);
+      if (curdisplay->show || curdisplay->forceshow)
+        curdisplay->Draw(screen);
       curdisplay = curdisplay->next;
     }
 #endif
@@ -2457,33 +2478,33 @@ void VideoIO::video_event_loop ()
     if (loopmgr->GetNumSave() != 0) {
       draw_progress = 1;
       progress_size = (int) ((float)loopmgr->GetCurSave()/
-			     loopmgr->GetNumSave()*
-			     progressbar_xs);
+                             loopmgr->GetNumSave()*
+                             progressbar_xs);
     }
     if (loopmgr->GetNumLoad() != 0) {
       draw_progress = 1;
       progress_size = (int) ((float)loopmgr->GetCurLoad()/
-			     loopmgr->GetNumLoad()*
-			     progressbar_xs);
+                             loopmgr->GetNumLoad()*
+                             progressbar_xs);
     }
 
     if (draw_progress) {
       boxRGBA(screen,progressbar_x+progress_size,progressbar_y,
-	      progressbar_x+progressbar_xs,
-	      progressbar_y+progressbar_ys,
-	      50,50,10,255);
+              progressbar_x+progressbar_xs,
+              progressbar_y+progressbar_ys,
+              50,50,10,255);
       boxRGBA(screen,progressbar_x,progressbar_y,
-	      progressbar_x+progress_size,
-	      progressbar_y+progressbar_ys,
-	      255,255,30,255);
+              progressbar_x+progress_size,
+              progressbar_y+progressbar_ys,
+              255,255,30,255);
       hlineRGBA(screen,progressbar_x,progressbar_x+progress_size,
-		progressbar_y,40,40,40,255);
+                progressbar_y,40,40,40,255);
       hlineRGBA(screen,progressbar_x,progressbar_x+progress_size,
-		progressbar_y+progressbar_ys,40,40,40,255);
+                progressbar_y+progressbar_ys,40,40,40,255);
       vlineRGBA(screen,progressbar_x,progressbar_y,
-		progressbar_y+progressbar_ys,40,40,40,255);
+                progressbar_y+progressbar_ys,40,40,40,255);
       vlineRGBA(screen,progressbar_x+progress_size,progressbar_y,
-		progressbar_y+progressbar_ys,40,40,40,255);
+                progressbar_y+progressbar_ys,40,40,40,255);
     }
 
     // Show help on top
@@ -2494,7 +2515,7 @@ void VideoIO::video_event_loop ()
       // This doesn't work for large regions- bug in SDL_gfx?
       // boxRGBA(screen,helpx,helpy,helpx2,helpy2,255,255,255,0);
       for (int i = helpy; i <= helpy2; i++) 
-	hlineRGBA(screen,helpx,helpx2,i,0,0,0,127);
+        hlineRGBA(screen,helpx,helpx2,i,0,0,0,127);
       hlineRGBA(screen,helpx,helpx2,helpy,255,255,255,127);
       hlineRGBA(screen,helpx,helpx2,helpy2,255,255,255,127);
       vlineRGBA(screen,helpx,helpy,helpy2,255,255,255,127);
@@ -2502,19 +2523,19 @@ void VideoIO::video_event_loop ()
 
       // Now, draw help
       for (int i = helpstartidx[showhelppage-1]; 
-	   i <= helpendidx[showhelppage-1]; i++) {
-	char *s1 = fs->GetHelpLine(i,0),
-	  *s2 = fs->GetHelpLine(i,1);
-	if (s1 != 0)
-	  draw_text(screen,helpfont,s1,helpx,curhelpy,yellow,0,0,0,&spacey1);
-	else 
-	  spacey1 = 0;
-	if (s2 != 0)
-	  draw_text(screen,helpfont,s2,helpx+helpmaxcol1,curhelpy,
-		    truewhite,0,0,0,&spacey2);
-	else
-	  spacey2 = 0;
-	curhelpy += MAX(spacey1,spacey2);
+           i <= helpendidx[showhelppage-1]; i++) {
+        char *s1 = fs->GetHelpLine(i,0),
+          *s2 = fs->GetHelpLine(i,1);
+        if (s1 != 0)
+          draw_text(screen,helpfont,s1,helpx,curhelpy,yellow,0,0,0,&spacey1);
+        else 
+          spacey1 = 0;
+        if (s2 != 0)
+          draw_text(screen,helpfont,s2,helpx+helpmaxcol1,curhelpy,
+                    truewhite,0,0,0,&spacey2);
+        else
+          spacey2 = 0;
+        curhelpy += MAX(spacey1,spacey2);
       }
     }
 
@@ -2530,7 +2551,7 @@ void VideoIO::video_event_loop ()
        char vid = (char) (video_elapsed*255);
        for (int i = 0; i < sz; i++, pix += 4)
        if (*(pix+1) != 0 || *(pix+2) != 0 || *(pix+3) != 0) {
-       //	  int val = (int) ((float)rand()/RAND_MAX*vid);
+       //         int val = (int) ((float)rand()/RAND_MAX*vid);
        //if (val > 255)
        //  val = 255;
        *pix = vid;
@@ -2576,57 +2597,57 @@ void VideoIO::video_event_loop ()
       float titlepct = video_elapsed;
 
       float t_floatin = 2.0,
-	t_floatout = 4.0;
+        t_floatout = 4.0;
       if (titlepct < 1.0) {
-	SDL_Rect dst;
-	dst.x = screen->w-logopic->w;
-	dst.y = (int) (-logopic->h + screen->h*titlepct);
-	dst.w = logopic->w;
-	dst.h = logopic->h;
-	SDL_BlitSurface(logopic, NULL, screen, &dst);	
+        SDL_Rect dst;
+        dst.x = screen->w-logopic->w;
+        dst.y = (int) (-logopic->h + screen->h*titlepct);
+        dst.w = logopic->w;
+        dst.h = logopic->h;
+        SDL_BlitSurface(logopic, NULL, screen, &dst);   
       } else if (titlepct > t_floatin && titlepct < t_floatin+1.0) {
-	SDL_Rect dst;
-	dst.x = screen->w-logopic->w;
-	dst.y = screen->h-logopic->h;
-	dst.w = logopic->w;
-	dst.h = logopic->h;
-	SDL_BlitSurface(logopic, NULL, screen, &dst);
-	int ver_x, ver_y;
-	TTF_SizeText(mainfont,VERSION,&ver_x,&ver_y);
-	draw_text(screen,mainfont,VERSION,
-		  (int) (screen->w-(titlepct-t_floatin)*(ver_x+5)),
-		  screen->h-ver_y-5,truewhite);
+        SDL_Rect dst;
+        dst.x = screen->w-logopic->w;
+        dst.y = screen->h-logopic->h;
+        dst.w = logopic->w;
+        dst.h = logopic->h;
+        SDL_BlitSurface(logopic, NULL, screen, &dst);
+        int ver_x, ver_y;
+        TTF_SizeText(mainfont,VERSION,&ver_x,&ver_y);
+        draw_text(screen,mainfont,VERSION,
+                  (int) (screen->w-(titlepct-t_floatin)*(ver_x+5)),
+                  screen->h-ver_y-5,truewhite);
       } else if (titlepct >= t_floatin && titlepct <= t_floatout) {
-	SDL_Rect dst;
-	dst.x = screen->w-logopic->w;
-	dst.y = screen->h-logopic->h;
-	dst.w = logopic->w;
-	dst.h = logopic->h;
-	SDL_BlitSurface(logopic, NULL, screen, &dst);
-	int ver_x, ver_y;
-	TTF_SizeText(mainfont,VERSION,&ver_x,&ver_y);
-	draw_text(screen,mainfont,VERSION,
-		  screen->w-(ver_x+5),
-		  screen->h-ver_y-5,truewhite);
+        SDL_Rect dst;
+        dst.x = screen->w-logopic->w;
+        dst.y = screen->h-logopic->h;
+        dst.w = logopic->w;
+        dst.h = logopic->h;
+        SDL_BlitSurface(logopic, NULL, screen, &dst);
+        int ver_x, ver_y;
+        TTF_SizeText(mainfont,VERSION,&ver_x,&ver_y);
+        draw_text(screen,mainfont,VERSION,
+                  screen->w-(ver_x+5),
+                  screen->h-ver_y-5,truewhite);
       } else if (titlepct > t_floatout && titlepct < t_floatout+1.0) {
-	SDL_Rect dst;
-	dst.x = screen->w-logopic->w;
-	dst.y = screen->h-logopic->h;
-	dst.w = logopic->w;
-	dst.h = logopic->h;
-	SDL_BlitSurface(logopic, NULL, screen, &dst);
-	int ver_x, ver_y;
-	TTF_SizeText(mainfont,VERSION,&ver_x,&ver_y);
-	draw_text(screen,mainfont,VERSION,
-		  (int) (screen->w-(1.0-(titlepct-t_floatout))*(ver_x+5)),
-		  screen->h-ver_y-5,truewhite);
+        SDL_Rect dst;
+        dst.x = screen->w-logopic->w;
+        dst.y = screen->h-logopic->h;
+        dst.w = logopic->w;
+        dst.h = logopic->h;
+        SDL_BlitSurface(logopic, NULL, screen, &dst);
+        int ver_x, ver_y;
+        TTF_SizeText(mainfont,VERSION,&ver_x,&ver_y);
+        draw_text(screen,mainfont,VERSION,
+                  (int) (screen->w-(1.0-(titlepct-t_floatout))*(ver_x+5)),
+                  screen->h-ver_y-5,truewhite);
       } else {
-	SDL_Rect dst;
-	dst.x = screen->w-logopic->w;
-	dst.y = screen->h-logopic->h;
-	dst.w = logopic->w;
-	dst.h = logopic->h;
-	SDL_BlitSurface(logopic, NULL, screen, &dst);
+        SDL_Rect dst;
+        dst.x = screen->w-logopic->w;
+        dst.y = screen->h-logopic->h;
+        dst.w = logopic->w;
+        dst.h = logopic->h;
+        SDL_BlitSurface(logopic, NULL, screen, &dst);
       }
     }
 #endif
@@ -2693,7 +2714,7 @@ void VideoIO::SetVideoMode(char fullscreen) {
     YSIZE = app->getCFG()->GetVSize()[1];
   if ( (screen=SDL_SetVideoMode(XSIZE,YSIZE,video_bpp,videoflags)) == NULL ) {
     printf("VIDEO: Couldn't set %ix%i video mode: %s\n",XSIZE,YSIZE,
-	   SDL_GetError());
+           SDL_GetError());
     exit(1);
   }
 
@@ -2734,32 +2755,32 @@ void *VideoIO::run_video_thread(void *ptr)
     char tmp[255];
     while (cur != 0) {
       if (cur->name != 0 && cur->filename != 0 && cur->size != 0) {
-	snprintf(tmp,255,"%s/%s",FWEELIN_DATADIR,cur->filename);
-	printf("VIDEO: Loading font %s: %s (%d pt)\n",cur->name,tmp,cur->size);
+        snprintf(tmp,255,"%s/%s",FWEELIN_DATADIR,cur->filename);
+        printf("VIDEO: Loading font %s: %s (%d pt)\n",cur->name,tmp,cur->size);
 
-	struct stat st;
-	if (stat(tmp,&st) != 0) {
-	  printf("VIDEO: Couldn't find font file: %s\n"
-		 "Did you run 'make install'?\n",tmp);
-	  exit(1);
-	}
-	  
-	cur->font = TTF_OpenFont(tmp, cur->size);
-	if (cur->font == 0) {
-	  printf("VIDEO: Couldn't load %d pt font from: %s\n"
-		 "Did you run 'make install'?\n",
-		 cur->size, tmp);
-	  exit(1);
-	}
-	TTF_SetFontStyle(cur->font, TTF_STYLE_NORMAL);
-	
-	// Check if this is a font we use
-	if (!strcmp(cur->name,"main")) 
-	  inst->mainfont = cur->font;
-	else if (!strcmp(cur->name,"help"))
-	  inst->helpfont = cur->font;
-	else if (!strcmp(cur->name,"small"))
-	  inst->smallfont = cur->font;
+        struct stat st;
+        if (stat(tmp,&st) != 0) {
+          printf("VIDEO: Couldn't find font file: %s\n"
+                 "Did you run 'make install'?\n",tmp);
+          exit(1);
+        }
+          
+        cur->font = TTF_OpenFont(tmp, cur->size);
+        if (cur->font == 0) {
+          printf("VIDEO: Couldn't load %d pt font from: %s\n"
+                 "Did you run 'make install'?\n",
+                 cur->size, tmp);
+          exit(1);
+        }
+        TTF_SetFontStyle(cur->font, TTF_STYLE_NORMAL);
+        
+        // Check if this is a font we use
+        if (!strcmp(cur->name,"main")) 
+          inst->mainfont = cur->font;
+        else if (!strcmp(cur->name,"help"))
+          inst->helpfont = cur->font;
+        else if (!strcmp(cur->name,"small"))
+          inst->smallfont = cur->font;
       }
       
       cur = cur->next;
@@ -2802,7 +2823,7 @@ void *VideoIO::run_video_thread(void *ptr)
     FloFont *cur = inst->app->getCFG()->GetFonts();
     while (cur != 0) {
       if (cur->font != 0)
-	TTF_CloseFont(cur->font);
+        TTF_CloseFont(cur->font);
       cur = cur->next;
     }
   }

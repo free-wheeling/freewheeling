@@ -50,9 +50,9 @@ MemoryManager::MemoryManager() : pts(0), apts(0) {
   // Setup manager thread
   threadgo = 1;
   int ret = pthread_create(&mgr_thread,
-			   &attr,
-			   run_mgr_thread,
-			   static_cast<void *>(this));
+                           &attr,
+                           run_mgr_thread,
+                           static_cast<void *>(this));
   if (ret != 0) {
     printf("MEM: (memorymanager) pthread_create failed, exiting");
     exit(1);
@@ -152,10 +152,10 @@ void MemoryManager::DelType(PreallocatedType *t) {
     {
       PreallocatedType *cur = apts;
       while (cur != 0 && cur != t)
-	cur = cur->anext;
+        cur = cur->anext;
       if (cur != 0) {
-	printf("MEM: ERROR: Deleted type found in active list!\n");
-	exit(1);
+        printf("MEM: ERROR: Deleted type found in active list!\n");
+        exit(1);
       }
     }
 
@@ -180,8 +180,8 @@ void *MemoryManager::run_mgr_thread (void *ptr) {
     PreallocatedType *cur = inst->apts;
     while (cur != 0) {
       if (cur->GetUpdateLists())
-	// Update free/inuse lists for this type
-	cur->UpdateLists();
+        // Update free/inuse lists for this type
+        cur->UpdateLists();
 
       // Make sure there are enough free instances of this type
       cur->GoPreallocate();
@@ -213,10 +213,10 @@ void *MemoryManager::run_mgr_thread (void *ptr) {
 }
 
 PreallocatedType::PreallocatedType(MemoryManager *mmgr,
-				   Preallocated *prealloc_base,
-				   int instance_size,
-				   int prealloc_num_instances,
-				   char block_mode) : 
+                                   Preallocated *prealloc_base,
+                                   int instance_size,
+                                   int prealloc_num_instances,
+                                   char block_mode) : 
   update_lists(0), instance_size(instance_size), 
   prealloc_num_instances(prealloc_num_instances), block_mode(block_mode),
   block_last_idx(0), mmgr(mmgr), next(0), anext(0) {
@@ -237,11 +237,11 @@ PreallocatedType::PreallocatedType(MemoryManager *mmgr,
     // Rest are free
     cur = (Preallocated *) (((char *) cur) + instance_size);
     for (int i = 1; i < prealloc_num_instances; i++, 
-	   cur = (Preallocated *) (((char *) cur) + instance_size)) {
+           cur = (Preallocated *) (((char *) cur) + instance_size)) {
       cur->SetupPreallocated(this,
-			     Preallocated::PREALLOC_PENDING_USE);
+                             Preallocated::PREALLOC_PENDING_USE);
       if (i == 1) // Second instance contains # of free instances
-	cur->predata.prealloc_num_free = prealloc_num_instances-1;
+        cur->predata.prealloc_num_free = prealloc_num_instances-1;
     }
 
     // Put base block in free (doesn't go in use until all are used)
@@ -282,62 +282,62 @@ Preallocated *PreallocatedType::RTNew() {
       int idx = block_last_idx;
       nw = (Preallocated *) (((char *) cur) + idx*instance_size);
       while (go && nw->prealloc_status != Preallocated::PREALLOC_PENDING_USE) {
-	idx++;
-	nw = (Preallocated *) (((char *) nw) + instance_size);
-	
-	if (idx >= prealloc_num_instances) {
-	  idx = 0;
-	  nw = cur;
-	}
-	
-	if (idx == block_last_idx) 
-	  // We've checked the whole block, none free
-	  go = 0;
+        idx++;
+        nw = (Preallocated *) (((char *) nw) + instance_size);
+        
+        if (idx >= prealloc_num_instances) {
+          idx = 0;
+          nw = cur;
+        }
+        
+        if (idx == block_last_idx) 
+          // We've checked the whole block, none free
+          go = 0;
       }
       
       if (go) {
-	// Found a free instance in this block, use it
-	nw->prealloc_status = Preallocated::PREALLOC_IN_USE;    
+        // Found a free instance in this block, use it
+        nw->prealloc_status = Preallocated::PREALLOC_IN_USE;    
 
-	block_last_idx = idx+1;
-	if (block_last_idx >= prealloc_num_instances)
-	  block_last_idx = 0;
+        block_last_idx = idx+1;
+        if (block_last_idx >= prealloc_num_instances)
+          block_last_idx = 0;
 
-	Preallocated *second = (Preallocated *) 
-	  (((char *) cur) + instance_size);
-	second->predata.prealloc_num_free--;
+        Preallocated *second = (Preallocated *) 
+          (((char *) cur) + instance_size);
+        second->predata.prealloc_num_free--;
 
-	/* printf("MEM: RTNew (block %p, instance %p)- Num free: %d\n",cur,
- 	   nw,second->predata.prealloc_num_free); */
-	
-	// Less than half the block is free?
-	if (second->predata.prealloc_num_free < prealloc_num_instances/2) {
-	  if (cur->predata.prealloc_next == 0) {
-	    // No other free blocks, so wakeup to allocate more
-	    // printf("MEM: RTNew (block)- Wakeup!\n");
-	    mmgr->WakeUp(this);
-	  }
+        /* printf("MEM: RTNew (block %p, instance %p)- Num free: %d\n",cur,
+           nw,second->predata.prealloc_num_free); */
+        
+        // Less than half the block is free?
+        if (second->predata.prealloc_num_free < prealloc_num_instances/2) {
+          if (cur->predata.prealloc_next == 0) {
+            // No other free blocks, so wakeup to allocate more
+            // printf("MEM: RTNew (block)- Wakeup!\n");
+            mmgr->WakeUp(this);
+          }
 
-	  if (second->predata.prealloc_num_free <= 0) {
-	    // No more free instances in this block-- 
-	    // Update lists
-	    update_lists = 1;
-	  }
-	}
+          if (second->predata.prealloc_num_free <= 0) {
+            // No more free instances in this block-- 
+            // Update lists
+            update_lists = 1;
+          }
+        }
 
-	// Stop searching
-	gogo = 0;
+        // Stop searching
+        gogo = 0;
       } else {
-	// No free instance in this block-
-	// This can happen if memmgr hasn't yet updated its lists
-	nw = 0;
-	// printf("MEM: RTNew (block)- WARNING: Full block in free list.\n");
+        // No free instance in this block-
+        // This can happen if memmgr hasn't yet updated its lists
+        nw = 0;
+        // printf("MEM: RTNew (block)- WARNING: Full block in free list.\n");
 
-	// Update lists
-	update_lists = 1;
+        // Update lists
+        update_lists = 1;
 
-	// Search through next free block
-	cur = cur->predata.prealloc_next;
+        // Search through next free block
+        cur = cur->predata.prealloc_next;
       }
     }
 
@@ -351,7 +351,7 @@ Preallocated *PreallocatedType::RTNew() {
     // Get the first free instance
     nw = prealloc_free;
     while (nw != 0 && 
-	   nw->prealloc_status != Preallocated::PREALLOC_PENDING_USE)
+           nw->prealloc_status != Preallocated::PREALLOC_PENDING_USE)
       nw = nw->predata.prealloc_next;
 
     if (nw == 0) {
@@ -361,15 +361,15 @@ Preallocated *PreallocatedType::RTNew() {
       Preallocated *p = prealloc_free;
       printf("FREE LIST:\n");
       while (p != 0) {
-	printf("STATUS: %d\n",p->prealloc_status);
-	p = p->predata.prealloc_next;
+        printf("STATUS: %d\n",p->prealloc_status);
+        p = p->predata.prealloc_next;
       }
 
       p = prealloc_inuse;
       printf("IN USE LIST:\n");
       while (p != 0) {
-	printf("STATUS: %d\n",p->prealloc_status);
-	p = p->predata.prealloc_next;
+        printf("STATUS: %d\n",p->prealloc_status);
+        p = p->predata.prealloc_next;
       }
       
       mmgr->WakeUp(this);
@@ -393,7 +393,7 @@ Preallocated *PreallocatedType::RTNewWithWait() {
   do {
     ret = RTNew();
     if (ret == 0) {
-      printf("MEM: Waiting for memory to be allocated.\n");	
+      printf("MEM: Waiting for memory to be allocated.\n");     
       usleep(10000);
     }
   } while (ret == 0);
@@ -415,18 +415,18 @@ void PreallocatedType::RTDelete(Preallocated *inst) {
     Preallocated *cur = prealloc_free;
     int blocksize = instance_size*prealloc_num_instances;
     while (cur != 0 && (inst < cur || (char *) inst >= ((char *) cur) + 
-			blocksize))
+                        blocksize))
       cur = cur->predata.prealloc_next;
     if (cur == 0) {
       cur = prealloc_inuse;
       while (cur != 0 && (inst < cur || (char *) inst >= ((char *) cur) + 
-			  blocksize))
-	cur = cur->predata.prealloc_next;
+                          blocksize))
+        cur = cur->predata.prealloc_next;
     }
 
     if (cur == 0) {
       printf("MEM: RTDelete (block): WARNING: Instance %p not found "
-	     "in any block!\n",inst);
+             "in any block!\n",inst);
       return;
     }
 
@@ -466,13 +466,13 @@ void PreallocatedType::UpdateLists() {
     if (block_mode) {
       Preallocated *second = (Preallocated *) (((char *) cur) + instance_size);
       if (second->predata.prealloc_num_free <= 0) {
-	// printf("MEM: Move block %p (free->inuse)\n",cur);
-	movecur = 1;
+        // printf("MEM: Move block %p (free->inuse)\n",cur);
+        movecur = 1;
       }
     } else if (!block_mode && 
-	       (cur->prealloc_status == Preallocated::PREALLOC_IN_USE ||
-		cur->prealloc_status == 
-		Preallocated::PREALLOC_PENDING_DELETE)) {
+               (cur->prealloc_status == Preallocated::PREALLOC_IN_USE ||
+                cur->prealloc_status == 
+                Preallocated::PREALLOC_PENDING_DELETE)) {
       // printf("MEM: Move instance %p (free->inuse)\n",cur);
       movecur = 1;
     }
@@ -490,9 +490,9 @@ void PreallocatedType::UpdateLists() {
       cur->predata.prealloc_next = prealloc_inuse;
       prealloc_inuse = cur;
       if (prev != 0) 
-	prev->predata.prealloc_next = tmp;
+        prev->predata.prealloc_next = tmp;
       else 
-	prealloc_free = tmp;	
+        prealloc_free = tmp;    
       cur = tmp;
     } else {
       prev = cur;
@@ -508,21 +508,21 @@ void PreallocatedType::UpdateLists() {
     while (cur != 0) {
       Preallocated *second = (Preallocated *) (((char *) cur) + instance_size);
       if (second->predata.prealloc_num_free > 0) {
-	// printf("MEM: Move block %p (inuse->free)\n",cur);
+        // printf("MEM: Move block %p (inuse->free)\n",cur);
 
-	// This block needs to move to the free list
-	// Insert at beginning of list
-	Preallocated *tmp = cur->predata.prealloc_next;
-	cur->predata.prealloc_next = prealloc_free;  
-	prealloc_free = cur;
-	if (prev != 0)
-	  prev->predata.prealloc_next = tmp;
-	else
-	  prealloc_inuse = tmp;
-	cur = tmp;
+        // This block needs to move to the free list
+        // Insert at beginning of list
+        Preallocated *tmp = cur->predata.prealloc_next;
+        cur->predata.prealloc_next = prealloc_free;  
+        prealloc_free = cur;
+        if (prev != 0)
+          prev->predata.prealloc_next = tmp;
+        else
+          prealloc_inuse = tmp;
+        cur = tmp;
       } else {
-	prev = cur;
-	cur = cur->predata.prealloc_next;
+        prev = cur;
+        cur = cur->predata.prealloc_next;
       }
     }
   }
@@ -540,19 +540,19 @@ void PreallocatedType::GoPostdelete() {
       *prev = 0;
     while (cur != 0) {
       if (cur->prealloc_status == Preallocated::PREALLOC_PENDING_DELETE) {
-	// Remove instance from list
-	Preallocated *tmp = cur->predata.prealloc_next;
-	if (prev != 0) 
-	  prev->predata.prealloc_next = tmp;
-	else 
-	  prealloc_inuse = tmp;
-	// printf("del ptr: %p sz: %d!!\n",cur,sizeof(*cur));
-	::delete cur;
-	cur = tmp;
+        // Remove instance from list
+        Preallocated *tmp = cur->predata.prealloc_next;
+        if (prev != 0) 
+          prev->predata.prealloc_next = tmp;
+        else 
+          prealloc_inuse = tmp;
+        // printf("del ptr: %p sz: %d!!\n",cur,sizeof(*cur));
+        ::delete cur;
+        cur = tmp;
       } else {
-	// Next instance
-	prev = cur;
-	cur = cur->predata.prealloc_next;
+        // Next instance
+        prev = cur;
+        cur = cur->predata.prealloc_next;
       }
     }
   }
@@ -561,11 +561,11 @@ void PreallocatedType::GoPostdelete() {
 void PreallocatedType::GoPreallocate() {
   if (block_mode) {
     Preallocated *second = (Preallocated *) (((char *) prealloc_free) + 
-					     instance_size);
+                                             instance_size);
 
     // Less than half the block is free?
     if (prealloc_free == 0 || 
-	second->predata.prealloc_num_free < prealloc_num_instances/2) {
+        second->predata.prealloc_num_free < prealloc_num_instances/2) {
       // OK, allocate a new block
       // * NewInstance must create an array of the right size for block
       //   mode to work *
@@ -575,10 +575,10 @@ void PreallocatedType::GoPreallocate() {
       // Setup new block
       Preallocated *cur = nw_b;
       for (int i = 0; i < prealloc_num_instances; i++, 
-	     cur = (Preallocated *) (((char *) cur) + instance_size)) {
-	cur->SetupPreallocated(this,Preallocated::PREALLOC_PENDING_USE);
-	if (i == 1) // Second instance contains # of free instances
-	  cur->predata.prealloc_num_free = prealloc_num_instances;
+             cur = (Preallocated *) (((char *) cur) + instance_size)) {
+        cur->SetupPreallocated(this,Preallocated::PREALLOC_PENDING_USE);
+        if (i == 1) // Second instance contains # of free instances
+          cur->predata.prealloc_num_free = prealloc_num_instances;
       }
 
       // Link it in
@@ -600,22 +600,22 @@ void PreallocatedType::GoPreallocate() {
     if (cnt > 0) {
       // We need more free instances, so let's make em
       if (prev == 0) {
-	// First new instance
-	prealloc_free = prev = prealloc_base->NewInstance();
-	prev->SetupPreallocated(this,
-				/*Preallocated::PREALLOC_BASE_INSTANCE*/
-				Preallocated::PREALLOC_PENDING_USE);
-	// printf("MEM: First new instance in free list!\n");
-	cnt--;
+        // First new instance
+        prealloc_free = prev = prealloc_base->NewInstance();
+        prev->SetupPreallocated(this,
+                                /*Preallocated::PREALLOC_BASE_INSTANCE*/
+                                Preallocated::PREALLOC_PENDING_USE);
+        // printf("MEM: First new instance in free list!\n");
+        cnt--;
       }
       
       while (cnt > 0) {
-	// More new instances
-	// printf("MEM: new instance- typ: %p inuse: %p\n",this,prealloc_inuse);
-	prev->predata.prealloc_next = cur = prealloc_base->NewInstance();
-	cur->SetupPreallocated(this,Preallocated::PREALLOC_PENDING_USE);
-	prev = cur;
-	cnt--;
+        // More new instances
+        // printf("MEM: new instance- typ: %p inuse: %p\n",this,prealloc_inuse);
+        prev->predata.prealloc_next = cur = prealloc_base->NewInstance();
+        cur->SetupPreallocated(this,Preallocated::PREALLOC_PENDING_USE);
+        prev = cur;
+        cnt--;
       }
     }
   }

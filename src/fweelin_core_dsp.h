@@ -62,7 +62,7 @@ class AudioBuffers {
 
   // Mixes the selected inputs to dest (array of 2 channels)
   void MixInputs (nframes_t len, sample_t **dest, InputSettings *iset,
-		  float inputvol, char compute_stats);
+                  float inputvol, char compute_stats);
 
   // Get number of internal audio inputs into FreeWheeling
   static inline int GetIntAudioIns() { 
@@ -320,7 +320,7 @@ public:
     // Check position
     if (pos >= len) {
       printf("PULSE: Sync position adjusted for really short loop "
-	     "(pos %d, len %d)\n",pos,len);
+             "(pos %d, len %d)\n",pos,len);
       pos = len-1;
     }
 
@@ -335,12 +335,12 @@ public:
     } else {
       // No holes found, add to end of array
       if (numsyncpos >= MAX_SYNC_POS) {
-	printf("PULSE: Too many sync positions.\n");
-	return -1;
+        printf("PULSE: Too many sync positions.\n");
+        return -1;
       } else {
-	int ret = numsyncpos;
-	syncpos[numsyncpos++] = pos;
-	return ret;
+        int ret = numsyncpos;
+        syncpos[numsyncpos++] = pos;
+        return ret;
       }
     }
   };
@@ -351,12 +351,12 @@ public:
       printf("PULSE: Invalid sync position %d (0->%d).\n",syncidx,numsyncpos);
     else {
       if (syncidx+1 == numsyncpos) {
-	// Position exists on the end of array- shrink
-	syncpos[syncidx] = 0;
-	numsyncpos--;
+        // Position exists on the end of array- shrink
+        syncpos[syncidx] = 0;
+        numsyncpos--;
       } else
-	// Position exists in the middle of the array- create a hole
-	syncpos[syncidx] = 0;
+        // Position exists in the middle of the array- create a hole
+        syncpos[syncidx] = 0;
     }
   };
 
@@ -468,8 +468,8 @@ public:
   // passing abchild audio buffers to the processors and optionally mixing
   // into the main output buffers ab 
   void processchain(char pre, nframes_t len, AudioBuffers *ab,
-		    AudioBuffers *abchild, const int ptype, 
-		    const char mixintoout);
+                    AudioBuffers *abchild, const int ptype, 
+                    const char mixintoout);
 
   virtual void process(char pre, nframes_t len, AudioBuffers *ab);
 
@@ -524,27 +524,27 @@ public:
 
   // Recording into preexisting fixed size block
   RecordProcessor(Fweelin *app,
-		  InputSettings *iset, 
-		  float *inputvol,
-		  AudioBlock *dest, int suggest_stereo = -1);
+                  InputSettings *iset, 
+                  float *inputvol,
+                  AudioBlock *dest, int suggest_stereo = -1);
 
   // Overdubbing version of record into existing loop
   RecordProcessor(Fweelin *app,
-		  InputSettings *iset, 
-		  float *inputvol,
-		  Loop *od_loop,
-		  float od_playvol,
-		  nframes_t od_startofs,
-		  float *od_feedback);	// Pointer to value for feedback (can be continuously varied)
+                  InputSettings *iset, 
+                  float *inputvol,
+                  Loop *od_loop,
+                  float od_playvol,
+                  nframes_t od_startofs,
+                  float *od_feedback);  // Pointer to value for feedback (can be continuously varied)
 
-  // Recording new blocks, growing size as necessary	       
+  // Recording new blocks, growing size as necessary           
   RecordProcessor(Fweelin *app,
-		  InputSettings *iset, 
-		  float *inputvol,
-		  Pulse *sync = 0, 
-		  AudioBlock *audiomem = 0,
-		  AudioBlockIterator *audiomemi = 0,
-		  nframes_t peaksavgs_chunksize = 0);
+                  InputSettings *iset, 
+                  float *inputvol,
+                  Pulse *sync = 0, 
+                  AudioBlock *audiomem = 0,
+                  AudioBlockIterator *audiomemi = 0,
+                  nframes_t peaksavgs_chunksize = 0);
 
   // Destructor- executed nonRT
   ~RecordProcessor();
@@ -581,17 +581,17 @@ public:
 
   // Fades input samples out of mix- writing to 'dest'
   void FadeOut_Input(nframes_t len, 
-		     sample_t *input_l, sample_t *input_r,
-		     sample_t *loop_l, sample_t *loop_r, 
-		     float old_fb, float new_fb, float fb_delta,
-		     sample_t *dest_l, sample_t *dest_r);
+                     sample_t *input_l, sample_t *input_r,
+                     sample_t *loop_l, sample_t *loop_r, 
+                     float old_fb, float new_fb, float fb_delta,
+                     sample_t *dest_l, sample_t *dest_r);
 
   // Fades input samples into mix- writing to 'dest'
   void FadeIn_Input(nframes_t len, 
-		    sample_t *input_l, sample_t *input_r,
-		    sample_t *loop_l, sample_t *loop_r, 
-		    float old_fb, float new_fb, float fb_delta,
-		    sample_t *dest_l, sample_t *dest_r);
+                    sample_t *input_l, sample_t *input_r,
+                    sample_t *loop_l, sample_t *loop_r, 
+                    float old_fb, float new_fb, float fb_delta,
+                    sample_t *dest_l, sample_t *dest_r);
 
   // Jumps to a position within an overdubbing loop- fade of input & output
   void Jump(nframes_t ofs);
@@ -646,7 +646,7 @@ public:
   float od_playvol, 
     *od_feedback,
     od_feedback_lastval;  // Last value for feedback- used to determine delta, to remove
-			  // zipper noise
+                          // zipper noise
   long od_curbeat; // Current beat in od_loop
   char od_fadein, od_fadeout, od_stop, // Fade in overdub, fade out overdub,
                                        // and stop overdub flags
@@ -660,7 +660,7 @@ public:
 class PlayProcessor : public Processor, public EventListener {
 public:
   PlayProcessor(Fweelin *app, Loop *playloop, float playvol, 
-		nframes_t startofs = 0);
+                nframes_t startofs = 0);
   virtual ~PlayProcessor();
 
   // Sync up playing of the loop to a newly created pulse
