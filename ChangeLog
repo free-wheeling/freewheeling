@@ -1,5 +1,29 @@
 IN PROGRESS v0.5.6 - SVN
 
+            Wednesday August 13th, 2008
+            
+            New Features
+            ------------
+            
+            * Rename snapshots
+              
+              Press ALT-1 through ALT-9 to rename the appropriate snapshot.
+              Label your song sections for easy recall.
+              
+            * Way overhauled BCF-2000 interface
+            
+              The Behringer BCF-2000 MIDI template has been overhauled. 
+              Most major functions can be controlled from the surface.
+              Continuously variable loop volumes, overdubs on knob presses,
+              loop selection and triggering, scenes, pulses, and multiple
+              pages of loops. The whole template can be customized by editing
+              the MIDI CC variables at the top of the file.
+              
+              By changing the CCs, you can use it as a template for other control
+              surfaces. A future configuration editor may build on this concept
+              of 'templates with editable settings'. For now, 
+              you can edit the file and adjust the most common commands easily.
+            
             Saturday July 5th, 2008
 
             New Features
