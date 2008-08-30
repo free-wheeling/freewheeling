@@ -267,7 +267,7 @@ Event "midicontroller"
     "controlval": Value of control change
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
                          given by the current patch. 
-			 0 sends this message
+                         0 sends this message
                          as described by outport/midichannel.
 
 Event "midikey"
@@ -282,12 +282,12 @@ Event "midikey"
     "velocity": Velocity of noteon/noteoff
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
                          given by the current patch. 
-			 0 sends this message
+                         0 sends this message
                          as described by outport/midichannel.
 
 Event "midichannelpressure"
   binding input="midichannelpressure" conditions="midichannel=0 and 
-				                  pressureval=64"
+                                                  pressureval=64"
     A MIDI channel pressure (channel aftertouch) message.
 
     "outport": # of MIDI output to echo event to
@@ -295,12 +295,12 @@ Event "midichannelpressure"
     "pressureval": Pressure of keys
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
                          given by the current patch. 
-			 0 sends this message
+                         0 sends this message
                          as described by outport/midichannel.
 
 Event "midiprogramchange"
   binding input="midiprogramchange" conditions="midichannel=0 and 
-				                programval=64"
+                                                programval=64"
     A MIDI program change message.
 
     "outport": # of MIDI output to echo event to
@@ -308,12 +308,12 @@ Event "midiprogramchange"
     "programval": Program change #
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
                          given by the current patch. 
-			 0 sends this message
+                         0 sends this message
                          as described by outport/midichannel.
 
 Event "midipitchbend"
   binding input="midipitchbend" conditions="midichannel=0 and 
-				            pitchval=6000"
+                                            pitchval=6000"
     A MIDI pitch bend message.
 
     "outport": # of MIDI output to echo event to
@@ -321,7 +321,7 @@ Event "midipitchbend"
     "pitchval": Pitch bender value
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
                          given by the current patch. 
-			 0 sends this message
+                         0 sends this message
                          as described by outport/midichannel.
 
 Event "joybutton"
@@ -412,8 +412,8 @@ Event "trigger-loop"
   "overdub": 1 or 0 determine whether to overdub or just play
   "overdubfeedback": Variable that holds the value of feedback to
                      apply during overdub. Variable must be of type 
-		     float (from 0.0 to 1.0). Variable can be continuously
-		     varied. 
+                     float (from 0.0 to 1.0). Variable can be continuously
+                     varied. 
 
 Event "set-trigger-volume"
   Sets the volume of a given loop trigger. If you have a loop playing, you
@@ -459,7 +459,7 @@ Event "slide-master-in-volume"
 Event "slide-in-volume"
   Slides one input volume at the speed given. A positive value
   increases volume.
-	
+        
   "input": number of input to slide volume for
   "slide": speed of slide
 
@@ -484,14 +484,14 @@ Event "set-master-out-volume"
 Event "set-in-volume"
   Sets one input volume to 'vol'. 1.0 is 100% volume.
   Stops sliding.
-	
+        
   "input": number of input to set volume for
   "vol": new volume
 
 Event "toggle-input-record"
   Toggles recording of one input. Does not change monitoring for this input,
   only whether loops are recorded from the input.
-	
+        
   "input": number of input to toggle recording for
 
 Event "adjust-midi-transpose"
@@ -848,7 +848,7 @@ Event "select-all-loops"
   "setid": Number of the selection set to change
            (usually this will be 0)
   "select": 1 to select all loops
- 	    0 to select no loops
+            0 to select no loops
 
 Event "invert-selection"
   Invert the selection- Select all loops not currently selected.

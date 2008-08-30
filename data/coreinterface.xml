@@ -10,10 +10,10 @@
     <!-- Variables -->
 
     <!-- Note: You can't declare one variable with an initial value based on
-	       another variable. All init values must be scalar numbers. 
+               another variable. All init values must be scalar numbers. 
 
-	       So the following will not work:
-	       <declare var="VAR_my_variable" type="int" init="VAR_my_other+1"/> 
+               So the following will not work:
+               <declare var="VAR_my_variable" type="int" init="VAR_my_other+1"/> 
       -->
 
     <!-- Display IDs- so we can refer to displays for turning them on/off -->
@@ -60,14 +60,14 @@
     <declare var="VAR_xferidx" type="int" init="0"/>
 
     <!-- Development mode sets options that I use for development, testing, 
-	 and playing. I don't recommend you use it. -->
+         and playing. I don't recommend you use it. -->
     <declare var="VAR_develmode" type="char" init="0"/>
 
     <declare var="VAR_auto_loop_save" type="char" init="0"/>
 
     <!-- HELP: Keys listed in [] are for laptop keyboard mode -->
     <!-- Laptop keyboard mode reorganizes keys for smaller keyboards that
-	 are missing some keys. -->
+         are missing some keys. -->
     <declare var="VAR_laptopkeymode" type="char" init="1"/>
 
     <declare var="VAR_videofullscreen" type="char" init="0"/>
@@ -96,6 +96,17 @@
      output3="video-switch-interface"
      parameters3="interfaceid=VAR_showinterface"/>
 
+    <!-- Subroutine 100- Display browser with given ID -->
+    <binding input="go-sub" conditions="sub=100"
+     output1="video-show-display" parameters1="interfaceid=0 and
+                                               displayid=VAR_cur_browser and
+                                               show=0"
+     output2="set-variable" parameters2="var=VAR_cur_browser and 
+                                         value=param1"
+     output3="video-show-display" parameters3="interfaceid=0 and
+                                               displayid=VAR_cur_browser and
+                                               show=1"/>
+
     <!-- HELP: Esc: Exit -->
     <binding input="key" conditions="key=escape and keydown=1"
      output="exit-freewheeling"/>
@@ -103,35 +114,35 @@
     <!-- HELP: / key: Toggle help -->
     <binding input="key" conditions="key=slash and keydown=1"
      output1="toggle-variable" parameters1="var=VAR_helppage and
-					    maxvalue=SYSTEM_num_help_pages"
+                                            maxvalue=SYSTEM_num_help_pages"
      output2="video-show-help" parameters2="page=VAR_helppage"/>      
 
     <!-- HELP: [Shift + enter] KP enter: Toggle debug info -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and
-				     VAR_keyheld_shift=1 and key=return and
-				     keydown=1"
+                                     VAR_keyheld_shift=1 and key=return and
+                                     keydown=1"
      output1="toggle-variable" parameters1="var=VAR_showdebuginfo and 
-					    maxvalue=1"
+                                            maxvalue=1"
      output2="show-debug-info" parameters2="show=VAR_showdebuginfo"/>      
     <binding input="key" conditions="key=enter and keydown=1"
      output1="toggle-variable" parameters1="var=VAR_showdebuginfo and 
-					    maxvalue=1"
+                                            maxvalue=1"
      output2="show-debug-info" parameters2="show=VAR_showdebuginfo"/>      
 
     <!-- HELP: [F3] Pause: Toggle full screen -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and 
-				     key=f3 and keydown=1"
+                                     key=f3 and keydown=1"
      output1="toggle-variable" parameters1="var=VAR_videofullscreen and
-					    maxvalue=1"
+                                            maxvalue=1"
      output2="video-full-screen" parameters2="fullscreen=VAR_videofullscreen"/>      
     <binding input="key" conditions="key=pause and keydown=1"
      output1="toggle-variable" parameters1="var=VAR_videofullscreen and
-					    maxvalue=1"
+                                            maxvalue=1"
      output2="video-full-screen" parameters2="fullscreen=VAR_videofullscreen"/> 
 
     <!-- HELP: [F4] PrintScreen: Toggle record to disk -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and 
-				     key=f4 and keydown=1"
+                                     key=f4 and keydown=1"
      output="toggle-disk-output"/>
     <binding input="key" conditions="key=printscreen and keydown=1"
      output="toggle-disk-output"/>
@@ -141,71 +152,71 @@
      output="toggle-variable" parameters="var=VAR_develmode and maxvalue=1"/>
 
     <!-- This binding is for development and 
-	 starts disk output from a MIDI keyboard. -->
+         starts disk output from a MIDI keyboard. -->
     <binding input="midikey" 
      conditions="notenum=47 and VAR_develmode=1 and keydown=1"
      output="toggle-disk-output"/>
 
     <!-- This binding (development) triggers a MIDI note from the QWERTY
-	 keyboard. -->
+         keyboard. -->
     <binding input="key" conditions="key=d and VAR_develmode=1"
      output="midikey" parameters="keydown=keydown and outport=1 and 
-				  midichannel=0 and 
-				  notenum=37 and velocity=127"/>
+                                  midichannel=0 and 
+                                  notenum=37 and velocity=127"/>
 
     <!-- Early bindings- LOOPS -->
     <binding input="key" conditions="VAR_keyheld_shift=1 and
-				     key=VAR_snaps+VAR_zero_keysym and
-				     keydown=1"
+                                     key=VAR_snaps+VAR_zero_keysym and
+                                     keydown=1"
      output="create-snapshot" 
      parameters="snapid=key-VAR_zero_keysym-1+SYSTEM_snapshot_page_firstidx"/>
     <binding input="key" conditions="VAR_keyheld_ctrl=1 and
-				     key=VAR_snaps+VAR_zero_keysym and
-				     keydown=1"
+                                     key=VAR_snaps+VAR_zero_keysym and
+                                     keydown=1"
      output="trigger-snapshot" 
      parameters="snapid=key-VAR_zero_keysym-1+SYSTEM_snapshot_page_firstidx"/>
     <binding input="key" conditions="VAR_keyheld_alt=1 and
-				     key=VAR_snaps+VAR_zero_keysym and
-				     keydown=1"
+                                     key=VAR_snaps+VAR_zero_keysym and
+                                     keydown=1"
      output="rename-snapshot" 
      parameters="snapid=key-VAR_zero_keysym-1+SYSTEM_snapshot_page_firstidx"/>
 
     <binding input="key" conditions="VAR_keyheld_shift=1 and
-				     key=zero and
-				     keydown=1"
+                                     key=zero and
+                                     keydown=1"
      output="create-snapshot" 
      parameters="snapid=9+SYSTEM_snapshot_page_firstidx"/>
     <binding input="key" conditions="VAR_keyheld_ctrl=1 and
-				     key=zero and
-				     keydown=1"
+                                     key=zero and
+                                     keydown=1"
      output="trigger-snapshot" 
      parameters="snapid=9+SYSTEM_snapshot_page_firstidx"/>
     <binding input="key" conditions="VAR_keyheld_alt=1 and
-				     key=zero and
-				     keydown=1"
+                                     key=zero and
+                                     keydown=1"
      output="rename-snapshot" 
      parameters="snapid=9+SYSTEM_snapshot_page_firstidx"/>
 
     <binding input="key" conditions="VAR_keyheld_ctrl=1 and key=comma and 
-				     keydown=1"
+                                     keydown=1"
      output="video-show-snapshot-page" parameters="interfaceid=0 and
-						   displayid=DISPLAY_scenes and
+                                                   displayid=DISPLAY_scenes and
                                                    page=-1"/>
     <binding input="key" conditions="VAR_keyheld_ctrl=1 and key=period and 
-				     keydown=1"
+                                     keydown=1"
      output="video-show-snapshot-page" parameters="interfaceid=0 and
-						   displayid=DISPLAY_scenes and
+                                                   displayid=DISPLAY_scenes and
                                                    page=1"/>
 
     <binding input="key" conditions="VAR_keyheld_shift=1 and key=comma and 
-				     keydown=1"
+                                     keydown=1"
      output="video-show-snapshot-page" parameters="interfaceid=0 and
-						   displayid=DISPLAY_scenes and
+                                                   displayid=DISPLAY_scenes and
                                                    page=-1"/>
     <binding input="key" conditions="VAR_keyheld_shift=1 and key=period and 
-				     keydown=1"
+                                     keydown=1"
      output="video-show-snapshot-page" parameters="interfaceid=0 and
-						   displayid=DISPLAY_scenes and
+                                                   displayid=DISPLAY_scenes and
                                                    page=1"/>
 
     <!-- HELP: -->
@@ -216,50 +227,50 @@
     <!-- HELP: up/down + 1-4: +/- input volumes -->
 
     <!-- DISABLED-
-	 HELP: 1-4: Select inputs for footpedal volume adjust (CC1) -->
+         HELP: 1-4: Select inputs for footpedal volume adjust (CC1) -->
 
     <!-- Slide -->
     <binding input="key" conditions="VAR_keyheld_up=1 and
-				     key=VAR_inputs+VAR_zero_keysym and
-				     keydown=1"
+                                     key=VAR_inputs+VAR_zero_keysym and
+                                     keydown=1"
      output="slide-in-volume" parameters="input=key-VAR_zero_keysym and
-					  slide=VAR_slide_speed"/>
+                                          slide=VAR_slide_speed"/>
     <binding input="key" conditions="VAR_keyheld_down=1 and
-				     key=VAR_inputs+VAR_zero_keysym and 
-				     keydown=1"
+                                     key=VAR_inputs+VAR_zero_keysym and 
+                                     keydown=1"
      output="slide-in-volume" parameters="input=key-VAR_zero_keysym and
-					  slide=-VAR_slide_speed"/>
+                                          slide=-VAR_slide_speed"/>
 
     <!-- Toggle -->
     <binding input="key" conditions="key=VAR_inputs+VAR_zero_keysym and
-				     keydown=1"
+                                     keydown=1"
      output="toggle-input-record" parameters="input=key-VAR_zero_keysym"/>
 
     <!-- DISABLED- Footpedal adjust
-	 Sub 2: Footpedal adjust- param1 is parameter to adjust
-	 This sub is called whenever a parameter needs to be adjusted by the
-	 footpedal
+         Sub 2: Footpedal adjust- param1 is parameter to adjust
+         This sub is called whenever a parameter needs to be adjusted by the
+         footpedal
     <binding input="go-sub" conditions="sub=2 and param1=VAR_inputs"
      output1="set-in-volume" parameters1="input=param1 and vol=param2"/>
 
-	 Here is the binding that calls sub 2:
+         Here is the binding that calls sub 2:
     <binding input="midicontroller" 
      conditions="controlnum=VAR_footpedal_ctrl_num and VAR_footpedal_ignore=0"
      output="go-sub" parameters="sub=2 and
-				 param1=VAR_footpedal_mode and
-				 param2=controlval/127*VAR_footpedal_vol_max"/>
+                                 param1=VAR_footpedal_mode and
+                                 param2=controlval/127*VAR_footpedal_vol_max"/>
 
-	 And here are the input selectors for footpedal adjust:
+         And here are the input selectors for footpedal adjust:
     <binding input="key" conditions="key=VAR_inputs+VAR_zero_keysym and
-				     keydown=1"
+                                     keydown=1"
      output1="set-variable" parameters1="var=VAR_footpedal_ignore and
-					 value=1"
+                                         value=1"
      output2="set-variable" parameters2="var=VAR_footpedal_mode and
-					 value=key-VAR_zero_keysym"/>
+                                         value=key-VAR_zero_keysym"/>
     <binding input="key" conditions="key=VAR_inputs+VAR_zero_keysym and
-				     keydown=0"
+                                     keydown=0"
      output="set-variable" parameters="var=VAR_footpedal_ignore and
-				       value=0"/>	
+                                       value=0"/>       
       -->
 
     <!-- HELP: Alt + \: Stop sliding loop volumes -->
@@ -269,10 +280,10 @@
 
     <!-- HELP: [;'] Ins/Del/Bkspc: +/-/reset master in volume -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and 
-				     key=semicolon and keydown=1" 
+                                     key=semicolon and keydown=1" 
      output="slide-master-in-volume" parameters="slide=VAR_slide_speed"/>
     <binding input="key" conditions="VAR_laptopkeymode=1 and
-				     key=backquote and keydown=1" 
+                                     key=backquote and keydown=1" 
      output="slide-master-in-volume" parameters="slide=-VAR_slide_speed"/>
     <binding input="key" conditions="key=insert and keydown=1" 
      output="slide-master-in-volume" parameters="slide=VAR_slide_speed"/>
@@ -283,10 +294,10 @@
 
     <!-- HELP: [[]] Home/End/Backslash: +/-/reset master out volume -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and 
-				     key=squarebracketopen and keydown=1" 
+                                     key=squarebracketopen and keydown=1" 
      output="slide-master-out-volume" parameters="slide=VAR_slide_speed/2"/>
     <binding input="key" conditions="VAR_laptopkeymode=1 and 
-				     key=squarebracketclose and keydown=1" 
+                                     key=squarebracketclose and keydown=1" 
      output="slide-master-out-volume" parameters="slide=-VAR_slide_speed/2"/>
 
     <binding input="key" conditions="key=home and keydown=1" 
@@ -301,12 +312,12 @@
      conditions="VAR_keyheld_up=1 and button=1 and down=1"
      output="slide-loop-amplifier"
      parameters="loopid=loopid and
-		 slide=VAR_slide_speed/2"/> 
+                 slide=VAR_slide_speed/2"/> 
     <binding input="loop-clicked"
      conditions="VAR_keyheld_down=1 and button=1 and down=1"
      output="slide-loop-amplifier"
      parameters="loopid=loopid and
-		 slide=-VAR_slide_speed/2"/> 
+                 slide=-VAR_slide_speed/2"/> 
 
     <!-- HELP: CTRL + Mousewheel: +/- volume of all selected loops -->
     <binding input="loop-clicked" 
@@ -354,10 +365,10 @@
 
     <!-- HELP: [,.] KP Ins/Del: Transpose MIDI output -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and key=comma and 
-				     keydown=1"
+                                     keydown=1"
      output="adjust-midi-transpose" parameters="adjust=-12"/>
     <binding input="key" conditions="VAR_laptopkeymode=1 and key=period and
-				     keydown=1"
+                                     keydown=1"
      output="adjust-midi-transpose" parameters="adjust=12"/>
 
     <binding input="key" conditions="key=KP0 and keydown=1"
@@ -398,7 +409,7 @@
      conditions="VAR_xferloop=1 and button=1 and down=1"
      output1="move-loop"
      parameters1="oldloopid=VAR_xferidx and 
-		  newloopid=loopid"
+                  newloopid=loopid"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
     <!-- HELP: overdub mode + trigger: Overdub into loop -->
@@ -407,7 +418,7 @@
      conditions="VAR_overdubmode=1 and button=1 and down=1"
      output="trigger-loop"
      parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
-		 loopid=loopid and vol=1.0"/>
+                 loopid=loopid and vol=1.0"/>
 
     <!-- HELP: trigger/click: Toggle Record-Play-Off for loop -->
     <!-- Trigger Loops -->
@@ -421,15 +432,15 @@
     <!-- HELP: (alt) Keypad asterisk: Unselect all loops -->
     <binding input="key" 
      conditions="VAR_laptopkeymode=1 and VAR_keyheld_shift=1 and 
-		 key=lessthan and keydown=1"
+                 key=lessthan and keydown=1"
      output="select-only-playing-loops" parameters="setid=0 and playing=0"/>
     <binding input="key" 
      conditions="VAR_laptopkeymode=1 and VAR_keyheld_alt=1 and 
-		 key=lessthan and keydown=1"
+                 key=lessthan and keydown=1"
      output="select-all-loops" parameters="setid=0 and select=0"/>
     <binding input="key" 
      conditions="VAR_laptopkeymode=1 and VAR_keyheld_ctrl=1 and 
-		 key=lessthan and keydown=1"
+                 key=lessthan and keydown=1"
      output="invert-selection" parameters="setid=0"/>
     <binding input="key" 
      conditions="VAR_laptopkeymode=1 and key=lessthan and keydown=1"
@@ -452,7 +463,7 @@
     <binding input="key"
      conditions="key=t and keydown=1"
      output="trigger-selected-loops" parameters="setid=0 and vol=1.0 and
-						 toggleloops=1"/>
+                                                 toggleloops=1"/>
 
     <!-- HELP: Tab: Switch interfaces on screen -->
     <binding input="key" conditions="key=tab and keydown=1"
@@ -461,12 +472,12 @@
 
     <!-- HELP: ctrl + click on loop: Rename loop -->
     <!-- See 'Renaming loops by clicking'- binding defined earlier for
-	 precedence -->
+         precedence -->
 
     <!-- HELP: u: Undo last loop record -->
     <binding input="key" 
      conditions="SYSTEM_loopid_lastrecord_0=VAR_loopid_footswitch and 
-		 key=u and keydown=1" 
+                 key=u and keydown=1" 
      output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
@@ -497,7 +508,7 @@
     <!-- HELP: F9: Toggle loop auto-saving --> 
     <binding input="key" conditions="key=f9 and keydown=1"
      output1="toggle-variable" parameters1="var=VAR_auto_loop_save and
-					    maxvalue=1"
+                                            maxvalue=1"
      output2="set-auto-loop-saving" parameters2="save=VAR_auto_loop_save"/>
 
     <!-- HELP: F8: Save last recorded loop --> 
@@ -506,7 +517,7 @@
 
     <!-- HELP: shift + F7: Force save new scene of all loops -->
     <binding input="key" conditions="VAR_keyheld_shift=1 and key=f7 and
-				     keydown=1"
+                                     keydown=1"
      output="save-new-scene"/>
 
     <!-- HELP: F7: Save current scene of all loops -->
@@ -527,12 +538,12 @@
     <binding input="key" conditions="key=b and keydown=1"
      output1="video-show-display" parameters1="interfaceid=0 and
                                                displayid=VAR_cur_browser and
-					       show=0"
+                                               show=0"
      output2="toggle-variable" parameters2="var=VAR_cur_browser and 
-					    maxvalue=VAR_max_browser"
+                                            maxvalue=VAR_max_browser"
      output3="video-show-display" parameters3="interfaceid=0 and
                                                displayid=VAR_cur_browser and
-					       show=1"/>
+                                               show=1"/>
 
     <!-- HELP: (ctrl) Enter: Rename browser item -->
     <binding input="key"
@@ -541,14 +552,14 @@
 
     <!-- HELP: Enter: Select browser item -->
     <!-- When selecting a loop in the loop browser, FW will load the loop-
-	 since we load onto the footswitch, set our state so that we can
-	 transfer the loop from the footswitch -->
+         since we load onto the footswitch, set our state so that we can
+         transfer the loop from the footswitch -->
     <binding input="key"
      conditions="VAR_cur_browser=DISPLAY_browser_loop and key=return and 
-		 keydown=1"
+                 keydown=1"
      output1="set-variable" parameters1="var=VAR_xferloop and value=1"
      output2="set-variable" parameters2="var=VAR_xferidx and
-					 value=VAR_loopid_footswitch"
+                                         value=VAR_loopid_footswitch"
      output3="browser-select-item" parameters3="browserid=VAR_cur_browser"/>
     <binding input="key"
      conditions="key=return and keydown=1"
@@ -557,39 +568,39 @@
     <!-- HELP: (shift) [+/-] KP +/-: (Jump)/change browser item -->
     <binding input="key"
      conditions="VAR_keyheld_shift=1 and VAR_laptopkeymode=1 and key=minus
-		 and keydown=1"
+                 and keydown=1"
      output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
-					       adjust=0 and jumpadjust=-1"/>
+                                               adjust=0 and jumpadjust=-1"/>
     <binding input="key"
      conditions="VAR_keyheld_shift=1 and VAR_laptopkeymode=1 and key=equal 
-		 and keydown=1"
+                 and keydown=1"
      output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
-					       adjust=0 and jumpadjust=1"/>
+                                               adjust=0 and jumpadjust=1"/>
     <binding input="key"
      conditions="VAR_laptopkeymode=1 and key=minus and keydown=1"
      output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
-					       adjust=-1 and jumpadjust=0"/>
+                                               adjust=-1 and jumpadjust=0"/>
     <binding input="key"
      conditions="VAR_laptopkeymode=1 and key=equal and keydown=1"
      output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
-					       adjust=1 and jumpadjust=0"/>
+                                               adjust=1 and jumpadjust=0"/>
 
     <binding input="key"
      conditions="VAR_keyheld_shift=1 and key=KPminus and keydown=1"
      output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
-					       adjust=0 and jumpadjust=-1"/>
+                                               adjust=0 and jumpadjust=-1"/>
     <binding input="key"
      conditions="VAR_keyheld_shift=1 and key=KPplus and keydown=1"
      output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
-					       adjust=0 and jumpadjust=1"/>
+                                               adjust=0 and jumpadjust=1"/>
     <binding input="key"
      conditions="key=KPminus and keydown=1"
      output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
-					       adjust=-1 and jumpadjust=0"/>
+                                               adjust=-1 and jumpadjust=0"/>
     <binding input="key"
      conditions="key=KPplus and keydown=1"
      output="browser-move-to-item" parameters="browserid=VAR_cur_browser and
-					       adjust=1 and jumpadjust=0"/> 
+                                               adjust=1 and jumpadjust=0"/> 
 
     <!-- HELP: -->
     <!-- HELP: __ TIMING __ -->
@@ -597,19 +608,19 @@
 
     <!-- HELP: Shift-F1: Toggle sync panel -->
     <binding input="key" conditions="VAR_keyheld_shift=1 and key=f1 and 
-				     keydown=1"
+                                     keydown=1"
      output1="toggle-variable" parameters1="var=VAR_syncpanel_show and 
-					    maxvalue=1"
+                                            maxvalue=1"
      output2="video-show-display" parameters2="displayid=1000 and
-					       show=VAR_syncpanel_show"
+                                               show=VAR_syncpanel_show"
      output3="video-show-display" parameters3="displayid=1001 and
-					       show=VAR_syncpanel_show"
+                                               show=VAR_syncpanel_show"
      output4="video-show-display" parameters4="displayid=1002 and
-					       show=VAR_syncpanel_show"
+                                               show=VAR_syncpanel_show"
      output5="video-show-display" parameters5="displayid=1003 and
-					       show=VAR_syncpanel_show"
+                                               show=VAR_syncpanel_show"
      output6="video-show-display" parameters6="displayid=1004 and
-					       show=VAR_syncpanel_show"/>
+                                               show=VAR_syncpanel_show"/>
 
     <!-- HELP: (space) F1: (Delete)/create/select pulse -->
     <binding input="key" 
@@ -655,82 +666,82 @@
 
     <!-- HELP: [F5] F11: Toggle metronome -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and key=f5 and 
-				     keydown=1"
+                                     keydown=1"
      output1="toggle-variable" parameters1="var=VAR_switch_metronome and
-					    maxvalue=1"
+                                            maxvalue=1"
      output2="switch-metronome" parameters2="pulse=0 and
-					     metronome=VAR_switch_metronome"/>
+                                             metronome=VAR_switch_metronome"/>
 
     <binding input="key" conditions="key=f11 and keydown=1"
      output1="toggle-variable" parameters1="var=VAR_switch_metronome and
-					    maxvalue=1"
+                                            maxvalue=1"
      output2="switch-metronome" parameters2="pulse=0 and
-					     metronome=VAR_switch_metronome"/>
+                                             metronome=VAR_switch_metronome"/>
 
     <!-- HELP: [F6] F12: Select no pulse- free timing -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and key=f6 and 
-				     keydown=1"
+                                     keydown=1"
      output="select-pulse" parameters="pulse=-1"/>
     <binding input="key" conditions="key=f12 and keydown=1"
      output="select-pulse" parameters="pulse=-1"/>
 
     <!-- Update held keyboard states -->
     <!-- This should be done at the end in case any other bindings respond to
-	 these keys. -->
+         these keys. -->
     <binding input="key" conditions="key=space"
      output="set-variable" parameters="var=VAR_keyheld_space and 
-				       value=keydown"/>
+                                       value=keydown"/>
 
     <binding input="key" conditions="key=up and VAR_keyheld_ctrl=1"
      output1="set-variable" parameters1="var=VAR_keyheld_up and 
-				         value=keydown"
+                                         value=keydown"
      output2="adjust-selected-loops-amp" 
      parameters2="setid=0 and ampfactor=1.0/VAR_loopamp_adj"/>
     <binding input="key" conditions="key=up"
      output="set-variable" parameters="var=VAR_keyheld_up and 
-				       value=keydown"/>
+                                       value=keydown"/>
 
     <binding input="key" conditions="key=down and VAR_keyheld_ctrl=1"
      output1="set-variable" parameters1="var=VAR_keyheld_down and 
-				         value=keydown"
+                                         value=keydown"
      output2="adjust-selected-loops-amp" 
      parameters2="setid=0 and ampfactor=VAR_loopamp_adj"/>
     <binding input="key" conditions="key=down"
      output="set-variable" parameters="var=VAR_keyheld_down and 
-				       value=keydown"/>
+                                       value=keydown"/>
 
     <binding input="key" conditions="key=leftshift"
      output1="set-variable" parameters1="var=VAR_keyheld_shift and 
-				        value=keydown"
+                                        value=keydown"
      output2="video-show-display" parameters2="interfaceid=0 and
-					       displayid=DISPLAY_scenes and
-					       show=keydown"/>
+                                               displayid=DISPLAY_scenes and
+                                               show=keydown"/>
     <binding input="key" conditions="key=rightshift"
      output1="set-variable" parameters1="var=VAR_keyheld_shift and 
-				        value=keydown"
+                                        value=keydown"
      output2="video-show-display" parameters2="interfaceid=0 and
-					       displayid=DISPLAY_scenes and
-					       show=keydown"/>
+                                               displayid=DISPLAY_scenes and
+                                               show=keydown"/>
 
     <binding input="key" conditions="key=leftctrl"
      output1="set-variable" parameters1="var=VAR_keyheld_ctrl and 
-					 value=keydown"
+                                         value=keydown"
      output2="video-show-display" parameters2="interfaceid=0 and
-					       displayid=DISPLAY_scenes and
-					       show=keydown"/>
+                                               displayid=DISPLAY_scenes and
+                                               show=keydown"/>
     <binding input="key" conditions="key=rightctrl"
      output1="set-variable" parameters1="var=VAR_keyheld_ctrl and 
-					 value=keydown"
+                                         value=keydown"
      output2="video-show-display" parameters2="interfaceid=0 and
-					       displayid=DISPLAY_scenes and
-					       show=keydown"/>
+                                               displayid=DISPLAY_scenes and
+                                               show=keydown"/>
 
     <binding input="key" conditions="key=leftalt"
      output="set-variable" parameters="var=VAR_keyheld_alt and 
-				       value=keydown"/>
+                                       value=keydown"/>
     <binding input="key" conditions="key=rightalt"
      output="set-variable" parameters="var=VAR_keyheld_alt and 
-				       value=keydown"/>
+                                       value=keydown"/>
   </bindings>
 
   <graphics>

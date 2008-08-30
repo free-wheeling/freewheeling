@@ -273,8 +273,8 @@ class Snapshot {
   Snapshot() : name(0), exists(0), ls(0) {};
   ~Snapshot () { DeleteSnapshot(); };
 
-  void DeleteSnapshot() {
-    if (name != 0) {
+  void DeleteSnapshot (char erasename = 1) {
+    if (erasename && name != 0) {
       delete[] name;
       name = 0;
     }
