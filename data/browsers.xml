@@ -34,38 +34,38 @@
 
        Each patch file has optional settings as follows:
 
-		  With suppressprogramchanges=1, no MIDI bank and program change
-		  messages are sent when patches are changed within a patch bank.
-		  This is useful when you have a softsynth loaded with patches on
-		  different channels and you merely want to switch channels-
-		  each patch is mapped to a different channel, but you don't want
-		  program change messages being sent to mess up your patches. 
+                  With suppressprogramchanges=1, no MIDI bank and program change
+                  messages are sent when patches are changed within a patch bank.
+                  This is useful when you have a softsynth loaded with patches on
+                  different channels and you merely want to switch channels-
+                  each patch is mapped to a different channel, but you don't want
+                  program change messages being sent to mess up your patches. 
 
-		  Use this for banks of Linuxsampler channels.
+                  Use this for banks of Linuxsampler channels.
 
-		  With separatechannels=0, patches mapped to different channels
-		  appear in the same patch bank. With this option, you can have a
-		  collection of several patches on different channels that appear
-		  together in one list for browsing. This is useful for sampling
-		  synths where your patches are pre-loaded onto channels.
+                  With separatechannels=0, patches mapped to different channels
+                  appear in the same patch bank. With this option, you can have a
+                  collection of several patches on different channels that appear
+                  together in one list for browsing. This is useful for sampling
+                  synths where your patches are pre-loaded onto channels.
 
-		  With separatechannels=1, the old behavior is used. 
-		  The old behavior splits each channel into a separate bank.
-		  This works well for DSSI softsynths, where many synths run on
-		  the same port, but each channel accesses a different synth and
-		  different set of patches.
+                  With separatechannels=1, the old behavior is used. 
+                  The old behavior splits each channel into a separate bank.
+                  This works well for DSSI softsynths, where many synths run on
+                  the same port, but each channel accesses a different synth and
+                  different set of patches.
 
        -->
 
        <!-- Uncomment to load ~/.fweelin/patches1.xml and make patches available
-	    on MIDI output 1. 
+            on MIDI output 1. 
 
-	   <patchbank midiport="1" separatechannels="1" patches="patches1.xml"/>
+           <patchbank midiport="1" separatechannels="1" patches="patches1.xml"/>
        -->
 
        <!-- Patch file with all channels available: This is a basic template
-	    for allowing the user to simply switch between MIDI output channels
-	    without sending MIDI program/bank changes. -->
+            for allowing the user to simply switch between MIDI output channels
+            without sending MIDI program/bank changes. -->
        <patchbank midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-channels.xml"/>
     </display>
 

@@ -4,17 +4,20 @@
 
     <!-- All BCF controls must come on this MIDI channel -->
     <declare var="VAR_bcf2000_channel" type="int" init="15"/>
-
+    
+    <declare var="VAR_bcf2000_ate_midicc" type="int" init="0"/>
+    <declare var="VAR_bcf2000_any_midicc" type="range" init="0>127"/>
+    
     <!-- Multi-pages of loops -->
     <declare var="VAR_bcf2000_looppage" type="int" init="0"/>
     <declare var="VAR_loopidrangechange" type="int" init="8"/>
 
     <!-- Trigger selected loop MIDI controller # -->
-    <declare var="VAR_bcf2000_triggerselected_midicontrol" type="int" init="122"/>
+    <declare var="VAR_bcf2000_triggerselected_midicontrol" type="int" init="124"/>
 
     <!-- Select none/all playing loops MIDI controller # -->
-    <declare var="VAR_bcf2000_selectnone_midicontrol" type="int" init="123"/>
-    <declare var="VAR_bcf2000_selectallplay_midicontrol" type="int" init="124"/>
+    <declare var="VAR_bcf2000_selectnone_midicontrol" type="int" init="122"/>
+    <declare var="VAR_bcf2000_selectallplay_midicontrol" type="int" init="123"/>
 
     <!-- Pulse create/select MIDI controller # -->
     <declare var="VAR_bcf2000_pulseselect_midicontrol" type="int" init="125"/>
@@ -23,13 +26,18 @@
     <declare var="VAR_bcf2000_prevlooppage_midicontrol" type="int" init="120"/>
     <declare var="VAR_bcf2000_nextlooppage_midicontrol" type="int" init="121"/>
 
+    <!-- Scene browse buttons -->
+    <declare var="VAR_bcf2000_scenebrowse_fine_midicontrol" type="int" init="75"/>
+    <declare var="VAR_bcf2000_scenebrowse_coarse_midicontrol" type="int" init="74"/>
+    <declare var="VAR_bcf2000_scenebrowse_select_midicontrol" type="int" init="76"/>
+
     <!-- In scene mode, loop buttons trigger scenes instead -->
     <declare var="VAR_bcf2000_scenemode_midicontrol" type="int" init="72"/>
     <declare var="VAR_scene_mode" type="int" init="0"/>
 
     <!-- Which MIDI controller # controls fast scroll switch in browser.
-	 This switch also doubles for the space key. -->
-    <declare var="VAR_bcf2000_midishift_midicontrol" type="int" init="119"/>
+         This switch also doubles for the space key. -->
+    <declare var="VAR_bcf2000_midishift_midicontrol" type="int" init="118"/>
     <declare var="VAR_keyheld_midishift" type="char" init="0"/>
 
     <!-- Which MIDI controller # controls overdub feedback. -->
@@ -44,7 +52,7 @@
     <declare var="VAR_bcf2000_patchbank_forward_midicontrol" type="int" init="33"/>
 
     <!-- MIDI controller # for undo -->
-    <declare var="VAR_bcf2000_undo_midicontrol" type="int" init="118"/>
+    <declare var="VAR_bcf2000_undo_midicontrol" type="int" init="119"/>
 
     <declare var="VAR_loopid_bcf2000" type="int" init="350"/>
     <declare var="VAR_bcf2000range" type="range" init="0>7"/>
@@ -59,7 +67,7 @@
     <declare var="VAR_bcf2000_loopamp_adj" type="float" init="0.05"/>
 
     <!-- The following controls are given as the bottommost MIDI CC. 
-	 8 MIDI CCs ascend from there to control each loop/scene. -->
+         8 MIDI CCs ascend from there to control each loop/scene. -->
 
     <!-- First MIDI control for selection -->
     <declare var="VAR_bcf2000selectcc" type="int" init="40"/>
@@ -92,73 +100,104 @@
     <binding input="start-interface" 
      output1="video-show-loop" 
      parameters1="layoutid=0 and
-		  loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
+                  loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
 
     <!-- Rest of the bindings... -->
+
+    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000controlrange1+VAR_bcf2000ampcc and controlval=0>64" 
+     output="adjust-loop-amplifier"
+     parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
+                 damp=controlval*VAR_damp_speed"/>
+    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000controlrange1+VAR_bcf2000ampcc and controlval=64>127" 
+     output="adjust-loop-amplifier"
+     parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
+                 damp=controlval-128*VAR_damp_speed"/>
+
+    <!-- Browse/select scenes -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and 
+                 controlnum=VAR_bcf2000_scenebrowse_fine_midicontrol and
+                 controlval=0>64"
+     output1="go-sub" parameters1="sub=100 and param1=DISPLAY_browser_scene"
+     output2="browser-move-to-item" parameters2="browserid=DISPLAY_browser_scene and adjust=controlval and jumpadjust=0"/>
+
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and 
+                 controlnum=VAR_bcf2000_scenebrowse_fine_midicontrol and
+                 controlval=64>127"
+     output1="go-sub" parameters1="sub=100 and param1=DISPLAY_browser_scene"
+     output2="browser-move-to-item" parameters2="browserid=DISPLAY_browser_scene and adjust=controlval-128 and jumpadjust=0"/>
+
+   <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_channel and 
+                 controlnum=VAR_bcf2000_scenebrowse_select_midicontrol and
+                 controlval=VAR_switch_on"
+     output1="go-sub" parameters1="sub=100 and param1=DISPLAY_browser_scene"
+     output2="browser-select-item" parameters2="browserid=DISPLAY_browser_scene"/>
 
     <!-- Show/hide scene mode -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and 
-		 controlnum=VAR_bcf2000_scenemode_midicontrol and
-		 controlval=VAR_switch_on"
+                 controlnum=VAR_bcf2000_scenemode_midicontrol and
+                 controlval=VAR_switch_on"
      output1="set-variable" parameters1="var=VAR_scene_mode and value=1"
      output2="video-show-display" parameters2="interfaceid=0 and 
-					       displayid=DISPLAY_scenes and
-					       show=VAR_scene_mode"/>
+                                               displayid=DISPLAY_scenes and
+                                               show=VAR_scene_mode"/>
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and 
-		 controlnum=VAR_bcf2000_scenemode_midicontrol"
+                 controlnum=VAR_bcf2000_scenemode_midicontrol"
      output1="set-variable" parameters1="var=VAR_scene_mode and value=0"
      output2="video-show-display" parameters2="interfaceid=0 and
-					       displayid=DISPLAY_scenes and
-					       show=VAR_scene_mode"/>
+                                               displayid=DISPLAY_scenes and
+                                               show=VAR_scene_mode"/>
 
     <!-- Prev/Next page of scenes on screen -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and 
-		 VAR_scene_mode=1 and
-		 controlnum=VAR_bcf2000_prevlooppage_midicontrol and 
-		 controlval=VAR_switch_on" 
+                 VAR_scene_mode=1 and
+                 controlnum=VAR_bcf2000_prevlooppage_midicontrol and 
+                 controlval=VAR_switch_on" 
      output="video-show-snapshot-page" parameters="interfaceid=0 and
-						   displayid=DISPLAY_scenes and
+                                                   displayid=DISPLAY_scenes and
                                                    page=-1"/>
 
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and 
-		 VAR_scene_mode=1 and
-		 controlnum=VAR_bcf2000_nextlooppage_midicontrol and 
-		 controlval=VAR_switch_on" 
+                 VAR_scene_mode=1 and
+                 controlnum=VAR_bcf2000_nextlooppage_midicontrol and 
+                 controlval=VAR_switch_on" 
      output="video-show-snapshot-page" parameters="interfaceid=0 and
-						   displayid=DISPLAY_scenes and
+                                                   displayid=DISPLAY_scenes and
                                                    page=1"/>
 
     <!-- Prev/Next page of loops on screen -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_prevlooppage_midicontrol and 
-		 controlval=VAR_switch_on" 
+                 controlval=VAR_switch_on" 
      output1="set-variable" parameters1="var=VAR_loopid_bcf2000 and 
-					 value=VAR_loopid_bcf2000-
-					       VAR_loopidrangechange"
+                                         value=VAR_loopid_bcf2000-
+                                               VAR_loopidrangechange"
      output2="set-variable" parameters2="var=VAR_bcf2000_looppage and
-					 value=VAR_bcf2000_looppage-1"
+                                         value=VAR_bcf2000_looppage-1"
      output3="video-show-loop"
      parameters3="layoutid=0 and loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
 
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_nextlooppage_midicontrol and 
-		 controlval=VAR_switch_on" 
+                 controlval=VAR_switch_on" 
      output1="set-variable" parameters1="var=VAR_loopid_bcf2000 and 
-					 value=VAR_loopid_bcf2000+
-					       VAR_loopidrangechange"
+                                         value=VAR_loopid_bcf2000+
+                                               VAR_loopidrangechange"
      output2="set-variable" parameters2="var=VAR_bcf2000_looppage and
-					 value=VAR_bcf2000_looppage+1"
+                                         value=VAR_bcf2000_looppage+1"
      output3="video-show-loop"
      parameters3="layoutid=0 and loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
 
     <!-- (Delete)/create/select pulse -->
     <binding input="midicontroller" 
      conditions="VAR_keyheld_space=1 and
-		 midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_pulseselect_midicontrol and
+                 midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_pulseselect_midicontrol and
                  controlval=VAR_switch_on"
      output="delete-pulse" parameters="pulse=0"/>
     <binding input="midicontroller" 
@@ -171,11 +210,12 @@
                  controlval=VAR_switch_on"
      output="toggle-variable" parameters="var=VAR_fadermode and maxvalue=1"/>
 
-    <!-- Fader 8: Browse/Patch change -->
+    <!-- Fader 8: Browse patch changes by fader -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+7" 
-     output="browser-move-to-item-absolute" 
-     parameters="browserid=VAR_cur_browser and
-		 idx=controlval/127.*16"/>
+     output1="go-sub" parameters1="sub=100 and param1=DISPLAY_browser_patch"
+     output2="browser-move-to-item-absolute" 
+     parameters2="browserid=VAR_cur_browser and
+                  idx=controlval/127.*16"/>
 
     <!-- Fader 5: Master in volume -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+4" 
@@ -216,7 +256,7 @@
     <binding input="midicontroller" 
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_overdubfeedback_midicontrol"
      output="set-variable" parameters="var=VAR_overdubfeedback and
-				       value=controlval/127"/>
+                                       value=controlval/127"/>
 
     <!-- MIDI CC89: Fade volume of selected loops -->
     <binding input="midicontroller" 
@@ -229,13 +269,13 @@
      conditions="VAR_keyheld_space=1 and 
                  midichannel=VAR_bcf2000_channel and 
                  controlnum=VAR_bcf2000_undo_midicontrol and
-		 controlval=VAR_switch_on"
+                 controlval=VAR_switch_on"
      output="erase-all-loops"/>
 
     <!-- MIDI CC73: Undo last loop record -->
     <binding input="midicontroller" 
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_undo_midicontrol and
-		 controlval=VAR_switch_on"
+                 controlval=VAR_switch_on"
      output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
@@ -244,108 +284,108 @@
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_patchbank_midicontrol"   
      output1="video-show-display" parameters1="interfaceid=0 and
                                                displayid=VAR_cur_browser and
-					       show=0"
+                                               show=0"
      output2="set-variable" parameters2="var=VAR_cur_browser and 
-					 value=DISPLAY_browser_patch"
+                                         value=DISPLAY_browser_patch"
      output3="video-show-display" parameters3="interfaceid=0 and
                                                displayid=VAR_cur_browser and
-					       show=1"
+                                               show=1"
      output4="patchbrowser-move-to-bank-by-index" 
      parameters4="index=controlval*SYSTEM_num_patchbanks/128"/>
 
     <!-- MIDI CC53/54: Change patch bank by MIDI buttons -->
     <binding input="midicontroller" 
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_patchbank_back_midicontrol and
-		 controlval=VAR_switch_on"   
+                 controlval=VAR_switch_on"   
      output1="video-show-display" parameters1="interfaceid=0 and 
                                                displayid=VAR_cur_browser and
-					       show=0"
+                                               show=0"
      output2="set-variable" parameters2="var=VAR_cur_browser and 
-					 value=DISPLAY_browser_patch"
+                                         value=DISPLAY_browser_patch"
      output3="video-show-display" parameters3="interfaceid=0 and 
                                                displayid=VAR_cur_browser and
-					       show=1"
+                                               show=1"
      output4="patchbrowser-move-to-bank" parameters4="direction=-1"/>
 
     <binding input="midicontroller" 
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_patchbank_forward_midicontrol and
-		 controlval=VAR_switch_on"
+                 controlval=VAR_switch_on"
      output1="video-show-display" parameters1="interfaceid=0 and 
                                                displayid=VAR_cur_browser and
-					       show=0"
+                                               show=0"
      output2="set-variable" parameters2="var=VAR_cur_browser and 
-					 value=DISPLAY_browser_patch"
+                                         value=DISPLAY_browser_patch"
      output3="video-show-display" parameters3="interfaceid=0 and 
                                                displayid=VAR_cur_browser and
-					       show=1"
+                                               show=1"
      output4="patchbrowser-move-to-bank" parameters4="direction=1"/>
 
     <!-- Overdub feedback continuous adjust from MIDI control -->
     <!-- HELP: MIDI CC72: MIDI shift key (like space) -->
     <binding input="midicontroller" 
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_midishift_midicontrol and
-		 controlval=VAR_switch_on"
+                 controlval=VAR_switch_on"
      output1="set-variable" parameters1="var=VAR_keyheld_midishift and
-					 value=1"
+                                         value=1"
      output2="set-variable" parameters2="var=VAR_keyheld_space and
-					 value=1"/>
+                                         value=1"/>
 
     <binding input="midicontroller" 
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_midishift_midicontrol and
-		 controlval=VAR_switch_off"
+                 controlval=VAR_switch_off"
      output1="set-variable" parameters1="var=VAR_keyheld_midishift and
-					 value=0"
+                                         value=0"
      output2="set-variable" parameters2="var=VAR_keyheld_space and
-					 value=0"/>
+                                         value=0"/>
 
     <!-- (midishift) + MIDI Program Change: (Jump)/Change browser item -->
     <binding input="midiprogramchange" 
      conditions="programval=VAR_cur_program+1 and VAR_keyheld_midishift=0"
      output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
      output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
-						 adjust=1 and jumpadjust=0"/>
+                                                 adjust=1 and jumpadjust=0"/>
 
     <binding input="midiprogramchange" 
      conditions="VAR_keyheld_midishift=0 and VAR_cur_program=127 and programval=0"
      output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
      output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
-						 adjust=1 and jumpadjust=0"/>
+                                                 adjust=1 and jumpadjust=0"/>
 
     <binding input="midiprogramchange"
      conditions="programval=VAR_cur_program-1 and VAR_keyheld_midishift=0"
      output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
      output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
-						 adjust=-1 and jumpadjust=0"/>
+                                                 adjust=-1 and jumpadjust=0"/>
 
     <binding input="midiprogramchange"
      conditions="VAR_keyheld_midishift=0 and VAR_cur_program=0 and programval=127"
      output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
      output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
-						 adjust=-1 and jumpadjust=0"/>
+                                                 adjust=-1 and jumpadjust=0"/>
 
     <binding input="midiprogramchange" 
      conditions="programval=VAR_cur_program+1 and VAR_keyheld_midishift=1"
      output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
      output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
-						 adjust=0 and jumpadjust=1"/>
+                                                 adjust=0 and jumpadjust=1"/>
 
     <binding input="midiprogramchange" 
      conditions="VAR_keyheld_midishift=1 and VAR_cur_program=127 and programval=0"
      output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
      output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
-						 adjust=0 and jumpadjust=1"/>
+                                                 adjust=0 and jumpadjust=1"/>
 
     <binding input="midiprogramchange"
      conditions="programval=VAR_cur_program-1 and VAR_keyheld_midishift=1"
      output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
      output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
-						 adjust=0 and jumpadjust=-1"/>
+                                                 adjust=0 and jumpadjust=-1"/>
 
     <binding input="midiprogramchange"
      conditions="VAR_keyheld_midishift=1 and VAR_cur_program=0 and programval=127"
      output1="set-variable" parameters1="var=VAR_cur_program and value=programval"
      output2="browser-move-to-item" parameters2="browserid=VAR_cur_browser and
-						 adjust=0 and jumpadjust=-1"/>
+                                                 adjust=0 and jumpadjust=-1"/>
 
     <binding input="midiprogramchange"
      output="set-variable" parameters="var=VAR_cur_program and value=programval"/>
@@ -353,82 +393,82 @@
     <!-- Trigger Scenes -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
-		 VAR_scene_mode=1 and
-		 controlnum=VAR_bcf2000range+VAR_bcf2000capturecc and 
+                 VAR_scene_mode=1 and
+                 controlnum=VAR_bcf2000range+VAR_bcf2000capturecc and 
                  controlval=VAR_switch_on"
      output="trigger-snapshot" 
      parameters="snapid=controlnum-VAR_bcf2000capturecc+
-		 SYSTEM_snapshot_page_firstidx"/>
+                 SYSTEM_snapshot_page_firstidx"/>
 
     <!-- Store Scenes -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
-		 VAR_scene_mode=1 and
-		 controlnum=VAR_bcf2000range+VAR_bcf2000auxtriggercc and 
+                 VAR_scene_mode=1 and
+                 controlnum=VAR_bcf2000range+VAR_bcf2000auxtriggercc and 
                  controlval=VAR_switch_on"
      output="create-snapshot"
      parameters="snapid=controlnum-VAR_bcf2000auxtriggercc+
-		 SYSTEM_snapshot_page_firstidx"/>
+                 SYSTEM_snapshot_page_firstidx"/>
 
     <!-- Trigger selected loops -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
-		 controlnum=VAR_bcf2000_triggerselected_midicontrol and
+                 controlnum=VAR_bcf2000_triggerselected_midicontrol and
                  controlval=VAR_switch_on"
      output="trigger-selected-loops" parameters="setid=0 and vol=1.0 and
-						 toggleloops=1"/>
+                                                 toggleloops=1"/>
 
     <!-- Select loops -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
-		 VAR_keyheld_space=1 and
-		 controlnum=VAR_bcf2000_selectnone_midicontrol and
+                 VAR_keyheld_space=1 and
+                 controlnum=VAR_bcf2000_selectnone_midicontrol and
                  controlval=VAR_switch_on"
      output="select-all-loops"
      parameters="setid=0 and select=1"/>
 
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
-		 VAR_keyheld_space=1 and
-		 controlnum=VAR_bcf2000_selectallplay_midicontrol and
+                 VAR_keyheld_space=1 and
+                 controlnum=VAR_bcf2000_selectallplay_midicontrol and
                  controlval=VAR_switch_on"
      output="invert-selection"
      parameters="setid=0"/>
 
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
-		 controlnum=VAR_bcf2000_selectnone_midicontrol and
+                 controlnum=VAR_bcf2000_selectnone_midicontrol and
                  controlval=VAR_switch_on"
      output="select-all-loops"
      parameters="setid=0 and select=0"/>
 
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
-		 controlnum=VAR_bcf2000_selectallplay_midicontrol and
+                 controlnum=VAR_bcf2000_selectallplay_midicontrol and
                  controlval=VAR_switch_on"
      output="select-only-playing-loops"
      parameters="setid=0 and playing=1"/>
 
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
-		 controlnum=VAR_bcf2000range+VAR_bcf2000selectcc and
+                 controlnum=VAR_bcf2000range+VAR_bcf2000selectcc and
                  controlval=VAR_switch_on"
      output="toggle-select-loop"
      parameters="setid=0 and loopid=controlnum-VAR_bcf2000selectcc+
-		 VAR_loopid_bcf2000"/>
+                 VAR_loopid_bcf2000"/>
 
     <!-- Adjust amplitude of selected -->
     <binding input="midicontroller" 
-	     conditions="midichannel=VAR_bcf2000_channel and 
-			 controlnum=VAR_bcf2000range+VAR_bcf2000miscknobcc and 
-			 controlval=0>64" 
+             conditions="midichannel=VAR_bcf2000_channel and 
+                         controlnum=VAR_bcf2000range+VAR_bcf2000miscknobcc and 
+                         controlval=0>64" 
      output="adjust-selected-loops-amp"
      parameters="setid=0 and
                  ampfactor=controlval*VAR_bcf2000_loopamp_adj+1.0"/>
     <binding input="midicontroller" 
-	     conditions="midichannel=VAR_bcf2000_channel and 
-			 controlnum=VAR_bcf2000range+VAR_bcf2000miscknobcc and 
-			 controlval=64>127" 
+             conditions="midichannel=VAR_bcf2000_channel and 
+                         controlnum=VAR_bcf2000range+VAR_bcf2000miscknobcc and 
+                         controlval=64>127" 
      output="adjust-selected-loops-amp"
      parameters="setid=0 and
                  ampfactor=controlval-128*VAR_bcf2000_loopamp_adj+1.0"/>
@@ -444,22 +484,22 @@
     <!-- Move Loops -->
     <binding input="midicontroller"
      conditions="VAR_xferloop=1 and 
-		 midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000range+VAR_bcf2000capturecc and
+                 midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000range+VAR_bcf2000capturecc and
                  controlval=VAR_switch_on"
      output1="move-loop"
      parameters1="oldloopid=VAR_xferidx and 
-		  newloopid=controlnum-VAR_bcf2000capturecc+VAR_loopid_bcf2000"
+                  newloopid=controlnum-VAR_bcf2000capturecc+VAR_loopid_bcf2000"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
     <!-- Overdub Loops -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and 
-		 controlnum=VAR_bcf2000range+VAR_bcf2000auxtriggercc and 
+                 controlnum=VAR_bcf2000range+VAR_bcf2000auxtriggercc and 
                  controlval=VAR_switch_on"
      output="trigger-loop"
      parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
-		 loopid=controlnum-VAR_bcf2000auxtriggercc+VAR_loopid_bcf2000
-		 and vol=1.0"/>
+                 loopid=controlnum-VAR_bcf2000auxtriggercc+VAR_loopid_bcf2000
+                 and vol=1.0"/>
 
     <!-- Trigger Loops -->
     <binding input="midicontroller"
@@ -467,72 +507,78 @@
                  controlval=VAR_switch_on"
      output1="trigger-loop"
      parameters1="loopid=controlnum-VAR_bcf2000capturecc+VAR_loopid_bcf2000 and vol=1.0"/>
+     
+     <!-- Capture all other MIDI CCs on BCF channel to prevent them being spit out as MIDI out -->
+     <binding input="midicontroller"
+      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_any_midicc"
+      output="set-variable"
+      parameters="var=VAR_bcf2000_ate_midicc and value=controlnum"/>     
   </bindings>
 
   <graphics>
     <layout id="0" name="BCF2000" scale="0.35,0.45" pos="0.00,0.10" label="1" elabel="0" namepos="0.0,0.16" show="0">
       <element id="0" name="LOOP1" base="0.0,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="1" name="LOOP2" base="0.35,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/> 
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/> 
       </element>
 
       <element id="2" name="LOOP3" base="0.7,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="3" name="LOOP4" base="1.05,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.35,0.50">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/> 
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/> 
       </element>
 
       <element id="4" name="LOOP5" base="1.4,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.10">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="5" name="LOOP6" base="1.75,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.10">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="6" name="LOOP7" base="2.1,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.25,0.50">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="7" name="LOOP8" base="2.45,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.10">
-	<box outline="TBLR" pos="0.00,0.00, 0.40,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.40,0.35"/>
       </element>
 
       <element id="8" name="LOOP9" base="0.0,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="9" name="LOOP10" base="0.35,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="10" name="LOOP11" base="0.7,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="11" name="LOOP12" base="1.05,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.35,0.50">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="12" name="LOOP13" base="1.4,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.50,1.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="13" name="LOOP14" base="1.75,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="14" name="LOOP15" base="2.1,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.25,1.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
       <element id="15" name="LOOP16" base="2.45,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.35">
-	<box outline="TBLR" pos="0.00,0.00, 0.40,0.35"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.40,0.35"/>
       </element> 
     </layout>
   </graphics>

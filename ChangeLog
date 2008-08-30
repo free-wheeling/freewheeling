@@ -1,5 +1,14 @@
 IN PROGRESS v0.5.6 - SVN
 
+            Saturday August 30th, 2008
+
+            Fixes
+            -----
+
+            * Saving over existing snapshots now preserves name
+
+            * Upgrades to BCF-2000 template
+            
             Wednesday August 13th, 2008
             
             New Features

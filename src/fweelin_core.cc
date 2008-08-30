@@ -57,14 +57,17 @@ Snapshot *Fweelin::getSNAP (int idx) {
 }
 
 void Snapshot::CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap) {
-  DeleteSnapshot();
+  if (exists && this->name != 0 && name == 0) {
+    // Preserve name of snapshot
+    DeleteSnapshot(0);
+  } else  
+    DeleteSnapshot();
 
   exists = 1;
-  if (name != 0) {
+  if (this->name == 0 && name != 0) {
     this->name = new char[strlen(name)+1];
     strcpy(this->name,name);
-  } else
-    this->name = 0;
+  }
 
   if (lm != 0) {
     // Count all loops

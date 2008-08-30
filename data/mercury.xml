@@ -1,7 +1,7 @@
 <interface>
   <bindings>
     <!-- Variables for aftertouch translation to mod wheel- 
-	 for Mercury's setup -->
+         for Mercury's setup -->
     <declare var="VAR_midi_modwheel" type="int" init="1"/>
     <declare var="VAR_midi_modwheel_val" type="int" init="0"/>
     <declare var="VAR_midi_channelpressure" type="int" init="0"/>
@@ -11,7 +11,7 @@
     <declare var="VAR_b3_patchbank_tag" type="int" init="999"/>
 
     <!-- Mercury mode sets options that I use for performance.
-	 You can also roll your own special options. -->
+         You can also roll your own special options. -->
     <declare var="VAR_mercurymode" type="char" init="1"/>
 
     <!-- Variables for breath controller summing with expression pedal -->
@@ -41,161 +41,161 @@
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=80"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=70 and
-					 controlval=controlval"/>
+                                         controlnum=70 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=82"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=71 and
-					 controlval=controlval"/>
+                                         controlnum=71 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=83"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=72 and
-					 controlval=controlval"/>
+                                         controlnum=72 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=84"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=73 and
-					 controlval=controlval"/>
+                                         controlnum=73 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=85"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=74 and
-					 controlval=controlval"/>
+                                         controlnum=74 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=81"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=75 and
-					 controlval=controlval"/>
+                                         controlnum=75 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=86"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=76 and
-					 controlval=controlval"/>
+                                         controlnum=76 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=88"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=77 and
-					 controlval=controlval"/>
+                                         controlnum=77 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=89"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=78 and
-					 controlval=controlval"/>
+                                         controlnum=78 and
+                                         controlval=controlval"/>
 
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=70"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=92 and
-					 controlval=controlval"/>
+                                         controlnum=92 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=71"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=91 and
-					 controlval=controlval"/>
+                                         controlnum=91 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=72"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=80 and
-					 controlval=controlval"/>
+                                         controlnum=80 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=73"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=81 and
-					 controlval=controlval"/>
+                                         controlnum=81 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=74"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=82 and
-					 controlval=controlval"/>
+                                         controlnum=82 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=75"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=21 and
-					 controlval=controlval"/>
+                                         controlnum=21 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=76"
      output="midicontroller" parameters="routethroughpatch=1 and
-					 controlnum=22 and
-					 controlval=controlval"/>
+                                         controlnum=22 and
+                                         controlval=controlval"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=77 and controlval=VAR_switch_on"
      output="midiprogramchange" parameters="routethroughpatch=1 and
-					    programval=40"/>
+                                            programval=40"/>
     <binding input="midicontroller" 
      conditions="SYSTEM_cur_patchbank_tag=VAR_b3_patchbank_tag and controlnum=77"
      output="midiprogramchange" parameters="routethroughpatch=1 and
-					    programval=39"/>
+                                            programval=39"/>
 
     <!-- For my setup, I translate channel aftertouch messages to modwheel 
-	 messages, adding the pressure to the current modwheel value. 
-	 This allows me to use aftertouch expressively in conjunction with the
-	 mod wheel. -->
+         messages, adding the pressure to the current modwheel value. 
+         This allows me to use aftertouch expressively in conjunction with the
+         mod wheel. -->
     <binding input="midichannelpressure" conditions="VAR_mercurymode=1"
      output1="set-variable" parameters1="var=VAR_midi_channelpressure and
-					 value=pressureval"
+                                         value=pressureval"
      output2="midicontroller" parameters2="routethroughpatch=1 and
-					   controlnum=VAR_midi_modwheel and
-					   controlval=VAR_midi_channelpressure+
-						      VAR_midi_modwheel_val"/>
+                                           controlnum=VAR_midi_modwheel and
+                                           controlval=VAR_midi_channelpressure+
+                                                      VAR_midi_modwheel_val"/>
     <binding input="midicontroller" conditions="VAR_mercurymode=1 and
-						controlnum=VAR_midi_modwheel"
+                                                controlnum=VAR_midi_modwheel"
      output1="set-variable" parameters1="var=VAR_midi_modwheel_val and
-					 value=controlval"
+                                         value=controlval"
      output2="midicontroller" parameters2="routethroughpatch=1 and
-					   controlnum=VAR_midi_modwheel and
-					   controlval=VAR_midi_channelpressure+
-						      VAR_midi_modwheel_val"/>
+                                           controlnum=VAR_midi_modwheel and
+                                           controlval=VAR_midi_channelpressure+
+                                                      VAR_midi_modwheel_val"/>
 
     <!-- DISABLED
 
-	 For my setup, I press the hold pedal to hold breath controller values
-	 constant. I can take a breath without my keyboard playing being
-	 affected.
+         For my setup, I press the hold pedal to hold breath controller values
+         constant. I can take a breath without my keyboard playing being
+         affected.
 
     <binding input="midicontroller" 
      conditions="VAR_mercurymode=1 and controlnum=VAR_midi_holdpedal"
      output1="set-variable" parameters1="var=VAR_midi_breathcontrol_hold and
-					 value=controlval"
+                                         value=controlval"
      output2="midicontroller" 
      parameters2="routethroughpatch=1 and
-		  controlnum=VAR_midi_holdpedal and controlval=controlval"/>
+                  controlnum=VAR_midi_holdpedal and controlval=controlval"/>
 
       -->
 
     <!-- For my setup, I sum breath control (CC2) on top of expression pedal 
-	 (CC11) values. This allows me to set a baseline with my pedal, and
-	 'breathe' expression on top of it. -->
+         (CC11) values. This allows me to set a baseline with my pedal, and
+         'breathe' expression on top of it. -->
     <binding input="midicontroller" 
      conditions="VAR_mercurymode=1 and VAR_midi_breathcontrol_hold=0 and
-		 controlnum=VAR_midi_breathcontrol"
+                 controlnum=VAR_midi_breathcontrol"
      output1="set-variable" parameters1="var=VAR_midi_breathcontrol_val and
-					 value=controlval"
+                                         value=controlval"
      output2="midicontroller" 
      parameters2="routethroughpatch=1 and
-		  controlnum=VAR_midi_exppedal and
-		  controlval=VAR_midi_exppedal_val+VAR_midi_breathcontrol_val"/>
+                  controlnum=VAR_midi_exppedal and
+                  controlval=VAR_midi_exppedal_val+VAR_midi_breathcontrol_val"/>
 
     <binding input="midicontroller" conditions="VAR_mercurymode=1 and
-						controlnum=VAR_midi_exppedal"
+                                                controlnum=VAR_midi_exppedal"
      output1="set-variable" parameters1="var=VAR_midi_exppedal_val and
-					 value=controlval"
+                                         value=controlval"
      output2="midicontroller" 
      parameters2="routethroughpatch=1 and
-		  controlnum=VAR_midi_exppedal and
-		  controlval=VAR_midi_exppedal_val+VAR_midi_breathcontrol_val"/>
+                  controlnum=VAR_midi_exppedal and
+                  controlval=VAR_midi_exppedal_val+VAR_midi_breathcontrol_val"/>
 
     <!-- In my setup, I use a second octave of keys to select loops.
-	 This allows me to fluidly select a group of loops for fade, stop, start,
-	 etc -->
+         This allows me to fluidly select a group of loops for fade, stop, start,
+         etc -->
     <binding input="midikey"
      conditions="VAR_mercurymode=1 and midichannel=VAR_notechan and 
-		 notenum=VAR_noterange+VAR_selectoctave and 
-		 keydown=1"
+                 notenum=VAR_noterange+VAR_selectoctave and 
+                 keydown=1"
      output="toggle-select-loop"
      parameters="setid=0 and 
-		 loopid=notenum-VAR_selectoctave+VAR_loopid_pianostart"/>
+                 loopid=notenum-VAR_selectoctave+VAR_loopid_pianostart"/>
   </bindings>
 
   <graphics>
@@ -205,7 +205,8 @@
      id="DISPLAY_browser_patch" type="browser" font="main" 
      browsetype="BROWSE_patch" pos="0.0,0.96" 
      xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="1">
-       <patchbank midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-test.xml"/>
+       <patchbank midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-receptor-1.xml"/>
+       <patchbank midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-receptor-2.xml"/>
     </display>
 
 <!--

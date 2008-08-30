@@ -12,26 +12,26 @@
     <binding input="start-interface" 
      output1="video-show-loop" 
      parameters1="layoutid=0 and
-		  loopid=VAR_loopid_footswitch"
+                  loopid=VAR_loopid_footswitch"
      output2="set-load-loop-id"
      parameters2="loopid=VAR_loopid_footswitch"/>
 
     <!-- Rest of the bindings... -->
     <binding input="midicontroller"
      conditions="VAR_keyheld_up=1 and controlnum=VAR_midi_footswitch and
-		 controlval=VAR_switch_on"
+                 controlval=VAR_switch_on"
      output="slide-loop-amplifier"
      parameters="loopid=VAR_loopid_footswitch and slide=VAR_slide_speed/2"/> 
     <binding input="midicontroller"
      conditions="VAR_keyheld_down=1 and controlnum=VAR_midi_footswitch and
-		 controlval=VAR_switch_on"
+                 controlval=VAR_switch_on"
      output="slide-loop-amplifier"
      parameters="loopid=VAR_loopid_footswitch and slide=-VAR_slide_speed/2"/> 
 
     <!-- Erase Loops -->
     <binding input="midicontroller"
      conditions="VAR_keyheld_space=1 and controlnum=VAR_midi_footswitch and 
-		 controlval=VAR_switch_on"
+                 controlval=VAR_switch_on"
      output1="erase-loop" parameters1="loopid=VAR_loopid_footswitch" 
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
@@ -39,24 +39,24 @@
     <!-- Auto-overdub for first recorded loop- disabled!
     <binding input="midicontroller"
      conditions="SYSTEM_num_loops_in_map=0 and controlnum=VAR_midi_footswitch
-		 and controlval=VAR_switch_on"
+                 and controlval=VAR_switch_on"
      output1="trigger-loop"
      parameters1="loopid=VAR_loopid_footswitch and overdub=1 and
-		  overdubfeedback=VAR_overdubfeedback and vol=1.0" 
+                  overdubfeedback=VAR_overdubfeedback and vol=1.0" 
      output2="set-variable" parameters2="var=VAR_xferloop and value=1"
      output3="set-variable" parameters3="var=VAR_xferidx and 
-					 value=VAR_loopid_footswitch"/>
+                                         value=VAR_loopid_footswitch"/>
       -->
 
     <binding input="midicontroller"
      conditions="VAR_overdubmode=1 and controlnum=VAR_midi_footswitch
-		 and controlval=VAR_switch_on"
+                 and controlval=VAR_switch_on"
      output1="trigger-loop" 
      parameters1="overdub=1 and overdubfeedback=VAR_overdubfeedback and
-		  loopid=VAR_loopid_footswitch and vol=1.0" 
+                  loopid=VAR_loopid_footswitch and vol=1.0" 
      output2="set-variable" parameters2="var=VAR_xferloop and value=1"
      output3="set-variable" parameters3="var=VAR_xferidx and
-					 value=VAR_loopid_footswitch"/>
+                                         value=VAR_loopid_footswitch"/>
 
     <!-- Trigger Loops -->
     <binding input="midicontroller"
@@ -65,7 +65,7 @@
      parameters1="loopid=VAR_loopid_footswitch and vol=1.0" 
      output2="set-variable" parameters2="var=VAR_xferloop and value=1"
      output3="set-variable" parameters3="var=VAR_xferidx and
-					 value=VAR_loopid_footswitch"/>
+                                         value=VAR_loopid_footswitch"/>
   </bindings>
 
   <graphics>
@@ -73,7 +73,7 @@
      label="0" elabel="1" namepos="0.02,0.02" show="1">
       <element id="0" name="SW" base="0.0,0.0" looppos="0.05,0.05" 
        loopsize="0.1" namepos="0.01,0.00">
-	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
       </element> 
     </layout>
   </graphics>

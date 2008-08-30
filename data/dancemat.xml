@@ -10,26 +10,26 @@
     <binding input="start-interface" 
      output1="video-show-loop" 
      parameters1="layoutid=0 and
-		  loopid=VAR_dancematrange+VAR_loopid_dancemat"/>
+                  loopid=VAR_dancematrange+VAR_loopid_dancemat"/>
 
     <!-- Rest of the bindings... -->
 
     <!-- Slide Loop Volumes -->
     <binding input="joybutton"
      conditions="VAR_keyheld_up=1 and joystick=VAR_dancemat_joystick and
-		 button=VAR_dancematrange and down=1"
+                 button=VAR_dancematrange and down=1"
      output="slide-loop-amplifier" parameters="loopid=VAR_loopid_dancemat+button
-					       and slide=VAR_slide_speed/2"/>
+                                               and slide=VAR_slide_speed/2"/>
     <binding input="joybutton"
      conditions="VAR_keyheld_down=1 and joystick=VAR_dancemat_joystick and
-		 button=VAR_dancematrange and down=1"
+                 button=VAR_dancematrange and down=1"
      output="slide-loop-amplifier" parameters="loopid=VAR_loopid_dancemat+button
-					       and slide=-VAR_slide_speed/2"/>
+                                               and slide=-VAR_slide_speed/2"/>
 
     <!-- Set Trigger Volume (play volume) for Loops -->
     <binding input="joybutton"
      conditions="VAR_cutmode=1 and joystick=VAR_dancemat_joystick and
-		 button=VAR_dancematrange"
+                 button=VAR_dancematrange"
      output="set-trigger-volume"
      parameters="loopid=VAR_loopid_dancemat+button and vol=1.0*down"/>
 
@@ -37,114 +37,114 @@
 
     <!-- START button: Start pulse -->
     <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
-					   button=9 and down=1"
+                                           button=9 and down=1"
      output="select-pulse" parameters="pulse=0"/>
 
     <!-- SELECT button: Undo -->
     <binding input="joybutton" 
      conditions="SYSTEM_loopid_lastrecord_0=VAR_loopid_footswitch and 
-		 joystick=VAR_dancemat_joystick and button=8 and down=1"
+                 joystick=VAR_dancemat_joystick and button=8 and down=1"
      output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
     <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
-					   button=8 and down=1" 
+                                           button=8 and down=1" 
      output="erase-loop" parameters="loopid=SYSTEM_loopid_lastrecord_0"/>
 
     <!-- L1 button: Cut mode
     <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
-					   button=6 and down=1"
+                                           button=6 and down=1"
      output="toggle-variable" parameters="var=VAR_cutmode and maxvalue=1"/>
      -->
 
     <!-- L2 button: Overdub mode -->
     <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
-					   button=4 and down=1"
+                                           button=4 and down=1"
      output="toggle-variable" parameters="var=VAR_overdubmode and maxvalue=1"/>
 
     <!-- L3 button: Shot mode -->
     <binding input="joybutton" conditions="joystick=VAR_dancemat_joystick and
-					   button=7 and down=1"
+                                           button=7 and down=1"
      output="toggle-variable" parameters="var=VAR_shotmode and maxvalue=1"/>
 
     <!-- Erase Loops -->
     <binding input="joybutton"
      conditions="VAR_keyheld_space=1 and joystick=VAR_dancemat_joystick and
-		 button=VAR_dancematrange and down=1"
+                 button=VAR_dancematrange and down=1"
      output1="erase-loop" parameters1="loopid=VAR_loopid_dancemat+button" 
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
     <!-- Move Loops -->
     <binding input="joybutton"
      conditions="VAR_xferloop=1 and joystick=VAR_dancemat_joystick and
-		 button=VAR_dancematrange and down=1"
+                 button=VAR_dancematrange and down=1"
      output1="move-loop"
      parameters1="oldloopid=VAR_xferidx and
-		 newloopid=VAR_loopid_dancemat+button"
+                 newloopid=VAR_loopid_dancemat+button"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
     <!-- Overdub Loops -->
     <binding input="joybutton"
      conditions="VAR_overdubmode=1 and joystick=VAR_dancemat_joystick and
-		 button=VAR_dancematrange and down=1"
+                 button=VAR_dancematrange and down=1"
      output="trigger-loop"
      parameters="overdub=1 and overdubfeedback=VAR_overdubfeedback and
-		 loopid=VAR_loopid_dancemat+button and vol=1.0*down"/>
-  <!--	       engage=down" -->
+                 loopid=VAR_loopid_dancemat+button and vol=1.0*down"/>
+  <!--         engage=down" -->
 
     <!-- Trigger Loops -->
     <binding input="joybutton"
      conditions="VAR_shotmode=1 and joystick=VAR_dancemat_joystick and
-		 button=VAR_dancematrange"
+                 button=VAR_dancematrange"
      output="trigger-loop"
      parameters="loopid=VAR_loopid_dancemat+button and vol=1.0*down and
-		 engage=down and shot=1"/>
+                 engage=down and shot=1"/>
 
     <binding input="joybutton"
      conditions="joystick=VAR_dancemat_joystick and button=VAR_dancematrange
-		 and down=1"
+                 and down=1"
      output="trigger-loop"
      parameters="loopid=VAR_loopid_dancemat+button and vol=1.0*down"/>
   </bindings>
 
   <graphics>
     <!-- Layout for 'Competition Pro' PS2 dancemat thru EMSUSB2 PS2->USB
-	 adaptor. Button indexes are given in 'id'. They may be different
-	 for another dance mat or adaptor. -->
+         adaptor. Button indexes are given in 'id'. They may be different
+         for another dance mat or adaptor. -->
     <layout id="0" name="DANCEMAT" scale="2.0,2.0" pos="0.02,0.02"
      label="1" elabel="1" namepos="0.2,0.275" show="0">
       <element id="2" name="TL" base="0.0,0.0" looppos="0.05,0.05" 
        loopsize="0.1" namepos="0.01,0.00">
-	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
       </element> 
       <element id="12" name="T" base="0.1,0.0" looppos="0.05,0.05" 
        loopsize="0.1" namepos="0.01,0.00">
-	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
       </element> 
       <element id="1" name="TR" base="0.2,0.0" looppos="0.05,0.05" 
        loopsize="0.1" namepos="0.01,0.00">
-	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
       </element> 
 
       <element id="15" name="L" base="0.0,0.1" looppos="0.05,0.05" 
        loopsize="0.1" namepos="0.01,0.00">
-	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
       </element> 
       <element id="13" name="R" base="0.2,0.1" looppos="0.05,0.05" 
        loopsize="0.1" namepos="0.01,0.00">
-	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
       </element> 
 
       <element id="0" name="BL" base="0.0,0.2" looppos="0.05,0.05" 
        loopsize="0.1" namepos="0.01,0.00">
-	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
       </element> 
       <element id="14" name="B" base="0.1,0.2" looppos="0.05,0.05" 
        loopsize="0.1" namepos="0.01,0.00">
-	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
       </element> 
       <element id="3" name="BR" base="0.2,0.2" looppos="0.05,0.05" 
        loopsize="0.1" namepos="0.01,0.00">
-	<box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
+        <box outline="TBLR" pos="0.00,0.00, 0.10,0.10"/>
       </element> 
     </layout>
   </graphics>
