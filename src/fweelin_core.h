@@ -634,11 +634,11 @@ public:
   float GetNewLoopVolume() { return newloopvol; }
 
   void AdjustOutputVolume(float adjust);
-  void SetOutputVolume(float set);
+  void SetOutputVolume(float set, float logset);
   float GetOutputVolume();
 
   void AdjustInputVolume(float adjust);
-  void SetInputVolume(float set);
+  void SetInputVolume(float set, float logset);
   float GetInputVolume();
 
   void SetLoopVolume(int index, float val);

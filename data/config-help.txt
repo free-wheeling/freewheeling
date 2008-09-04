@@ -470,23 +470,29 @@ Event "slide-master-out-volume"
   "slide": speed of slide
 
 Event "set-master-in-volume"
-  Sets the master input volume to 'vol'. 1.0 is 100% volume. 
+  Sets the master input volume.
   Stops sliding.
 
-  "vol": new volume
-
+  "vol": new linear volume- 1.0 is 100% volume. 
+  or
+  "fadervol": new logarithmic volume- specify fader throw (0.0 to 1.0). 
+  
 Event "set-master-out-volume"
-  Sets the master output volume to 'vol'. 1.0 is 100% volume. 
+  Sets the master output volume.
   Stops sliding.
 
-  "vol": new volume
+  "vol": new linear volume- 1.0 is 100% volume. 
+  or
+  "fadervol": new logarithmic volume- specify fader throw (0.0 to 1.0). 
 
 Event "set-in-volume"
-  Sets one input volume to 'vol'. 1.0 is 100% volume.
+  Sets one input volume.
   Stops sliding.
         
   "input": number of input to set volume for
-  "vol": new volume
+  "vol": new linear volume- 1.0 is 100% volume. 
+  or
+  "fadervol": new logarithmic volume- specify fader throw (0.0 to 1.0). 
 
 Event "toggle-input-record"
   Toggles recording of one input. Does not change monitoring for this input,

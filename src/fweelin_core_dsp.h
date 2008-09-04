@@ -30,6 +30,10 @@
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #endif
 
+// Macros for converting between linear amplitude and dB
+#define DB2LIN(db) (powf(10.0f, (db) * 0.05f))
+#define LIN2DB(amp) (20.0f * log10f(amp))
+
 class Fweelin;
 class Loop;
 class AudioBlock;
@@ -37,6 +41,15 @@ class AudioBlockIterator;
 class PeaksAvgsManager;
 class TimeMarker;
 class InputSettings;
+class AudioLevel;
+
+// Class for converting between dB and vertical fader levels 
+class AudioLevel {
+  public:
+
+  static float fader_to_dB (float level, float maxDb);
+  static float dB_to_fader (float dB, float maxDb);
+};
 
 // Audio buffers encapsulates all buffers going into & out of
 // a processor-- allowing for multiple ins and outs to be passed
@@ -152,14 +165,7 @@ class InputSettings {
 
   // Set input volume for input n
   void AdjustInputVol(int n, float adjust); 
-  void SetInputVol(int n, float vol) { 
-    if (n >= 0 || n < numins) {
-      invols[n] = vol; 
-      dinvols[n] = 1.0;
-    } else {
-      printf("CORE: InputSettings- input number %d not in range.\n",n);
-    }
-  };
+  void SetInputVol(int n, float vol, float logvol);
   float GetInputVol(int n) { 
     if (n >= 0 || n < numins) {
       return invols[n];

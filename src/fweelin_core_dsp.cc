@@ -54,6 +54,89 @@ const float RecordProcessor::OVERDUB_DEFAULT_FEEDBACK = 0.5;
 const static float MAX_VOL = 5.0;
 const static float MAX_DVOL = 1.5;
 
+// DB FADER CODE
+#define DB_FLOOR -1000.f
+#define FADER_MIN_DB -70.f
+
+// IEC 60-268-18 fader levels.  Thanks to Steve Harris. 
+// Thanks to Chris Cannam & Sonic Visualiser code
+
+float iec_dB_to_fader (float db)
+{
+  float def = 0.0f; // Meter deflection %age
+
+  if (db < -70.0f) {
+    def = 0.0f;
+  } else if (db < -60.0f) {
+    def = (db + 70.0f) * 0.25f;
+  } else if (db < -50.0f) {
+    def = (db + 60.0f) * 0.5f + 2.5f; // used to be +5.0f, but this caused a discontinuity in low dB deflections
+  } else if (db < -40.0f) {
+    def = (db + 50.0f) * 0.75f + 7.5f;
+  } else if (db < -30.0f) {
+    def = (db + 40.0f) * 1.5f + 15.0f;
+  } else if (db < -20.0f) {
+    def = (db + 30.0f) * 2.0f + 30.0f;
+  } else {
+    def = (db + 20.0f) * 2.5f + 50.0f;
+  }
+
+  return def;
+}
+
+static float iec_fader_to_dB(float def)  // Meter deflection %age
+{
+  float db = 0.0f;
+  
+  if (def >= 50.0f) {
+    db = (def - 50.0f) / 2.5f - 20.0f;
+  } else if (def >= 30.0f) {
+    db = (def - 30.0f) / 2.0f - 30.0f;
+  } else if (def >= 15.0f) {
+    db = (def - 15.0f) / 1.5f - 40.0f;
+  } else if (def >= 7.5f) {
+    db = (def - 7.5f) / 0.75f - 50.0f;
+  } else if (def >= 2.5f) {           // used to be 0.5, ...
+    db = (def - 2.5f) / 0.5f - 60.0f; // used to be (def - 5.0f), but this caused a discontinuity in low dB deflections
+  } else {
+    db = (def / 0.25f) - 70.0f;
+  }
+
+  return db;
+}
+
+float AudioLevel::fader_to_dB (float level, float maxDb)
+{
+  if (level == 0.) 
+    return DB_FLOOR;
+
+	float maxPercent = iec_dB_to_fader(maxDb);
+	float percent = level * maxPercent;
+	float dB = iec_fader_to_dB(percent);
+	return dB;
+}
+
+float AudioLevel::dB_to_fader (float dB, float maxDb)
+{
+  if (dB == DB_FLOOR) 
+    return 0.;
+
+  // The IEC scale gives a "percentage travel" for a given dB
+  // level, but it reaches 100% at 0dB.  So we want to treat the
+  // result not as a percentage, but as a scale between 0 and
+  // whatever the "percentage" for our (possibly >0dB) max dB is.
+    
+  float maxPercent = iec_dB_to_fader(maxDb);
+  float percent = iec_dB_to_fader(dB);
+  float faderLevel = percent / maxPercent;
+    
+  if (faderLevel < 0.) faderLevel = 0.;
+  if (faderLevel > 1.0) faderLevel = 1.0;
+    
+  return faderLevel;
+}
+//
+
 // *********** CORE SIGNAL PROCESSING
 
 AudioBuffers::AudioBuffers(Fweelin *app) : app(app) {
@@ -2354,5 +2437,17 @@ void PassthroughProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
     memset(out[0],0,sizeof(sample_t) * len);
     if (out[1] != 0)
       memset(out[1],0,sizeof(sample_t) * len);
+  }
+}
+
+void InputSettings::SetInputVol(int n, float vol, float logvol) { 
+  if (n >= 0 || n < numins) {
+    if (vol >= 0.) 
+      invols[n] = vol; 
+    else if (logvol >= 0.)
+      invols[n] = DB2LIN(AudioLevel::fader_to_dB(logvol, app->getCFG()->GetFaderMaxDB())); 
+    dinvols[n] = 1.0;
+  } else {
+    printf("CORE: InputSettings- input number %d not in range.\n",n);
   }
 }

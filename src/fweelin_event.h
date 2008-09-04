@@ -1163,65 +1163,93 @@ class SlideInVolumeEvent : public Event {
 class SetMasterInVolumeEvent : public Event {
  public:
   EVT_DEFINE(SetMasterInVolumeEvent,T_EV_SetMasterInVolume);
+  virtual void Recycle() {
+    vol = -1.;
+    fadervol = -1.;
+    Event::Recycle();
+  };
   virtual void operator = (const Event &src) {
     SetMasterInVolumeEvent &s = (SetMasterInVolumeEvent &) src;
     vol = s.vol;
+    fadervol = s.fadervol;
   };
-  virtual int GetNumParams() { return 1; };
+  virtual int GetNumParams() { return 2; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
       return EventParameter("vol",FWEELIN_GETOFS(vol),T_float);
+    case 1:
+      return EventParameter("fadervol",FWEELIN_GETOFS(fadervol),T_float);
     }
 
     return EventParameter();
   };    
 
-  float vol; // Volume to set
+  float vol, // Linear volume to set
+    fadervol; // Logarithmic volume to set (by fader throw)
 };
 
 class SetMasterOutVolumeEvent : public Event {
  public:
   EVT_DEFINE(SetMasterOutVolumeEvent,T_EV_SetMasterOutVolume);
+  virtual void Recycle() {
+    vol = -1.;
+    fadervol = -1.;
+    Event::Recycle();
+  };
   virtual void operator = (const Event &src) {
     SetMasterOutVolumeEvent &s = (SetMasterOutVolumeEvent &) src;
     vol = s.vol;
+    fadervol = s.fadervol;
   };
-  virtual int GetNumParams() { return 1; };
+  virtual int GetNumParams() { return 2; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
       return EventParameter("vol",FWEELIN_GETOFS(vol),T_float);
+    case 1:
+      return EventParameter("fadervol",FWEELIN_GETOFS(fadervol),T_float);
     }
 
     return EventParameter();
   };    
 
-  float vol; // Volume to set
+  float vol,  // Linear volume to set
+    fadervol; // Logarithmic volume to set (by fader throw)
 };
 
 class SetInVolumeEvent : public Event {
  public:
   EVT_DEFINE(SetInVolumeEvent,T_EV_SetInVolume);
+  virtual void Recycle() {
+    input = 1;
+    vol = -1.;
+    fadervol = -1.;
+    Event::Recycle();
+  };
   virtual void operator = (const Event &src) {
     SetInVolumeEvent &s = (SetInVolumeEvent &) src;
     input = s.input;
     vol = s.vol;
+    fadervol = s.fadervol;
   };
-  virtual int GetNumParams() { return 2; };
+  virtual int GetNumParams() { return 3; };
   virtual EventParameter GetParam(int n) { 
     switch (n) {
     case 0:
       return EventParameter("input",FWEELIN_GETOFS(input),T_int);
     case 1:
       return EventParameter("vol",FWEELIN_GETOFS(vol),T_float);
+    case 2:
+      return EventParameter("fadervol",FWEELIN_GETOFS(fadervol),T_float);
     }
 
     return EventParameter();
   };    
 
-  int input; // Number of input to change volume for
-  float vol; // Volume to set
+  int input;  // Number of input to change volume for
+  float vol,  // Linear volume to set
+    fadervol; // Logarithmic volume to set (by fader throw)
 };
 
 class ToggleInputRecordEvent : public Event {
