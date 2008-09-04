@@ -219,21 +219,21 @@
 
     <!-- Fader 5: Master in volume -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+4" 
-     output="set-master-in-volume" parameters="vol=controlval/127.0*2.0"/>
+     output="set-master-in-volume" parameters="fadervol=controlval/127.0"/>
 
     <!-- Fader 6: Master out volume -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+5" 
-     output="set-master-out-volume" parameters="vol=controlval/127.0*2.0"/>
+     output="set-master-out-volume" parameters="fadervol=controlval/127.0"/>
 
     <!-- Faders 1-4: Input volumes -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+0" 
-     output="set-in-volume" parameters="input=1 and vol=controlval/127.0*2.0"/>
+     output="set-in-volume" parameters="input=1 and fadervol=controlval/127.0"/>
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+1" 
-     output="set-in-volume" parameters="input=2 and vol=controlval/127.0*2.0"/>
+     output="set-in-volume" parameters="input=2 and fadervol=controlval/127.0"/>
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+2" 
-     output="set-in-volume" parameters="input=3 and vol=controlval/127.0*2.0"/>
+     output="set-in-volume" parameters="input=3 and fadervol=controlval/127.0"/>
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+3" 
-     output="set-in-volume" parameters="input=4 and vol=controlval/127.0*2.0"/>
+     output="set-in-volume" parameters="input=4 and fadervol=controlval/127.0"/>
 
     <!-- Faders: Fade loops- trigger levels -->
     <binding input="midicontroller" conditions="VAR_fadermode=0 and VAR_controlpage=0 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000controlrange1+VAR_bcf2000fadercc" 
