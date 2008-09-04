@@ -792,8 +792,11 @@ void LoopManager::AdjustOutputVolume(float adjust) {
   app->getRP()->AdjustOutputVolume(adjust);
 }
 
-void LoopManager::SetOutputVolume(float set) {
-  app->getRP()->SetOutputVolume(set);
+void LoopManager::SetOutputVolume(float set, float logset) {
+  if (set >= 0.)
+    app->getRP()->SetOutputVolume(set);
+  else if (logset >= 0.)
+    app->getRP()->SetOutputVolume(DB2LIN(AudioLevel::fader_to_dB(logset, app->getCFG()->GetFaderMaxDB())));
 }
 
 float LoopManager::GetOutputVolume() {
@@ -804,8 +807,11 @@ void LoopManager::AdjustInputVolume(float adjust) {
   app->getRP()->AdjustInputVolume(adjust);
 }
 
-void LoopManager::SetInputVolume(float set) {
-  app->getRP()->SetInputVolume(set);
+void LoopManager::SetInputVolume(float set, float logset) {
+  if (set >= 0.)
+    app->getRP()->SetInputVolume(set);
+  else if (logset >= 0.)
+    app->getRP()->SetInputVolume(DB2LIN(AudioLevel::fader_to_dB(logset, app->getCFG()->GetFaderMaxDB())));
 }
 
 float LoopManager::GetInputVolume() {
@@ -2767,8 +2773,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-        printf("CORE: Received SetMasterInVolumeEvent(%f)\n", vev->vol);
-      SetInputVolume(vev->vol);
+        printf("CORE: Received SetMasterInVolumeEvent(%f, %f)\n", vev->vol, vev->fadervol);
+      SetInputVolume(vev->vol,vev->fadervol);
     }
     break;
 
@@ -2778,8 +2784,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-        printf("CORE: Received SetMasterOutVolumeEvent(%f)\n", vev->vol);
-      SetOutputVolume(vev->vol);
+        printf("CORE: Received SetMasterOutVolumeEvent(%f, %f)\n", vev->vol, vev->fadervol);
+      SetOutputVolume(vev->vol,vev->fadervol);
     }
     break;
 
@@ -2789,8 +2795,8 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
 
       // OK!
       if (CRITTERS)
-        printf("CORE: Received SetInVolumeEvent(%d: %f)\n", vev->input, vev->vol);
-      app->getISET()->SetInputVol(vev->input-1, vev->vol);
+        printf("CORE: Received SetInVolumeEvent(%d: %f, %f)\n", vev->input, vev->vol, vev->fadervol);
+      app->getISET()->SetInputVol(vev->input-1, vev->vol, vev->fadervol);
     }
     break;
 

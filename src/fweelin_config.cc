@@ -1817,6 +1817,16 @@ void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
           limiterreleaserate = 0.000020;
         printf("CONFIG: Limiter release rate set to %.2f%%.\n",
                limiterreleaserate*100);
+      } else if ((n = xmlGetProp(cur_node, 
+                                 (const xmlChar *)"fadermaxdb")) != 0) {
+        fadermaxdb = atof((char *) n);
+        printf("CONFIG: Fader max dB set to %.2f.\n",
+               fadermaxdb);
+      } else if ((n = xmlGetProp(cur_node, 
+                                 (const xmlChar *)"faderzeropoint")) != 0) {
+        faderzeropoint = atof((char *) n);
+        printf("CONFIG: Fader zero point set to %.2f%%.\n",
+               faderzeropoint*100);
       } else if ((n = xmlGetProp(cur_node,
                                  (const xmlChar *)"loopoutformat")) != 0) {
         loopoutformat = GetCodecFromName((const char *) n);
@@ -2764,6 +2774,25 @@ void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid,
             xmlFree(nn);
           } 
 
+          // dB scale?
+          nn = xmlGetProp(cur_node, (const xmlChar *)"dbscale");
+          if (nn != 0) {
+            nwb->dbscale = atoi((char *)nn);
+            printf("(%s) ",(nwb->dbscale ? "dB scale" : "linear scale"));
+            xmlFree(nn);
+          } 
+
+          // calibration marks?
+          nn = xmlGetProp(cur_node, (const xmlChar *)"marks");
+          if (nn != 0) {
+            nwb->marks = atoi((char *)nn);
+            printf("%s",(nwb->marks ? "(marks) " : ""));
+            xmlFree(nn);
+          } 
+
+          if (nwb->dbscale)
+            nwb->maxdb = fadermaxdb;
+            
           if (sw) {
             // Color
             nn = xmlGetProp(cur_node, (const xmlChar *)"color");

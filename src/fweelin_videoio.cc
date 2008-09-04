@@ -485,7 +485,8 @@ void FloDisplayTextSwitch::Draw(SDL_Surface *screen) {
 void FloDisplayBar::Draw(SDL_Surface *screen) {
   const static SDL_Color titleclr = { 0x77, 0x88, 0x99, 0 };
   const static SDL_Color barclr = { 0xFF, 0x50, 0x20, 0 };
-
+  const static float calwidth = 1.1;
+  
   if (font != 0 && font->font != 0) {
     // Draw title
     if (title != 0)
@@ -499,43 +500,125 @@ void FloDisplayBar::Draw(SDL_Surface *screen) {
   UserVariable val = exp->Evaluate(0);
   float fval = (float) val;
 
-  // Draw bar
-  if (orient == O_Vertical) {
-    // Vertical
+  if (dbscale) {
+    // dB
+    
+    // Convert linear value to dB and then to fader level:
+    int lvl = (int) (AudioLevel::dB_to_fader(LIN2DB(fval), maxdb) * barscale);
+    
+    // Draw bar
+    if (orient == O_Vertical) {
+      // Vertical
 
-    // Show calibration
-    boxRGBA(screen,
-            xpos-thickness/2,ypos,
-            xpos+thickness/2,(int) (ypos-barscale),
-            barclr.r/2,barclr.g/2,barclr.b/2,255);
+      if (marks) {
+        // Show calibration
+        const static float mindb = -60.,
+          dbstep = 6.0;
+        int clrstep = (int) (255/((maxdb-mindb)/dbstep)),
+          clr = 0;
+        
+        for (float i = mindb; i <= maxdb; i += dbstep, clr += clrstep) {
+          // printf("%f > %f def\n",i,AudioLevel::dB_to_fader(i, maxdb));
+          
+          int clvl = (int) (AudioLevel::dB_to_fader(i, maxdb) * barscale);
+          hlineRGBA(screen,
+                    xpos-(int) (calwidth*thickness),
+                    xpos-thickness,
+                    ypos-clvl,
+                    clr,clr,clr,255);
+          hlineRGBA(screen,
+                    xpos+thickness,
+                    xpos+(int) (calwidth*thickness),
+                    ypos-clvl,
+                    clr,clr,clr,255);
+        }
+      }
 
-    // Bar
-    boxRGBA(screen,
-            xpos-thickness,ypos,
-            xpos+thickness,(int) (ypos-fval*barscale),
-            barclr.r/2,barclr.g/2,barclr.b/2,255);
-    boxRGBA(screen,
-            xpos-thickness/2,ypos,
-            xpos+thickness/2,(int) (ypos-fval*barscale),
-            barclr.r,barclr.g,barclr.b,255);
+      // Bar
+      boxRGBA(screen,
+              xpos-thickness,ypos,
+              xpos+thickness,ypos-lvl,
+              barclr.r/2,barclr.g/2,barclr.b/2,255);
+      boxRGBA(screen,
+              xpos-thickness/2,ypos,
+              xpos+thickness/2,ypos-lvl,
+              barclr.r,barclr.g,barclr.b,255);
+    } else {
+      // Horizontal
+
+      if (marks) {
+        // Show calibration
+        const static float mindb = -60.,
+          dbstep = 6.0;
+        int clrstep = (int) (255/((maxdb-mindb)/dbstep)),
+          clr = 0;
+          
+        for (float i = mindb; i <= maxdb; i += dbstep, clr += clrstep) {
+          int clvl = (int) (AudioLevel::dB_to_fader(i, maxdb) * barscale);
+          vlineRGBA(screen,
+                    xpos+clvl,
+                    ypos-(int) (calwidth*thickness),
+                    ypos-thickness,
+                    clr,clr,clr,255);
+          vlineRGBA(screen,
+                    xpos+clvl,
+                    ypos+thickness,
+                    ypos+(int) (calwidth*thickness),
+                    clr,clr,clr,255);
+        }
+      }
+
+      // Bar
+      boxRGBA(screen,
+              xpos,ypos-thickness,
+              xpos+lvl,ypos+thickness,
+              barclr.r/2,barclr.g/2,barclr.b/2,255);
+      boxRGBA(screen,
+              xpos,ypos-thickness/2,
+              xpos+lvl,ypos+thickness/2,
+              barclr.r,barclr.g,barclr.b,255);
+    }
   } else {
-    // Horizontal
+    // Linear
+  
+    // Draw bar
+    if (orient == O_Vertical) {
+      // Vertical
 
-    // Show calibration
-    boxRGBA(screen,
-            xpos,ypos-thickness/2,
-            (int) (xpos+barscale),ypos+thickness/2,
-            barclr.r/2,barclr.g/2,barclr.b/2,255);
+      // Show calibration
+      boxRGBA(screen,
+              xpos-thickness/2,ypos,
+              xpos+thickness/2,(int) (ypos-barscale),
+              barclr.r/2,barclr.g/2,barclr.b/2,255);
 
-    // Bar
-    boxRGBA(screen,
-            xpos,ypos-thickness,
-            (int) (xpos+fval*barscale),ypos+thickness,
-            barclr.r/2,barclr.g/2,barclr.b/2,255);
-    boxRGBA(screen,
-            xpos,ypos-thickness/2,
-            (int) (xpos+fval*barscale),ypos+thickness/2,
-            barclr.r,barclr.g,barclr.b,255);
+      // Bar
+      boxRGBA(screen,
+              xpos-thickness,ypos,
+              xpos+thickness,(int) (ypos-fval*barscale),
+              barclr.r/2,barclr.g/2,barclr.b/2,255);
+      boxRGBA(screen,
+              xpos-thickness/2,ypos,
+              xpos+thickness/2,(int) (ypos-fval*barscale),
+              barclr.r,barclr.g,barclr.b,255);
+    } else {
+      // Horizontal
+
+      // Show calibration
+      boxRGBA(screen,
+              xpos,ypos-thickness/2,
+              (int) (xpos+barscale),ypos+thickness/2,
+              barclr.r/2,barclr.g/2,barclr.b/2,255);
+
+      // Bar
+      boxRGBA(screen,
+              xpos,ypos-thickness,
+              (int) (xpos+fval*barscale),ypos+thickness,
+              barclr.r/2,barclr.g/2,barclr.b/2,255);
+      boxRGBA(screen,
+              xpos,ypos-thickness/2,
+              (int) (xpos+fval*barscale),ypos+thickness/2,
+              barclr.r,barclr.g,barclr.b,255);
+    }
   }
 };
 
@@ -544,6 +627,7 @@ void FloDisplayBarSwitch::Draw(SDL_Surface *screen) {
   const static SDL_Color titleclr = { 0x77, 0x88, 0x99, 0 };
   const static SDL_Color barclr[2] = { { 0xEF, 0xAF, 0xFF, 0 },
                                        { 0xCF, 0x4F, 0xFC, 0 } };
+  const static float calwidth = 1.1;
   
   const SDL_Color *bc = (color == 2 ? &barclr[1] : &barclr[0]);
 
@@ -562,37 +646,109 @@ void FloDisplayBarSwitch::Draw(SDL_Surface *screen) {
   UserVariable sval = switchexp->Evaluate(0);
   char sw = (char) sval;
 
-  // Draw bar
-  if (orient == O_Vertical) {
-    // Vertical
+  if (dbscale) {
+    // dB
+    
+    // Convert linear value to dB and then to fader level:
+    int lvl = (int) (AudioLevel::dB_to_fader(LIN2DB(fval), maxdb) * barscale);
+    
+    // Draw bar
+    if (orient == O_Vertical) {
+      // Vertical
 
-    // Bar
-    boxRGBA(screen,
-            xpos-thickness/2,ypos,
-            xpos+thickness/2,(int) (ypos-fval*barscale),
-            bc->r,bc->g,bc->b,(sw ? 255 : 127));
-    // Calibrate
-    if (calibrate)
-      hlineRGBA(screen,
-                xpos-thickness/2,
-                xpos+thickness/2,
-                (int) (ypos-cval*barscale),
-                255,255,255,(sw ? 255 : 127));
+      if (marks) {
+        // Show calibration
+        const static float mindb = -60.,
+          dbstep = 6.0;
+        int clrstep = (int) (255/((maxdb-mindb)/dbstep)),
+          clr = 0;
+          
+        for (float i = mindb; i <= maxdb; i += dbstep, clr += clrstep) {
+          int clvl = (int) (AudioLevel::dB_to_fader(i, maxdb) * barscale);
+          hlineRGBA(screen,
+                    xpos-(int) (calwidth*thickness/2),
+                    xpos-thickness/2,
+                    ypos-clvl,
+                    clr,clr,clr,(sw ? 255 : 127));
+          hlineRGBA(screen,
+                    xpos+thickness/2,
+                    xpos+(int) (calwidth*thickness/2),
+                    ypos-clvl,
+                    clr,clr,clr,(sw ? 255 : 127));
+        }
+      }
+
+      // Bar
+      boxRGBA(screen,
+              xpos-thickness/2,ypos,
+              xpos+thickness/2,ypos-lvl,
+              bc->r,bc->g,bc->b,(sw ? 255 : 127));
+    } else {
+      // Horizontal
+
+      if (marks) {
+        // Show calibration
+        const static float mindb = -60.,
+          dbstep = 6.0;
+        int clrstep = (int) (255/((maxdb-mindb)/dbstep)),
+          clr = 0;
+          
+        for (float i = mindb; i <= maxdb; i += dbstep, clr += clrstep) {
+          int clvl = (int) (AudioLevel::dB_to_fader(i, maxdb) * barscale);
+          vlineRGBA(screen,
+                    xpos+clvl,
+                    ypos-(int) (calwidth*thickness/2),
+                    ypos-thickness/2,
+                    clr,clr,clr,(sw ? 255 : 127));
+          vlineRGBA(screen,
+                    xpos+clvl,
+                    ypos+thickness/2,
+                    ypos+(int) (calwidth*thickness/2),
+                    clr,clr,clr,(sw ? 255 : 127));
+        }
+      }
+
+      // Bar
+      boxRGBA(screen,
+              xpos,ypos-thickness/2,
+              xpos+lvl,ypos+thickness/2,
+              bc->r,bc->g,bc->b,(sw ? 255 : 127));
+    }
   } else {
-    // Horizontal
+    // Linear 
+    
+    // Draw bar
+    if (orient == O_Vertical) {
+      // Vertical
 
-    // Bar
-    boxRGBA(screen,
-            xpos,ypos-thickness/2,
-            (int) (xpos+fval*barscale),ypos+thickness/2,
-            bc->r,bc->g,bc->b,(sw ? 255 : 127));
-    // Calibrate
-    if (calibrate)
-      vlineRGBA(screen,
-                (int) (xpos+cval*barscale),
-                ypos-thickness/2,
-                ypos+thickness/2,
-                255,255,255,(sw ? 255 : 127));
+      // Bar
+      boxRGBA(screen,
+              xpos-thickness/2,ypos,
+              xpos+thickness/2,(int) (ypos-fval*barscale),
+              bc->r,bc->g,bc->b,(sw ? 255 : 127));
+      // Calibrate
+      if (calibrate)
+        hlineRGBA(screen,
+                  xpos-thickness/2,
+                  xpos+thickness/2,
+                  (int) (ypos-cval*barscale),
+                  255,255,255,(sw ? 255 : 127));
+    } else {
+      // Horizontal
+
+      // Bar
+      boxRGBA(screen,
+              xpos,ypos-thickness/2,
+              (int) (xpos+fval*barscale),ypos+thickness/2,
+              bc->r,bc->g,bc->b,(sw ? 255 : 127));
+      // Calibrate
+      if (calibrate)
+        vlineRGBA(screen,
+                  (int) (xpos+cval*barscale),
+                  ypos-thickness/2,
+                  ypos+thickness/2,
+                  255,255,255,(sw ? 255 : 127));
+    }
   }
 };
 

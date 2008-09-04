@@ -574,13 +574,17 @@ class FloDisplayBar : public FloDisplay
 {
  public:
   FloDisplayBar (int iid) : FloDisplay(iid), 
-    orient(O_Vertical), barscale(1.0), thickness(10) {};
+    orient(O_Vertical), barscale(1.0), thickness(10), dbscale(0), marks(0), maxdb(0) {};
 
   virtual void Draw(SDL_Surface *screen);
 
   CfgOrientation orient; // Orientation of bar
   float barscale; // Scaling factor for size of bar
   int thickness;  // Thickness of bar
+  char dbscale,   // If nonzero, this bar maps a linear amplitude variable to a logarithmic scale bar
+                  // If zero, there is a linear mapping to the bar
+    marks;        // If nonzero, calibration marks are shown (dB scale only)
+  float maxdb;    // (dbscale) Maximum dB level shown
 };
 
 // Bar-switch display shows the value of expression 'exp' as a bar and changes the color of the bar
@@ -834,6 +838,12 @@ class FloConfig {
   inline float GetLimiterReleaseRate() { return limiterreleaserate; };
   float limiterreleaserate;
   
+  // Logarithmic fader settings
+  inline float GetFaderMaxDB() { return fadermaxdb; };
+  inline float GetFaderZeroPoint() { return faderzeropoint; };
+  float fadermaxdb,
+    faderzeropoint;
+    
   // File format to save loops to
   inline codec GetLoopOutFormat() { return loopoutformat; };
   codec loopoutformat;
