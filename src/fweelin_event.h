@@ -1456,7 +1456,7 @@ class AdjustLoopAmpEvent : public Event {
   virtual void operator = (const Event &src) {
     AdjustLoopAmpEvent &s = (AdjustLoopAmpEvent &) src;
     index = s.index;
-    damp = s.damp;
+    ampfactor = s.ampfactor;
   };
   virtual int GetNumParams() { return 2; };
   virtual EventParameter GetParam(int n) { 
@@ -1464,14 +1464,14 @@ class AdjustLoopAmpEvent : public Event {
     case 0:
       return EventParameter("loopid",FWEELIN_GETOFS(index),T_int);
     case 1:
-      return EventParameter("damp",FWEELIN_GETOFS(damp),T_float);
+      return EventParameter("ampfactor",FWEELIN_GETOFS(ampfactor),T_float);
     }
 
     return EventParameter();
   };    
 
   int index;  // Index of loop to adjust amplitude for
-  float damp; // Delta for amplitude (how much to change by)
+  float ampfactor; // Factor to multiply loop amplitudesby
 };
 
 class TriggerLoopEvent : public Event {

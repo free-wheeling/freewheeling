@@ -1,5 +1,21 @@
 IN PROGRESS v0.5.6 - SVN
 
+            Thursday September 4th, 2008
+            
+            New Features
+            ------------
+
+            * Logarithmic faders and loop levels, conforming to IEC 60-268-18.
+            
+              Level meters and loop faders are now logarithmic, visually graded with 6dB markings.
+              This means you can create much smoother fades using MIDI controllers,
+              and you can see a broader range of levels on-screen.
+              
+              One new configuration parameter controls the maximum dB selectable:
+              
+              <!-- dB at maximum throw for audio faders- how loud can you fade in dB? for example +6 dB -->
+              <var fadermaxdb="6"/>
+
             Saturday August 30th, 2008
 
             Fixes

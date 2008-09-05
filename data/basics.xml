@@ -80,9 +80,6 @@
 <!-- dB at maximum throw for audio faders- how loud can you fade in dB? for example +6 dB -->
   <var fadermaxdb="6"/>
 
-<!-- Fraction of total throw of fader where the 0 dB sits. for example 0.8 or 80% -->
-  <var faderzeropoint="0.80"/>
-
 <!-- File formats for saving loops and streaming audio. 
 
      Choose from the following options:
