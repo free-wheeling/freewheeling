@@ -333,11 +333,11 @@
     <binding input="loop-clicked" 
      conditions="button=4"
      output="adjust-loop-amplifier"
-     parameters="loopid=loopid and damp=0.1"/>
+     parameters="loopid=loopid and ampfactor=1.0/VAR_loopamp_adj"/>
     <binding input="loop-clicked" 
      conditions="button=5"
      output="adjust-loop-amplifier"
-     parameters="loopid=loopid and damp=-0.1"/>
+     parameters="loopid=loopid and ampfactor=VAR_loopamp_adj"/>
 
     <!-- HELP: CTRL + up/down arrows: Adjust volume of all selected loops -->
 
@@ -774,19 +774,19 @@
     <display var="SYSTEM_in_1_peak" type="bar-switch"
      switchvar="SYSTEM_in_1_record"
      orientation="vertical" pos="0.20,0.8" barscale="0.3" thickness="0.015"
-     color="2" calibrate="1.0" dbscale="1"/>
+     color="2" calibrate="0.9" dbscale="1"/>
     <display var="SYSTEM_in_2_peak" type="bar-switch"
      switchvar="SYSTEM_in_2_record"
      orientation="vertical" pos="0.23,0.8" barscale="0.3" thickness="0.015"
-     color="2" calibrate="1.0" dbscale="1"/>
+     color="2" calibrate="0.9" dbscale="1"/>
     <display var="SYSTEM_in_3_peak" type="bar-switch"
      switchvar="SYSTEM_in_3_record"
      orientation="vertical" pos="0.26,0.8" barscale="0.3" thickness="0.015"
-     color="2" calibrate="1.0" dbscale="1"/>
+     color="2" calibrate="0.9" dbscale="1"/>
     <display var="SYSTEM_in_4_peak" type="bar-switch"
      switchvar="SYSTEM_in_4_record"
      orientation="vertical" pos="0.29,0.8" barscale="0.3" thickness="0.015"
-     color="2" calibrate="1.0" dbscale="1"/>
+     color="2" calibrate="0.9" dbscale="1"/>
 
     <display var="SYSTEM_master_out_volume" type="bar" font="main"
      title="OUT" pos="0.45,0.8" 

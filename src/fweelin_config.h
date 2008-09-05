@@ -605,8 +605,8 @@ class FloDisplayBarSwitch : public FloDisplayBar
                                // to appear bright, zero values cause a dim, faded bar
   
   int color; // Color of bar-switch (index of hardcoded color)
-  char calibrate; // Nonzero shows calibration value on barswitch
-  float cval; // Calibration value
+  char calibrate; // Nonzero shows calibration value on barswitch & changes color when level exceeds calibration value
+  float cval; // Calibration value (linear)
 };
 
 class FloDisplaySquares : public FloDisplay 
@@ -840,9 +840,7 @@ class FloConfig {
   
   // Logarithmic fader settings
   inline float GetFaderMaxDB() { return fadermaxdb; };
-  inline float GetFaderZeroPoint() { return faderzeropoint; };
-  float fadermaxdb,
-    faderzeropoint;
+  float fadermaxdb;
     
   // File format to save loops to
   inline codec GetLoopOutFormat() { return loopoutformat; };

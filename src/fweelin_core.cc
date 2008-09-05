@@ -2932,9 +2932,9 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       // OK!
       if (CRITTERS)
         printf("CORE: Received AdjustLoopAmp(%d,%f)\n", laev->index, 
-               laev->damp);
+               laev->ampfactor);
       SetLoopVolume(laev->index,
-                    GetLoopVolume(laev->index) + laev->damp);
+                    laev->ampfactor * GetLoopVolume(laev->index));
     }
     break;
 

@@ -371,7 +371,13 @@ Event "set-loop-amplifier"
   Sets the amplitude of a given loop, and stops any sliding
   
   "loopid": the ID of the loop
-  "amp": the amplitude to set it to 
+  "amp": the amplitude to set it to (linear)
+
+Event "adjust-loop-amplifier"
+  Adjusts the amplitude of a given loop, and stops any sliding
+  
+  "loopid": the ID of the loop
+  "ampfactor": the factor to multiply the amplitude by
 
 Event "trigger-loop"
   Triggers a given loop-

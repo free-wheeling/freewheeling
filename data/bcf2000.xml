@@ -104,14 +104,15 @@
 
     <!-- Rest of the bindings... -->
 
+   <!-- Knobs: Fade loops- amp levels -->
     <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000controlrange1+VAR_bcf2000ampcc and controlval=0>64" 
      output="adjust-loop-amplifier"
      parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
-                 damp=controlval*VAR_damp_speed"/>
+                 ampfactor=controlval*VAR_bcf2000_loopamp_adj+1.0"/>
     <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000controlrange1+VAR_bcf2000ampcc and controlval=64>127" 
      output="adjust-loop-amplifier"
      parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
-                 damp=controlval-128*VAR_damp_speed"/>
+                 ampfactor=controlval-128*VAR_bcf2000_loopamp_adj+1.0"/>
 
     <!-- Browse/select scenes -->
     <binding input="midicontroller"
@@ -240,16 +241,6 @@
      output="set-trigger-volume" 
      parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000fadercc and
                  vol=controlval/127.0*2.0"/>
-
-    <!-- Knobs: Fade loops- amp levels -->
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000controlrange1+VAR_bcf2000ampcc and controlval=0>64" 
-     output="adjust-loop-amplifier"
-     parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
-                 damp=controlval*VAR_damp_speed"/>
-    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000controlrange1+VAR_bcf2000ampcc and controlval=64>127" 
-     output="adjust-loop-amplifier"
-     parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
-                 damp=controlval-128*VAR_damp_speed"/>
 
     <!-- Overdub feedback continuous adjust from MIDI control -->
     <!-- MIDI CC87: Overdub feedback continuous adjust -->

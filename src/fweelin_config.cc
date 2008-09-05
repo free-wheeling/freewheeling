@@ -1822,11 +1822,6 @@ void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
         fadermaxdb = atof((char *) n);
         printf("CONFIG: Fader max dB set to %.2f.\n",
                fadermaxdb);
-      } else if ((n = xmlGetProp(cur_node, 
-                                 (const xmlChar *)"faderzeropoint")) != 0) {
-        faderzeropoint = atof((char *) n);
-        printf("CONFIG: Fader zero point set to %.2f%%.\n",
-               faderzeropoint*100);
       } else if ((n = xmlGetProp(cur_node,
                                  (const xmlChar *)"loopoutformat")) != 0) {
         loopoutformat = GetCodecFromName((const char *) n);
