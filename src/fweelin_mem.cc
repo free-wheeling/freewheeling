@@ -35,6 +35,7 @@
 #include <sys/mman.h>
 
 #include "fweelin_mem.h"
+#include "fweelin_datatypes.h"
 
 MemoryManager::MemoryManager() : pts(0), apts(0) {
   // Init mutex/conditions
@@ -57,6 +58,7 @@ MemoryManager::MemoryManager() : pts(0), apts(0) {
     printf("MEM: (memorymanager) pthread_create failed, exiting");
     exit(1);
   }
+  SRMWRingBuffer_Writers::RegisterWriter(mgr_thread);
 
   // Setup high priority threads
   struct sched_param schp;

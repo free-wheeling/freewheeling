@@ -2456,6 +2456,7 @@ class EventManager {
       printf("(eventmanager) pthread_create failed, exiting");
       exit(1);
     }
+    SRMWRingBuffer_Writers::RegisterWriter(dispatch_thread);
 
     struct sched_param schp;
     memset(&schp, 0, sizeof(schp));
@@ -2673,6 +2674,8 @@ class EventManager {
   // Event queue- for calling listeners in lowpriority
   Event *events;
 
+  SRMWRingBuffer<Event *> *eq;
+  
   pthread_t dispatch_thread;
   pthread_mutex_t dispatch_thread_lock,
     listener_list_lock;

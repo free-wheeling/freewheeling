@@ -3207,6 +3207,9 @@ int Fweelin::go()
   delete mmg;
 
   SDL_Quit();
+  
+  SRMWRingBuffer_Writers::CloseAll();
+
   printf("MAIN: end\n");
 
   return 0;
@@ -3316,6 +3319,8 @@ int Fweelin::setup()
   // Keep all memory inline
   mlockall(MCL_CURRENT | MCL_FUTURE);
 
+  SRMWRingBuffer_Writers::InitAll();
+  
   // Initialize vars
   for (int i = 0; i < NUM_LOOP_SELECTION_SETS; i++)
     loopsel[i] = 0;

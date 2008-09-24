@@ -55,8 +55,7 @@ int main (int argc, char *argv[]) {
   Fweelin flo;
   
   printf("FreeWheeling %s\n",VERSION);
-  printf("Brought to you by a loan from Mother Earth.\n");
-  printf("May we return many fold what we have taken.\n\n");
+  printf("May we return to the circle.\n\n");
 
   if (!flo.setup())
     flo.go();

@@ -36,6 +36,10 @@
 
 #include "fweelin_datatypes.h"
 
+int SRMWRingBuffer_Writers::num_writers = 0;
+pthread_t SRMWRingBuffer_Writers::ids[MAX_WRITER_THREADS];
+pthread_mutex_t SRMWRingBuffer_Writers::register_lock;
+
 CoreDataType GetCoreDataType(char *name) {
   if (!strcmp(name, "char")) 
     return T_char;
