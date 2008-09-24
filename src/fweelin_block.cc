@@ -1977,6 +1977,7 @@ BlockManager::BlockManager (Fweelin *app) :
     printf("(blockmanager) pthread_create failed, exiting");
     exit(1);
   }
+  SRMWRingBuffer_Writers::RegisterWriter(manage_thread);
   
   struct sched_param schp;
   memset(&schp, 0, sizeof(schp));

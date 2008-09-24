@@ -424,6 +424,7 @@ void Pulse::SetMIDIClock (char start) {
 // those loops may need to be resized so that the loop point falls on a
 // period boundary
 //
+
 void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
   // If we're using Jack transport (audio) sync, and we're slave to another app,
   // adjust pulse to stay in-sync  
@@ -610,6 +611,7 @@ RootProcessor::RootProcessor(Fweelin *app, InputSettings *iset) :
     printf("(rootprocessor) pthread_create failed, exiting\n");
     exit(1);
   }
+  SRMWRingBuffer_Writers::RegisterWriter(cleanup_thread);
 
   // Temporary buffers and routing
   abtmp = new AudioBuffers(app);
@@ -2119,6 +2121,7 @@ FileStreamer::FileStreamer(Fweelin *app, nframes_t outbuflen) :
     printf("(FILESTREAMER) pthread_create failed, exiting\n");
     exit(1);
   }
+  SRMWRingBuffer_Writers::RegisterWriter(encode_thread);
 
   // Allocate space for time markers
   marks = ::new TimeMarker[MARKERBUFLEN];
