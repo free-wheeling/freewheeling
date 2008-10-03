@@ -6,10 +6,13 @@ A Universal binary will be made available for each release, along
 with source code if you wish to compile it yourself.
 
 The user interface remains the same across OS X and Linux versions. 
-This means that FreeWheeling OS X does not make use of Mac's Aqua interface. A few basic commands specific to the Mac version have been provided in a Mac menu. The rest of the functionality is built into the
-app window.
+This means that FreeWheeling OS X does not make use of Mac's Aqua interface. 
+A few basic commands specific to the Mac version have been provided in a Mac menu. 
+The rest of the functionality is built into the app window.
 
-FreeWheeling is designed to be mostly MIDI and keyboard driven. A few things can be done from a mouse, but while playing music, the idea is to keep your hands on your instrument. FreeWheeling is not a music production
+FreeWheeling is designed to be mostly MIDI and keyboard driven.
+A few things can be done from a mouse, but while playing music, 
+the idea is to keep your hands on your instrument. FreeWheeling is not a music production
 or DJing tool. FreeWheeling works for instrumentalists, such as drummers,
 guitarists, keyboardists and vocalists. FreeWheeling is like a second
 instrument, that you use to reflect back parts of your playing, to build
@@ -39,7 +42,9 @@ Setup for Mac OS X
 
 	If you are using the onboard Mac sound, you can get 'Full Duplex'
 	recording and playback by creating an 'Aggregate Audio Device'.
-	To do this, run 'Applications/Utilities/Audio MIDI Setup'.
+	To do this, choose 'Open Audio MIDI Setup' from the JackPilot
+        menu, or run 'Applications/Utilities/Audio MIDI Setup'. Then,
+        select 'Open Aggregate Device Editor...' from the Audio menu.
 
 4. If you wish to debug the console output of FreeWheeling for
    troubleshooting, start 'Applications/Utilities/Console' now.
@@ -55,26 +60,34 @@ the source, choose 'Preferences' from the 'Fweelin' menu.
 
 By default, FreeWheeling grabs loops with the QWERTY keys as well as
 one octave of keys on your MIDI keyboard. This can be configured in
-the main configuration file, ~/.fweelin/.fweelin.rc.
+the configuration files. The main one is ~/.fweelin/fweelin.xml.
+They are all stored in ~/.fweelin. 
+
+Some keyboard commands (function keys especially) may conflict
+with Mac OS X keyboard shortcuts. I suggest using an external USB keyboard, 
+or modifying Freewheeling's configuration.
 
 You will have to connect audio to go into and out of FreeWheeling using
 Jack Pilot. Most often, you will want to route your system audio inputs
 into FreeWheeling, and FreeWheeling's audio outputs back out to the system,
-or into a sequencer or effects program. Regular Mac audio apps work with JACK. Simply point them to the 'JACK' device.
+or into a sequencer or effects program. Regular Mac audio apps work with JACK. 
+Simply point them to the 'JACK' device.
 
 FreeWheeling can also drive soft-synths and effects. FreeWheeling creates
-several MIDI outputs, which appear as virtual MIDI sources. You can connect your audio apps to these MIDI sources. FreeWheeling has a built-in configurable patch browser that can be used to select patches on different
-MIDI outputs. You can also create combination patches that split your
-MIDI input into a variety of keyboard zones, playing different outputs
+several MIDI outputs, which appear as virtual MIDI sources. 
+You can connect your audio apps to these MIDI sources. 
+FreeWheeling has a built-in configurable patch browser that can be used to select 
+patches on different MIDI outputs. You can also create combination patches that 
+split your MIDI input into a variety of keyboard zones, playing different outputs
 together.
 
-For a crash-course in Freewheeling, 
+For a crash-course in Freewheeling (albeit, an old version), 
 please refer to the video tutorials at:
 http://freewheeling.sourceforge.net/
 
 If you'd like to configure Freewheeling,
 please read the configuration file:
-~/.fweelin/.fweelin.rc
+~/.fweelin/fweelin.xml
 (once you've run FreeWheeling, this file appears)
 
 To find this file through the Finder, 
@@ -83,7 +96,7 @@ If you don't, run 'fweelin-edit-config'
 (in the Freewheeling distribution DMG). 
 The file should then load up in an editor.
 
-For more help, you can browse or sign on to the mailing-list.
+For more help, please browse or sign on to the mailing-list.
 
 Happy Looping!
 -JP Mercury.
