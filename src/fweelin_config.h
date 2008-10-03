@@ -72,7 +72,7 @@ extern char *FWEELIN_DATADIR;
 
 // On Linux, VERSION is defined within configure.ac
 // For Mac OS, we set it here:
-#define VERSION "0.5.6"
+#define VERSION "0.6"
 #endif
 
 #include "fweelin_datatypes.h"
