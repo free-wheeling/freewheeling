@@ -86,16 +86,14 @@ please refer to the video tutorials at:
 http://freewheeling.sourceforge.net/
 
 If you'd like to configure Freewheeling,
-please read the configuration file:
-~/.fweelin/fweelin.xml
-(once you've run FreeWheeling, this file appears)
+please read the configuration files located 
+in your home folder in the hidden subfolder .fweelin/
+(once you've run FreeWheeling, this folder appears)
 
-To find this file through the Finder, 
+To find this folder through the Finder, 
 you must have hidden files enabled in your Finder.
-If you don't, run 'fweelin-edit-config' 
-(in the Freewheeling distribution DMG). 
-The file should then load up in an editor.
-
+Or, you can access it through the Mac Terminal app.
+ 
 For more help, please browse or sign on to the mailing-list.
 
 Happy Looping!
