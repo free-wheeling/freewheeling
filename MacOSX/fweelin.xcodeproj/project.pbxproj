@@ -28,7 +28,6 @@
 		3D82626A0E96CDC700B480B6 /* browsers.xml in Resources */ = {isa = PBXBuildFile; fileRef = 3D8262560E96CDC700B480B6 /* browsers.xml */; };
 		3D82626B0E96CDC700B480B6 /* midikeyboard.xml in Resources */ = {isa = PBXBuildFile; fileRef = 3D8262570E96CDC700B480B6 /* midikeyboard.xml */; };
 		3D82626C0E96CDC700B480B6 /* patches1.xml in Resources */ = {isa = PBXBuildFile; fileRef = 3D8262580E96CDC700B480B6 /* patches1.xml */; };
-		3D82626D0E96CDC700B480B6 /* bindings.xml in Resources */ = {isa = PBXBuildFile; fileRef = 3D8262590E96CDC700B480B6 /* bindings.xml */; };
 		3D82626E0E96CDC700B480B6 /* patches-b3.xml in Resources */ = {isa = PBXBuildFile; fileRef = 3D82625A0E96CDC700B480B6 /* patches-b3.xml */; };
 		3D82626F0E96CDC700B480B6 /* patches3.xml in Resources */ = {isa = PBXBuildFile; fileRef = 3D82625B0E96CDC700B480B6 /* patches3.xml */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
@@ -111,7 +110,6 @@
 		3D8262560E96CDC700B480B6 /* browsers.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = browsers.xml; path = ../data/browsers.xml; sourceTree = SOURCE_ROOT; };
 		3D8262570E96CDC700B480B6 /* midikeyboard.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = midikeyboard.xml; path = ../data/midikeyboard.xml; sourceTree = SOURCE_ROOT; };
 		3D8262580E96CDC700B480B6 /* patches1.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = patches1.xml; path = ../data/patches1.xml; sourceTree = SOURCE_ROOT; };
-		3D8262590E96CDC700B480B6 /* bindings.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = bindings.xml; path = ../data/bindings.xml; sourceTree = SOURCE_ROOT; };
 		3D82625A0E96CDC700B480B6 /* patches-b3.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = "patches-b3.xml"; path = "../data/patches-b3.xml"; sourceTree = SOURCE_ROOT; };
 		3D82625B0E96CDC700B480B6 /* patches3.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = patches3.xml; path = ../data/patches3.xml; sourceTree = SOURCE_ROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -291,7 +289,6 @@
 				3D8262560E96CDC700B480B6 /* browsers.xml */,
 				3D8262570E96CDC700B480B6 /* midikeyboard.xml */,
 				3D8262580E96CDC700B480B6 /* patches1.xml */,
-				3D8262590E96CDC700B480B6 /* bindings.xml */,
 				3D82625A0E96CDC700B480B6 /* patches-b3.xml */,
 				3D82625B0E96CDC700B480B6 /* patches3.xml */,
 				AC776D460B69B161005E3D84 /* freewheeling.icns */,
@@ -378,7 +375,6 @@
 				3D82626A0E96CDC700B480B6 /* browsers.xml in Resources */,
 				3D82626B0E96CDC700B480B6 /* midikeyboard.xml in Resources */,
 				3D82626C0E96CDC700B480B6 /* patches1.xml in Resources */,
-				3D82626D0E96CDC700B480B6 /* bindings.xml in Resources */,
 				3D82626E0E96CDC700B480B6 /* patches-b3.xml in Resources */,
 				3D82626F0E96CDC700B480B6 /* patches3.xml in Resources */,
 			);
