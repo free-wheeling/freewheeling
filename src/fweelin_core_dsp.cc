@@ -535,7 +535,6 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
       // Send out a pulse sync event
       PulseSyncEvent *pevt = (PulseSyncEvent *) 
         Event::GetEventByType(T_EV_PulseSync);
-      pevt->syncidx = -1; // Builtin sync (on the downbeat)
       app->getEMG()->BroadcastEventNow(pevt, this);
 
       // Trigger management of any RT work on blocks
@@ -554,13 +553,10 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
 
     // Send out user-define pulse syncs 
     for (int i = 0; i < numsyncpos; i++) {
-      if (syncpos[i] != 0 && oldpos < syncpos[i] &&
-          (curpos >= syncpos[i] || wrapped)) {
-        // Send out a pulse sync event
-        PulseSyncEvent *pevt = (PulseSyncEvent *) 
-          Event::GetEventByType(T_EV_PulseSync);
-        pevt->syncidx = i; // User-define sync
-        app->getEMG()->BroadcastEventNow(pevt, this);
+      if (syncpos[i].cb != 0 && ((oldpos < syncpos[i].syncpos && curpos >= syncpos[i].syncpos) || 
+                                 (wrapped && syncpos[i].syncpos <= curpos))) {
+        // Call sync callback 
+        syncpos[i].cb->PulseSync(i,curpos);
       }
     }
   }
@@ -711,8 +707,8 @@ void RootProcessor::DelChild (Processor *o) {
     // Tell processor, Halt!
     o->Halt();
 
-    // Then set it to be deleted
-    cur->status = ProcessorItem::STATUS_PENDING_DELETE;
+    // Then set it to be deleted (call RT once first to finish up any RT tasks)
+    cur->status = ProcessorItem::STATUS_LIVE_PENDING_DELETE;
   }
 }
 
@@ -724,9 +720,11 @@ void RootProcessor::processchain(char pre, nframes_t len, AudioBuffers *ab,
   // Go through all children of type 'ptype' and mix 
   ProcessorItem *cur = firstchild;
   while (cur != 0) {
-    if (cur->status == ProcessorItem::STATUS_GO &&
+    if (cur->status != ProcessorItem::STATUS_PENDING_DELETE &&
         cur->type == ptype) {
-      cur->p -> process(pre, len, abchild);
+      cur->p->process(pre, len, abchild);
+      if (cur->status == ProcessorItem::STATUS_LIVE_PENDING_DELETE)
+        cur->status = ProcessorItem::STATUS_PENDING_DELETE; // Last run finished through RT, now delete
 
       // Sum from temporary output into actual output 
       if (mixintoout) {
@@ -1072,6 +1070,7 @@ RecordProcessor::RecordProcessor(Fweelin *app,
                                  float *od_feedback) : 
   Processor(app), sync_state(SS_NONE), 
   iset(iset), inputvol(inputvol), nbeats(0), endsyncidx(-2), endsyncwait(0), 
+  sync_idx(-1), sync_add_pos(0), sync_add(0),
   stopped(0), pa_mgr(0), od_loop(od_loop), od_playvol(od_playvol), 
   od_feedback(od_feedback), od_curbeat(0), od_fadein(1), od_fadeout(0), 
   od_stop(0), od_prefadeout(0), od_lastofs(0) {
@@ -1124,7 +1123,8 @@ RecordProcessor::RecordProcessor(Fweelin *app,
 
     // Notify Pulse to call us every beat
     sync_state = SS_BEAT;
-    app->getEMG()->ListenEvent(this,sync,T_EV_PulseSync);
+    sync_add_pos = 0;
+    sync_add = 1;
   }
 
   if (od_startofs != 0) {
@@ -1147,6 +1147,7 @@ RecordProcessor::RecordProcessor(Fweelin *app,
                                  AudioBlock *dest, int suggest_stereo) :
   Processor(app), sync_state(SS_NONE),
   iset(iset), inputvol(inputvol), sync(0), tmpi(0), nbeats(0), 
+  sync_idx(-1), sync_add_pos(0), sync_add(0),
   stopped(0), pa_mgr(0), od_loop(0), od_feedback(0), od_fadeout(0), od_stop(0), 
   od_prefadeout(0) {
   // Use the block supplied-- fixed length
@@ -1187,6 +1188,7 @@ RecordProcessor::RecordProcessor(Fweelin *app,
   Processor(app), sync_state(SS_NONE),
   iset(iset), inputvol(inputvol), sync(sync), tmpi(0), 
   nbeats(0), endsyncidx(-2), endsyncwait(0), 
+  sync_idx(-1), sync_add_pos(0), sync_add(0),
   stopped(0), pa_mgr(0), od_loop(0), od_feedback(0), od_fadeout(0), od_stop(0), 
   od_prefadeout(0) {
   // Grow the length of record as necessary
@@ -1225,7 +1227,8 @@ RecordProcessor::RecordProcessor(Fweelin *app,
       stopped = 1; 
 
       sync_state = SS_START;
-      app->getEMG()->ListenEvent(this,sync,T_EV_PulseSync);
+      sync_add_pos = 0;
+      sync_add = 1;
     } else {
       // Close to previous downbeat- start record now & grab missed 
       // chunk from previous downbeat til now
@@ -1267,7 +1270,8 @@ RecordProcessor::RecordProcessor(Fweelin *app,
       
       // Notify Pulse to call us every beat
       sync_state = SS_BEAT;
-      app->getEMG()->ListenEvent(this,sync,T_EV_PulseSync);
+      sync_add_pos = 0;
+      sync_add = 1;
     }
   }
   
@@ -1301,10 +1305,12 @@ RecordProcessor::~RecordProcessor()
   app->getBMG()->RefDeleted(this);
   app->getBMG()->RefDeleted(i);
 
-  // Stop listening for pulse sync events
-  if (sync != 0)
-    app->getEMG()->UnlistenEvent(this,sync,T_EV_PulseSync);
-
+  // Redundant check- stop pulse sync callback
+  if (sync != 0 && sync_idx != -1) {
+    printf("CORE: Stray PulseSync Callback!\n");
+    sync->DelPulseSync(sync_idx);
+  }
+  
   if (i != 0)
     delete i;
   if (tmpi != 0)
@@ -1330,7 +1336,8 @@ void RecordProcessor::SyncUp() {
   if (od_loop != 0) {
     sync_state = SS_START;
     sync = od_loop->pulse;
-    app->getEMG()->ListenEvent(this,sync,T_EV_PulseSync);
+    sync_add_pos = 0;
+    sync_add = 1;
   }
 }
 
@@ -1425,77 +1432,24 @@ void RecordProcessor::AbortRecording() {
     app->getBMG()->GrowChainOff(recblk);
 }
 
-void RecordProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
-  switch (ev->GetType()) {
-  case T_EV_PulseSync : 
-    {
-      PulseSyncEvent *pev = (PulseSyncEvent *) ev;
-      if (pev->syncidx == -1) {
-        switch (sync_state) { 
-        case SS_START:
-          if (od_loop != 0) {
-            // Overdub record, fade to start since we are syncing with pulse
-            Jump(od_loop->pulse->GetPos());
-          }
-          else {
-            // Start record now
-            stopped = 0;
-          }
-          
-          sync_state = SS_BEAT;
-          break;
-          
-        case SS_END:
-          nbeats++;
-          endsyncwait = 1;
-          break;
-          
-        case SS_BEAT:
-          if (od_loop != 0) {
-            // Overdub record
-            od_curbeat++;
-            if (od_curbeat >= od_loop->nbeats) {
-              // Quantize loop by restarting
-              Jump(od_loop->pulse->GetPos());
-              od_curbeat = 0;
-            }
-          } else {
-            // Regular grow record
-            nbeats++;
-          }
-          
-          // Call us on further beats
-          sync_state = SS_BEAT;
-          break;
-          
-        case SS_ENDED:
-          break;
-          
-        default:
-          break;
-        }
-      } else if (pev->syncidx == endsyncidx && endsyncwait) {
-        // End record now
-        EndNow();
-        // Remove user-defined sync point
-        sync->DelSyncPos(endsyncidx);
-        // Stop calling us!
-        sync_state = SS_ENDED;
-      }
-    }
-    break;
-
-  default:
-    break;
-  }
-};
-
-#if 0
-int RecordProcessor::ProcessorCall(void *trigger, int data) {
-  if (trigger == sync) {
-    // Called because of downbeat
-    switch (data) {
-    case PC_START:
+void RecordProcessor::PulseSync (int syncidx, nframes_t actualpos) {
+  // printf("RecSync: %d ESIdx: %d Sync_Idx: %d ActualPos: %d\n",syncidx,endsyncidx,sync_idx,actualpos);
+  
+  if (syncidx == endsyncidx && endsyncwait) {
+    // End record msg
+    
+    // printf("PulseSync CB: %d %d\n",syncidx,actualpos);
+    
+    // End record now
+    EndNow();
+    // Remove user-defined sync point
+    sync->DelPulseSync(endsyncidx);
+    // Stop calling use!
+    sync_state = SS_ENDED;
+  } else if (syncidx == sync_idx) {
+    // Regular pulse msg
+    switch (sync_state) {
+    case SS_START:
       if (od_loop != 0) {
         // Overdub record, fade to start since we are syncing with pulse
         Jump(od_loop->pulse->GetPos());
@@ -1504,18 +1458,16 @@ int RecordProcessor::ProcessorCall(void *trigger, int data) {
         // Start record now
         stopped = 0;
       }
-
-      // Notify Pulse to call us every beat
-      return PC_BEAT;
-
-    case PC_END:
-      // End record now
+      
+      sync_state = SS_BEAT;
+      break;
+      
+    case SS_END:
       nbeats++;
-      EndNow();
-      // Stop calling us!
-      return PC_NONE;
-
-    case PC_BEAT:
+      endsyncwait = 1;
+      break;
+      
+    case SS_BEAT:
       if (od_loop != 0) {
         // Overdub record
         od_curbeat++;
@@ -1528,15 +1480,19 @@ int RecordProcessor::ProcessorCall(void *trigger, int data) {
         // Regular grow record
         nbeats++;
       }
-
+      
       // Call us on further beats
-      return PC_BEAT;
+      sync_state = SS_BEAT;
+      break;
+      
+    case SS_ENDED:
+      break;
+      
+    default:
+      break;
     }
   }
-
-  return PC_NONE;
 };
-#endif
 
 void RecordProcessor::End() {
   if (od_loop != 0) {
@@ -1550,7 +1506,8 @@ void RecordProcessor::End() {
         // want to capture an extra 'tail' for crossfading.
         if (sync->GetPos() < REC_TAIL_LEN)
           endsyncwait = 1; // Past the downbeat
-        endsyncidx = sync->AddSyncPos(REC_TAIL_LEN);
+        // printf("CORE: Add EndSync\n");
+        endsyncidx = sync->AddPulseSync(this,REC_TAIL_LEN);
         sync_state = SS_END;
       } else {
         // Close to previous downbeat- end record now & crop extra chunk
@@ -1730,6 +1687,19 @@ void RecordProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
   if (len > fragmentsize)
     len = fragmentsize;
 
+  if (!pre && sync != 0 && sync_add) {
+    // RT thread- add pulse sync callback
+    sync_idx = sync->AddPulseSync(this,sync_add_pos);
+    sync_add = 0;
+    
+    // rintf("CORE: Record AddSync: %d @ idx %d\n",sync_add_pos,sync_idx);
+  }
+
+  if (!pre && sync_state == SS_ENDED && sync_idx != -1) {
+    sync->DelPulseSync(sync_idx);
+    sync_idx = -1;
+  }
+  
   // Some key behavior:
   // stopped means no processing occurs
   // od_fadein means fade in input samples
@@ -1932,6 +1902,7 @@ void RecordProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
 PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
                              nframes_t startofs) :
   Processor(app), sync_state(SS_NONE), 
+  sync_idx(-1), sync_add_pos(0), sync_add(0),
   stopped(0), playloop(playloop), playvol(playvol), curbeat(0) {
   // Stereo?
   stereo = playloop->blocks->IsStereo();
@@ -1947,7 +1918,8 @@ PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
       // Close to next downbeat- so delay play start til then
       stopped = 1; 
       sync_state = SS_START;
-      app->getEMG()->ListenEvent(this,sync,T_EV_PulseSync);
+      sync_add_pos = 0;
+      sync_add = 1;
     } else {
       // Either we are close to a previous downbeat,
       // or we've been set to start at a specific place.
@@ -1962,7 +1934,8 @@ PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
 
       // Notify Pulse to call us every beat
       sync_state = SS_BEAT;
-      app->getEMG()->ListenEvent(this,sync,T_EV_PulseSync);
+      sync_add_pos = 0;
+      sync_add = 1;
     }
   } 
 
@@ -1977,9 +1950,11 @@ PlayProcessor::~PlayProcessor() {
   app->getBMG()->RefDeleted(this);
   app->getBMG()->RefDeleted(i);
 
-  // Stop listening for pulse sync events
-  if (sync != 0)
-    app->getEMG()->UnlistenEvent(this,sync,T_EV_PulseSync);
+  // Redundant check- stop pulse sync callback
+  if (sync != 0 && sync_idx != -1) {
+    printf("CORE: Stray PulseSync Callback!\n");
+    sync->DelPulseSync(sync_idx);
+  }
 
   delete i;
 }
@@ -1988,53 +1963,42 @@ void PlayProcessor::SyncUp() {
   // Sync loop to pulse
   sync_state = SS_START;
   sync = playloop->pulse;
-  app->getEMG()->ListenEvent(this,sync,T_EV_PulseSync);
+  sync_add_pos = 0;
+  sync_add = 1;
 }
 
 nframes_t PlayProcessor::GetPlayedLength() {
   return i->GetTotalLength2Cur();
 }
 
-void PlayProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
-  switch (ev->GetType()) {
-  case T_EV_PulseSync :
-    {
-      PulseSyncEvent *pev = (PulseSyncEvent *) ev;
-      if (pev->syncidx == -1) {
-        switch (sync_state) { 
-        case SS_START:
-          // Start play now
-          dopreprocess(); // Fade to start
-          i->Jump(sync->GetPos());
-          stopped = 0;
-          
-          // Call us every beat
-          sync_state = SS_BEAT;
-          break;
-          
-        case SS_BEAT:
-          curbeat++;
-          if (curbeat >= playloop->nbeats) {
-            // Quantize loop by restarting
-            dopreprocess(); // Fade to loop point
-            i->Jump(sync->GetPos());
-            curbeat = 0;
-          }
-          
-          // Call us on further beats
-          sync_state = SS_BEAT;
-          break;
-          
-        case SS_ENDED:
-          break;
-          
-        default:
-          break;
-        }
-      }
-    }
+void PlayProcessor::PulseSync (int syncidx, nframes_t actualpos) {
+  switch (sync_state) { 
+  case SS_START:
+    // Start play now
+    dopreprocess(); // Fade to start
+    i->Jump(sync->GetPos());
+    stopped = 0;
+    
+    // Call us every beat
+    sync_state = SS_BEAT;
     break;
-        
+    
+  case SS_BEAT:
+    curbeat++;
+    if (curbeat >= playloop->nbeats) {
+      // Quantize loop by restarting
+      dopreprocess(); // Fade to loop point
+      i->Jump(sync->GetPos());
+      curbeat = 0;
+    }
+    
+    // Call us on further beats
+    sync_state = SS_BEAT;
+    break;
+    
+  case SS_ENDED:
+    break;
+    
   default:
     break;
   }
@@ -2044,6 +2008,17 @@ void PlayProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
   nframes_t fragmentsize = app->getBUFSZ();
   if (len > fragmentsize) 
     len = fragmentsize;
+
+  if (!pre && sync != 0 && sync_add) {
+    // RT thread- add pulse sync callback
+    sync_idx = sync->AddPulseSync(this,sync_add_pos);
+    sync_add = 0;
+  }
+  
+  if (!pre && sync_state == SS_ENDED && sync_idx != -1) {
+    sync->DelPulseSync(sync_idx);
+    sync_idx = -1;
+  }
 
   sample_t *out[2] = {ab->outs[0][0], ab->outs[1][0]};
   if (!stopped) {

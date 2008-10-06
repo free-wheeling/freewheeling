@@ -261,8 +261,9 @@ public:
 class ProcessorItem {
 public:
   // Processor is running, or ready to be deleted
-  const static int STATUS_GO = 0,
-    STATUS_PENDING_DELETE = 1;
+  const static int STATUS_GO = 0,   // Running
+    STATUS_LIVE_PENDING_DELETE = 1, // Call RT thread, then delete
+    STATUS_PENDING_DELETE = 2;      // Delete at next non-RT opportunity
 
   // Processor type- 
   // Global: processor will process
@@ -286,6 +287,20 @@ public:
     type;
 };
 
+class PulseSyncCallback {
+public:
+
+  virtual void PulseSync (int syncidx, nframes_t actualpos) = 0;
+};
+
+class PulseSync {
+public:
+  PulseSync (PulseSyncCallback *cb = 0, nframes_t syncpos = 0) : cb(cb), syncpos(syncpos) {};
+  
+  PulseSyncCallback *cb;  // Callback instance
+  nframes_t syncpos;      // Position where to call back
+};
+
 // Pulse defines a heartbeat for a piece
 // It keeps track of a constant period for tempo, as well as
 // the timing of the downbeat (current position in pulse)
@@ -295,8 +310,8 @@ public:
   const static nframes_t METRONOME_HIT_LEN;
   // Initial metronome volume
   const static float METRONOME_INIT_VOL;
-  // Maximum number of sync positions
-  const static int MAX_SYNC_POS = 100;
+  // Maximum number of user-defined pulse sync callbacks
+  const static int MAX_SYNC_POS = 1000;
 
   Pulse(Fweelin *app, nframes_t len, nframes_t startpos);
   ~Pulse();
@@ -321,8 +336,8 @@ public:
 
   // These methods add and remove sync positions.
   // A pulse sends out an RT PulseSync event whenever any of these
-  // positions is reached.
-  inline int AddSyncPos(nframes_t pos) { // Returns sync index of new position
+  // positions is reached. (RT Safe, but can only be called from one thread- RT audio thread)
+  inline int AddPulseSync(PulseSyncCallback *cb, nframes_t pos) { // Returns sync index of new position
     // Check position
     if (pos >= len) {
       printf("PULSE: Sync position adjusted for really short loop "
@@ -332,11 +347,11 @@ public:
 
     // First, search for unfilled positions in our array
     int i = 0;
-    while (i < numsyncpos && syncpos[i] != 0)
+    while (i < numsyncpos && syncpos[i].cb != 0)
       i++;
     if (i < numsyncpos) {
       // Position found, use this index
-      syncpos[i] = pos;
+      syncpos[i] = PulseSync(cb,pos);
       return i;
     } else {
       // No holes found, add to end of array
@@ -345,24 +360,24 @@ public:
         return -1;
       } else {
         int ret = numsyncpos;
-        syncpos[numsyncpos++] = pos;
+        syncpos[numsyncpos++] = PulseSync(cb,pos);
         return ret;
       }
     }
   };
  
-  // Removes sync position at index syncidx
-  inline void DelSyncPos(int syncidx) {
+  // Removes sync position at index syncidx (RT Safe, but can only be called from one thread- RT audio thread)
+  inline void DelPulseSync (int syncidx) {
     if (syncidx < 0 || syncidx >= numsyncpos)
       printf("PULSE: Invalid sync position %d (0->%d).\n",syncidx,numsyncpos);
     else {
       if (syncidx+1 == numsyncpos) {
         // Position exists on the end of array- shrink
-        syncpos[syncidx] = 0;
+        syncpos[syncidx] = PulseSync();
         numsyncpos--;
       } else
         // Position exists in the middle of the array- create a hole
-        syncpos[syncidx] = 0;
+        syncpos[syncidx] = PulseSync();
     }
   };
 
@@ -419,7 +434,7 @@ public:
   char metroactive;   // Nonzero if metronome sound is active
   float metrovol;     // Volume of metronome
 
-  nframes_t syncpos[MAX_SYNC_POS]; // Sync positions
+  PulseSync syncpos[MAX_SYNC_POS]; // Sync positions
   int numsyncpos; // Current number of sync positions
   
   SyncStateType clockrun;  // Status of MIDI clock
@@ -511,7 +526,7 @@ public:
   char limiterfreeze; // Nonzero if limiter is frozen- no changes in amp
 };
 
-class RecordProcessor : public Processor, public EventListener {
+class RecordProcessor : public Processor, public PulseSyncCallback {
 public:
   // Extra tail on record end facilitates smooth crossfade for
   // sync-recorded loops
@@ -558,9 +573,9 @@ public:
   virtual void process(char pre, nframes_t len, AudioBuffers *ab);
 
   // In Halt() method we ensure that no stray Pulse_Syncs will be responded to
-  virtual void Halt() { sync_state = SS_ENDED; };
+  virtual void Halt() { stopped = 1; sync_state = SS_ENDED; };
 
-  virtual void ReceiveEvent(Event *ev, EventProducer *from);
+  virtual void PulseSync (int syncidx, nframes_t actualpos);
 
   // Sync up overdubbing of the loop to a newly created pulse
   void SyncUp();
@@ -637,7 +652,11 @@ public:
 
   int endsyncidx;   // Pulse sync index for delayed end-of-record
   char endsyncwait; // Are we waiting for a delayed end-of-record?
-
+  
+  int sync_idx;           // Index of sync callback added (or -1 if none is being used)
+  nframes_t sync_add_pos; // Position in pulse where to add sync callback
+  char sync_add;    // RT thread should call AddPulseSync to let pulse know we are waiting for a sync callback
+  
   char stopped,
     growchain, // Nonzero if we should grow the chain of blocks--
                // Zero if record is fixed length
@@ -663,7 +682,7 @@ public:
     *od_last_lpbuf[2];       // Copy of last loop buffers
 };
 
-class PlayProcessor : public Processor, public EventListener {
+class PlayProcessor : public Processor, public PulseSyncCallback {
 public:
   PlayProcessor(Fweelin *app, Loop *playloop, float playvol, 
                 nframes_t startofs = 0);
@@ -673,7 +692,9 @@ public:
   void SyncUp();
 
   virtual void process(char pre, nframes_t len, AudioBuffers *ab);
-  
+
+  virtual void PulseSync (int syncidx, nframes_t actualpos);
+
   nframes_t GetPlayedLength();
 
   void SetPlayVol(float newvol) {
@@ -688,14 +709,16 @@ public:
   }
 
   // In Halt() method we ensure that no stray Pulse_Syncs will be responded to
-  virtual void Halt() { sync_state = SS_ENDED; };
-
-  virtual void ReceiveEvent(Event *ev, EventProducer *from);
+  virtual void Halt() { stopped = 1; sync_state = SS_ENDED; };
 
   SyncStateType sync_state; // Are we waiting for a downbeat, running, ended?
 
   // Pulse to syncronize (quantize) play to
   Pulse *sync; 
+
+  int sync_idx;           // Index of sync callback added (or -1 if none is being used)
+  nframes_t sync_add_pos; // Position in pulse where to add sync callback
+  char sync_add;    // RT thread should call AddPulseSync to let pulse know we are waiting for a sync callback
 
   // Playing in stereo?
   char stereo;
