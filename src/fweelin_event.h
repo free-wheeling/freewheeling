@@ -2369,13 +2369,10 @@ class SceneMarkerEvent : public Event {
   char s_filename[FWEELIN_OUTNAME_LEN]; // Filename of scene on disk
 };
 
+// This event is broadcast once on the downbeat of each pulse
 class PulseSyncEvent : public Event {
  public:   
   EVT_DEFINE(PulseSyncEvent,T_EV_PulseSync);
-
-  int syncidx;      // If this sync is used-defined, this is the sync index
-                    // returned from AddSyncPos. If this sync is for the 
-                    // downbeat, this parameter is -1.
 };
 
 // TriggerSet is fired by TriggerMap whenever a change is made to the map
