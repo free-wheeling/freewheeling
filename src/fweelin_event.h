@@ -65,6 +65,7 @@ double mygettime(void);
 #define MAX_MIDI_CONTROLLERS 127
 #define MAX_MIDI_NOTES 127
 #define MAX_MIDI_PORTS 4
+#define MIDI_CC_SUSTAIN 64  // Sustain pedal cc
 
 // Get a new block of events of the given type
 #define EVT_NEW_BLOCK(typ,etyp) ::new typ[Event::GetMemMgrByType(etyp)-> \

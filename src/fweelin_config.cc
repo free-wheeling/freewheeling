@@ -2223,9 +2223,25 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
   for (xmlNode *cur_node = pb->children; cur_node != NULL; 
        cur_node = cur_node->next) {
     if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"patchbank"))) {
+      // Get patchbank-wide bypass settings
+      char pb_bypasscc = 0;
+      float pb_bypasstime1 = 0.0, pb_bypasstime2 = 10.0;
+      xmlChar *n = 0;
+      if ((n = xmlGetProp(cur_node, (const xmlChar *)"bypasscc")) != 0) {
+        pb_bypasscc = atoi((char *) n);
+        xmlFree(n);
+      }
+      if ((n = xmlGetProp(cur_node, (const xmlChar *)"bypasstime1")) != 0) {
+        pb_bypasstime1 = atof((char *) n);
+        xmlFree(n);
+      }
+      if ((n = xmlGetProp(cur_node, (const xmlChar *)"bypasstime2")) != 0) {
+        pb_bypasstime2 = atof((char *) n);
+        xmlFree(n);
+      }
+      
       // Get MIDI port
       int pb_mport = 0;
-      xmlChar *n = 0;
       if ((n = xmlGetProp(cur_node, (const xmlChar *)"midiport")) != 0) {
         pb_mport = atoi((char *) n);
         xmlFree(n);
@@ -2368,6 +2384,22 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
                       xmlFree(n);
                     }
 
+                    // Bypass settings
+                    char bypasscc = pb_bypasscc;
+                    float bypasstime1 = pb_bypasstime1, bypasstime2 = pb_bypasstime2;
+                    if ((n = xmlGetProp(curzone, (const xmlChar *)"bypasscc")) != 0) {
+                      bypasscc = atoi((char *) n);
+                      xmlFree(n);
+                    }
+                    if ((n = xmlGetProp(curzone, (const xmlChar *)"bypasstime1")) != 0) {
+                      bypasstime1 = atof((char *) n);
+                      xmlFree(n);
+                    }
+                    if ((n = xmlGetProp(curzone, (const xmlChar *)"bypasstime2")) != 0) {
+                      bypasstime2 = atof((char *) n);
+                      xmlFree(n);
+                    }
+
                     printf("  ZONE [%d>%d]: midiport[%s]:%d "
                            "bank: %d prog: %d chan: %d\n",
                            kr_lo,kr_hi,
@@ -2376,7 +2408,8 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
 
                     pi->GetZone(curzone_idx)->SetupZone(kr_lo,kr_hi,
                                                         mport_r,mport,
-                                                        bank,prog,chan);
+                                                        bank,prog,chan,
+                                                        bypasscc,bypasstime1,bypasstime2);
                     curzone_idx++;
                   }
                 }
@@ -2403,7 +2436,23 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
                   prog = atoi((char *) n);
                   xmlFree(n);
                 }               
-
+                
+                // Bypass settings
+                char bypasscc = pb_bypasscc;
+                float bypasstime1 = pb_bypasstime1, bypasstime2 = pb_bypasstime2;
+                if ((n = xmlGetProp(pb_curpatch, (const xmlChar *)"bypasscc")) != 0) {
+                  bypasscc = atoi((char *) n);
+                  xmlFree(n);
+                }
+                if ((n = xmlGetProp(pb_curpatch, (const xmlChar *)"bypasstime1")) != 0) {
+                  bypasstime1 = atof((char *) n);
+                  xmlFree(n);
+                }
+                if ((n = xmlGetProp(pb_curpatch, (const xmlChar *)"bypasstime2")) != 0) {
+                  bypasstime2 = atof((char *) n);
+                  xmlFree(n);
+                }
+                
                 xmlChar *pname = 0;
                 if ((pname = xmlGetProp(pb_curpatch, 
                                         (const xmlChar *)"name")) != 0) {
@@ -2421,10 +2470,12 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
                   }
                   
                   br->AddItem(new PatchItem(pcnt++,bank,prog,chan,
-                                            (char *) pname));
+                                            (char *) pname,bypasscc,bypasstime1,bypasstime2));
                   //printf("bank: %d prog: %d patch: '%s'\n",bank,prog,
                   //       (char *) pname);
-
+                  //printf("patch: '%s' bypasscc: %d bypasstime1: %f bypasstime2: %f\n",
+                  //  (char *) pname, bypasscc, bypasstime1, bypasstime2);
+                    
                   if (pcnt % PatchBrowser::DIV_SPACING == 0)
                     br->AddItem(new BrowserDivision());
 
