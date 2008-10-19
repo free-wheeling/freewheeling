@@ -182,7 +182,12 @@ int MidiIO::activate() {
   // Request initial patch from patch browser
   PatchBrowser *br = (PatchBrowser *) app->getBROWSER(B_Patch);
   if (br != 0)
-    br->SetMIDIEcho();
+    br->SetMIDIForPatch();
+    
+  // Prepare auto-bypass
+  bp = new BypassInfo[fs->GetNumMIDIOuts()*MAX_MIDI_CHANNELS];
+
+  inst->checkfreq = inst->app->getAUDIO()->get_srate(); // How often to check auto-bypass conditions for MIDI
 
   return 0;
 }
@@ -197,7 +202,10 @@ void MidiIO::close() {
 
 void MidiIO::MidiInputProc (const MIDIPacketList *pktlist, void *refCon, void *connRefCon) {
   MidiIO *inst = static_cast<MidiIO *>(refCon);
- 
+
+  // Check whether to unbypass used channels
+  inst->CheckUnbypass();
+
   MIDIPacket *packet = (MIDIPacket *) pktlist->packet;
   for (int j = 0; j < pktlist->numPackets; j++) {
     if ((packet->data[0] >= 0x80 && packet->data[0] <= 0x8F) ||
@@ -239,6 +247,9 @@ void MidiIO::MidiInputProc (const MIDIPacketList *pktlist, void *refCon, void *c
     // Advance
     packet = MIDIPacketNext(packet);
   }  
+
+  // Check whether to bypass unused channels
+  inst->CheckBypass();
 }
 
 void MidiIO::OutputController (int port, int chan, int ctrl, int val) {
@@ -326,7 +337,7 @@ void MidiIO::OutputStop (int port) {
 void MidiIO::OutputStartOnPort () {
   // Init output packet
   curPacket = MIDIPacketListInit(packetList);
-};
+};b
 
 void MidiIO::OutputEndOnPort (int port) {
   // Send MIDI packet- all messages for this port
@@ -411,7 +422,10 @@ int MidiIO::activate() {
   // Request initial patch from patch browser
   PatchBrowser *br = (PatchBrowser *) app->getBROWSER(B_Patch);
   if (br != 0)
-    br->SetMIDIEcho();
+    br->SetMIDIForPatch();
+
+  // Prepare auto-bypass
+  bp = new BypassInfo[app->getCFG()->GetNumMIDIOuts()*MAX_MIDI_CHANNELS];
 
   return 0;
 }
@@ -430,7 +444,8 @@ void *MidiIO::run_midi_thread(void *ptr)
   struct pollfd *pfd;
   
   FloConfig *fs = inst->app->getCFG();
-  
+  inst->checkfreq = inst->app->getAUDIO()->get_srate(); // How often to check auto-bypass conditions for MIDI
+    
   printf("MIDIthread start..\n");
   // printf("*** MIDI THREAD: %li\n",pthread_self());
   
@@ -450,9 +465,14 @@ void *MidiIO::run_midi_thread(void *ptr)
     // Every second, come out of poll-- so we don't get locked up
     // if no MIDI events come in
     if (poll(pfd, npfd, 1000) > 0) {
-      // There's an event here! Read!
+      // There's an event here! 
+      
+      // Check whether to unbypass used channels
+      inst->CheckUnbypass();
+
+      // Read event(s)      
       snd_seq_event_t *ev;
-      //      static int cnt = 0;
+      // static int cnt = 0;
       do {
         snd_seq_event_input(inst->seq_handle, &ev);
         switch (ev->type) {
@@ -522,6 +542,9 @@ void *MidiIO::run_midi_thread(void *ptr)
         snd_seq_free_event(ev);
       } while (snd_seq_event_input_pending(inst->seq_handle, 0) > 0);
     }
+    
+    // Every MIDI msg or at max 1 s intervals, check auto-bypass conditions
+    inst->CheckBypass();
   }
   
   inst->unlisten_events();
@@ -634,6 +657,9 @@ void MidiIO::OutputEndOnPort (int port) {};
 MidiIO::MidiIO (Fweelin *app) : bendertune(0), curbender(0), 
                                 echoport(1), echochan(-1), curpatch(0), 
                                 numins(0), numouts(0), app(app), 
+                                
+                                checkfreq(40000), lastchecktime(0), 
+                                
 #ifdef __MACOSX__
                                 client(0), in_ports(0), out_ports(0), out_sources(0), dest(0), 
                                 inputidx(-1), curPacket(0),
@@ -642,7 +668,7 @@ MidiIO::MidiIO (Fweelin *app) : bendertune(0), curbender(0),
                                 seq_handle(0), in_ports(0), out_ports(0),
                                 midithreadgo(0),
 #endif
-                                midisyncxmit(0)
+                                bp(0), midisyncxmit(0)
 {
   note_def_port = new int[MAX_MIDI_NOTES];
   note_patch = new PatchItem *[MAX_MIDI_NOTES];
@@ -792,18 +818,35 @@ MidiIO::~MidiIO() {
     delete[] in_ports;
   if (out_ports != 0)
     delete[] out_ports;
-
+  if (bp != 0)
+    delete[] bp;
+    
 #ifdef __MACOSX__
   if (out_sources != 0)
     delete[] out_sources;
 #endif
 }
 
-void MidiIO::SetMIDIEcho (int def_port, PatchItem *patch) {
+void MidiIO::SetMIDIForPatch (int def_port, PatchItem *patch) {
   if (CRITTERS)
-    printf("MIDI: Set Echo Port: %d Patch: %s\n",def_port,
+    printf("MIDI: Setup MIDI for Patch (Port: %d Patch: %s)\n",def_port,
            (patch != 0 ? patch->name : "(none)"));
 
+  // Move away from another patch?
+  if (curpatch != 0 && patch != curpatch) {
+    if (curpatch->IsCombi()) {
+    } else {
+      // Bypass settings
+      if (curpatch->bypasscc != 0) {
+        BypassInfo *b = getBP(echoport-1,echochan);
+        if (b != 0)
+          b->active = 1;  // Activate auto-bypass as we are leaving this patch
+        else
+          printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",echoport-1,echochan);
+      }
+    }
+  }
+  
   // Save default port
   char outportschanged = 0,
     usefluid = 0; // Enable FluidSynth?
@@ -841,6 +884,18 @@ void MidiIO::SetMIDIEcho (int def_port, PatchItem *patch) {
       // Easy, single channel patch
       curpatch = patch;
       echochan = patch->channel;
+      
+      // Bypass settings
+      if (patch->bypasscc != 0) {
+        BypassInfo *b = getBP(echoport-1,echochan);
+        if (b != 0) {
+          b->active = 0;  // Only bypass when we switch away from another patch
+          b->bypasscc = patch->bypasscc;
+          b->bypasslen1 = (nframes_t) (patch->bypasstime1*app->getAUDIO()->get_srate());
+          b->bypasslen2 = (nframes_t) (patch->bypasstime2*app->getAUDIO()->get_srate());
+        } else
+          printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",echoport-1,echochan);
+      }
     }
   }
 
@@ -934,10 +989,24 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
   case T_EV_Input_MIDIController :
     {
       MIDIControllerInputEvent *mcev = (MIDIControllerInputEvent *) ev;
-      OutputController(ret = (port == -1 ? mcev->outport-1 : port),
-                       (channel == -1 ? mcev->channel : channel),
+      int p = (port == -1 ? mcev->outport-1 : port),
+        c = (channel == -1 ? mcev->channel : channel);
+      ret = p;
+      
+      OutputController(p,c,
                        mcev->ctrl,
                        mcev->val);
+
+      if (mcev->ctrl == MIDI_CC_SUSTAIN) {
+        BypassInfo *b = getBP(p,c);
+        if (b != 0) {
+          // printf ("sustain: %d\n",mcev->val);
+          b->sp = mcev->val;
+          if (b->sp == 0 && b->numheld == 0)
+            b->releasecnt = app->getRP()->GetSampleCnt(); // Register release time of notes as when sustain pedal is released
+        } else
+          printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",p,c);
+      }      
     }
     break;
     
@@ -972,17 +1041,43 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
   case T_EV_Input_MIDIKey :
     {
       MIDIKeyInputEvent *mkev = (MIDIKeyInputEvent *) ev;      
-      OutputNote(ret = (port == -1 ? mkev->outport-1 : port),
-                 (channel == -1 ? mkev->channel : channel),
+      int p = (port == -1 ? mkev->outport-1 : port),
+        c = (channel == -1 ? mkev->channel : channel);
+      ret = p;
+
+      OutputNote(p,c,
                  mkev->down,
                  mkev->notenum + fs->transpose,
                  mkev->vel);
-      if (!mkev->down) // Double up on Note Offs
+
+      BypassInfo *b = getBP(p,c);
+      if (b != 0) {
+        // Keep track of # of keys held down- assume no duplicates or repeated note offs
+        if (mkev->down) {
+          b->notepresscnt = app->getRP()->GetSampleCnt();
+          b->numheld++;
+        } else {
+          b->numheld--;
+          if (b->numheld <= 0) {
+            b->numheld = 0;
+            if (b->sp == 0) // Only register release time if sustain pedal is released
+              b->releasecnt = app->getRP()->GetSampleCnt();
+          }
+        }
+
+        // printf ("held: %d\n",b->numheld);
+      } else
+        printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",p,c);
+
+#if 0
+      // For poorly behaved softsynths, double up on Note Offs
+      if (!mkev->down) 
         OutputNote(ret = (port == -1 ? mkev->outport-1 : port),
                    (channel == -1 ? mkev->channel : channel),
                    mkev->down,
                    mkev->notenum + fs->transpose,
                    mkev->vel);
+#endif
     }
     break;
 
@@ -1119,4 +1214,69 @@ void MidiIO::SendBankProgramChange (PatchItem *patch) {
                                            echoport-1, patch->channel);
     }
   }  
+};
+
+BypassInfo *MidiIO::getBP(int port, int channel) { 
+  // printf("MIDI: getBP: %d/%d\n",port,channel);
+  if (port >= 0 && port < app->getCFG()->GetNumMIDIOuts() &&
+	  channel >= 0 && channel < MAX_MIDI_CHANNELS)
+	  return &bp[port*MAX_MIDI_CHANNELS + channel];
+  else
+    return 0;
+}
+
+void MidiIO::CheckBypass() {
+  // Save scanning through bypass info array by only checking periodically (since bypassing unused channels isn't *that* time critical)
+  nframes_t now = app->getRP()->GetSampleCnt();
+  if (now - lastchecktime > checkfreq) {
+    // printf("CHECK!\n");
+
+    // Run through all ports/channels and test time
+    BypassInfo *b = bp;
+    for (int p = 0; p < app->getCFG()->GetNumMIDIOuts(); p++)
+      for (int c = 0; c < MAX_MIDI_CHANNELS; c++, b++) {
+        if (b->active && b->bypasscc != 0 && !b->bypassed) {
+          // Time since last note press is greater than sustain time?? Then bypass
+          if ((b->bypasslen1 > 0 && now - b->notepresscnt >= b->bypasslen1) || 
+          // Time after last note release is greater than release time?? Then bypass
+              (b->bypasslen2 > 0 && b->sp == 0 && b->numheld == 0 && now - b->releasecnt >= b->bypasslen2)) {
+            // Bypass port/channel
+            /* printf("dnotepress: %d dnoterelease: %d\n",now - b->notepresscnt, now - b->releasecnt);
+            printf("len1: %d len2: %d\n",b->bypasslen1,b->bypasslen2);
+            printf("bypass p/c: %d/%d\n",p,c); */
+            
+            b->bypassed = 1;
+            OutputController(p,c,
+                             b->bypasscc,
+                             127);
+          } 
+        }
+      }      
+      
+    lastchecktime = now;
+  }
+};
+
+void MidiIO::CheckUnbypass() {
+  // Look at current patch, make sure all used channels are unbypassed
+  if (curpatch != 0) {
+    if (curpatch->IsCombi()) {
+    } else {
+      // Bypass settings
+      if (curpatch->bypasscc != 0) {
+        BypassInfo *b = getBP(echoport-1,echochan);
+        if (b != 0) {
+          if (b->bypassed) {
+            // Unbypass 
+            // printf("unbypass p/c: %d/%d\n",echoport-1,echochan);
+            b->bypassed = 0;
+            OutputController(echoport-1,echochan,
+                             b->bypasscc,
+                             0);
+          }
+        } else
+          printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",echoport-1,echochan);
+      }
+    }
+  }
 };

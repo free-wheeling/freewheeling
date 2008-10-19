@@ -33,6 +33,23 @@
 class Fweelin;
 class PatchItem;
 
+class BypassInfo {
+public:
+  BypassInfo () : notepresscnt(0), releasecnt(0), bypasslen1(0), bypasslen2(0), numheld(0), sp(0), active(0), bypassed(0),
+    bypasscc(0) {};
+  
+  nframes_t notepresscnt,  // Sample count when this channel last had a note pressed
+    releasecnt,            // Sample count when all notes were last released on this channel
+    bypasslen1,            // Number of audio samples (time) of channel inactivity with notes sustained before this channel is bypassed
+    bypasslen2;            // Number of audio samples (time) of channel inactivity with notes released before this channel is bypassed
+    
+  int numheld;          // Number of notes held down on this port/channel
+  char sp,              // Sustain pedal is down for this port/channel
+    active,             // Auto-Bypassing is enabled for this port/channel?
+    bypassed,           // Is this channel bypassed?
+    bypasscc;           // MIDI CC to send for bypass
+};
+
 class MidiIO : public EventProducer, public EventListener {
   friend class Fweelin;
   
@@ -49,7 +66,7 @@ public:
   int GetBenderTune() { return bendertune; };
   void ResetBenderTune() { bendertune = 0; };
 
-  // Sets MIDI echo to one or more ports and channels based on:
+  // Sets up MIDI (echo and auto-bypass). Echo is set to one or more ports and channels based on:
   // a default MIDI output port (def_port)
   // and the given patch. 
   //
@@ -63,7 +80,7 @@ public:
   // at the same time. 
   
   // Zones can overlap, so that one key sends to multiple channels/ports
-  void SetMIDIEcho (int def_port, PatchItem *patch);
+  void SetMIDIForPatch (int def_port, PatchItem *patch);
 
   // Send bank and program change messages where appropriate for the given
   // patch
@@ -151,6 +168,11 @@ protected:
   void SendBankProgramChangeToPortChannel (int bank, int program, 
                                            int port, int channel);
  
+  void CheckBypass();   // Time to bypass any channels yet?
+  void CheckUnbypass(); // Unbypass channels still bypassed but needing use
+  nframes_t checkfreq,  // How often (samples) to check whether to bypass unused channels
+    lastchecktime;      // Last time (samples) auto-bypass conditions checked
+  
 #ifdef __MACOSX__
   MIDIClientRef client;
   MIDIPortRef *in_ports, *out_ports;
@@ -177,8 +199,15 @@ protected:
   // For each MIDI note on the scale, what default port and patch was the note
   // played with? This allows us to send note off(s) to the right place(s), 
   // even when the patch is changed while notes are held
+  
+  // Note: this assumes only 1 keyboard
   int *note_def_port; 
   PatchItem **note_patch;
+  
+  // Data for automatic toggling of Soft-synth Bypass based on active MIDI channels
+  // One instance for each MIDI channel and port
+  BypassInfo *bp;
+  BypassInfo *getBP (int port, int channel);
   
   // MIDI Sync
   int midisyncxmit;  // Nonzero if we should transmit MIDI sync messages

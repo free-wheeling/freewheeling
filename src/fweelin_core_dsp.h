@@ -513,7 +513,7 @@ public:
   sample_t *buf[2], *prebuf[2];
  
   // Count samples processed from start of execution
-  nframes_t samplecnt;
+  volatile nframes_t samplecnt;
 
   // Autolimiter
   const static float LIMITER_ATTACK_LENGTH,

@@ -972,7 +972,7 @@ void PatchBrowser::PB_MoveTo (int direction) {
     cur = pb_cur->cur;
 
     pb_cur_tag = pb_cur->tag;
-    SetMIDIEcho();
+    SetMIDIForPatch();
   } else
     pb_cur_tag = -1;
 
@@ -1006,7 +1006,7 @@ void PatchBrowser::PB_MoveToIndex (int index) {
     first = pb_cur->first;
     cur = pb_cur->cur;
 
-    SetMIDIEcho();
+    SetMIDIForPatch();
   }
 
   if (pb_cur != 0)
@@ -1057,16 +1057,16 @@ void PatchBrowser::ReceiveEvent(Event *ev, EventProducer *from) {
 
 // Sets the right MIDI port(s) and channel(s) for echo based on this
 // patches' settings
-void PatchBrowser::SetMIDIEcho() {
+void PatchBrowser::SetMIDIForPatch() {
   /* printf("pb cur: %p port: %d\n",pb_cur,pb_cur->port);
   printf("cur: %p\n",cur);
   printf("app: %p\n",app);
   printf("getmidi: %p\n",app->getMIDI()); */
 
   if (app != 0 && app->getMIDI() != 0)
-    app->getMIDI()->SetMIDIEcho((pb_cur == 0 ? 0 : pb_cur->port),
-                                (cur != 0 && cur->GetType() == B_Patch ?
-                                 (PatchItem *) cur : 0));
+    app->getMIDI()->SetMIDIForPatch((pb_cur == 0 ? 0 : pb_cur->port),
+                                    (cur != 0 && cur->GetType() == B_Patch ?
+                                    (PatchItem *) cur : 0));
 };
 
 void FloDisplaySnapshots::Rename (int idx) {

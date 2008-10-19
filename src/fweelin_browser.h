@@ -375,7 +375,8 @@ class CombiZone {
  public:
   void SetupZone (int kr_lo = 0, int kr_hi = 0,
                   char port_r = 0, int port = 0,
-                  int bank = -1, int prog = -1, int channel = 0) {
+                  int bank = -1, int prog = -1, int channel = 0,
+                  char bypasscc = 0, float bypasstime1 = 0.0, float bypasstime2 = 10.0) {
     this->kr_lo = kr_lo;
     this->kr_hi = kr_hi;
     this->port_r = port_r;
@@ -383,6 +384,10 @@ class CombiZone {
     this->bank = bank;
     this->prog = prog;
     this->channel = channel;
+    
+    this->bypasscc = bypasscc;
+    this->bypasstime1 = bypasstime1;
+    this->bypasstime2 = bypasstime2;
   };
 
   int kr_lo,   // Bottom key for this zone
@@ -395,6 +400,10 @@ class CombiZone {
     bank, // Bank select for zone (-1 for none)
     prog, // Program change for zone (-1 for none)
     channel; // Transmit channel # for zone
+    
+  char bypasscc;      // MIDI CC to send for bypass
+  float bypasstime1,  // Length of time (s) before auto-bypass when notes are sustaining (with or without pedal)
+    bypasstime2;      // Length of time (s) before auto-bypass when notes have been released
 };
 
 // Small class to encapsulate patches
@@ -402,8 +411,9 @@ class PatchItem : public BrowserItem {
 public:
 
   PatchItem (int id = 0, int bank = 0, int prog = 0, int channel = 0,
-             char *name = 0) :
+             char *name = 0, char bypasscc = 0, float bypasstime1 = 0.0, float bypasstime2 = 10.0) :
     BrowserItem(name), id(id), bank(bank), prog(prog), channel(channel),
+    bypasscc(bypasscc), bypasstime1(bypasstime1), bypasstime2(bypasstime2), 
     zones(0), numzones(0) {};
   virtual ~PatchItem() {
     if (zones != 0)
@@ -432,6 +442,10 @@ public:
     bank, // Bank select for patch
     prog, // Program change for patch
     channel; // Channel # for patch
+  
+  char bypasscc;      // MIDI CC to send for bypass
+  float bypasstime1,  // Length of time (s) before auto-bypass when notes are sustaining (with or without pedal)
+    bypasstime2;      // Length of time (s) before auto-bypass when notes have been released
   
   // For a combination patch, we have an array of all zones
   CombiZone *zones;
@@ -510,7 +524,7 @@ class PatchBrowser : public Browser {
     first = pb->first;
 
     pb_cur_tag = pb->tag;
-    SetMIDIEcho();
+    SetMIDIForPatch();
 
     UnlockBrowser();
   };
@@ -535,7 +549,7 @@ class PatchBrowser : public Browser {
     first = pb->first;
 
     pb_cur_tag = pb->tag;
-    SetMIDIEcho();
+    SetMIDIForPatch();
 
     UnlockBrowser();
   };
@@ -548,13 +562,13 @@ class PatchBrowser : public Browser {
 
   inline PatchBank *GetCurPatchBank() const { return pb_cur; };
 
-  // Sets the right MIDI port(s) and channel(s) for echo based on this
+  // Sets the right MIDI port(s) and channel(s) for echo & auto-bypass based on this
   // patches' settings
-  void SetMIDIEcho();
+  void SetMIDIForPatch();
 
  protected:
 
-  virtual void ItemBrowsed() { SetMIDIEcho(); };
+  virtual void ItemBrowsed() { SetMIDIForPatch(); };
 
  private:
 
