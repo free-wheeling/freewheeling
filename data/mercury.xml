@@ -29,7 +29,8 @@
      output3="set-variable" parameters3="var=VAR_laptopkeymode and value=1"
      output4="set-variable" parameters4="var=VAR_notechan and value=1"
      output5="set-variable" parameters5="var=VAR_noterange and value=48>59"
-     output6="patchbrowser-move-to-bank" parameters6="direction=1"/>
+     output6="patchbrowser-move-to-bank" parameters6="direction=1"
+     output7="browser-select-item" parameters7="browserid=DISPLAY_browser_patch"/>
 
     <!-- F toggles action of footpedal
     <binding input="key" conditions="VAR_mercurymode=1 and key=f and keydown=1"
@@ -205,8 +206,8 @@
      id="DISPLAY_browser_patch" type="browser" font="main" 
      browsetype="BROWSE_patch" pos="0.0,0.96" 
      xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="1">
-       <patchbank midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-receptor-1.xml"/>
-       <patchbank midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-receptor-2.xml"/>
+       <patchbank bypasscc="116" midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-receptor-1.xml"/>
+       <patchbank bypasscc="116" midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-receptor-2.xml"/>
     </display>
 
 <!--

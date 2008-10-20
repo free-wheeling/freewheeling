@@ -838,7 +838,7 @@ void MidiIO::SetMIDIForPatch (int def_port, PatchItem *patch) {
     } else {
       // Bypass settings
       if (curpatch->bypasscc != 0) {
-        BypassInfo *b = getBP(echoport-1,echochan);
+        BypassInfo *b = getBP(echoport-1,(curpatch->bypasschannel == -1 ? echochan : curpatch->bypasschannel));
         if (b != 0)
           b->active = 1;  // Activate auto-bypass as we are leaving this patch
         else
@@ -887,7 +887,7 @@ void MidiIO::SetMIDIForPatch (int def_port, PatchItem *patch) {
       
       // Bypass settings
       if (patch->bypasscc != 0) {
-        BypassInfo *b = getBP(echoport-1,echochan);
+        BypassInfo *b = getBP(echoport-1,(curpatch->bypasschannel == -1 ? echochan : curpatch->bypasschannel));
         if (b != 0) {
           b->active = 0;  // Only bypass when we switch away from another patch
           b->bypasscc = patch->bypasscc;
@@ -961,7 +961,7 @@ void MidiIO::ReceiveEvent(Event *ev, EventProducer *from) {
   EchoEvent(ev);
 }
 
-int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
+int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel, int bypasschannel) {
   FloConfig *fs = app->getCFG(); 
 
   // DEBUG
@@ -990,7 +990,8 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
     {
       MIDIControllerInputEvent *mcev = (MIDIControllerInputEvent *) ev;
       int p = (port == -1 ? mcev->outport-1 : port),
-        c = (channel == -1 ? mcev->channel : channel);
+        c = (channel == -1 ? mcev->channel : channel),
+        bc = (bypasschannel == -1 ? c : bypasschannel);
       ret = p;
       
       OutputController(p,c,
@@ -998,7 +999,7 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
                        mcev->val);
 
       if (mcev->ctrl == MIDI_CC_SUSTAIN) {
-        BypassInfo *b = getBP(p,c);
+        BypassInfo *b = getBP(p,bc);
         if (b != 0) {
           // printf ("sustain: %d\n",mcev->val);
           b->sp = mcev->val;
@@ -1042,7 +1043,8 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
     {
       MIDIKeyInputEvent *mkev = (MIDIKeyInputEvent *) ev;      
       int p = (port == -1 ? mkev->outport-1 : port),
-        c = (channel == -1 ? mkev->channel : channel);
+        c = (channel == -1 ? mkev->channel : channel),
+        bc = (bypasschannel == -1 ? c : bypasschannel);
       ret = p;
 
       OutputNote(p,c,
@@ -1050,7 +1052,7 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel) {
                  mkev->notenum + fs->transpose,
                  mkev->vel);
 
-      BypassInfo *b = getBP(p,c);
+      BypassInfo *b = getBP(p,bc);
       if (b != 0) {
         // Keep track of # of keys held down- assume no duplicates or repeated note offs
         if (mkev->down) {
@@ -1098,7 +1100,7 @@ void MidiIO::EchoEvent (Event *ev) {
       numxmitports = app->getCFG()->GetNumMIDISyncOuts();
     for (int i = 0; i < numxmitports; i++) {
       OutputStartOnPort();
-      int port = EchoEventToPortChannel(ev,xmitports[i],-1);
+      int port = EchoEventToPortChannel(ev,xmitports[i],-1,-1);
       OutputEndOnPort(port);
     } 
   } else if (!ev->echo) {
@@ -1108,7 +1110,7 @@ void MidiIO::EchoEvent (Event *ev) {
     // Send to the exact port and channel specified
 
     OutputStartOnPort();
-    int port = EchoEventToPortChannel(ev,-1,-1);
+    int port = EchoEventToPortChannel(ev,-1,-1,-1);
     OutputEndOnPort(port);
   } else {
     // Echo of unused MIDI event- use patch logic
@@ -1158,7 +1160,7 @@ void MidiIO::EchoEvent (Event *ev) {
           }
           
           if (curport > 0 && curport <= numouts)
-            EchoEventToPortChannel(ev,curport-1,z->channel);
+            EchoEventToPortChannel(ev,curport-1,z->channel,z->bypasschannel);
           else if (curport == 0) {
 #if USE_FLUIDSYNTH
             app->getFLUIDP()->ReceiveMIDIEvent(ev);
@@ -1172,7 +1174,7 @@ void MidiIO::EchoEvent (Event *ev) {
         OutputStartOnPort();
         EchoEventToPortChannel(ev,ev_port-1,
                                (echochan != -1 && ev_patch != 0 ? 
-                                ev_patch->channel : echochan));
+                                ev_patch->channel : echochan),ev_patch->bypasschannel);
         OutputEndOnPort(ev_port-1);
       } else if (ev_port == 0) {
 #if USE_FLUIDSYNTH
@@ -1264,13 +1266,15 @@ void MidiIO::CheckUnbypass() {
     } else {
       // Bypass settings
       if (curpatch->bypasscc != 0) {
-        BypassInfo *b = getBP(echoport-1,echochan);
+        int p = echoport-1,
+          bc = (curpatch->bypasschannel == -1 ? echochan : curpatch->bypasschannel);
+        BypassInfo *b = getBP(p,bc);
         if (b != 0) {
           if (b->bypassed) {
             // Unbypass 
             // printf("unbypass p/c: %d/%d\n",echoport-1,echochan);
             b->bypassed = 0;
-            OutputController(echoport-1,echochan,
+            OutputController(p,bc,
                              b->bypasscc,
                              0);
           }

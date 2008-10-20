@@ -32,9 +32,12 @@
     <declare var="VAR_bcf2000_scenebrowse_select_midicontrol" type="int" init="76"/>
 
     <!-- In scene mode, loop buttons trigger scenes instead -->
-    <declare var="VAR_bcf2000_scenemode_midicontrol" type="int" init="72"/>
+    <declare var="VAR_bcf2000_scenemode_midicontrol" type="int" init="73"/>
     <declare var="VAR_scene_mode" type="int" init="0"/>
 
+    <!-- Select new patch MIDI CC -->
+    <declare var="VAR_bcf2000_patchselect_midicontrol" type="int" init="72"/>
+    
     <!-- Which MIDI controller # controls fast scroll switch in browser.
          This switch also doubles for the space key. -->
     <declare var="VAR_bcf2000_midishift_midicontrol" type="int" init="118"/>
@@ -218,6 +221,10 @@
      parameters2="browserid=VAR_cur_browser and
                   idx=controlval/127.*16"/>
 
+    <!-- Select patch/other -->
+    <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_patchselect_midicontrol"
+     output="browser-select-item" parameters="browserid=VAR_cur_browser"/>
+     
     <!-- Fader 5: Master in volume -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+4" 
      output="set-master-in-volume" parameters="fadervol=controlval/127.0"/>
@@ -263,7 +270,7 @@
                  controlval=VAR_switch_on"
      output="erase-all-loops"/>
 
-    <!-- MIDI CC73: Undo last loop record -->
+    <!-- MIDI CC119: Undo last loop record -->
     <binding input="midicontroller" 
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_undo_midicontrol and
                  controlval=VAR_switch_on"
@@ -312,7 +319,7 @@
      output4="patchbrowser-move-to-bank" parameters4="direction=1"/>
 
     <!-- Overdub feedback continuous adjust from MIDI control -->
-    <!-- HELP: MIDI CC72: MIDI shift key (like space) -->
+    <!-- HELP: MIDI CC73: MIDI shift key (like space) -->
     <binding input="midicontroller" 
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_midishift_midicontrol and
                  controlval=VAR_switch_on"

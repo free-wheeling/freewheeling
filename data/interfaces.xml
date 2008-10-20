@@ -21,7 +21,7 @@ for
   <interface setup="coreinterface.xml" switchable="0"/>
 
   <!-- Customization -->
-  <!--  <interface setup="mercury.xml" switchable="0"/> -->
+  <interface setup="mercury.xml" switchable="0"/>
 
   <!-- Bare minimum -->
   <interface setup="browsers.xml" switchable="0"/>
