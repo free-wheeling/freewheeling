@@ -2386,9 +2386,14 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
 
                     // Bypass settings
                     char bypasscc = pb_bypasscc;
+                    int bypasschannel = -1;
                     float bypasstime1 = pb_bypasstime1, bypasstime2 = pb_bypasstime2;
                     if ((n = xmlGetProp(curzone, (const xmlChar *)"bypasscc")) != 0) {
                       bypasscc = atoi((char *) n);
+                      xmlFree(n);
+                    }
+                    if ((n = xmlGetProp(curzone, (const xmlChar *)"bypasschannel")) != 0) {
+                      bypasschannel = atoi((char *) n);
                       xmlFree(n);
                     }
                     if ((n = xmlGetProp(curzone, (const xmlChar *)"bypasstime1")) != 0) {
@@ -2409,7 +2414,7 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
                     pi->GetZone(curzone_idx)->SetupZone(kr_lo,kr_hi,
                                                         mport_r,mport,
                                                         bank,prog,chan,
-                                                        bypasscc,bypasstime1,bypasstime2);
+                                                        bypasscc,bypasschannel,bypasstime1,bypasstime2);
                     curzone_idx++;
                   }
                 }
@@ -2439,9 +2444,14 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
                 
                 // Bypass settings
                 char bypasscc = pb_bypasscc;
+                int bypasschannel = -1;
                 float bypasstime1 = pb_bypasstime1, bypasstime2 = pb_bypasstime2;
                 if ((n = xmlGetProp(pb_curpatch, (const xmlChar *)"bypasscc")) != 0) {
                   bypasscc = atoi((char *) n);
+                  xmlFree(n);
+                }
+                if ((n = xmlGetProp(pb_curpatch, (const xmlChar *)"bypasschannel")) != 0) {
+                  bypasschannel = atoi((char *) n);
                   xmlFree(n);
                 }
                 if ((n = xmlGetProp(pb_curpatch, (const xmlChar *)"bypasstime1")) != 0) {
@@ -2470,7 +2480,7 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
                   }
                   
                   br->AddItem(new PatchItem(pcnt++,bank,prog,chan,
-                                            (char *) pname,bypasscc,bypasstime1,bypasstime2));
+                                            (char *) pname,bypasscc,bypasschannel,bypasstime1,bypasstime2));
                   //printf("bank: %d prog: %d patch: '%s'\n",bank,prog,
                   //       (char *) pname);
                   //printf("patch: '%s' bypasscc: %d bypasstime1: %f bypasstime2: %f\n",

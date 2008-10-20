@@ -35,7 +35,7 @@ class PatchItem;
 
 class BypassInfo {
 public:
-  BypassInfo () : notepresscnt(0), releasecnt(0), bypasslen1(0), bypasslen2(0), numheld(0), sp(0), active(0), bypassed(0),
+  BypassInfo () : notepresscnt(0), releasecnt(0), bypasslen1(0), bypasslen2(0), numheld(0), sp(0), active(0), bypassed(1),
     bypasscc(0) {};
   
   nframes_t notepresscnt,  // Sample count when this channel last had a note pressed
@@ -148,9 +148,9 @@ protected:
   void OutputStartOnPort ();       // First message for this port in this pass
   void OutputEndOnPort (int port); // Last message for this port in this pass
 
-  // Echo MIDI event to a single port and channel
+  // Echo MIDI event to a single port and channel, and update bypass settings for the given channel
   // Return the port echoed to
-  int EchoEventToPortChannel (Event *ev, int port, int channel);
+  int EchoEventToPortChannel (Event *ev, int port, int channel, int bypasschannel);
 
   // Echo MIDI event back to MIDI outs, according to current patch settings
   void EchoEvent (Event *ev);

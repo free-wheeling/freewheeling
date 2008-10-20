@@ -1,3 +1,49 @@
+            v0.6.1 - SVN
+
+            Sunday October 19th, 2008
+            
+            New Features
+            ------------
+
+            * Improved MIDI handling with automatic bypassing of unused channels
+
+              This new feature keeps track of which patches are active and recently used, and which have sustaining notes either with
+              or without pedal. FreeWheeling will automatically send out a configurable MIDI CC on those channels that are inactive,
+              and another CC when those channels become active. As I'm playing, FreeWheeling automatically frees up CPU from
+              unused plugin channels on my plugin hardware rack.
+              
+              You can use this feature with any plugin host that will bypass/unbypass channels via MIDI CC. I use it with a 
+              Muse Research Receptor.
+
+              For example, the following in a patch definition file:
+              
+              <patch bypasstime1="60" bypasstime2="5" channel="0" name="Piano"/>
+              
+              Defines a piano patch sending on channel 0 (1st MIDI channel). After 60 seconds of unreleased sustained notes, 
+              when the channel is inactive, it will be bypassed. 5 seconds after all notes are released with the sustain pedal up,
+              and once the channel is inactive, it will be bypassed. This follows the natural decay of a piano- long sustain, short
+              release. I can play piano notes, hold them, and switch to another channel. When I release those piano notes, the appropriate
+              notes are released and the channel is bypassed soon after. I am already continuing on with whatever new patch I'm playing.
+              
+              <patch bypasschannel="5" channel="10" name="D: Toms"/>
+              <patch bypasschannel="5" channel="11" name="D: Snare"/>
+
+              Here, two drum patches that receive on channel 10 and 11 are defined. They are both bypassed via channel 5. 
+              I use this with multitimbral plugins that receive on several channels but are bypassed as one.
+              
+              To enable auto-bypass, you must define a MIDI CC to use. This can be defined for each patch or combi zone, but is
+              more easily defined for a whole patchbank (from browsers.xml):
+              
+              <patchbank bypasscc="116" midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-receptor-1.xml"/>
+
+              Here MIDI CC #116 is used to auto-bypass channels on the Receptor.
+              You can also set default values for bypasstime1 and bypasstime2 on a per-patchbank basis.
+              
+            Fixes
+            -----
+            
+            * Fixed doubling of MIDI note-off messages
+            
 RELEASE     v0.6
 
             Friday October 3rd, 2008

@@ -986,7 +986,10 @@ class Fweelin : public EventProducer, public BrowserCallback {
   inline void SetSyncType(char stype) { sync_type = stype; };
     
   // Patch browser callbacks
-  virtual void ItemBrowsed(BrowserItem *i) { ItemSelected(i); };
+  virtual void ItemBrowsed(BrowserItem *i) { 
+    // Auto-select (disabled)
+    // ItemSelected(i); 
+  };
   virtual void ItemSelected(BrowserItem *i);
   // Patches can not yet be renamed
   virtual void ItemRenamed(BrowserItem *i) { return; }; 

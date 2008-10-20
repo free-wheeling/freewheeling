@@ -402,6 +402,7 @@ void LoopManager::SetupSceneBrowser() {
 
 void LoopManager::ItemBrowsed(BrowserItem *i) {};
 void LoopManager::ItemSelected(BrowserItem *i) {
+  // Loop manager handles selected browser callback for scenes and loops
   switch (i->GetType()) {
   case B_Loop: 
     printf("DISK: Load '%s'\n",((LoopBrowserItem *) i)->filename);
@@ -3664,13 +3665,17 @@ int Fweelin::setup()
   return 0;
 }
 
-void Fweelin::ItemSelected(BrowserItem *i) { 
+void Fweelin::ItemSelected (BrowserItem *i) { 
+  // Main app handles selected callback for patch browser
   if (i->GetType() != B_Patch) 
     printf("CORE: ERROR- Patch Browser contains items of invalid type!\n");
   else {
     PatchBrowser *br = (PatchBrowser *) getBROWSER(B_Patch);
 
     if (br != 0) {
+      // Update MIDI with newly selected patch
+      br->SetMIDIForPatch();
+
       PatchBank *pb = br->GetCurPatchBank();
       if (pb->port == 0) {
         // We are selecting in a Fluidsynth bank-- send patch change
