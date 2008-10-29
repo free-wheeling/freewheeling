@@ -1,5 +1,12 @@
-            v0.6.1 - SVN
+IN PROGRESS v0.6.1 - SVN
 
+            Tuesday October 28th, 2008
+            
+            New Features
+            ------------
+
+            * Automatic bypassing of unused channels now works with combi patches across many zones
+            
             Sunday October 19th, 2008
             
             New Features
@@ -14,6 +21,9 @@
               
               You can use this feature with any plugin host that will bypass/unbypass channels via MIDI CC. I use it with a 
               Muse Research Receptor.
+
+              ** Patch changes are now registered when you SELECT a patch. Browsing to the patch does not switch patches.
+              Now, you must move to the new patch and press ENTER or a MIDI select button.
 
               For example, the following in a patch definition file:
               

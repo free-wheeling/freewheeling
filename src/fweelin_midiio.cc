@@ -835,14 +835,28 @@ void MidiIO::SetMIDIForPatch (int def_port, PatchItem *patch) {
   // Move away from another patch?
   if (curpatch != 0 && patch != curpatch) {
     if (curpatch->IsCombi()) {
+      // Bypass settings
+      for (int i = 0; i < curpatch->numzones; i++) {
+        CombiZone *z = curpatch->GetZone(i);
+        if (z->bypasscc != 0) {
+          int z_port = (z->port_r ? z->port : echoport),
+            c = (z->bypasschannel == -1 ? z->channel : z->bypasschannel);
+          BypassInfo *b = getBP(z_port-1,c);
+          if (b != 0)
+            b->active = 1;  // Activate auto-bypass as we are leaving this patch
+          else
+            printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",z_port-1,c);
+        }
+      }
     } else {
       // Bypass settings
       if (curpatch->bypasscc != 0) {
-        BypassInfo *b = getBP(echoport-1,(curpatch->bypasschannel == -1 ? echochan : curpatch->bypasschannel));
+        int c = (curpatch->bypasschannel == -1 ? echochan : curpatch->bypasschannel);
+        BypassInfo *b = getBP(echoport-1,c);
         if (b != 0)
           b->active = 1;  // Activate auto-bypass as we are leaving this patch
         else
-          printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",echoport-1,echochan);
+          printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",echoport-1,c);
       }
     }
   }
@@ -879,6 +893,23 @@ void MidiIO::SetMIDIForPatch (int def_port, PatchItem *patch) {
 
         if (CRITTERS)
           printf("MIDI: COMBI PATCH!\n");
+          
+        // Bypass settings
+        for (int i = 0; i < curpatch->numzones; i++) {
+          CombiZone *z = curpatch->GetZone(i);
+          if (z->bypasscc != 0) {
+            int z_port = (z->port_r ? z->port : echoport),
+              c = (z->bypasschannel == -1 ? z->channel : z->bypasschannel);
+            BypassInfo *b = getBP(z_port-1,c);
+            if (b != 0) {
+              b->active = 0;  // Only bypass when we switch away from another patch
+              b->bypasscc = z->bypasscc;
+              b->bypasslen1 = (nframes_t) (z->bypasstime1*app->getAUDIO()->get_srate());
+              b->bypasslen2 = (nframes_t) (z->bypasstime2*app->getAUDIO()->get_srate());
+            } else
+              printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",z_port-1,c);
+          }
+        }
       }
     } else {
       // Easy, single channel patch
@@ -887,14 +918,15 @@ void MidiIO::SetMIDIForPatch (int def_port, PatchItem *patch) {
       
       // Bypass settings
       if (patch->bypasscc != 0) {
-        BypassInfo *b = getBP(echoport-1,(curpatch->bypasschannel == -1 ? echochan : curpatch->bypasschannel));
+        int c = (curpatch->bypasschannel == -1 ? echochan : curpatch->bypasschannel);
+        BypassInfo *b = getBP(echoport-1,c);
         if (b != 0) {
           b->active = 0;  // Only bypass when we switch away from another patch
           b->bypasscc = patch->bypasscc;
           b->bypasslen1 = (nframes_t) (patch->bypasstime1*app->getAUDIO()->get_srate());
           b->bypasslen2 = (nframes_t) (patch->bypasstime2*app->getAUDIO()->get_srate());
         } else
-          printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",echoport-1,echochan);
+          printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",echoport-1,c);
       }
     }
   }
@@ -1263,6 +1295,26 @@ void MidiIO::CheckUnbypass() {
   // Look at current patch, make sure all used channels are unbypassed
   if (curpatch != 0) {
     if (curpatch->IsCombi()) {
+      // Bypass settings
+      for (int i = 0; i < curpatch->numzones; i++) {
+        CombiZone *z = curpatch->GetZone(i);
+        if (z->bypasscc != 0) {
+          int z_port = (z->port_r ? z->port : echoport),
+            c = (z->bypasschannel == -1 ? z->channel : z->bypasschannel);
+          BypassInfo *b = getBP(z_port-1,c);
+          if (b != 0) {
+            if (b->bypassed) {
+              // Unbypass 
+              // printf("unbypass p/c: %d/%d\n",echoport-1,echochan);
+              b->bypassed = 0;
+              OutputController(z_port-1,c,
+                               b->bypasscc,
+                               0);
+            }
+          } else
+            printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",z_port-1,c);
+        }
+      }      
     } else {
       // Bypass settings
       if (curpatch->bypasscc != 0) {
