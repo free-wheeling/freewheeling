@@ -2,7 +2,7 @@
 <!-- These patch will split the keyboard into four zones. Each zone transmits
      to a different MIDI channel, all on the same MIDI port (the default 
      output port for this patchbank, defined when you load this configuration
-     into .fweelin.rc). -->
+     into browsers.xml). -->
 
 <!-- It is also possible to specify the 'midiport' parameter for each zone,
      so each zone routes to a different MIDI output. -->    
