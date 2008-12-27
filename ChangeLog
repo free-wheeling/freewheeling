@@ -1,5 +1,35 @@
 IN PROGRESS v0.6.1 - SVN
 
+            Friday December 25th, 2008
+                        
+            New Features
+            ------------
+
+            * This version uses an experimental new way of triggering loops. The loops always play immediately when triggered,
+              and they start in the right place. 
+              
+              The 'right place' is given by a 'long count', which is the overall pattern
+              of all loops. This method allows switching between scenes mid-phrase 
+              without a loss of positioning, and triggering new scenes before the downbeat to catch pickup notes. 
+              
+              Musically, the long count is the length of the larger musical phrase which is described by all the loops.
+              Mathematically, the long count's length is the LCM (Lowest Common Multiple) of the length of all loops that have been 
+              activated. 
+              
+              (Example) For a scene with loops with length 1, 2, 4, and 8 beats, the long count is 8 beats. 
+              For a scene with loops length 4 and 3 beats, the long count is 12 beats.
+              
+              You don't really have to think about the long count. 
+              But it's helpful to know that the long count is defined so that when it rolls over, 
+              all loops are rolling over to their start points.
+              You can see the long count visually in an outer ring of the pulse display (top right).
+                            
+              The old triggering method is no longer in this version. I would appreciate any feedback you might have on how this
+              new method works for you.
+              
+              Happy Holidays!
+              -Mercury
+              
             Tuesday October 28th, 2008
             
             New Features
