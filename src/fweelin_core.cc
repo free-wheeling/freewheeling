@@ -2091,7 +2091,7 @@ void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs,
     // A loop exists at that index
     
     if (lp->pulse != 0)
-      lp->pulse->ExtendLongCount(lp->nbeats);
+      lp->pulse->ExtendLongCount(lp->nbeats,1);
 
     if (overdub) {
       // Overdub
@@ -2146,10 +2146,19 @@ void LoopManager::Deactivate (int index) {
     float adjustednewloopvol = newloopvol / GetOutputVolume(); 
 
     //printf("newlp from plist: %p\n",plist[index]);
+    long nbeats = ((RecordProcessor *) plist[index])->GetNBeats();
+    if (curpulse != 0) {
+      if (curpulse->GetPct() >= 0.5) {
+        nbeats++; // One more beat, since record will wait til next beat
+        curpulse->ExtendLongCount(nbeats,1);
+      } else
+        // End record after downbeat- don't justify to end of phrase
+        curpulse->ExtendLongCount(nbeats,0);
+    }
+    
     Loop *newlp = new
       Loop(((RecordProcessor *) plist[index])->GetFirstRecordedBlock(),
-           curpulse,1.0,adjustednewloopvol,
-           ((RecordProcessor *) plist[index])->GetNBeats(),
+           curpulse,1.0,adjustednewloopvol,nbeats,
            app->getCFG()->GetLoopOutFormat());
     app->getTMAP()->SetMap(index, newlp);
     UpdateLoopLists_ItemAdded(index);
@@ -2157,7 +2166,7 @@ void LoopManager::Deactivate (int index) {
     lastindex = index;
 
     // Record processor will broadcast when it is ready to end!
-    ((RecordProcessor *) plist[index])->End();
+    ((RecordProcessor *) plist[index])->End();    
   } else if (status[index] == T_LS_Overdubbing) {
     // Overdubbing record processor will end immediately and broadcast 
     // EndRecord event
@@ -2384,8 +2393,9 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
           nframes_t playofs = 0;
           if (status[i] == T_LS_Recording) {
             // Adjust number of beats in loop based on the recording
-            app->getTMAP()->GetMap(i)->nbeats = 
-              ((RecordProcessor *) plist[i])->GetNBeats();
+            // (this is now done immediately based on sync position)
+            /* app->getTMAP()->GetMap(i)->nbeats = 
+              ((RecordProcessor *) plist[i])->GetNBeats(); */
 
             Pulse *recsync = ((RecordProcessor *) plist[i])->GetPulse();
             // Sync recording may have ended late, so start play where we

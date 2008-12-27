@@ -416,7 +416,7 @@ public:
   inline int GetLongCount_Cur() { return lc_cur; };
   inline float GetLongCount_CurPct() { return (float) lc_cur + GetPct(); };
 
-  int ExtendLongCount (long nbeats);
+  int ExtendLongCount (long nbeats, char endjustify);
   void ResetLongCount() { lc_len = 1; };
   
   nframes_t len, // Length of one revolution of this pulse in samples

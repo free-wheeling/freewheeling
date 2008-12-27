@@ -421,18 +421,21 @@ int math_lcm (int a, int b) {
   return a*b/math_gcd(a,b);
 };
 
-int Pulse::ExtendLongCount (long nbeats) {
-  int lc_new_len = math_lcm(lc_len,(int) nbeats);
+int Pulse::ExtendLongCount (long nbeats, char endjustify) {
+  if (nbeats > 0) {
+    int lc_new_len = math_lcm(lc_len,(int) nbeats);
 
-  // Justify position relative to end of phrase (when expanding)
-  if (lc_new_len > lc_len) {
-    int lc_end_delta = lc_len - lc_cur;
-    // printf("CUR %d LEN %d\n",lc_cur,lc_len);
-    lc_cur = lc_new_len - lc_end_delta; // Distance from end of phrase is preserved
-    // printf("EDELTA %d NEWCUR %d NEWLEN %d\n",lc_end_delta,lc_cur,lc_new_len);
+    // Justify position relative to end of phrase (when expanding)
+    if (endjustify && lc_new_len > lc_len) {
+      int lc_end_delta = lc_len - lc_cur;
+      // printf("CUR %d LEN %d\n",lc_cur,lc_len);
+      lc_cur = lc_new_len - lc_end_delta; // Distance from end of phrase is preserved
+      // printf("EDELTA %d NEWCUR %d NEWLEN %d\n",lc_end_delta,lc_cur,lc_new_len);
+    }
+    
+    lc_len = lc_new_len;
   }
   
-  lc_len = lc_new_len;
   return lc_len;
 };
 
