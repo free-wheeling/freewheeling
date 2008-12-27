@@ -9,8 +9,8 @@ IN PROGRESS v0.6.1 - SVN
               and they start in the right place. 
               
               The 'right place' is given by a 'long count', which is the overall pattern
-              of all loops. This method allows switching between scenes mid-phrase 
-              without a loss of positioning, and triggering new scenes before the downbeat to catch pickup notes. 
+              of all loops. This method allows switching between snapshots mid-phrase 
+              without a loss of positioning, and triggering new snapshots before the downbeat to catch pickup notes. 
               
               Musically, the long count is the length of the larger musical phrase which is described by all the loops.
               Mathematically, the long count's length is the LCM (Lowest Common Multiple) of the length of all loops that have been 
