@@ -2138,7 +2138,7 @@ void VideoIO::video_event_loop ()
     patchy = OCY(460),
 
     pulsex = OCX(600),
-    pulsey = OCY(20),
+    pulsey = OCY(30),
     pulsespc = OCY(40),
     pulsepiemag = OCX(10),
 
@@ -2493,14 +2493,26 @@ void VideoIO::video_event_loop ()
     for (int i = 0; i < MAX_PULSES; i++) {
       Pulse *a = loopmgr->GetPulseByIndex(i);
       if (a != 0) {
-        if (loopmgr->GetCurPulseIndex() == i) 
+        float pulsescale = 1.0;
+        if (loopmgr->GetCurPulseIndex() == i)
           // Selected pulse twice as big!
-          FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag * 2,0,
-                     (int) (360*a->GetPct()),127,127,127,255);
-        else
-          FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag,0,
-                     (int) (360*a->GetPct()),127,127,127,255);
-
+          pulsescale *= 2;
+          
+        const static float LC_MAG = 1.3;
+        float lc_theta_break = 7;
+        float thetacur = 0,
+          thetalen = (float) 360.0/a->GetLongCount_Len();
+        
+        while (thetalen < lc_theta_break)
+          lc_theta_break /= 1.5;
+          
+        for (int j = 0; j < a->GetLongCount_Cur(); j++, thetacur += thetalen)
+          FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag * pulsescale * LC_MAG,thetacur,
+                     round(thetacur+thetalen-lc_theta_break),
+                     255,188,0,180);
+        FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag * pulsescale,0,359,0,0,0,255);
+        FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag * pulsescale,0,
+                   (int) (360*a->GetPct()),127,127,127,255);
         sprintf(tmp,"%d",i+1);
         draw_text(screen,mainfont,tmp,pulsex-pulsepiemag,curpulsey-
                   pulsepiemag,red);

@@ -1,7 +1,6 @@
 /* 
    Music holds us together
    "it becomes a movement"
-   "every cell is forward, achieving"
 */
 
 /* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
@@ -372,7 +371,7 @@ void Processor::fadepreandcurrent(AudioBuffers *ab) {
 }
 
 Pulse::Pulse(Fweelin *app, nframes_t len, nframes_t startpos) : 
-  Processor(app), len(len), curpos(startpos),
+  Processor(app), len(len), curpos(startpos), lc_len(1), lc_cur(0), 
   wrapped(0), stopped(0), prev_sync_bb(0), sync_cnt(0), prev_sync_speed(-1),
   prev_sync_type(0), prevbpm(0.0), prevtap(0), metroofs(metrolen), 
   metrolen(METRONOME_HIT_LEN), metroactive(0), metrovol(METRONOME_INIT_VOL),
@@ -412,6 +411,29 @@ void Pulse::SetMIDIClock (char start) {
       app->getEMG()->BroadcastEventNow(ssevt, this);         
     }
   }
+};
+
+int math_gcd (int a, int b) { 
+  return (b == 0 ? a : math_gcd(b, a % b)); 
+};
+
+int math_lcm (int a, int b) {
+  return a*b/math_gcd(a,b);
+};
+
+int Pulse::ExtendLongCount (long nbeats) {
+  int lc_new_len = math_lcm(lc_len,(int) nbeats);
+
+  // Justify position relative to end of phrase (when expanding)
+  if (lc_new_len > lc_len) {
+    int lc_end_delta = lc_len - lc_cur;
+    // printf("CUR %d LEN %d\n",lc_cur,lc_len);
+    lc_cur = lc_new_len - lc_end_delta; // Distance from end of phrase is preserved
+    // printf("EDELTA %d NEWCUR %d NEWLEN %d\n",lc_end_delta,lc_cur,lc_new_len);
+  }
+  
+  lc_len = lc_new_len;
+  return lc_len;
 };
 
 // Please note that all sync is done with a granularity of the audio period 
@@ -531,7 +553,12 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
       // Downbeat!!
       wrapped = 1;
       curpos = 0;
-
+      
+      // Long count
+      lc_cur++;
+      if (lc_cur >= lc_len)
+        lc_cur = 0;
+        
       // Send out a pulse sync event
       PulseSyncEvent *pevt = (PulseSyncEvent *) 
         Event::GetEventByType(T_EV_PulseSync);
@@ -1443,6 +1470,7 @@ void RecordProcessor::PulseSync (int syncidx, nframes_t actualpos) {
     // End record now
     EndNow();
     // Remove user-defined sync point
+    endsyncwait = 0;
     sync->DelPulseSync(endsyncidx);
     // Stop calling use!
     sync_state = SS_ENDED;
@@ -1695,9 +1723,18 @@ void RecordProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
     // rintf("CORE: Record AddSync: %d @ idx %d\n",sync_add_pos,sync_idx);
   }
 
+  // If we have sync points defined with a pulse,
+  // and if sync_state is SS_ENDED, this is the last run through process()
+  // so remove the pulse sync(s)
+  
   if (!pre && sync_state == SS_ENDED && sync_idx != -1) {
     sync->DelPulseSync(sync_idx);
     sync_idx = -1;
+  }
+
+  if (!pre && sync_state == SS_ENDED && endsyncwait) {
+    endsyncwait = 0;
+    sync->DelPulseSync(endsyncidx);
   }
   
   // Some key behavior:
@@ -1913,7 +1950,22 @@ PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
   // Check for quantize to pulse
   sync = playloop->pulse;
   if (sync != 0) {
-    // OK, we are synced to an pulse, so notify on every beat of that pulse
+    // Compute start position based on long count of pulse
+    int startcnt = sync->GetLongCount_Cur() % playloop->nbeats;
+    nframes_t startofs_lc = startcnt * sync->GetLength() + sync->GetPos();
+    
+    // Start using long count
+    curbeat = startcnt;
+    i->Jump(startofs_lc);
+
+    // Notify Pulse to call us every beat
+    sync_state = SS_BEAT;
+    sync_add_pos = 0;
+    sync_add = 1;
+  }
+  
+#if 0
+    // OK, we are synced to a pulse, so notify on every beat of that pulse
     if (startofs == 0 && sync->GetPct() >= 0.5) {
       // Close to next downbeat- so delay play start til then
       stopped = 1; 
@@ -1943,6 +1995,8 @@ PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
     // Start at specified position
     i->Jump(startofs);
   }
+#endif
+
 };
 
 PlayProcessor::~PlayProcessor() {

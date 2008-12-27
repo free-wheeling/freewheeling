@@ -2052,7 +2052,7 @@ void LoopManager::UpdateLoopLists_ItemMoved (int l_idx_old, int l_idx_new) {
 
 // Trigger the loop at index within the map
 // The exact behavior varies depending on what is already happening with
-// this loop and the settings passed- see .fweelin.rc
+// this loop and the settings passed- see configuration documentation
 // *** Not RT Safe
 void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs, 
                             char overdub, float *od_feedback) {
@@ -2089,6 +2089,10 @@ void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs,
     lastrecidx[0] = index;
   } else {
     // A loop exists at that index
+    
+    if (lp->pulse != 0)
+      lp->pulse->ExtendLongCount(lp->nbeats);
+
     if (overdub) {
       // Overdub
       float *inputvol = &(app->getRP()->inputvol); // Get input vol from main
@@ -2104,6 +2108,18 @@ void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs,
                              new PlayProcessor(app,lp,vol,ofs));
       status[index] = T_LS_Playing;
     }
+          
+    // **DEBUG** Show long count based on all playing loops
+    /*
+    int lcm = 1;
+    printf("***\n");
+    for (int i = 0; i < app->getTMAP()->GetMapSize(); i++) {
+      if (status[i] == T_LS_Playing) {
+        Loop *l = app->getTMAP()->GetMap(i);
+        lcm = math_lcm(lcm,(int) l->nbeats);
+        printf("Loop[%d] len: %d lcm: %d\n",i,(int) l->nbeats,lcm);
+      }
+    }*/
   }
 }
 

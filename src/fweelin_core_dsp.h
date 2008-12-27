@@ -412,8 +412,19 @@ public:
   // Returns length of pulse in frames
   inline nframes_t GetLength() { return len; };
 
+  inline int GetLongCount_Len() { return lc_len; };  
+  inline int GetLongCount_Cur() { return lc_cur; };
+  inline float GetLongCount_CurPct() { return (float) lc_cur + GetPct(); };
+
+  int ExtendLongCount (long nbeats);
+  void ResetLongCount() { lc_len = 1; };
+  
   nframes_t len, // Length of one revolution of this pulse in samples
-    curpos; // Current position in samples into this pulse
+    curpos;      // Current position in samples into this pulse
+  
+  int lc_len,    // Length of long count
+    lc_cur;      // Current position in long count
+    
   char wrapped,  // Wrapped?
     stopped;     // Stopped?
 
