@@ -1,0 +1,16 @@
+set prompt
+echo \n\n*** Stacktrace\n
+where
+echo \n\n*** Symbols\n
+frame 4
+set $x = 50
+while ($x)
+info locals
+up
+set $x--
+end
+echo \n*** Backtrace All Threads\n\n
+thread apply all bt
+echo \n---
+detach
+quit

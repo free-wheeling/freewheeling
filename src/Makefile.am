@@ -20,7 +20,7 @@
 
 bin_PROGRAMS = fweelin
 
-fweelin_SOURCES = elastin/elastin.cc fweelin.cc fweelin_datatypes.cc fweelin_event.cc fweelin_config.cc fweelin_browser.cc fweelin_audioio.cc fweelin_sdlio.cc fweelin_midiio.cc fweelin_videoio.cc fweelin_core.cc fweelin_mem.cc fweelin_block.cc fweelin_core_dsp.cc fweelin_fluidsynth.cc 
+fweelin_SOURCES = stacktrace.c elastin/elastin.cc fweelin.cc fweelin_datatypes.cc fweelin_event.cc fweelin_config.cc fweelin_browser.cc fweelin_audioio.cc fweelin_sdlio.cc fweelin_midiio.cc fweelin_videoio.cc fweelin_core.cc fweelin_mem.cc fweelin_block.cc fweelin_core_dsp.cc fweelin_fluidsynth.cc 
 
 fweelindir = $(datadir)/fweelin
 
