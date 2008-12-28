@@ -28,6 +28,7 @@
    You should have received a copy of the GNU General Public License
    along with Freewheeling.  If not, see <http://www.gnu.org/licenses/>. */
 
+#include <signal.h>
 #include <sys/time.h>
 
 #include <stdio.h>
@@ -42,6 +43,8 @@
 #include <sched.h>
 #include <sys/mman.h>
 
+#include "stacktrace.h"
+
 #include "fweelin_midiio.h"
 #include "fweelin_videoio.h"
 #include "fweelin_sdlio.h"
@@ -50,8 +53,84 @@
 #include "fweelin_core.h"
 #include "fweelin_core_dsp.h"
 
+pid_t main_pid;
+
+void signal_handler (int iSignal) {
+  switch (iSignal) {
+    case SIGINT:
+      return;
+    #if defined(WIN32)
+    #else
+    case SIGSEGV:
+      printf(">>> FATAL ERROR: Segmentation fault (SIGSEGV) occured! <<<\n");
+      break;
+    case SIGBUS:
+      printf(">>> FATAL ERROR: Access to undefined portion of a memory object (SIGBUS) occured! <<<\n");
+      break;
+    case SIGILL:
+      printf(">>> FATAL ERROR: Illegal instruction (SIGILL) occured! <<<\n");
+      break;
+    case SIGFPE:
+      printf(">>> FATAL ERROR: Erroneous arithmetic operation (SIGFPE) occured! <<<\n");
+      break;
+    case SIGUSR1:
+      printf(">>> User defined signal 1 (SIGUSR1) received <<<\n");
+      break;
+    case SIGUSR2:
+      printf(">>> User defined signal 2 (SIGUSR2) received <<<\n");
+      break;
+    #endif
+    default: { // this should never happen, as we register for the signals we want
+      printf(">>> FATAL ERROR: Unknown signal received! <<<\n");
+      break;
+    }
+  }
+  signal(iSignal, SIG_DFL); // Reinstall default handler to prevent race conditions
+  printf("Saving stack trace to file 'fweelin-stackdump'...\n");
+  
+  char buf[256];
+  snprintf(buf,255,"%s%s",FWEELIN_DATADIR,"/gdb-stackdump-cmds");
+  StackTrace(buf);
+  
+  sleep(2);
+  printf("Exit Freewheeling...\n");
+  // Use abort() if we want to generate a core dump.
+  kill(main_pid, SIGKILL);
+}
+
 #if 1
 int main (int argc, char *argv[]) {
+#if !defined(WIN32)
+  main_pid = getpid();
+#endif
+
+  // Initialize the stack trace mechanism 
+  StackTraceInit(argv[0], -1);
+
+  signal(SIGINT, signal_handler);
+
+#if defined(WIN32)
+#else
+  // Register signal handlers
+  struct sigaction sact;
+  sigemptyset(&sact.sa_mask);
+  sact.sa_flags   = 0;
+  sact.sa_handler = signal_handler;
+  sigaction(SIGSEGV, &sact, NULL);
+  sigaction(SIGBUS,  &sact, NULL);
+  sigaction(SIGILL,  &sact, NULL);
+  sigaction(SIGFPE,  &sact, NULL);
+  sigaction(SIGUSR1, &sact, NULL);
+  sigaction(SIGUSR2, &sact, NULL);
+#endif
+
+#if 0
+  // CRESH TEST DUMMY
+  
+  char *test = 0;
+  *test = 'H';
+#endif
+
   Fweelin flo;
   
   printf("FreeWheeling %s\n",VERSION);
