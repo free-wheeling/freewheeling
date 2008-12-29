@@ -1,5 +1,22 @@
 IN PROGRESS v0.6.1 - SVN
 
+            Sunday December 28th, 2008
+
+            New Features
+            ------------
+
+            * Freewheeling now generates a report if it crashes. 
+              The type of crash is printed on the terminal. The report is saved to file 'fweelin-stackdump'.
+              
+              If you encounter a crash, please send me this file along with a description of what you were doing
+              when the crash occurred. Thanks!
+
+            Fixes
+            -----
+            
+            * Fixed an overdub crash with the new triggering method
+            * Fixed a positioning bug when recording loops with the new triggering method
+
             Friday December 25th, 2008
                         
             New Features

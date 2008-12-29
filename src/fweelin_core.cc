@@ -2151,9 +2151,13 @@ void LoopManager::Deactivate (int index) {
       if (curpulse->GetPct() >= 0.5) {
         nbeats++; // One more beat, since record will wait til next beat
         curpulse->ExtendLongCount(nbeats,1);
-      } else
+      } else {
+        if (nbeats == 0)
+          nbeats++; // Never set to zero beats, even if the loop is shorter than 1 pulse
+          
         // End record after downbeat- don't justify to end of phrase
         curpulse->ExtendLongCount(nbeats,0);
+      }
     }
     
     Loop *newlp = new

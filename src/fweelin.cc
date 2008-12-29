@@ -92,7 +92,7 @@ void signal_handler (int iSignal) {
   snprintf(buf,255,"%s%s",FWEELIN_DATADIR,"/gdb-stackdump-cmds");
   StackTrace(buf);
   
-  sleep(2);
+  sleep(10);
   printf("Exit Freewheeling...\n");
   // Use abort() if we want to generate a core dump.
   kill(main_pid, SIGKILL);

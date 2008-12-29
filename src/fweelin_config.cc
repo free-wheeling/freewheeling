@@ -4,7 +4,7 @@
 //
 // Why all this pressure 
 // to change the world??
-//
+//m
 // Accept the world as it is.
 // That is peace.
 // That is healing.
@@ -1793,9 +1793,12 @@ void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
                                  (const xmlChar *)"maxplayvol")) != 0) {
         maxplayvol = atof((char *) n);
         if (maxplayvol < 0.0)
-          maxplayvol = 1.0;
-        printf("CONFIG: Maximum play volume set to %.2f%%.\n",
-               maxplayvol*100);
+          maxplayvol = 0.0;
+        if (maxplayvol != 0.0)
+          printf("CONFIG: Maximum play volume set to %.2f%%.\n",
+                 maxplayvol*100);
+        else 
+          printf("CONFIG: No maximum play volume set! Watch your levels!\n");
       } else if ((n = xmlGetProp(cur_node, 
                                  (const xmlChar *)"maxlimitergain")) != 0) {
         maxlimitergain = atof((char *) n);
@@ -3214,7 +3217,7 @@ FloConfig::FloConfig(Fweelin *app) : im(app),
 
   ms_inputs(0), extaudioins(0), 
 
-  maxplayvol(5.0), maxlimitergain(1.0), limiterthreshhold(0.9), 
+  maxplayvol(0.0), maxlimitergain(1.0), limiterthreshhold(0.9), 
   limiterreleaserate(0.000020),
 
   loopoutformat(VORBIS), streamoutformat(VORBIS),

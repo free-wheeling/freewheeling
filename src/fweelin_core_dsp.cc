@@ -1811,7 +1811,7 @@ void RecordProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
       float vol = od_loop->vol * od_playvol;
       // Protect our ears!
       float maxvol = app->getCFG()->GetMaxPlayVol();
-      if (vol > maxvol)
+      if (maxvol > 0.0 && vol > maxvol)
         vol = maxvol;
       if (vol < 0)
         vol = 0;
@@ -1954,6 +1954,11 @@ PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
   sync = playloop->pulse;
   if (sync != 0) {
     // Compute start position based on long count of pulse
+    if (playloop->nbeats == 0) {
+      printf("CORE: Zero beats in loop- adjusting\n");
+      playloop->nbeats++;
+    }
+    
     int startcnt = sync->GetLongCount_Cur() % playloop->nbeats;
     nframes_t startofs_lc = startcnt * sync->GetLength() + sync->GetPos();
     
@@ -2093,7 +2098,7 @@ void PlayProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
     float vol = playloop->vol * playvol;
     // Protect our ears!
     float maxvol = app->getCFG()->GetMaxPlayVol();
-    if (vol > maxvol)
+    if (maxvol > 0.0 && vol > maxvol)
       vol = maxvol;
     if (vol < 0)
       vol = 0;
