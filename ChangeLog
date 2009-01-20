@@ -5,11 +5,12 @@ IN PROGRESS v0.6.1 - SVN
             New Features
             ------------
 
-            * Freewheeling now generates a report if it crashes. 
+            * As part of ongoing work to make Freewheeling more reliable,
+              crash reports are now automatically generated if GDB is installed. 
               The type of crash is printed on the terminal. The report is saved to file 'fweelin-stackdump'.
               
               If you encounter a crash, please send me this file along with a description of what you were doing
-              when the crash occurred. Thanks!
+              when the crash occurred. Thank you.
 
             Fixes
             -----
