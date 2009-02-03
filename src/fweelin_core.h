@@ -955,6 +955,22 @@ class Fweelin : public EventProducer, public BrowserCallback {
     return s;
   };
 
+  // Swaps snapshots with given indices
+  int SwapSnapshots (int i1, int i2) { 
+    Snapshot *s1 = getSNAP(i1),
+      *s2 = getSNAP(i2);
+
+    if (s1 != 0 && s2 != 0 && s1 != s2) {
+      char tmp[sizeof(Snapshot)];
+      tmap->TouchMap();
+      memcpy(tmp,s1,sizeof(Snapshot));
+      memcpy(s1,s2,sizeof(Snapshot));
+      memcpy(s2,tmp,sizeof(Snapshot));
+      return 0;
+    } else
+      return -1;
+  };
+
   // Load snapshot from disk- just create space & name
   Snapshot *LoadSnapshot (int idx, char *name) {
     Snapshot *s = getSNAP(idx);

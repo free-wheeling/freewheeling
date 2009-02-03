@@ -90,7 +90,7 @@ class VideoIO : public EventProducer, public EventListener {
 
 public:
   VideoIO (Fweelin *app) : app(app), screen(0), cmaps(0), 
-    showlooprange(0,0), showhelppage(0), videothreadgo(0) {};
+    showlooprange(0,0), showhelppage(0), cur_iid(0), videothreadgo(0) {};
 
   int activate ();
   void close ();
@@ -173,6 +173,8 @@ public:
   int showhelppage, // Which help page to show (0=off)
     numhelppages;   // Number of help pages that are defined
 
+  int cur_iid;      // ID of currently visible (switchable) interface
+  
   // Length of time taken (s) for one iteration of video loop
   double video_time;
 

@@ -176,6 +176,7 @@ enum EventType {
   T_EV_CreateSnapshot,
   T_EV_RenameSnapshot,
   T_EV_TriggerSnapshot,
+  T_EV_SwapSnapshots,
 
   T_EV_SetTriggerVolume,
   T_EV_SlideLoopAmp,
@@ -2185,6 +2186,34 @@ public:
   };    
   
   int snapid; // Create and store snapshot #snapid
+};
+
+class SwapSnapshotsEvent : public Event {
+public:
+  EVT_DEFINE(SwapSnapshotsEvent,T_EV_SwapSnapshots);
+  virtual void Recycle() {
+    snapid1 = 0;
+    snapid2 = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    SwapSnapshotsEvent &s = (SwapSnapshotsEvent &) src;
+    snapid1 = s.snapid1;
+    snapid2 = s.snapid2;
+  };
+  virtual int GetNumParams() { return 2; };
+  virtual EventParameter GetParam(int n) { 
+    switch (n) {
+      case 0:
+        return EventParameter("snapid1",FWEELIN_GETOFS(snapid1),T_int);
+      case 1:
+        return EventParameter("snapid2",FWEELIN_GETOFS(snapid2),T_int);
+    }
+    
+    return EventParameter();
+  };    
+  
+  int snapid1, snapid2; // Swap these two snapshots 
 };
 
 class RenameSnapshotEvent : public Event {
