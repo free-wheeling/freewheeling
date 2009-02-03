@@ -4,7 +4,7 @@
 //
 // Why all this pressure 
 // to change the world??
-//m
+//
 // Accept the world as it is.
 // That is peace.
 // That is healing.

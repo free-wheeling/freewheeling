@@ -1371,7 +1371,8 @@ void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
       
       // Show/hide layouts
       int iid = vev->interfaceid;
-
+      cur_iid = iid;
+      
       {
         FloLayout *cur = app->getCFG()->GetLayouts();
         while (cur != 0) {
@@ -2507,11 +2508,11 @@ void VideoIO::video_event_loop ()
           lc_theta_break /= 1.5;
           
         for (int j = 0; j < a->GetLongCount_Cur(); j++, thetacur += thetalen)
-          FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag * pulsescale * LC_MAG,thetacur,
+          FILLED_PIE(screen,pulsex,curpulsey,(int) (pulsepiemag * pulsescale * LC_MAG),round(thetacur),
                      round(thetacur+thetalen-lc_theta_break),
                      255,188,0,180);
-        FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag * pulsescale,0,359,0,0,0,255);
-        FILLED_PIE(screen,pulsex,curpulsey,pulsepiemag * pulsescale,0,
+        FILLED_PIE(screen,pulsex,curpulsey,(int) (pulsepiemag * pulsescale),0,359,0,0,0,255);
+        FILLED_PIE(screen,pulsex,curpulsey,(int) (pulsepiemag * pulsescale),0,
                    (int) (360*a->GetPct()),127,127,127,255);
         sprintf(tmp,"%d",i+1);
         draw_text(screen,mainfont,tmp,pulsex-pulsepiemag,curpulsey-

@@ -271,6 +271,8 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
                      RenameSnapshotEvent);
       SET_ETYPE_SLOW(T_EV_TriggerSnapshot,"trigger-snapshot",
                      TriggerSnapshotEvent);
+      SET_ETYPE_SLOW(T_EV_SwapSnapshots,"swap-snapshots",
+                     SwapSnapshotsEvent);
       
       SET_ETYPE_SLOW(T_EV_BrowserMoveToItem,"browser-move-to-item",
                      BrowserMoveToItemEvent);

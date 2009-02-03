@@ -688,6 +688,12 @@ Event "rename-snapshot"
 Event "trigger-snapshot"
   "snapid": ID # of snapshot to trigger
 
+Event "swap-snapshots"
+  Swap two snapshots.
+  
+  "snapid1": ID # of first snapshot 
+  "snapid2": ID # of second snapshot 
+
 Event "switch-metronome"
   Switches an audible metronome on or off for the given pulse. The metronome
   sounds on the downbeat of the pulse.
@@ -1119,6 +1125,11 @@ SYSTEM_num_midi_outs
 
 SYSTEM_snapshot_page_firstidx
   index of the first snapshot on the currently visible page of snapshots
+
+SYSTEM_num_switchable_interfaces
+  number of switchable interfaces defined
+SYSTEM_cur_switchable_interface
+  index of switchable interface currently selected
 
 Browser types:
 

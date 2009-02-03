@@ -569,6 +569,7 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_CreateSnapshot);
   app->getEMG()->ListenEvent(this,0,T_EV_RenameSnapshot);
   app->getEMG()->ListenEvent(this,0,T_EV_TriggerSnapshot);
+  app->getEMG()->ListenEvent(this,0,T_EV_SwapSnapshots);
   app->getEMG()->ListenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->ListenEvent(this,0,T_EV_SaveLoop);
   app->getEMG()->ListenEvent(this,0,T_EV_SaveNewScene);
@@ -626,6 +627,7 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_CreateSnapshot);
   app->getEMG()->UnlistenEvent(this,0,T_EV_RenameSnapshot);
   app->getEMG()->UnlistenEvent(this,0,T_EV_TriggerSnapshot);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_SwapSnapshots);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetAutoLoopSaving);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SaveLoop);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SaveNewScene);
@@ -2619,6 +2621,20 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     }
     break;
 
+  case T_EV_SwapSnapshots :
+    {
+      SwapSnapshotsEvent *sev = (SwapSnapshotsEvent *) ev;
+      
+      // OK!
+      if (CRITTERS)
+        printf("CORE: Received SwapSnapshotsEvent: Snapshot #%d <> #%d\n",
+               sev->snapid1,sev->snapid2);
+
+      if (app->SwapSnapshots(sev->snapid1,sev->snapid2) != 0)
+        printf("CORE: Invalid snapshot- can't swap\n");
+    }
+    break;
+
   case T_EV_RenameSnapshot :
     {
       RenameSnapshotEvent *sev = (RenameSnapshotEvent *) ev;
@@ -3418,6 +3434,7 @@ int Fweelin::setup()
   cfg->AddEmptyVariable("SYSTEM_num_patchbanks");
   cfg->AddEmptyVariable("SYSTEM_cur_patchbank_tag");
   cfg->AddEmptyVariable("SYSTEM_num_switchable_interfaces");
+  cfg->AddEmptyVariable("SYSTEM_cur_switchable_interface");
   cfg->AddEmptyVariable("SYSTEM_snapshot_page_firstidx");
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
@@ -3659,6 +3676,8 @@ int Fweelin::setup()
   }
   cfg->LinkSystemVariable("SYSTEM_num_switchable_interfaces",T_int,
                           (char *) &(cfg->numinterfaces));
+  cfg->LinkSystemVariable("SYSTEM_cur_switchable_interface",T_int,
+                          (char *) &(vid->cur_iid));
   for (int i = 0; i < LAST_REC_COUNT; i++) {
     sprintf(tmp,"SYSTEM_loopid_lastrecord_%d",i);
     cfg->LinkSystemVariable(tmp,T_int,
