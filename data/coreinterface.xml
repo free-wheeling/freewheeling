@@ -5,7 +5,7 @@
   This is the bindings part of the configuration file. Here you can 
   specify how FreeWheeling responds to the input commands you give it.
 
-  -->
+  -->z
 
     <!-- Variables -->
 
@@ -50,6 +50,10 @@
     <declare var="VAR_zero_keysym" type="int" init="48"/>
     <!-- Range of snapshots adjustable by keyboard -->
     <declare var="VAR_snaps" type="range" init="1>9"/>
+    
+    <!-- Last 2 snapshots triggered --> 
+    <declare var="VAR_snapid_last1" type="int" init="-1"/>
+    <declare var="VAR_snapid_last2" type="int" init="-1"/>
 
     <declare var="VAR_switch_metronome" type="char" init="0"/>
 
@@ -106,7 +110,15 @@
      output3="video-show-display" parameters3="interfaceid=0 and
                                                displayid=VAR_cur_browser and
                                                show=1"/>
-
+    <!-- Subroutine 101- Trigger snapshot with given ID, storing last 2 triggered snapshots -->
+    <binding input="go-sub" conditions="sub=101"
+     output1="trigger-snapshot" 
+     parameters1="snapid=param1"
+     output2="set-variable"
+     parameters2="var=VAR_snapid_last2 and value=VAR_snapid_last1"
+     output3="set-variable"
+     parameters3="var=VAR_snapid_last1 and value=param1"/>
+ 
     <!-- HELP: Esc: Exit -->
     <binding input="key" conditions="key=escape and keydown=1"
      output="exit-freewheeling"/>
@@ -170,11 +182,13 @@
                                      keydown=1"
      output="create-snapshot" 
      parameters="snapid=key-VAR_zero_keysym-1+SYSTEM_snapshot_page_firstidx"/>
+
     <binding input="key" conditions="VAR_keyheld_ctrl=1 and
                                      key=VAR_snaps+VAR_zero_keysym and
                                      keydown=1"
-     output="trigger-snapshot" 
-     parameters="snapid=key-VAR_zero_keysym-1+SYSTEM_snapshot_page_firstidx"/>
+     output="go-sub" 
+     parameters="sub=101 and param1=key-VAR_zero_keysym-1+SYSTEM_snapshot_page_firstidx"/>
+     
     <binding input="key" conditions="VAR_keyheld_alt=1 and
                                      key=VAR_snaps+VAR_zero_keysym and
                                      keydown=1"
@@ -189,8 +203,8 @@
     <binding input="key" conditions="VAR_keyheld_ctrl=1 and
                                      key=zero and
                                      keydown=1"
-     output="trigger-snapshot" 
-     parameters="snapid=9+SYSTEM_snapshot_page_firstidx"/>
+     output="go-sub"
+     parameters="sub=101 and param1=9+SYSTEM_snapshot_page_firstidx"/>
     <binding input="key" conditions="VAR_keyheld_alt=1 and
                                      key=zero and
                                      keydown=1"
@@ -387,8 +401,12 @@
     <!-- HELP: -->
 
     <!-- HELP: shift + 1-9: Create snapshot #1-9 -->
-    <!-- HELP: shift/ctrl + ,.: Select snapshot page -->
-
+    <!-- HELP: ctrl + 1-9: Trigger snapshot #1-9 -->
+    <!-- HELP: shift/ctrl + ,.: Page through snapshots -->
+    <!-- HELP: alt + P: Swap last two triggered snapshots -->
+    <binding input="key" conditions="VAR_keyheld_alt=1 and key=p and keydown=1"
+     output="swap-snapshots" parameters="snapid1=VAR_snapid_last1 and snapid2=VAR_snapid_last2"/>
+     
     <!-- HELP: shift + click on loop: Select loop -->
     <!-- HELP: right click on loop: Select loop -->
     <binding input="loop-clicked" 
@@ -481,12 +499,12 @@
      output1="erase-loop" parameters1="loopid=SYSTEM_loopid_lastrecord_0"
      output2="set-variable" parameters2="var=VAR_xferloop and value=0"/>
 
-    <!-- HELP: Shift-Space: Erase selected loops -->
+    <!-- HELP: shift + space: Erase selected loops -->
     <binding input="key"
      conditions="VAR_keyheld_shift=1 and key=space and keydown=1"
      output="erase-selected-loops" parameters="setid=0"/>
 
-    <!-- HELP: Alt-Space: Erase all loops -->
+    <!-- HELP: alt + space: Erase all loops -->
     <binding input="key"
      conditions="VAR_keyheld_alt=1 and key=space and keydown=1"
      output="erase-all-loops"/>
@@ -494,7 +512,7 @@
     <binding input="key" conditions="key=u and keydown=1" 
      output="erase-loop" parameters="loopid=SYSTEM_loopid_lastrecord_0"/>
 
-    <!-- HELP: shift-`: Toggle loop overdub mode -->
+    <!-- HELP: shift + `: Toggle loop overdub mode -->
     <binding input="key" 
      conditions="VAR_keyheld_shift=1 and key=tilde and keydown=1"
      output="toggle-variable" parameters="var=VAR_overdubmode and maxvalue=1"/>
@@ -502,8 +520,8 @@
     <!-- HELP: `: Toggle loop cut mode -->
     <binding input="key" conditions="key=tilde and keydown=1"
      output="toggle-variable" parameters="var=VAR_cutmode and maxvalue=1"/>
-    <!-- HELP: z/x: Prev/Next page of loops on piano keyboard -->
-    <!-- Defined in MIDI keyboard interface -->
+    <!-- HELP: z/x: Prev/Next page of loops on current interface -->
+    <!-- Defined in interfaces -->
 
     <!-- HELP: F9: Toggle loop auto-saving --> 
     <binding input="key" conditions="key=f9 and keydown=1"
@@ -606,7 +624,7 @@
     <!-- HELP: __ TIMING __ -->
     <!-- HELP: -->
 
-    <!-- HELP: Shift-F1: Toggle sync panel -->
+    <!-- HELP: shift + F1: Toggle sync panel -->
     <binding input="key" conditions="VAR_keyheld_shift=1 and key=f1 and 
                                      keydown=1"
      output1="toggle-variable" parameters1="var=VAR_syncpanel_show and 
@@ -629,7 +647,7 @@
     <binding input="key" conditions="key=f1 and keydown=1"
      output="select-pulse" parameters="pulse=0"/>
 
-    <!-- HELP: Shift/Ctrl-S: Adjust transport sync timing -->
+    <!-- HELP: shift/ctrl + S: Adjust transport sync timing -->
     <binding input="key"
      conditions="VAR_keyheld_shift=1 and key=s and keydown=1"
      output1="set-variable"
@@ -641,14 +659,14 @@
      parameters1="var=VAR_numsync_per_pulse and value=VAR_numsync_per_pulse-1"
      output2="set-sync-speed" parameters2="speed=VAR_numsync_per_pulse"/>
 
-    <!-- HELP: Alt-S: Switch between bar and beat sync -->
+    <!-- HELP: alt + S: Switch between bar and beat sync -->
     <binding input="key"
      conditions="VAR_keyheld_alt=1 and key=s and keydown=1"
      output1="toggle-variable"
      parameters1="var=VAR_synctype and maxvalue=1"
      output2="set-sync-type" parameters2="type=VAR_synctype"/>
 
-    <!-- HELP: Shift-F2: Toggle MIDI sync transmit -->
+    <!-- HELP: shift + F2: Toggle MIDI sync transmit -->
     <binding input="key"
      conditions="VAR_keyheld_shift=1 and key=f2 and keydown=1"
      output1="toggle-variable"

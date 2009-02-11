@@ -56,14 +56,22 @@
      You don't need to account for those here. -->
 
 <!-- Create inputs- one input per letter- M is mono and S is stereo! -->
-  <var externalaudioinputs="MMS"/>
+  <var externalaudioinputs="MMSS"/>
 
 <!-- Limit the maximum play amplification to protect your sound system-
-     this prevents us from accidentally ramping up the volume of a loop
-     to ridiculous levels. 1.0 is 100% (0 dB) volume. -->
-  <var maxplayvol="5.0"/>
+     this is a maximum level for each loop.
+     
+     This prevents us from accidentally ramping up the volume of a loop
+     to ridiculous levels. 1.0 is 100% (0 dB) volume. 
+     
+     This is different than the peak limiter (below).
+     
+     Set to 0 to disable maximum loop play levels. The limiter (below) will still work. -->
+  <var maxplayvol="0.0"/>
 
-<!-- Maximum gain for limiter. When this is above 1.0 (100% amplitude), the
+<!-- Peak limiter. Applied to outputs after final mix.
+
+     Maximum gain for limiter. When this is above 1.0 (100% amplitude), the
      limiter acts like a high-ratio compressor, rising in gain until it reaches 
      this max. -->
   <var maxlimitergain="1.0"/>

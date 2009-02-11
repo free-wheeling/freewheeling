@@ -7,7 +7,9 @@ IN PROGRESS v0.6.1 - SVN
 
             * Snapshot moving
             
-            * Paging through multiple pages of loops with Z/X across interfaces
+              ALT-P swaps the last two selected snapshots.
+            
+            * Z/X paging through loops now works across interfaces (BCF-2000, MIDI keyboard, ...)
 
             Sunday December 28th, 2008
 
