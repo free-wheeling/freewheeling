@@ -21,11 +21,15 @@
     <declare var="VAR_selectoctave" type="int" init="12"/>
     <declare var="VAR_noterangechange" type="int" init="12"/>
 
+    <declare var="VAR_midikeyboard_interfaceid" type="int" init="0"/>
+
     <!-- Startup -->
     <binding input="start-interface" 
      output1="video-show-loop" 
      parameters1="layoutid=0 and
-                  loopid=VAR_noterange+VAR_loopid_pianostart"/>
+                  loopid=VAR_noterange+VAR_loopid_pianostart"
+     output2="set-variable"
+     parameters2="var=VAR_midikeyboard_interfaceid and value=interfaceid"/>
 
     <!-- Rest of the bindings... -->
 
@@ -127,7 +131,7 @@
      parameters="loopid=notenum+VAR_loopid_pianostart and vol=velocity/127"/>
 
     <!-- z/x: Prev/Next page of loops on piano keyboard -->
-    <binding input="key" conditions="key=x and keydown=1" 
+    <binding input="key" conditions="SYSTEM_cur_switchable_interface=VAR_midikeyboard_interfaceid and key=x and keydown=1" 
      output1="set-variable" parameters1="var=VAR_loopid_pianostart and 
                                          value=VAR_loopid_pianostart+
                                                VAR_noterangechange"
@@ -136,7 +140,7 @@
      output3="video-show-loop"
      parameters3="layoutid=0 and loopid=VAR_noterange+VAR_loopid_pianostart"/>
 
-    <binding input="key" conditions="key=z and keydown=1" 
+    <binding input="key" conditions="SYSTEM_cur_switchable_interface=VAR_midikeyboard_interfaceid and key=z and keydown=1" 
      output1="set-variable" 
      parameters1="var=VAR_loopid_pianostart and 
                   value=VAR_loopid_pianostart-VAR_noterangechange"

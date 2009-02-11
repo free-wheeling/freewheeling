@@ -30,6 +30,7 @@
     <declare var="VAR_bcf2000_scenebrowse_fine_midicontrol" type="int" init="75"/>
     <declare var="VAR_bcf2000_scenebrowse_coarse_midicontrol" type="int" init="74"/>
     <declare var="VAR_bcf2000_scenebrowse_select_midicontrol" type="int" init="76"/>
+    <declare var="VAR_bcf2000_scenebrowse_save_midicontrol" type="int" init="77"/>
 
     <!-- In scene mode, loop buttons trigger scenes instead -->
     <declare var="VAR_bcf2000_scenemode_midicontrol" type="int" init="73"/>
@@ -99,11 +100,15 @@
          switchable controls -->
     <declare var="VAR_controlpage" type="char" init="0"/>
 
+    <declare var="VAR_bcf2000_interfaceid" type="int" init="0"/>
+    
     <!-- Startup -->
     <binding input="start-interface" 
      output1="video-show-loop" 
      parameters1="layoutid=0 and
-                  loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
+                  loopid=VAR_bcf2000range+VAR_loopid_bcf2000"
+     output2="set-variable"
+     parameters2="var=VAR_bcf2000_interfaceid and value=interfaceid"/>
 
     <!-- Rest of the bindings... -->
 
@@ -132,12 +137,18 @@
      output1="go-sub" parameters1="sub=100 and param1=DISPLAY_browser_scene"
      output2="browser-move-to-item" parameters2="browserid=DISPLAY_browser_scene and adjust=controlval-128 and jumpadjust=0"/>
 
-   <binding input="midicontroller"
+    <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and 
                  controlnum=VAR_bcf2000_scenebrowse_select_midicontrol and
                  controlval=VAR_switch_on"
      output1="go-sub" parameters1="sub=100 and param1=DISPLAY_browser_scene"
      output2="browser-select-item" parameters2="browserid=DISPLAY_browser_scene"/>
+
+    <binding input="midicontroller" 
+     conditions="midichannel=VAR_bcf2000_channel and 
+                 controlnum=VAR_bcf2000_scenebrowse_save_midicontrol and
+                 controlval=VAR_switch_on"
+     output="save-current-scene"/>
 
     <!-- Show/hide scene mode -->
     <binding input="midicontroller"
@@ -176,6 +187,25 @@
                                                    page=1"/>
 
     <!-- Prev/Next page of loops on screen -->
+    <!-- z/x: Prev/Next page of loops on piano keyboard -->
+    <binding input="key" conditions="SYSTEM_cur_switchable_interface=VAR_bcf2000_interfaceid and key=x and keydown=1" 
+     output1="set-variable" parameters1="var=VAR_loopid_bcf2000 and 
+                                         value=VAR_loopid_bcf2000+
+                                               VAR_loopidrangechange"
+     output2="set-variable" parameters2="var=VAR_bcf2000_looppage and
+                                         value=VAR_bcf2000_looppage+1"
+     output3="video-show-loop"
+     parameters3="layoutid=0 and loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
+
+    <binding input="key" conditions="SYSTEM_cur_switchable_interface=VAR_bcf2000_interfaceid and key=z and keydown=1" 
+     output1="set-variable" parameters1="var=VAR_loopid_bcf2000 and 
+                                         value=VAR_loopid_bcf2000-
+                                               VAR_loopidrangechange"
+     output2="set-variable" parameters2="var=VAR_bcf2000_looppage and
+                                         value=VAR_bcf2000_looppage-1"
+     output3="video-show-loop"
+     parameters3="layoutid=0 and loopid=VAR_bcf2000range+VAR_loopid_bcf2000"/>
+
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000_prevlooppage_midicontrol and 
                  controlval=VAR_switch_on" 
@@ -388,17 +418,17 @@
     <binding input="midiprogramchange"
      output="set-variable" parameters="var=VAR_cur_program and value=programval"/>
 
-    <!-- Trigger Scenes -->
+    <!-- Trigger Snapshots -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
                  VAR_scene_mode=1 and
                  controlnum=VAR_bcf2000range+VAR_bcf2000capturecc and 
                  controlval=VAR_switch_on"
-     output="trigger-snapshot" 
-     parameters="snapid=controlnum-VAR_bcf2000capturecc+
+     output="go-sub" 
+     parameters="sub=101 and param1=controlnum-VAR_bcf2000capturecc+
                  SYSTEM_snapshot_page_firstidx"/>
 
-    <!-- Store Scenes -->
+    <!-- Store Snapshots -->
     <binding input="midicontroller"
      conditions="midichannel=VAR_bcf2000_channel and
                  VAR_scene_mode=1 and
