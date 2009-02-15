@@ -5,6 +5,12 @@ IN PROGRESS v0.6.1 - SVN
             New Features
             ------------
 
+            * A proper BCF-2000 Preset (SYSEX Dump Format) is now 
+              included
+              
+              See data/bcf2000-help.txt for instructions if you use a 
+              BCF-2000.
+
             * Snapshot moving
             
               ALT-P swaps the last two selected snapshots.
