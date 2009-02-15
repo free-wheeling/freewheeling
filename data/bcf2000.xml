@@ -545,67 +545,67 @@
 
   <graphics>
     <layout id="0" name="BCF2000" scale="0.35,0.45" pos="0.00,0.10" label="1" elabel="0" namepos="0.0,0.16" show="0">
-      <element id="0" name="LOOP1" base="0.0,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
+      <element id="0" name="LOOP1" base="0.0,0.0" looppos="0.17,0.17" loopsize="0.35" namepos="0.0,0.35">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="1" name="LOOP2" base="0.35,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
+      <element id="1" name="LOOP2" base="0.35,0.0" looppos="0.17,0.17" loopsize="0.35" namepos="0.0,0.35">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/> 
       </element>
 
-      <element id="2" name="LOOP3" base="0.7,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
+      <element id="2" name="LOOP3" base="0.7,0.0" looppos="0.17,0.17" loopsize="0.35" namepos="0.0,0.35">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="3" name="LOOP4" base="1.05,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.35,0.50">
+      <element id="3" name="LOOP4" base="1.05,0.0" looppos="0.17,0.17" loopsize="0.35" namepos="0.35,0.50">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/> 
       </element>
 
-      <element id="4" name="LOOP5" base="1.4,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.10">
+      <element id="4" name="LOOP5" base="1.4,0.0" looppos="0.17,0.17" loopsize="0.35" namepos="0.15,1.10">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="5" name="LOOP6" base="1.75,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.10">
+      <element id="5" name="LOOP6" base="1.75,0.0" looppos="0.17,0.17" loopsize="0.35" namepos="0.15,1.10">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="6" name="LOOP7" base="2.1,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.25,0.50">
+      <element id="6" name="LOOP7" base="2.1,0.0" looppos="0.17,0.17" loopsize="0.35" namepos="0.25,0.50">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="7" name="LOOP8" base="2.45,0.0" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.10">
+      <element id="7" name="LOOP8" base="2.45,0.0" looppos="0.17,0.17" loopsize="0.35" namepos="0.15,1.10">
         <box outline="TBLR" pos="0.00,0.00, 0.40,0.35"/>
       </element>
 
-      <element id="8" name="LOOP9" base="0.0,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
+      <element id="8" name="LOOP9" base="0.0,0.45" looppos="0.17,0.17" loopsize="0.35" namepos="0.0,0.35">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="9" name="LOOP10" base="0.35,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
+      <element id="9" name="LOOP10" base="0.35,0.45" looppos="0.17,0.17" loopsize="0.35" namepos="0.0,0.35">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="10" name="LOOP11" base="0.7,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.0,0.35">
+      <element id="10" name="LOOP11" base="0.7,0.45" looppos="0.17,0.17" loopsize="0.35" namepos="0.0,0.35">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="11" name="LOOP12" base="1.05,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.35,0.50">
+      <element id="11" name="LOOP12" base="1.05,0.45" looppos="0.17,0.17" loopsize="0.35" namepos="0.35,0.50">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="12" name="LOOP13" base="1.4,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.50,1.35">
+      <element id="12" name="LOOP13" base="1.4,0.45" looppos="0.17,0.17" loopsize="0.35" namepos="0.50,1.35">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="13" name="LOOP14" base="1.75,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.35">
+      <element id="13" name="LOOP14" base="1.75,0.45" looppos="0.17,0.17" loopsize="0.35" namepos="0.15,1.35">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="14" name="LOOP15" base="2.1,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.25,1.35">
+      <element id="14" name="LOOP15" base="2.1,0.45" looppos="0.17,0.17" loopsize="0.35" namepos="0.25,1.35">
         <box outline="TBLR" pos="0.00,0.00, 0.35,0.35"/>
       </element>
 
-      <element id="15" name="LOOP16" base="2.45,0.45" looppos="0.17,0.17" loopsize="0.2" namepos="0.15,1.35">
+      <element id="15" name="LOOP16" base="2.45,0.45" looppos="0.17,0.17" loopsize="0.35" namepos="0.15,1.35">
         <box outline="TBLR" pos="0.00,0.00, 0.40,0.35"/>
       </element> 
     </layout>
