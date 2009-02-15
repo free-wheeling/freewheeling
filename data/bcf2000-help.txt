@@ -11,6 +11,7 @@ Bottom row of 8 buttons:
  1- Shift (hold)
     Hold shift & press top 8 buttons to erase loops
  2- Undo (erase last loop)
+ 1 (Hold) + 2- Erase all loops
  3- Previous page of 8 loops  (or snapshots in snap mode)
  4- Next page of 8 loops (or snapshots in snap mode)
  5- Deselect all looops
