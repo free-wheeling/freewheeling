@@ -1,0 +1,46 @@
+Mr Thraz & Folks,
+
+I've been remiss about not yet distributing my BCF-2000 setup for Freewheeling. But I'd like to give you guys somewhere to start configuring.
+
+So I've attached my current BCF-2000 preset for Freewheeling. Send it to your BCF-2000 with 'aplaymidi' or similar. 
+
+Instructions for Use:
+
+Top row of 8 buttons: capture/play loops
+Bottom row of 8 buttons:
+ 1- Shift (hold)
+    Hold shift & press top 8 buttons to erase loops
+ 2- Undo (erase last loop)
+ 3- Previous page of 8 loops  (or snapshots in snap mode)
+ 4- Next page of 8 loops (or snapshots in snap mode)
+ 5- Deselect all looops
+ 6- Select playing loops
+ 7- Toggle selected loops
+ 8- Create pulse (press this after recording your first loop to lock other loops to it)
+
+Faders:
+
+1-4 are input levels
+5 is master input level
+6 is master output level
+7 is feedback
+8 is a quick patch change slider (patches are not actually changed until you press a button- see below)
+
+Group 1 Knobs: Press 1-8 to toggle overdub for loops, Turn 1-8 to adjust loop levels
+Group 2 Knobs: Press 1-8 to select loops, Turn to adjust relative level of ALL selected loops
+Group 3 Knobs: Turn & Press Knob 8 to browse through and load scenes. 
+   Press Knob 7 to save a scene of all loops.
+
+4 Buttons on bottom right of BCF:
+
+Top Left: Fader mode- switches BCF faders to toggle loop levels
+Top Right: Unused
+Bottom Left: Patch Change button (activate the MIDI patch you've browsed to).
+Bottom Right: Toggle Snap mode 
+(In snap mode: Shows snapshots. 
+Select snapshots with loop buttons 1-8 (top row of 8 buttons). 
+Page through snapshots with buttons 3 and 4 on the bottom row of 8 buttons.)
+
+That's all for now. I hope this helps.
+
+-Mercury
