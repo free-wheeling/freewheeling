@@ -3,7 +3,7 @@
    are not of this world.
 */
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    

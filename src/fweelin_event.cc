@@ -11,7 +11,7 @@
   there is music.
 */
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -161,6 +161,8 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIClock,"midiclock",MIDIClockInputEvent,20);
       SET_ETYPE(T_EV_Input_MIDIStartStop,"midistartstop",MIDIStartStopInputEvent);
 
+      SET_ETYPE_SLOW(T_EV_ALSAMixerControlSet,"alsa-mixer-control-set",ALSAMixerControlSetEvent);
+
       SET_ETYPE(T_EV_LoopClicked,"loop-clicked",LoopClickedEvent);
 
       SET_ETYPE(T_EV_GoSub,"go-sub",GoSubEvent);
@@ -219,7 +221,21 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       
       SET_ETYPE(T_EV_SetVariable,"set-variable",SetVariableEvent);
       SET_ETYPE(T_EV_ToggleVariable,"toggle-variable",ToggleVariableEvent);
+      SET_ETYPE(T_EV_SplitVariableMSBLSB, "split-variable-msb-lsb",SplitVariableMSBLSBEvent);
 
+      SET_ETYPE(T_EV_ParamSetGetAbsoluteParamIdx,"paramset-get-absolute-param-index",
+          ParamSetGetAbsoluteParamIdxEvent);
+      SET_ETYPE(T_EV_ParamSetGetParam,"paramset-get-param",
+          ParamSetGetParamEvent);
+      SET_ETYPE(T_EV_ParamSetSetParam,"paramset-set-param",
+          ParamSetSetParamEvent);
+
+      SET_ETYPE(T_EV_LogFaderVolToLinear,"log-fader-to-linear",LogFaderVolToLinearEvent);
+
+      SET_ETYPE(T_EV_VideoShowParamSetBank,"video-show-paramset-bank",
+          VideoShowParamSetBankEvent);
+      SET_ETYPE(T_EV_VideoShowParamSetPage,"video-show-paramset-page",
+          VideoShowParamSetPageEvent);
       SET_ETYPE_SLOW(T_EV_VideoShowSnapshotPage,"video-show-snapshot-page",
                      VideoShowSnapshotPageEvent);
       SET_ETYPE_SLOW(T_EV_VideoShowLoop,"video-show-loop",VideoShowLoopEvent);
@@ -290,6 +306,10 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE_SLOW(T_EV_PatchBrowserMoveToBankByIndex,
                      "patchbrowser-move-to-bank-by-index",
                      PatchBrowserMoveToBankByIndexEvent);
+
+      SET_ETYPE_SLOW(T_EV_TransmitPlayingLoopsToDAW,
+                     "transmit-playing-loops-to-daw",
+                     TransmitPlayingLoopsToDAWEvent);
 
       // Internal events-- don't try to bind to these
 

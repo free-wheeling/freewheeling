@@ -1,0 +1,97 @@
+<interface>
+  <bindings>
+    <!-- This interface is an example of how to use Freewheeling's
+         alsamixer interface to adjust input volumes in realtime using
+         any control surface.
+         
+         Using hardware mixing means that the monitored signal will have
+         no latency.
+         
+         In this example, it allows you to use a larger period size without 
+         issues, since only the loops will be delayed.
+         
+         The fader levels are first converted to dB and then to a linear level,
+         which is used to route the RME HDSP Multiface input channels to the
+         outputs. This is done so that the recorded level (software inputs)
+         exactly corresponds to the monitored level (hardware routing). 
+         
+         This is a proof-of-concept for the RME HDSP Multiface. Other cards
+         that have an ALSA mixer interface can also be automated/controlled
+         via MIDI. -->
+         
+    <!-- Variables -->
+
+    <!-- HDSP MUltiface Channels:
+            input_source: 0-7 (analog), 16-23 (adat), 24-25 (spdif), 26-51 (playback)
+            output_source: 0-7 (analog), 16-23 (adat) 24-25 (spdif), 26-27 (line out)
+
+            values are:
+               amixer cset numid=5 input_source,output_source,value
+               value=16384 is 0.0 dB,
+               valid range is [0..65535]
+    -->
+
+    <declare var="VAR_fadertolin_input1" type="float" init="16384.0"/>
+    <declare var="VAR_fadertolin_input2" type="float" init="16384.0"/>
+    <declare var="VAR_fadertolin_input3" type="float" init="16384.0"/>
+    <declare var="VAR_fadertolin_masterin" type="float" init="1.0"/>
+
+    <!-- 0.0dB corresponds to 16384. For example, on the command line:
+         'amixer cset numid=5 0,0,16384' -->
+    <declare var="VAR_hdsp_mixerscale" type="float" init="16384.0"/>
+
+    <!-- HDSP card is at hw:x -->
+    <declare var="VAR_hdsp_hwid" type="int" init="0"/>
+    
+    <!-- Mixer controls are at numid=5. -->
+    <declare var="VAR_hdsp_mixer_numid" type="int" init="5"/>
+        
+    <!-- Subroutine 90x- Update HDSP Mixer, mapping all inputs to analog output 
+         with the right volumes -->
+         
+    <!-- 901 - input 1 -->
+    <binding input="go-sub" conditions="sub=901"
+     output1="alsa-mixer-control-set" parameters1="hwid=VAR_hdsp_hwid and numid=VAR_hdsp_mixer_numid and val1=0 and val2=26 and val3=VAR_fadertolin_input1*VAR_fadertolin_masterin"
+     output2="alsa-mixer-control-set" parameters2="hwid=VAR_hdsp_hwid and numid=VAR_hdsp_mixer_numid and val1=0 and val2=27 and val3=VAR_fadertolin_input1*VAR_fadertolin_masterin"/>
+  
+    <!-- 902 - input 2 -->
+    <binding input="go-sub" conditions="sub=902"     
+     output1="alsa-mixer-control-set" parameters1="hwid=VAR_hdsp_hwid and numid=VAR_hdsp_mixer_numid and val1=1 and val2=26 and val3=VAR_fadertolin_input2*VAR_fadertolin_masterin"
+     output2="alsa-mixer-control-set" parameters2="hwid=VAR_hdsp_hwid and numid=VAR_hdsp_mixer_numid and val1=1 and val2=27 and val3=VAR_fadertolin_input2*VAR_fadertolin_masterin"/>
+
+    <!-- 903 - input 3 -->
+    <binding input="go-sub" conditions="sub=903"     
+     output1="alsa-mixer-control-set" parameters1="hwid=VAR_hdsp_hwid and numid=VAR_hdsp_mixer_numid and val1=16 and val2=26 and val3=VAR_fadertolin_input3*VAR_fadertolin_masterin"
+     output2="alsa-mixer-control-set" parameters2="hwid=VAR_hdsp_hwid and numid=VAR_hdsp_mixer_numid and val1=17 and val2=27 and val3=VAR_fadertolin_input3*VAR_fadertolin_masterin"/>
+    
+    <!-- Subroutine 80x- Set HDSP Mixer from fader -->
+    
+    <!-- 800 - Master input (propagate to all input channels) -->
+    <binding input="go-sub" conditions="sub=800"
+      output1="log-fader-to-linear" parameters1="var=VAR_fadertolin_masterin and fadervol=param1 and scale=1.0"
+      output2="go-sub" parameters2="sub=901"
+      output3="go-sub" parameters3="sub=902"
+      output4="go-sub" parameters4="sub=903"/>
+
+    <!-- 801 - input 1 -->
+    <binding input="go-sub" conditions="sub=801"
+     output1="log-fader-to-linear" parameters1="var=VAR_fadertolin_input1 and fadervol=param1 and scale=VAR_hdsp_mixerscale"
+     output2="go-sub" parameters2="sub=901"/>
+
+    <!-- 802 - input 2 -->
+    <binding input="go-sub" conditions="sub=802"
+     output1="log-fader-to-linear" parameters1="var=VAR_fadertolin_input2 and fadervol=param1 and scale=VAR_hdsp_mixerscale"
+     output2="go-sub" parameters2="sub=902"/>
+
+    <!-- 803 - input 3 -->
+    <binding input="go-sub" conditions="sub=803"
+     output1="log-fader-to-linear" parameters1="var=VAR_fadertolin_input3 and fadervol=param1 and scale=VAR_hdsp_mixerscale"
+     output2="go-sub" parameters2="sub=903"/>
+    
+    <!-- Startup -->
+    <binding input="start-interface" 
+     output1="go-sub" parameters1="sub=901"
+     output2="go-sub" parameters2="sub=902"
+     output3="go-sub" parameters3="sub=903"/>
+  </bindings>
+</interface>

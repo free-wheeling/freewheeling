@@ -8,7 +8,7 @@
    ********
 */
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -31,6 +31,7 @@
 #include <gnutls/openssl.h>
 #endif
 
+#include "fweelin_amixer.h"
 #include "fweelin_midiio.h"
 #include "fweelin_videoio.h"
 #include "fweelin_sdlio.h"
@@ -41,6 +42,8 @@
 #include "fweelin_event.h"
 #include "fweelin_config.h"
 #include "fweelin_browser.h"
+#include "fweelin_fluidsynth.h"
+#include "fweelin_osc.h"
 
 class SDLIO;
 class EventManager;
@@ -58,6 +61,11 @@ class PreallocatedType;
 class AudioBuffers;
 class InputSettings;
 class Browser;
+class HardwareMixerInterface;
+
+#ifndef __MACOSX__
+class OSCClient;
+#endif
 
 #if USE_FLUIDSYNTH
 class FluidSynthProcessor;
@@ -129,7 +137,7 @@ class Saveable {
   // into its base name, hash and object name components
   //
   // Returns zero on success
-  static char SplitFilename(char *filename, int baselen, char *basename, 
+  static char SplitFilename(const char *filename, int baselen, char *basename,
                             char *hash, char *objname,
                             int maxlen);
   
@@ -592,11 +600,18 @@ public:
   void SetupLoopBrowser();
   void SetupSceneBrowser();
 
+  // Get long count (number of beats for whole pattern) for all playing loops
+  // Assumes only one pulse for all playing loops.
+  //
+  // Returns the first pulse detected in the playing loops (in p) and the long count (return)
+  int GetLongCountForAllPlayingLoops(Pulse *&p);
+
   // Get length returns the length of any loop on the specified index
+  // (including the tail for cross-fading)
   nframes_t GetLength(int index);
 
   // Get length returns the length of any loop on the specified index
-  // Rounded to its currently quantized length
+  // Rounded to its currently quantized length (ie the actual repeated part)
   // Or 0 if the loop has no pulse
   nframes_t GetRoundedLength(int index);
 
@@ -911,6 +926,7 @@ class Fweelin : public EventProducer, public BrowserCallback {
   inline MidiIO *getMIDI() { return midi; };
   inline VideoIO *getVIDEO() { return vid; };
   inline SDLIO *getSDLIO() { return sdlio; };
+  inline HardwareMixerInterface *getHMIX() { return hmix; };
 
   inline FloConfig *getCFG() { return cfg; };
 
@@ -998,9 +1014,20 @@ class Fweelin : public EventProducer, public BrowserCallback {
       sync_speed = 1;
     else
       sync_speed = sspd; 
+    RefreshPulseSync();
   };
-  inline void SetSyncType(char stype) { sync_type = stype; };
-    
+  inline void SetSyncType(char stype) {
+    sync_type = stype;
+    RefreshPulseSync();
+  };
+
+  // Resets MIDI sync / beat/bar metronome generation to restart on the next pulse wraparound
+  inline void RefreshPulseSync() {
+    int curpulse = getLOOPMGR()->GetCurPulseIndex();
+    getLOOPMGR()->SelectPulse(-1);
+    getLOOPMGR()->SelectPulse(curpulse);
+  };
+
   // Patch browser callbacks
   virtual void ItemBrowsed(BrowserItem *i) { 
     // Auto-select (disabled)
@@ -1011,6 +1038,7 @@ class Fweelin : public EventProducer, public BrowserCallback {
   virtual void ItemRenamed(BrowserItem *i) { return; }; 
 
  private:
+  OSCClient *osc;
   MemoryManager *mmg;
   BlockManager *bmg;
   EventManager *emg;
@@ -1072,6 +1100,9 @@ class Fweelin : public EventProducer, public BrowserCallback {
 
   // Control settings 
   FloConfig *cfg;
+
+  // Hardware Mixer settings
+  HardwareMixerInterface *hmix;
   
   // Variables for sync
   

@@ -3,7 +3,7 @@
    "it becomes a movement"
 */
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -41,6 +41,8 @@ const float Processor::MIN_VOL = 0.01;
 const nframes_t Processor:: DEFAULT_SMOOTH_LENGTH = 64;
 // Length of metronome strike sound in samples
 const nframes_t Pulse::METRONOME_HIT_LEN = 800;
+// Length of metronome tone sound in samples
+const nframes_t Pulse::METRONOME_TONE_LEN = 4400;
 // Initial metronome volume
 const float Pulse::METRONOME_INIT_VOL = 0.1;
 // Autolimiter
@@ -56,6 +58,14 @@ const static float MAX_DVOL = 1.5;
 // DB FADER CODE
 #define DB_FLOOR -1000.f
 #define FADER_MIN_DB -70.f
+
+int math_gcd (int a, int b) {
+  return (b == 0 ? a : math_gcd(b, a % b));
+};
+
+int math_lcm (int a, int b) {
+  return a*b/math_gcd(a,b);
+};
 
 // IEC 60-268-18 fader levels.  Thanks to Steve Harris. 
 // Thanks to Chris Cannam & Sonic Visualiser code
@@ -373,13 +383,25 @@ void Processor::fadepreandcurrent(AudioBuffers *ab) {
 Pulse::Pulse(Fweelin *app, nframes_t len, nframes_t startpos) : 
   Processor(app), len(len), curpos(startpos), lc_len(1), lc_cur(0), 
   wrapped(0), stopped(0), prev_sync_bb(0), sync_cnt(0), prev_sync_speed(-1),
-  prev_sync_type(0), prevbpm(0.0), prevtap(0), metroofs(metrolen), 
-  metrolen(METRONOME_HIT_LEN), metroactive(0), metrovol(METRONOME_INIT_VOL),
+  prev_sync_type(0), prevbpm(0.0), prevtap(0),
+  metroofs(metrolen), metrohiofs(metrolen), metroloofs(metrolen),
+  metrolen(METRONOME_HIT_LEN), metrotonelen(METRONOME_TONE_LEN), metroactive(0), metrovol(METRONOME_INIT_VOL),
   numsyncpos(0), clockrun(SS_NONE) {
+#define METRO_HI_FREQ 880
+#define METRO_HI_AMP 1.5
+#define METRO_LO_FREQ 440
+#define METRO_LO_AMP 1.0
+
   // Generate metronome data
   metro = new sample_t[metrolen];
+  metrohitone = new sample_t[metrotonelen];
+  metrolotone = new sample_t[metrotonelen];
   for (nframes_t i = 0; i < metrolen; i++ )
     metro[i] = ((sample_t)rand()/RAND_MAX - 0.5) * (1.0 - (float)i/metrolen);
+  for (nframes_t i = 0; i < metrotonelen; i++ ) {
+    metrohitone[i] = METRO_HI_AMP * sin(METRO_HI_FREQ*i*2*M_PI/app->getAUDIO()->get_srate()) * (1.0 - (float)i/metrotonelen);
+    metrolotone[i] = METRO_LO_AMP * sin(METRO_LO_FREQ*i*2*M_PI/app->getAUDIO()->get_srate()) * (1.0 - (float)i/metrotonelen);
+  }
 };
 
 Pulse::~Pulse() { 
@@ -387,6 +409,8 @@ Pulse::~Pulse() {
   app->getBMG()->RefDeleted(this);
 
   delete [] metro; 
+  delete [] metrohitone;
+  delete [] metrolotone;
 };
 
 // Quantizes src length to fit to this pulse length 
@@ -413,14 +437,6 @@ void Pulse::SetMIDIClock (char start) {
   }
 };
 
-int math_gcd (int a, int b) { 
-  return (b == 0 ? a : math_gcd(b, a % b)); 
-};
-
-int math_lcm (int a, int b) {
-  return a*b/math_gcd(a,b);
-};
-
 int Pulse::ExtendLongCount (long nbeats, char endjustify) {
   if (nbeats > 0) {
     int lc_new_len = math_lcm(lc_len,(int) nbeats);
@@ -439,6 +455,8 @@ int Pulse::ExtendLongCount (long nbeats, char endjustify) {
   return lc_len;
 };
 
+// TODO
+//
 // Please note that all sync is done with a granularity of the audio period 
 // size. A potential bug exists when loops recorded with one period size
 // are played on a system with another period size... the syncronization
@@ -451,6 +469,9 @@ int Pulse::ExtendLongCount (long nbeats, char endjustify) {
 //
 
 void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
+  static int midi_clock_count = 0,
+      midi_beat_count = 0;
+
   // If we're using Jack transport (audio) sync, and we're slave to another app,
   // adjust pulse to stay in-sync  
   if (app->getAUDIO()->IsTransportRolling() &&
@@ -532,22 +553,40 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
         
         if (clockrun == SS_START) {
           // Send MIDI start for pulse
+          metrohiofs = 0; // Sound metronome high tone
+          midi_clock_count = 0;
+          midi_beat_count = 0;
+
           MIDIStartStopInputEvent *ssevt = 
             (MIDIStartStopInputEvent *) Event::GetEventByType(T_EV_Input_MIDIStartStop);
           ssevt->start = 1;
           app->getEMG()->BroadcastEventNow(ssevt, this);    
+
+          // If this is the first downbeat, start the clock proper
+          clockrun = SS_BEAT;
+        } else {
+          midi_clock_count++;
+          if (midi_clock_count >= MIDI_CLOCK_FREQUENCY) {
+            // Quarter not has passed, sound metronome low tone
+            midi_clock_count = 0;
+            // printf("PULSE: quarter clock\n");
+
+            midi_beat_count++;
+            if (midi_beat_count >= clocksperpulse/MIDI_CLOCK_FREQUENCY) {
+              midi_beat_count = 0;
+              metrohiofs = 0; // Sound metronome high tone
+            } else
+              metroloofs = 0; // Sound metronome low tone
+          }
+
+          // Time for another clock message
+          MIDIClockInputEvent *clkevt = (MIDIClockInputEvent *) Event::GetEventByType(T_EV_Input_MIDIClock);
+          // *** Broadcast immediately-- this will yield lowest MIDI sync latency,
+          // but may cause problems if MIDI transmit code blocks/conflicts with RT audio thread
+          // (which it very well might)
+          // _experimental_
+          app->getEMG()->BroadcastEventNow(clkevt, this);
         }
-        
-        // Time for another clock message
-        MIDIClockInputEvent *clkevt = (MIDIClockInputEvent *) Event::GetEventByType(T_EV_Input_MIDIClock);
-        // *** Broadcast immediately-- this will yield lowest MIDI sync latency, 
-        // but may cause problems if MIDI transmit code blocks/conflicts with RT audio thread
-        // (which it very well might)
-        // _experimental_
-        app->getEMG()->BroadcastEventNow(clkevt, this);    
-        
-        // If this is the first downbeat, start the clock proper
-        clockrun = SS_BEAT;
       }
     }
     
@@ -591,7 +630,7 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
     }
   }
 
-  // Producing metronome signal
+  // Producing metronome signals
   if (metroofs < metrolen) {
     if (metroactive && metrovol > 0.0) {
       nframes_t i = 0;
@@ -608,6 +647,28 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
   }
   else
     memset(&out[ofs],0,sizeof(sample_t) * l);
+
+  if (metrohiofs < metrotonelen) {
+    if (metroactive && metrovol > 0.0) {
+      nframes_t i = 0;
+      for (; i < l && metrohiofs+i<metrotonelen; i++)
+        out[ofs+i] += metrohitone[metrohiofs+i] * metrovol;
+    }
+
+    if (!pre)
+      metrohiofs += l;
+  }
+
+  if (metroloofs < metrotonelen) {
+    if (metroactive && metrovol > 0.0) {
+      nframes_t i = 0;
+      for (; i < l && metroloofs+i<metrotonelen; i++)
+        out[ofs+i] += metrolotone[metroloofs+i] * metrovol;
+    }
+
+    if (!pre)
+      metroloofs += l;
+  }
 
   // Copy to right channel if present- metronome always mono
   if (ab->outs[1][0] != 0) 
@@ -2467,7 +2528,7 @@ void PassthroughProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
 
     // And set all inputs to selected for our mix
     for (int i = 0; i < alliset->numins; i++)
-      alliset->selins[i] = 1;
+      alliset->selins[i] = 0; // All monitor mixes off
     // ***
 
     // Mix all inputs together into single output- this is a monitor mix

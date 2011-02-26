@@ -5,7 +5,7 @@
   This is the bindings part of the configuration file. Here you can 
   specify how FreeWheeling responds to the input commands you give it.
 
-  -->z
+  -->
 
     <!-- Variables -->
 
@@ -666,7 +666,7 @@
      parameters1="var=VAR_synctype and maxvalue=1"
      output2="set-sync-type" parameters2="type=VAR_synctype"/>
 
-    <!-- HELP: shift + F2: Toggle MIDI sync transmit -->
+    <!-- HELP: shift + F2: Toggle MIDI sync transmit & sync metronome -->
     <binding input="key"
      conditions="VAR_keyheld_shift=1 and key=f2 and keydown=1"
      output1="toggle-variable"
@@ -681,6 +681,11 @@
      conditions="controlnum=VAR_midi_footswitch and controlval=VAR_switch_on"
      output="tap-pulse" parameters="pulse=0 and newlen=1"/>
       -->
+
+    <!-- HELP: F10: Transfer playing loops to QTractor -->
+    <binding input="key" conditions="key=f10 and 
+                                     keydown=1"
+     output="transmit-playing-loops-to-daw"/>
 
     <!-- HELP: [F5] F11: Toggle metronome -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and key=f5 and 

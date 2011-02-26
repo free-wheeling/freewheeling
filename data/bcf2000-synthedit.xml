@@ -1,0 +1,141 @@
+<interface>
+  <bindings>
+    <!-- SynthEdit internal variables -->
+    <declare var="VAR_bcf2000_se_value" type="float" init="0."/>
+    <declare var="VAR_bcf2000_se_idx" type="int" init="0"/>
+    <declare var="VAR_bcf2000_se_idx_msb" type="int" init="0"/>
+    <declare var="VAR_bcf2000_se_idx_lsb" type="int" init="0"/>
+
+    <!-- SynthEdit receives input from the same BCF-2000 fader CCs but on a different channel.
+         So, switching to SynthEdit is simply switching to a different BCF-2000
+         patch, which has those faders mappened to this channel instead. -->
+    <declare var="VAR_bcf2000_synthedit_channel" type="int" init="14"/>
+
+    <!-- Next/prev page of parameters control # -->
+    <declare var="VAR_bcf2000_se_prevbank_midicontrol" type="int" init="118"/>
+    <declare var="VAR_bcf2000_se_nextbank_midicontrol" type="int" init="119"/>
+    <declare var="VAR_bcf2000_se_prevparampage_midicontrol" type="int" init="120"/>
+    <declare var="VAR_bcf2000_se_nextparampage_midicontrol" type="int" init="121"/>
+
+    <!-- CC for toggle synthedit display on/off -->
+    <declare var="VAR_bcf2000_se_toggle_midicontrol" type="int" init="110"/>
+
+    <!-- Subroutine 1010- Update BCF-2000 motor faders with new synthedit
+         parameters -->
+    <binding input="go-sub" conditions="sub=1010"
+     output1="paramset-get-param" parameters1="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and var=VAR_bcf2000_se_value and paramidx=0"
+     output2="midicontroller" parameters2="outport=VAR_bcf2000_outport and midichannel=VAR_bcf2000_synthedit_channel and controlnum=VAR_bcf2000fadercc+0 and controlval=VAR_bcf2000_se_value"
+     output3="paramset-get-param" parameters3="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and var=VAR_bcf2000_se_value and paramidx=1"
+     output4="midicontroller" parameters4="outport=VAR_bcf2000_outport and midichannel=VAR_bcf2000_synthedit_channel and controlnum=VAR_bcf2000fadercc+1 and controlval=VAR_bcf2000_se_value"
+     output5="paramset-get-param" parameters5="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and var=VAR_bcf2000_se_value and paramidx=2"
+     output6="midicontroller" parameters6="outport=VAR_bcf2000_outport and midichannel=VAR_bcf2000_synthedit_channel and controlnum=VAR_bcf2000fadercc+2 and controlval=VAR_bcf2000_se_value"
+     output7="paramset-get-param" parameters7="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and var=VAR_bcf2000_se_value and paramidx=3"
+     output8="midicontroller" parameters8="outport=VAR_bcf2000_outport and midichannel=VAR_bcf2000_synthedit_channel and controlnum=VAR_bcf2000fadercc+3 and controlval=VAR_bcf2000_se_value"
+     output9="paramset-get-param" parameters9="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and var=VAR_bcf2000_se_value and paramidx=4"
+     output10="midicontroller" parameters10="outport=VAR_bcf2000_outport and midichannel=VAR_bcf2000_synthedit_channel and controlnum=VAR_bcf2000fadercc+4 and controlval=VAR_bcf2000_se_value"
+     output11="paramset-get-param" parameters11="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and var=VAR_bcf2000_se_value and paramidx=5"
+     output12="midicontroller" parameters12="outport=VAR_bcf2000_outport and midichannel=VAR_bcf2000_synthedit_channel and controlnum=VAR_bcf2000fadercc+5 and controlval=VAR_bcf2000_se_value"
+     output13="paramset-get-param" parameters13="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and var=VAR_bcf2000_se_value and paramidx=6"
+     output14="midicontroller" parameters14="outport=VAR_bcf2000_outport and midichannel=VAR_bcf2000_synthedit_channel and controlnum=VAR_bcf2000fadercc+6 and controlval=VAR_bcf2000_se_value"
+     output15="paramset-get-param" parameters15="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and var=VAR_bcf2000_se_value and paramidx=7"
+     output16="midicontroller" parameters16="outport=VAR_bcf2000_outport and midichannel=VAR_bcf2000_synthedit_channel and controlnum=VAR_bcf2000fadercc+7 and controlval=VAR_bcf2000_se_value"/>
+
+    <!-- Subroutine 1011- Update a parameter set parameter, and send out a given MIDI NRPN parameter using relative parameter index and value.
+         Param1 is the relative index of the parameter (ie fader #) to update. 
+         Param2 is the value to update it to.
+         
+         This stores the changed value in the local parameter set, and sends out a MIDI NRPN to change the parameter at the target synth.
+          
+         MIDI NRPN spec is:
+         CC99 - MSB of parameter index
+         CC98 - LSB of parameter index
+         CC06 - Parameter value -->
+    <binding input="go-sub" conditions="sub=1011"
+     output1="paramset-set-param" parameters1="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and value=param2 and paramidx=param1"
+     output2="paramset-get-absolute-param-index" parameters2="interfaceid=VAR_synthedit_interfaceid and displayid=DISPLAY_synthedit and absidx=VAR_bcf2000_se_idx and paramidx=param1"
+     output3="split-variable-msb-lsb" parameters3="var=VAR_bcf2000_se_idx and msb=VAR_bcf2000_se_idx_msb and lsb=VAR_bcf2000_se_idx_lsb"
+     output4="midicontroller" parameters4="midichannel=VAR_synthedit_midichannel and controlnum=99 and controlval=VAR_bcf2000_se_idx_msb"
+     output5="midicontroller" parameters5="midichannel=VAR_synthedit_midichannel and controlnum=98 and controlval=VAR_bcf2000_se_idx_lsb"
+     output6="midicontroller" parameters6="midichannel=VAR_synthedit_midichannel and controlnum=6 and controlval=param2"/>
+
+    <!-- (SynthEdit) Prev/Next bank of parameters on screen -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000_se_prevbank_midicontrol and 
+                 controlval=VAR_switch_on" 
+     output1="video-show-paramset-bank" parameters1="interfaceid=VAR_synthedit_interfaceid and
+                                                     displayid=DISPLAY_synthedit and
+                                                     bank=-1"
+     output2="go-sub" parameters2="sub=1010"/>
+
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000_se_nextbank_midicontrol and 
+                 controlval=VAR_switch_on" 
+     output1="video-show-paramset-bank" parameters1="interfaceid=VAR_synthedit_interfaceid and
+                                                     displayid=DISPLAY_synthedit and
+                                                     bank=1"
+     output2="go-sub" parameters2="sub=1010"/>
+
+    <!-- (SynthEdit) Prev/Next page of parameters on screen -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000_se_prevparampage_midicontrol and 
+                 controlval=VAR_switch_on" 
+     output1="video-show-paramset-page" parameters1="interfaceid=VAR_synthedit_interfaceid and
+                                                     displayid=DISPLAY_synthedit and
+                                                     page=-1"
+     output2="go-sub" parameters2="sub=1010"/>
+
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000_se_nextparampage_midicontrol and 
+                 controlval=VAR_switch_on" 
+     output1="video-show-paramset-page" parameters1="interfaceid=VAR_synthedit_interfaceid and
+                                                     displayid=DISPLAY_synthedit and
+                                                     page=1"
+     output2="go-sub" parameters2="sub=1010"/>
+ 
+    <!-- Update parameters from BCF-2000 faders -->
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000fadercc+0" 
+     output1="go-sub" parameters1="sub=1011 and param1=0 and param2=controlval"/>
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000fadercc+1" 
+     output1="go-sub" parameters1="sub=1011 and param1=1 and param2=controlval"/>
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000fadercc+2" 
+     output1="go-sub" parameters1="sub=1011 and param1=2 and param2=controlval"/>
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000fadercc+3" 
+     output1="go-sub" parameters1="sub=1011 and param1=3 and param2=controlval"/>
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000fadercc+4" 
+     output1="go-sub" parameters1="sub=1011 and param1=4 and param2=controlval"/>
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000fadercc+5" 
+     output1="go-sub" parameters1="sub=1011 and param1=5 and param2=controlval"/>
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000fadercc+6" 
+     output1="go-sub" parameters1="sub=1011 and param1=6 and param2=controlval"/>
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000fadercc+7" 
+     output1="go-sub" parameters1="sub=1011 and param1=7 and param2=controlval"/>
+    
+    <!-- Toggle synthedit display -->    
+    <binding input="midicontroller"
+     conditions="midichannel=VAR_bcf2000_synthedit_channel and 
+                 controlnum=VAR_bcf2000_se_toggle_midicontrol"        
+     output1="video-show-display" parameters1="interfaceid=VAR_synthedit_interfaceid and 
+                                               displayid=DISPLAY_synthedit and
+                                               show=controlval"/>
+  </bindings>
+</interface>
