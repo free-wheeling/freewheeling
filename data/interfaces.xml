@@ -22,6 +22,9 @@ for
 
   <!-- Customization -->
   <interface setup="mercury.xml" switchable="0"/>
+  <interface setup="synthedit.xml" switchable="0"/>
+  <interface setup="bcf2000-synthedit.xml" switchable="0"/>
+  <interface setup="rme-hdsp.xml" switchable="0"/>
 
   <!-- Bare minimum -->
   <interface setup="browsers.xml" switchable="0"/>

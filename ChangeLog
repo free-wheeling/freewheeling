@@ -1,5 +1,36 @@
 IN PROGRESS v0.6.1 - SVN
 
+            Saturday February 26, 2011
+
+            After more than two years, activity has resumed on Freewheeling's
+            development. I am in the process of refactoring the code to make 
+            it more stable.
+
+            New Features in the works:
+
+            * DONE - Direct hardware mixing controls
+ 
+              Direct control of ALSA mixer controls from within Freewheeling
+
+            * DONE - SYNTHEDIT - An easier way to manage synth plugins with
+              
+              MANY parameters from a tactile interface with
+              FEW knobs - stores parameters and allows motor-fader
+              updates
+
+            * FIXED - MIDI Sync Transmit now works as advertised -
+    
+              Loops stay in lockstep with externals
+              Added MIDI sync metronome for listening to beats/bars.
+
+            * QTractor integration. 
+
+              Rui Nuno Capela and I are working on a QTractor branch that
+              will allow snapshots of all playing loops to be instantly
+              transferred into a QTractor session. Go from circular time
+              to sequencer time! This SVN update contains proof-of-concept
+              code against the 'qtractor-osc' branch.
+            
             Tuesday January 20th, 2009
 
             New Features

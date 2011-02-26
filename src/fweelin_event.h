@@ -1,7 +1,7 @@
 #ifndef __FWEELIN_EVENT_H
 #define __FWEELIN_EVENT_H
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -18,6 +18,7 @@
    You should have received a copy of the GNU General Public License
    along with Freewheeling.  If not, see <http://www.gnu.org/licenses/>. */
 
+#include <linux/limits.h>
 #include <pthread.h>
 
 #include <SDL/SDL.h>
@@ -59,7 +60,7 @@ class EventHook {
 double mygettime(void);
 
 // Max filename length
-#define FWEELIN_OUTNAME_LEN 512
+#define FWEELIN_OUTNAME_LEN PATH_MAX
 
 #define MAX_MIDI_CHANNELS 16
 #define MAX_MIDI_CONTROLLERS 127
@@ -107,8 +108,6 @@ enum EventType {
   T_EV_Input_MIDIProgramChange,
   T_EV_Input_MIDIChannelPressure,
   T_EV_Input_MIDIPitchBend,
-  T_EV_Input_MIDIClock,
-  T_EV_Input_MIDIStartStop,
   T_EV_StartSession,
   T_EV_StartInterface,
   T_EV_GoSub,
@@ -120,8 +119,13 @@ enum EventType {
   // Events after this can not trigger config bindings
   T_EV_Last_Bindable,
 
+  T_EV_Input_MIDIClock,
+  T_EV_Input_MIDIStartStop,
+
   T_EV_Input_MouseButton,
   T_EV_Input_MouseMotion,
+
+  T_EV_ALSAMixerControlSet,
 
   T_EV_EndRecord,
   T_EV_LoopList,
@@ -131,7 +135,16 @@ enum EventType {
 
   T_EV_SetVariable,
   T_EV_ToggleVariable,
+  T_EV_SplitVariableMSBLSB,
 
+  T_EV_ParamSetGetAbsoluteParamIdx,
+  T_EV_ParamSetGetParam,
+  T_EV_ParamSetSetParam,
+
+  T_EV_LogFaderVolToLinear,
+
+  T_EV_VideoShowParamSetBank,
+  T_EV_VideoShowParamSetPage,
   T_EV_VideoShowSnapshotPage,
   T_EV_VideoShowLoop,
   T_EV_VideoShowLayout,
@@ -204,6 +217,8 @@ enum EventType {
   T_EV_BrowserRenameItem,
   T_EV_PatchBrowserMoveToBank,
   T_EV_PatchBrowserMoveToBankByIndex,
+
+  T_EV_TransmitPlayingLoopsToDAW,
 
   T_EV_Last
 };
@@ -805,22 +820,256 @@ class ToggleVariableEvent : public Event {
     minvalue = s.minvalue;
   };
   virtual int GetNumParams() { return 3; };
-  virtual EventParameter GetParam(int n) { 
+  virtual EventParameter GetParam(int n) {
     switch (n) {
     case 0:
       return EventParameter("var",FWEELIN_GETOFS(var),T_variableref);
     case 1:
-      return EventParameter("maxvalue",FWEELIN_GETOFS(maxvalue),T_int);      
+      return EventParameter("maxvalue",FWEELIN_GETOFS(maxvalue),T_int);
     case 2:
-      return EventParameter("minvalue",FWEELIN_GETOFS(minvalue),T_int);      
+      return EventParameter("minvalue",FWEELIN_GETOFS(minvalue),T_int);
     }
 
     return EventParameter();
-  };    
+  };
 
   UserVariable *var;  // Variable to increment (toggle)
   int maxvalue,       // Maximum value of variable before wraparound
     minvalue;         // Value to wrap to
+};
+
+class SplitVariableMSBLSBEvent : public Event {
+ public:
+  EVT_DEFINE(SplitVariableMSBLSBEvent,T_EV_SplitVariableMSBLSB);
+  virtual void Recycle() {
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    SplitVariableMSBLSBEvent &s = (SplitVariableMSBLSBEvent &) src;
+    var = s.var;
+    msb = s.msb;
+    lsb = s.lsb;
+  };
+  virtual int GetNumParams() { return 3; };
+  virtual EventParameter GetParam(int n) {
+    switch (n) {
+    case 0:
+      return EventParameter("var",FWEELIN_GETOFS(var),T_variable);
+    case 1:
+      return EventParameter("msb",FWEELIN_GETOFS(msb),T_variableref);
+    case 2:
+      return EventParameter("lsb",FWEELIN_GETOFS(lsb),T_variableref);
+    }
+
+    return EventParameter();
+  };
+
+  UserVariable var;   // Variable to split
+  UserVariable *msb,  // MSB of var will be stored here
+    *lsb;             // LSB of var will be stored here. var is unchanged
+};
+
+class ParamSetGetAbsoluteParamIdxEvent : public Event {
+ public:
+  EVT_DEFINE_NO_CONSTR(ParamSetGetAbsoluteParamIdxEvent,T_EV_ParamSetGetAbsoluteParamIdx);
+  ParamSetGetAbsoluteParamIdxEvent() { Recycle(); };
+  virtual void Recycle() {
+    interfaceid = -1;
+    displayid = 0;
+    paramidx = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    ParamSetGetAbsoluteParamIdxEvent &s = (ParamSetGetAbsoluteParamIdxEvent &) src;
+    interfaceid = s.interfaceid;
+    displayid = s.displayid;
+    paramidx = s.paramidx;
+    absidx = s.absidx;
+  };
+  virtual int GetNumParams() { return 4; };
+  virtual EventParameter GetParam(int n) {
+    switch (n) {
+    case 0:
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
+    case 1:
+      return EventParameter("displayid",FWEELIN_GETOFS(displayid),T_int);
+    case 2:
+      return EventParameter("paramidx",FWEELIN_GETOFS(paramidx),T_int);
+    case 3:
+      return EventParameter("absidx",FWEELIN_GETOFS(absidx),T_variableref);
+    }
+
+    return EventParameter();
+  };
+
+  int interfaceid, // Interface in which parameter set display is defined
+    displayid,     // Display ID of parameter set display
+    paramidx;      // Relative index of parameter
+  UserVariable *absidx;     // Absolute index of parameter will be stored in absidx
+};
+
+class ParamSetGetParamEvent : public Event {
+ public:
+  EVT_DEFINE_NO_CONSTR(ParamSetGetParamEvent,T_EV_ParamSetGetParam);
+  ParamSetGetParamEvent() { Recycle(); };
+  virtual void Recycle() {
+    interfaceid = -1;
+    displayid = 0;
+    paramidx = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    ParamSetGetParamEvent &s = (ParamSetGetParamEvent &) src;
+    interfaceid = s.interfaceid;
+    displayid = s.displayid;
+    paramidx = s.paramidx;
+    var = s.var;
+  };
+  virtual int GetNumParams() { return 4; };
+  virtual EventParameter GetParam(int n) {
+    switch (n) {
+    case 0:
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
+    case 1:
+      return EventParameter("displayid",FWEELIN_GETOFS(displayid),T_int);
+    case 2:
+      return EventParameter("paramidx",FWEELIN_GETOFS(paramidx),T_int);
+    case 3:
+      return EventParameter("var",FWEELIN_GETOFS(var),T_variableref);
+    }
+
+    return EventParameter();
+  };
+
+  int interfaceid, // Interface in which parameter set display is defined
+    displayid,     // Display ID of parameter set display
+    paramidx;      // Index of parameter to get (relative to the first parameter of the active page in the active bank)
+  UserVariable *var;     // Variable to use to store value of parameter
+};
+
+class ParamSetSetParamEvent : public Event {
+ public:
+  EVT_DEFINE_NO_CONSTR(ParamSetSetParamEvent,T_EV_ParamSetSetParam);
+  ParamSetSetParamEvent() { Recycle(); };
+  virtual void Recycle() {
+    interfaceid = -1;
+    displayid = 0;
+    paramidx = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    ParamSetSetParamEvent &s = (ParamSetSetParamEvent &) src;
+    interfaceid = s.interfaceid;
+    displayid = s.displayid;
+    paramidx = s.paramidx;
+    value = s.value;
+  };
+  virtual int GetNumParams() { return 4; };
+  virtual EventParameter GetParam(int n) {
+    switch (n) {
+    case 0:
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
+    case 1:
+      return EventParameter("displayid",FWEELIN_GETOFS(displayid),T_int);
+    case 2:
+      return EventParameter("paramidx",FWEELIN_GETOFS(paramidx),T_int);
+    case 3:
+      return EventParameter("value",FWEELIN_GETOFS(value),T_float);
+    }
+
+    return EventParameter();
+  };
+
+  int interfaceid, // Interface in which parameter set display is defined
+    displayid,     // Display ID of parameter set display
+    paramidx;      // Index of parameter to set (relative to the first parameter of the active page in the active bank)
+  float value;     // Value to store in parameter
+};
+
+class LogFaderVolToLinearEvent : public Event {
+ public:
+  EVT_DEFINE(LogFaderVolToLinearEvent,T_EV_LogFaderVolToLinear);
+  virtual void Recycle() {
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    LogFaderVolToLinearEvent &s = (LogFaderVolToLinearEvent &) src;
+    var = s.var;
+    fadervol.type = s.fadervol.type;
+    fadervol = s.fadervol;
+    scale = s.scale;
+  };
+  virtual int GetNumParams() { return 3; };
+  virtual EventParameter GetParam(int n) {
+    switch (n) {
+    case 0:
+      return EventParameter("var",FWEELIN_GETOFS(var),T_variableref);
+    case 1:
+      return EventParameter("fadervol",FWEELIN_GETOFS(fadervol),T_variable);
+    case 2:
+      return EventParameter("scale",FWEELIN_GETOFS(scale),T_float);
+    }
+
+    return EventParameter();
+  };
+
+  UserVariable *var;     // Variable to store converted fadervol
+  UserVariable fadervol; // Fader volume to convert to linear
+  float scale;           // Scaling factor for linear output - ie 0.0dB on the
+                         // fader becomes 'scale'. For example, if scale is 16384,
+                         // 0.0dB on the fader is 16384 and 6.0dB on the fader is
+                         // roughly 32768. Note that fadervol is not actually
+                         // a dB value, but a 'fadervol', which is a value between
+                         // 0 and 1 which corresponds to the throw of a
+                         // log volume fader. Please see AudioLevel class.
+};
+
+class ALSAMixerControlSetEvent : public Event {
+ public:
+  EVT_DEFINE(ALSAMixerControlSetEvent,T_EV_ALSAMixerControlSet);
+  virtual void Recycle() {
+    hwid = 0;
+    numid = -1;
+    val1 = -1;
+    val2 = -1;
+    val3 = -1;
+    val4 = -1;
+
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    ALSAMixerControlSetEvent &s = (ALSAMixerControlSetEvent &) src;
+    hwid = s.hwid;
+    numid = s.numid;
+    val1 = s.val1;
+    val2 = s.val2;
+    val3 = s.val3;
+    val4 = s.val4;
+  };
+  virtual int GetNumParams() { return 6; };
+  virtual EventParameter GetParam(int n) {
+    switch (n) {
+    case 0:
+      return EventParameter("hwid",FWEELIN_GETOFS(hwid),T_int);
+    case 1:
+      return EventParameter("numid",FWEELIN_GETOFS(numid),T_int);
+    case 2:
+      return EventParameter("val1",FWEELIN_GETOFS(val1),T_int);
+    case 3:
+      return EventParameter("val2",FWEELIN_GETOFS(val2),T_int);
+    case 4:
+      return EventParameter("val3",FWEELIN_GETOFS(val3),T_int);
+    case 5:
+      return EventParameter("val4",FWEELIN_GETOFS(val4),T_int);
+    }
+
+    return EventParameter();
+  };
+
+  int hwid,   // Hardware interface ID for alsa (ie hwid=0 is hw:0)
+    numid;    // ALSA mixer control numid (ie 'amixer cset numid=5')
+
+  int val1, val2, val3, val4; // Values to set (up to 4, leave blank for fewer)
 };
 
 class VideoShowLoopEvent : public Event {
@@ -892,6 +1141,76 @@ class VideoShowSnapshotPageEvent : public Event {
   int interfaceid, // Interface in which snapshot display is defined
     displayid,     // Display ID of snapshot display
     page;          // +1 (next page) or -1 (previous page)
+};
+
+class VideoShowParamSetBankEvent : public Event {
+ public:
+  EVT_DEFINE_NO_CONSTR(VideoShowParamSetBankEvent,T_EV_VideoShowParamSetBank);
+  VideoShowParamSetBankEvent() { Recycle(); };
+  virtual void Recycle() {
+    interfaceid = -1;
+    displayid = 0;
+    bank = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    VideoShowParamSetBankEvent &s = (VideoShowParamSetBankEvent &) src;
+    interfaceid = s.interfaceid;
+    displayid = s.displayid;
+    bank = s.bank;
+  };
+  virtual int GetNumParams() { return 3; };
+  virtual EventParameter GetParam(int n) {
+    switch (n) {
+    case 0:
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
+    case 1:
+      return EventParameter("displayid",FWEELIN_GETOFS(displayid),T_int);
+    case 2:
+      return EventParameter("bank",FWEELIN_GETOFS(bank),T_int);
+    }
+
+    return EventParameter();
+  };
+
+  int interfaceid, // Interface in which parameter set display is defined
+    displayid,     // Display ID of parameter set display
+    bank;          // +1 (next bank of parameters) or -1 (previous bank)
+};
+
+class VideoShowParamSetPageEvent : public Event {
+ public:
+  EVT_DEFINE_NO_CONSTR(VideoShowParamSetPageEvent,T_EV_VideoShowParamSetPage);
+  VideoShowParamSetPageEvent() { Recycle(); };
+  virtual void Recycle() {
+    interfaceid = -1;
+    displayid = 0;
+    page = 0;
+    Event::Recycle();
+  };
+  virtual void operator = (const Event &src) {
+    VideoShowParamSetPageEvent &s = (VideoShowParamSetPageEvent &) src;
+    interfaceid = s.interfaceid;
+    displayid = s.displayid;
+    page = s.page;
+  };
+  virtual int GetNumParams() { return 3; };
+  virtual EventParameter GetParam(int n) {
+    switch (n) {
+    case 0:
+      return EventParameter(INTERFACEID,FWEELIN_GETOFS(interfaceid),T_int);
+    case 1:
+      return EventParameter("displayid",FWEELIN_GETOFS(displayid),T_int);
+    case 2:
+      return EventParameter("page",FWEELIN_GETOFS(page),T_int);
+    }
+
+    return EventParameter();
+  };
+
+  int interfaceid, // Interface in which parameter set display is defined
+    displayid,     // Display ID of parameter set display
+    page;          // +1 (next page of parameters) or -1 (previous page)
 };
 
 class VideoShowLayoutEvent : public Event {
@@ -2413,6 +2732,14 @@ class TriggerSetEvent : public Event {
 
   int idx;  // On index 'idx'
   Loop *nw; // ..we now have 'nw'
+};
+
+// TransmitPlayingLoopsToDAW can be used to send all playing
+// loops to a connected DAW via OSC
+// Only saved loops will be sent
+class TransmitPlayingLoopsToDAWEvent : public Event {
+ public:
+  EVT_DEFINE(TransmitPlayingLoopsToDAWEvent,T_EV_TransmitPlayingLoopsToDAW);
 };
 
 // Consider making EventListenerItem a Preallocated type to improve performance

@@ -4,7 +4,10 @@
 
     <!-- All BCF controls must come on this MIDI channel -->
     <declare var="VAR_bcf2000_channel" type="int" init="15"/>
-    
+
+    <!-- Which MIDI output port goes back to BCF-2000? -->
+    <declare var="VAR_bcf2000_outport" type="int" init="2"/>
+
     <declare var="VAR_bcf2000_ate_midicc" type="int" init="0"/>
     <declare var="VAR_bcf2000_any_midicc" type="range" init="0>127"/>
     
@@ -101,7 +104,7 @@
     <declare var="VAR_controlpage" type="char" init="0"/>
 
     <declare var="VAR_bcf2000_interfaceid" type="int" init="0"/>
-    
+        
     <!-- Startup -->
     <binding input="start-interface" 
      output1="video-show-loop" 
@@ -112,7 +115,7 @@
 
     <!-- Rest of the bindings... -->
 
-   <!-- Knobs: Fade loops- amp levels -->
+    <!-- Knobs: Fade loops- amp levels -->
     <binding input="midicontroller" conditions="midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000controlrange1+VAR_bcf2000ampcc and controlval=0>64" 
      output="adjust-loop-amplifier"
      parameters="loopid=VAR_loopid_bcf2000+controlnum-VAR_bcf2000ampcc and
@@ -257,21 +260,25 @@
      
     <!-- Fader 5: Master in volume -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+4" 
-     output="set-master-in-volume" parameters="fadervol=controlval/127.0"/>
-
+     output1="set-master-in-volume" parameters1="fadervol=controlval/127.0"
+     output2="go-sub" parameters2="sub=800 and param1=controlval/127.0"/>
+     
     <!-- Fader 6: Master out volume -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+5" 
-     output="set-master-out-volume" parameters="fadervol=controlval/127.0"/>
-
+     output1="set-master-out-volume" parameters1="fadervol=controlval/127.0"/>
+     
     <!-- Faders 1-4: Input volumes -->
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+0" 
-     output="set-in-volume" parameters="input=1 and fadervol=controlval/127.0"/>
+     output1="set-in-volume" parameters1="input=1 and fadervol=controlval/127.0"
+     output2="go-sub" parameters2="sub=801 and param1=controlval/127.0"/>
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+1" 
-     output="set-in-volume" parameters="input=2 and fadervol=controlval/127.0"/>
+     output1="set-in-volume" parameters1="input=2 and fadervol=controlval/127.0"
+     output2="go-sub" parameters2="sub=802 and param1=controlval/127.0"/>
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+2" 
-     output="set-in-volume" parameters="input=3 and fadervol=controlval/127.0"/>
+     output1="set-in-volume" parameters1="input=3 and fadervol=controlval/127.0"
+     output2="go-sub" parameters2="sub=803 and param1=controlval/127.0"/>
     <binding input="midicontroller" conditions="VAR_fadermode=1 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000fadercc+3" 
-     output="set-in-volume" parameters="input=4 and fadervol=controlval/127.0"/>
+     output1="set-in-volume" parameters1="input=4 and fadervol=controlval/127.0"/>
 
     <!-- Faders: Fade loops- trigger levels -->
     <binding input="midicontroller" conditions="VAR_fadermode=0 and VAR_controlpage=0 and midichannel=VAR_bcf2000_channel and controlnum=VAR_bcf2000controlrange1+VAR_bcf2000fadercc" 

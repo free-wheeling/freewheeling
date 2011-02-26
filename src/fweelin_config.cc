@@ -13,7 +13,7 @@
 // It is precise action,
 // Energy conservation.
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -52,6 +52,8 @@
 #include "fweelin_midiio.h"
 #include "fweelin_sdlio.h"
 #include "fweelin_core.h"
+#include "fweelin_core_dsp.h"
+#include "fweelin_paramset.h"
 
 // *********** CONFIG
 
@@ -416,6 +418,8 @@ void InputMatrix::Start() {
 
   app->getEMG()->ListenEvent(this,0,T_EV_SetVariable);
   app->getEMG()->ListenEvent(this,0,T_EV_ToggleVariable);
+  app->getEMG()->ListenEvent(this,0,T_EV_SplitVariableMSBLSB);
+  app->getEMG()->ListenEvent(this,0,T_EV_LogFaderVolToLinear);
   app->getEMG()->ListenEvent(this,0,T_EV_ShowDebugInfo);
   app->getEMG()->ListenEvent(this,0,T_EV_AdjustMidiTranspose);
 
@@ -439,6 +443,8 @@ InputMatrix::~InputMatrix() {
 
   app->getEMG()->UnlistenEvent(this,0,T_EV_SetVariable);
   app->getEMG()->UnlistenEvent(this,0,T_EV_ToggleVariable);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_SplitVariableMSBLSB);
+  app->getEMG()->UnlistenEvent(this,0,T_EV_LogFaderVolToLinear);
   app->getEMG()->UnlistenEvent(this,0,T_EV_ShowDebugInfo);
   app->getEMG()->UnlistenEvent(this,0,T_EV_AdjustMidiTranspose);
 
@@ -1686,7 +1692,58 @@ void InputMatrix::ReceiveEvent(Event *ev, EventProducer *from) {
         }
       }
       break;
-      
+
+    case T_EV_SplitVariableMSBLSB :
+      {
+        SplitVariableMSBLSBEvent *sv = (SplitVariableMSBLSBEvent *) ev;
+
+        // Set the MSB/LSB from the given variable
+        if (sv->msb == 0 || sv->msb->IsSystemVariable())
+          printf(" SplitVariableMSBLSBEvent: 'msb': Invalid variable!\n");
+        else if (sv->lsb == 0 || sv->lsb->IsSystemVariable())
+          printf(" SplitVariableMSBLSBEvent: 'lsb': Invalid variable!\n");
+        else {
+          int value_of_var = (int) sv->var,
+              msb = (value_of_var & 0xFF00) >> 8,
+              lsb = (value_of_var & 0x00FF);
+
+          *sv->msb = msb;
+          *sv->lsb = lsb;
+
+          if (CRITTERS)
+            printf("CONFIG: SplitVariableMSBLSB: var: %d split and stored into: msb: %d lsb: %d\n",value_of_var,msb,lsb);
+        }
+      }
+      break;
+
+    case T_EV_LogFaderVolToLinear :
+      {
+        LogFaderVolToLinearEvent *sv = (LogFaderVolToLinearEvent *) ev;
+
+        // Set the variable based on the linear version of the given value
+        if (sv->var == 0 || sv->var->IsSystemVariable())
+          printf(" LogFaderVolToLinearEvent: Invalid variable!\n");
+        else {
+          // Get fadervol
+          float fv = (float) sv->fadervol,
+              db = AudioLevel::fader_to_dB(fv, app->getCFG()->GetFaderMaxDB()),
+              lin = DB2LIN(db);
+
+          lin *= sv->scale;
+
+          if (sv->var->GetType() != T_float)
+            printf("CONFIG: LogFaderVolToLinear 'var' must be of type float.");
+          else {
+            if (CRITTERS)
+              printf("CONFIG: LogFaderVolToLinear: Fadervol: %f -> dB: %f -> linear (scale: %f): %f\n",
+                  fv,db,sv->scale,lin);
+
+            *sv->var = lin;
+          }
+        }
+      }
+      break;
+
     case T_EV_ShowDebugInfo :
       {
         ShowDebugInfoEvent *dev = (ShowDebugInfoEvent *) ev;
@@ -2125,8 +2182,8 @@ void FloConfig::ConfigureElement(xmlDocPtr doc, xmlNode *elemn,
 };
 
 void FloConfig::ConfigureLayout(xmlDocPtr doc, xmlNode *layn, 
-                            FloLayout *lay, float xscale,
-                            float yscale) {
+    FloLayout *lay, float xscale,
+    float yscale) {
   xmlNode *cur_node;
   for (cur_node = layn->children; cur_node != NULL; 
        cur_node = cur_node->next) {
@@ -2507,6 +2564,124 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
   }    
 };
 
+void FloConfig::SetupParamSetBank(xmlDocPtr doc, xmlNode *banknode, ParamSetBank *bank) {
+  // Bank name
+  char *name = 0;
+  xmlChar *nn = xmlGetProp(banknode, (const xmlChar *)"name");
+  if (nn != 0) {
+    name = new char[xmlStrlen(nn)+1];
+    strcpy(name,(char *) nn);
+    xmlFree(nn);
+  }
+
+  // Max value of any param in this bank
+  float maxvalue = 1.0;
+  nn = xmlGetProp(banknode, (const xmlChar *)"maxvalue");
+  if (nn != 0) {
+    maxvalue = atof((char *) nn);
+    xmlFree(nn);
+  }
+
+  // Count number of params
+  int numparams = 0;
+  xmlNode *cur_node;
+  for (cur_node = banknode->children; cur_node != NULL;
+       cur_node = cur_node->next) {
+    if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"param")))
+      numparams++;
+  }
+
+  bank->Setup(name,numparams,maxvalue);
+  if (name != 0)
+    delete[] name;
+
+  // Setup each parameter
+  int curparam = 0;
+  for (cur_node = banknode->children; cur_node != NULL;
+       cur_node = cur_node->next) {
+    if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"param"))) {
+      nn = xmlGetProp(cur_node, (const xmlChar *)"name");
+      if (nn != 0) {
+        bank->params[curparam].SetName((char *) nn);
+        xmlFree(nn);
+      }
+
+      nn = xmlGetProp(cur_node, (const xmlChar *)"init");
+      if (nn != 0) {
+        bank->params[curparam].value = atof((char *) nn);
+        xmlFree(nn);
+      }
+
+      curparam++;
+    }
+  }
+};
+
+FloDisplay *FloConfig::SetupParamSet(xmlDocPtr doc, xmlNode *paramset, int interfaceid) {
+  printf("(parameter set) ");
+
+  // Param set name
+  char *name = "NONAME";
+  char ps_named = 0;
+  xmlChar *nn = xmlGetProp(paramset, (const xmlChar *)"name");
+  if (nn != 0) {
+    ps_named = 1;
+    name = new char[xmlStrlen(nn)+1];
+    strcpy(name,(char *) nn);
+    xmlFree(nn);
+  }
+
+  // Parameter set display size
+  int sx = 100, sy = 100;
+  nn = xmlGetProp(paramset, (const xmlChar *)"size");
+  if (nn != 0) {
+    int cs;
+    float *coord = ExtractArray((char *)nn, &cs);
+    if (cs) {
+      sx = XCvt(coord[0]);
+      sy = XCvt(coord[1]);
+      printf("size (%d,%d) ",sx,sy);
+    }
+    delete[] coord;
+    xmlFree(nn);
+  }
+
+  int numactiveparams = 8;
+  nn = xmlGetProp(paramset, (const xmlChar *)"numactiveparams");
+  if (nn != 0) {
+    numactiveparams = atoi((char *) nn);
+    xmlFree(nn);
+  }
+
+  // Count banks
+  int numbanks=0;
+  xmlNode *cur_node;
+  for (cur_node = paramset->children; cur_node != NULL;
+       cur_node = cur_node->next) {
+    if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"bank")))
+      numbanks++;
+  }
+
+  // Create param set
+  FloDisplayParamSet *nw = new FloDisplayParamSet(GetInputMatrix()->app,name,interfaceid,numactiveparams,numbanks,sx,sy);
+  if (ps_named)
+    delete[] name;
+
+  nw->margin = XCvt(0.005);
+
+  // Create and populate banks
+  int cur_bank = 0;
+  for (cur_node = paramset->children; cur_node != NULL;
+       cur_node = cur_node->next) {
+    if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"bank"))) {
+      SetupParamSetBank(doc,cur_node,&nw->banks[cur_bank]);
+      cur_bank++;
+    }
+  }
+
+  return nw;
+};
+
 void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid, 
                                   int interfaceid) {
   xmlNode *cur_node;
@@ -2782,6 +2957,8 @@ void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid,
             delete[] coord;
             xmlFree(nn);
           }
+        } else if (!xmlStrcmp(n, (const xmlChar *)"paramset")) {
+          nw = SetupParamSet(doc,cur_node,iid);
         } else if (!xmlStrcmp(n, (const xmlChar *)"bar") || 
                    !xmlStrcmp(n, (const xmlChar *)"bar-switch")) {
           // Bar or bar-switch?
@@ -3140,6 +3317,23 @@ void FloConfig::LinkSystemVariable(char *name, CoreDataType type, char *ptr) {
 
     cur = cur->next;
   }
+};
+
+// Returns a pointer to the given variable
+UserVariable *FloConfig::GetVariable(char *name) {
+  UserVariable *cur = im.vars;
+  while (cur != 0) {
+    if (cur->name != 0) {
+      if (!strcmp(cur->name,name)) {
+        // Variable found!
+        return cur;
+      }
+    }
+
+    cur = cur->next;
+  }
+
+  return 0;
 };
 
 FloConfig::~FloConfig() 

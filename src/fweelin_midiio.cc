@@ -6,7 +6,7 @@
    of where we land?
 */
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -636,6 +636,17 @@ void MidiIO::OutputStart (int port) {
   snd_seq_event_output_direct(seq_handle, &outev);  
 };
 
+void MidiIO::OutputSPP (int port) {
+  snd_seq_event_t outev;
+  snd_seq_ev_set_subs(&outev);
+  snd_seq_ev_set_direct(&outev);
+  snd_seq_ev_set_source(&outev,out_ports[port]);
+  outev.type = SND_SEQ_EVENT_SONGPOS;
+  outev.data.control.value = 0; // Always start at the beginning
+  snd_seq_ev_set_fixed(&outev);
+  snd_seq_event_output_direct(seq_handle, &outev);
+};
+
 void MidiIO::OutputStop (int port) {
   snd_seq_event_t outev;
   snd_seq_ev_set_subs(&outev);
@@ -995,6 +1006,7 @@ void MidiIO::ReceiveEvent(Event *ev, EventProducer *from) {
 
 int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel, int bypasschannel) {
   FloConfig *fs = app->getCFG(); 
+  static int midi_clock_count = 0;
 
   // DEBUG
   // printf("ECHO EVENT -> Port: %d Channel: %d\n",port,channel);
@@ -1005,15 +1017,24 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel, int bypass
     {
       // MIDIClockInputEvent *clkevt = (MIDIClockInputEvent *) ev;
       OutputClock(ret = port);
+
+      midi_clock_count++;
+      if (midi_clock_count >= MIDI_CLOCK_FREQUENCY) {
+        midi_clock_count = 0;
+        if (CRITTERS)
+          printf("MIDI: Quarter Note Clock\n");
+      }
     } 
     break;
 
   case T_EV_Input_MIDIStartStop :
     {
       MIDIStartStopInputEvent *ssevt = (MIDIStartStopInputEvent *) ev;
-      if (ssevt->start) 
-        OutputStart(ret = port);
-      else
+      if (ssevt->start) {
+        midi_clock_count = 0;
+        OutputSPP(ret = port);  // Output song position pointer first
+        OutputStart(port);      // Then start message
+      } else
         OutputStop(ret = port);
     } 
     break;
@@ -1124,7 +1145,6 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel, int bypass
 
 void MidiIO::EchoEvent (Event *ev) {
   // Handle MIDI event echos..
-
   if (ev->GetType() == T_EV_Input_MIDIClock ||
       ev->GetType() == T_EV_Input_MIDIStartStop) {
     // MIDI sync message- send out to all ports set to transmit MIDI sync

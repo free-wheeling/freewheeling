@@ -1,7 +1,7 @@
 #ifndef __FWEELIN_CORE_DSP_H
 #define __FWEELIN_CORE_DSP_H
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -29,6 +29,9 @@
 #ifndef MAX
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #endif
+
+extern int math_gcd (int a, int b);
+extern int math_lcm (int a, int b);
 
 // Macros for converting between linear amplitude and dB
 #define DB2LIN(db) (powf(10.0f, (db) * 0.05f))
@@ -308,6 +311,8 @@ class Pulse : public Processor {
 public:
   // Length of metronome strike sound in samples
   const static nframes_t METRONOME_HIT_LEN;
+  // Length of metronome tone sound in samples
+  const static nframes_t METRONOME_TONE_LEN;
   // Initial metronome volume
   const static float METRONOME_INIT_VOL;
   // Maximum number of user-defined pulse sync callbacks
@@ -439,9 +444,14 @@ public:
   nframes_t prevtap; // samplecnt @ previous tap
 
   // Metronome
-  sample_t *metro; // Sample data for metronome strike
-  nframes_t metroofs, // Current position into metronome sample
-    metrolen;         // Length of metronome sample
+  sample_t *metro,    // Sample data for metronome strike
+    *metrohitone,     // Metronome hi tone
+    *metrolotone;     // Metronome lo tone
+  nframes_t metroofs, // Current position into metronome strike sample
+    metrohiofs,       // Current position into high metronome tone
+    metroloofs,       // Current position into low metronome tone
+    metrolen,         // Length of metronome strike sample
+    metrotonelen;     // Length of metronome hi/lo tone samples
   char metroactive;   // Nonzero if metronome sound is active
   float metrovol;     // Volume of metronome
 

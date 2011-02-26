@@ -208,6 +208,7 @@
      xpand="1" xbox="0.1,0.1, 0.9,0.9" xdelay="5.0" show="1">
        <patchbank bypasscc="116" midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-receptor-1.xml"/>
        <patchbank bypasscc="116" midiport="1" separatechannels="0" suppressprogramchanges="1" patches="patches-receptor-2.xml"/>
+       <patchbank midiport="2" separatechannels="0" patches="patches-synful.xml"/>
        <patchbank bypasscc="116" bypasstime1="60" bypasstime2="10" midiport="1" separatechannels="0" suppressprogramchanges="1" 
         patches="patches-channels.xml"/>
     </display>

@@ -5,11 +5,11 @@
    unmistakable. 
 */
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
-   Freewheeling is free software: you can redistribute it and/or modify
+   Freewheelisng is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation, either version 2 of the License, or
    (at your option) any later version.
@@ -44,6 +44,8 @@
 
 #include "fweelin_core.h"
 #include "fweelin_fluidsynth.h"
+#include "fweelin_paramset.h"
+#include "fweelin_looplibrary.h"
 
 const float Loop::MIN_VOL = 0.01;
 
@@ -126,14 +128,14 @@ char Fweelin::TriggerSnapshot (int idx) {
 // into its base name, hash and object name components
 //
 // Returns zero on success
-char Saveable::SplitFilename(char *filename, int baselen, char *basename, 
+char Saveable::SplitFilename(const char *filename, int baselen, char *basename,
                              char *hash, char *objname,
                              int maxlen) {
   // Loop exists, use combination of time and hash as name
-  char *slashptr = filename + baselen;
+  const char *slashptr = filename + baselen;
 
   if (slashptr < filename+strlen(filename)) {
-    char *slashptr2 = strchr(slashptr+1,'-'),
+    const char *slashptr2 = strchr(slashptr+1,'-'),
       *extptr = strrchr(filename,'.');
     
     if (extptr == 0)
@@ -148,7 +150,7 @@ char Saveable::SplitFilename(char *filename, int baselen, char *basename,
     }
 
     // Extract hash
-    char *breaker = (slashptr2 != 0 ? slashptr2 : extptr);
+    const char *breaker = (slashptr2 != 0 ? slashptr2 : extptr);
     if (strlen(slashptr+1) - strlen(breaker) == SAVEABLE_HASH_LENGTH*2) {
       if (hash != 0) {
         len = MIN(SAVEABLE_HASH_LENGTH*2,maxlen-1);
@@ -608,6 +610,8 @@ LoopManager::LoopManager (Fweelin *app) :
   app->getEMG()->ListenEvent(this,0,T_EV_EraseAllLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_EraseSelectedLoops);
   app->getEMG()->ListenEvent(this,0,T_EV_SlideLoopAmpStopAll);
+
+  app->getEMG()->ListenEvent(this,0,T_EV_ALSAMixerControlSet);
 };
 
 LoopManager::~LoopManager() { 
@@ -667,6 +671,8 @@ LoopManager::~LoopManager() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_EraseSelectedLoops);
   app->getEMG()->UnlistenEvent(this,0,T_EV_SlideLoopAmpStopAll);
 
+  app->getEMG()->UnlistenEvent(this,0,T_EV_ALSAMixerControlSet);
+
   EventManager::DeleteQueue(savequeue);
   EventManager::DeleteQueue(loadqueue);
 
@@ -711,11 +717,12 @@ nframes_t LoopManager::GetRoundedLength(int index) {
   }
   else {
     Loop *cur = app->getTMAP()->GetMap(index);
-    if (cur != 0)
+    if (cur != 0) {
       if (cur->pulse != 0)
         return cur->pulse->QuantizeLength(cur->blocks->GetTotalLen());
       else
         return 0; // cur->blocks->GetTotalLen();
+    }
   }
   
   return 0;
@@ -1283,158 +1290,107 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
 int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop, 
                                int l_idx, float l_vol, char *l_filename) {
   // Open up right file and begin loading
-  char tmp[FWEELIN_OUTNAME_LEN];
-  codec format = UNKNOWN;
-  // Try exact filename with all format types
-  for (codec i = FIRST_FORMAT; i < END_OF_FORMATS; i = (codec) (i+1))
-  {
-    snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s%s",l_filename,
-             app->getCFG()->GetAudioFileExt(i));
-    *in = fopen(tmp,"rb");
-    if (*in != 0) {
-      printf("DISK: Open loop '%s'\n",tmp);
-      bread->SetLoopType(i);
-      format = i;
-      break;
-    }
-  } 
+  LibraryFileInfo f = LibraryHelper::GetLoopFilenameFromStub(app,l_filename);
 
-  if (*in == 0) {
-    // No go, try wildcard search with all format types
-    for (codec i = FIRST_FORMAT; i < END_OF_FORMATS; i = (codec) (i+1)) {
-      snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s*%s",l_filename,
-               app->getCFG()->GetAudioFileExt(i));
-      glob_t globbuf;
-      if (glob(tmp, 0, NULL, &globbuf) == 0) {
-        for (size_t j = 0; *in == 0 && j < globbuf.gl_pathc; j++) {
-          printf("DISK: Open loop '%s'\n",globbuf.gl_pathv[j]);
-          *in = fopen(globbuf.gl_pathv[j],"rb");
-        }
-        globfree(&globbuf);
-      }
-      if (*in != 0) {
-        bread->SetLoopType(i);
-        format = i;
-        break;
-      } 
-    }
+  if (f.c != UNKNOWN) {
+    printf("DISK: Open loop '%s'\n",f.name.c_str());
+    *in = fopen(f.name.c_str(),"rb");
+    bread->SetLoopType(f.c);
+  } else {
     if (*in == 0) {
-      printf("DISK: ERROR: Couldn't open loop '%s'!\n",tmp);
+      printf("DISK: ERROR: Couldn't open loop '%s'!\n",l_filename);
       return 1;
     }
   }
 
-  // Main file open, now load loop XML data
-  snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s%s",
-           l_filename,FWEELIN_OUTPUT_DATA_EXT);
-  
+  LibraryFileInfo data = LibraryHelper::GetDataFilenameFromStub(app,l_filename);
+
   // Create loop data
-  *new_loop = new Loop(0,0,1.0,l_vol,0,format);
+  *new_loop = new Loop(0,0,1.0,l_vol,0,f.c);
 
-  struct stat st;
-  int result = 1;
-  if (stat(tmp,&st) != 0) {
-    // Try loading with wildcard
-    snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s*%s",
-             l_filename,FWEELIN_OUTPUT_DATA_EXT);
-    glob_t globbuf;
-
-    if (glob(tmp, 0, NULL, &globbuf) == 0) {
-      for (size_t i = 0; result != 0 && i < globbuf.gl_pathc; i++) {
-        result = stat(globbuf.gl_pathv[i],&st);
-        if (result == 0)
-          strncpy(tmp,globbuf.gl_pathv[i],
-                  FWEELIN_OUTNAME_LEN); // Save the name for later
-      }
-      globfree(&globbuf);
-    }
-
-    if (result != 0)
-      printf("DISK: WARNING: Loop data '%s' missing!\n"
-             "I will load just the raw audio.\n",tmp);
-  } else
-    result = 0;
-
-  xmlDocPtr ldat = 0;
-  if (result == 0)
-    ldat = xmlParseFile(tmp);
-  if (ldat == 0)
-    printf("DISK: WARNING: Loop data '%s' invalid!\n"
-           "I will load just the raw audio.\n",tmp);
-  else {
-    xmlNode *root = xmlDocGetRootElement(ldat);
-    
-    // Extract hash from filename
-    char fn_hash[FWEELIN_OUTNAME_LEN],
-      loopname[FWEELIN_OUTNAME_LEN];
-    int baselen = strlen(app->getCFG()->GetLibraryPath()) + 1 +
-      strlen(FWEELIN_OUTPUT_LOOP_NAME);
-    if (!Saveable::SplitFilename(tmp,baselen,0,fn_hash,loopname,
-                                 FWEELIN_OUTNAME_LEN)) {
-      // Set hash from filename
-      (*new_loop)->SetSaveableHashFromText(fn_hash);
+  if (!data.exists) {
+    printf("DISK: WARNING: Loop data '%s' missing!\n"
+           "I will load just the raw audio.\n",l_filename);
+  } else {
+    xmlDocPtr ldat = xmlParseFile(data.name.c_str());
+    if (ldat == 0)
+      printf("DISK: WARNING: Loop data '%s' invalid!\n"
+             "I will load just the raw audio.\n",data.name.c_str());
+    else {
+      xmlNode *root = xmlDocGetRootElement(ldat);
       
-      // GET_SAVEABLE_HASH_TEXT((*new_loop)->GetSaveHash());
-      // printf("md5: %s\n",hashtext);
+      // Extract hash from filename
+      char fn_hash[FWEELIN_OUTNAME_LEN],
+        loopname[FWEELIN_OUTNAME_LEN];
+      int baselen = strlen(app->getCFG()->GetLibraryPath()) + 1 +
+        strlen(FWEELIN_OUTPUT_LOOP_NAME);
+      if (!Saveable::SplitFilename(data.name.c_str(),baselen,0,fn_hash,loopname,
+                                   FWEELIN_OUTNAME_LEN)) {
+        // Set hash from filename
+        (*new_loop)->SetSaveableHashFromText(fn_hash);
+
+        // GET_SAVEABLE_HASH_TEXT((*new_loop)->GetSaveHash());
+        // printf("md5: %s\n",hashtext);
+
+        // First, check if this loop has already been loaded
+        // by scanning for another loop with the same hash
+        int dupidx;
+        if ((dupidx =
+             app->getTMAP()->ScanForHash((*new_loop)->GetSaveHash())) != -1) {
+          printf("DISK: (DUPLICATE) Loop to load is already loaded at "
+                 "ID #%d.\n",dupidx);
+
+          delete (*new_loop);
+          *new_loop = 0;
+          fclose(*in);
+          *in = 0;
+
+          return 1;
+        }
+
+        // Set loop name from filename
+        (*new_loop)->name = new char[strlen(loopname)+1];
+        strcpy((*new_loop)->name,loopname);
+      } else
+        printf("DISK: Loop filename '%s' missing hash!\n",l_filename);
       
-      // First, check if this loop has already been loaded
-      // by scanning for another loop with the same hash
-      int dupidx;
-      if ((dupidx = 
-           app->getTMAP()->ScanForHash((*new_loop)->GetSaveHash())) != -1) {
-        printf("DISK: (DUPLICATE) Loop to load is already loaded at "
-               "ID #%d.\n",dupidx);
+      // version
+      xmlChar *n = xmlGetProp(root, (const xmlChar *) "version");
+      if (n != 0) {
+        if (atoi((char *) n) >= 1)
+          // New format of loop save, so smooth end
+          *smooth_end = 1;
+        else
+          *smooth_end = 0;
         
-        delete (*new_loop);
-        *new_loop = 0;
-        fclose(*in);
-        *in = 0;
-        
-        return 1;
-      }
-      
-      // Set loop name from filename
-      (*new_loop)->name = new char[strlen(loopname)+1];
-      strcpy((*new_loop)->name,loopname);
-    } else
-      printf("DISK: Loop filename '%s' missing hash!\n",l_filename);
-    
-    // version
-    xmlChar *n = xmlGetProp(root, (const xmlChar *) "version");
-    if (n != 0) {
-      if (atoi((char *) n) >= 1)
-        // New format of loop save, so smooth end
-        *smooth_end = 1;
-      else
+        xmlFree(n);
+      } else {
         *smooth_end = 0;
-      
-      xmlFree(n);
-    } else {
-      *smooth_end = 0;
-      printf("DISK: Old format loop '%s'- loading with length fix.\n",
-             l_filename);
-    }
-    
-    // # beats
-    n = xmlGetProp(root, (const xmlChar *) "nbeats");
-    if (n != 0) {
-      (*new_loop)->nbeats = atoi((char *) n);
-      xmlFree(n);
-    }
-    
-    // pulse length
-    if ((n = xmlGetProp(root, (const xmlChar *) "pulselen")) != 0) {
-      int plen = atoi((char *) n);
-      if (plen != 0) {
-        // Loop should be syncronized to a pulse of given length-
-        (*new_loop)->pulse = CreatePulse(plen);
+        printf("DISK: Old format loop '%s'- loading with length fix.\n",
+               l_filename);
       }
-      xmlFree(n);
+      
+      // # beats
+      n = xmlGetProp(root, (const xmlChar *) "nbeats");
+      if (n != 0) {
+        (*new_loop)->nbeats = atoi((char *) n);
+        xmlFree(n);
+      }
+      
+      // pulse length
+      if ((n = xmlGetProp(root, (const xmlChar *) "pulselen")) != 0) {
+        int plen = atoi((char *) n);
+        if (plen != 0) {
+          // Loop should be syncronized to a pulse of given length-
+          (*new_loop)->pulse = CreatePulse(plen);
+        }
+        xmlFree(n);
+      }
+
+      xmlFreeDoc(ldat);
+      // Don't call cleanup because another thread may have xml open
+      // xmlCleanupParser();
     }
-    
-    xmlFreeDoc(ldat);
-    // Don't call cleanup because another thread may have xml open
-    // xmlCleanupParser();
   }
 
   return 0;
@@ -1770,6 +1726,10 @@ void LoopManager::TapPulse(int pulseindex, char newlen) {
         curpulseindex = pulseindex;
       }
     } else {
+      // Refresh sync
+      SelectPulse(-1);
+      SelectPulse(pulseindex);
+
       // Test position of axis
       char nextdownbeat = 0;
       if (cur->GetPct() >= 0.5)
@@ -2051,6 +2011,31 @@ void LoopManager::UpdateLoopLists_ItemMoved (int l_idx_old, int l_idx_new) {
     }
   }
 };
+
+int LoopManager::GetLongCountForAllPlayingLoops(Pulse *&p) {
+  int lc = 1;
+  p = 0;
+  for (int i = 0; i < app->getCFG()->GetNumTriggers(); i++) {
+    if (app->getLOOPMGR()->GetStatus(i) == T_LS_Playing) {
+      Loop *l = app->getTMAP()->GetMap(i);
+      // printf("Playing loop %d - nbeats %d - pulse %p\n",i,l->nbeats,l->pulse);
+      if (l != 0)
+        if (l->pulse != 0 && l->nbeats > 0) {
+          if (p == 0) {
+            p = l->pulse;
+            lc = math_lcm(lc,(int) l->nbeats);
+            // printf("First LCM: %d\n",lc);
+          } else if (l->pulse == p) {
+            lc = math_lcm(lc,(int) l->nbeats);
+            // printf("LCM: %d\n",lc);
+          } else
+            printf("CORE: More than one pulse, can't compute long count for all playing loops.\n");
+        }
+    }
+  }
+
+  return lc;
+}
 
 // Trigger the loop at index within the map
 // The exact behavior varies depending on what is already happening with
@@ -2934,6 +2919,7 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
       if (CRITTERS)
         printf("CORE: Received SetMidiSync(%d)\n", sev->midisync);
       app->getMIDI()->SetMIDISyncTransmit(sev->midisync);
+      app->RefreshPulseSync();
     }
     break;
     
@@ -3151,6 +3137,24 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
     }
     break;
 
+  case T_EV_ALSAMixerControlSet :
+    {
+      ALSAMixerControlSetEvent *aev = (ALSAMixerControlSetEvent *) ev;
+
+      // OK!
+      if (CRITTERS)
+        printf("CORE: Received AlsaMixerControlSet (hw:%d numid=%d %d,%d,%d,%d)\n",
+            aev->hwid,aev->numid,aev->val1,aev->val2,aev->val3,aev->val4);
+
+#ifdef __MACOSX__
+      printf("CORE: Not implemented on Mac.\n");
+#else
+      app->getHMIX()->ALSAMixerControlSet(aev->hwid,aev->numid,
+          aev->val1,aev->val2,aev->val3,aev->val4);
+#endif
+    }
+    break;
+
   default:
     break;
   }
@@ -3199,10 +3203,15 @@ int Fweelin::go()
     delete vid;
   delete sdlio;
   delete midi;
+  delete hmix;
   delete audio;
   delete iset;
   delete abufs;
   delete[] snaps;
+
+#ifndef __MACOSX__
+  delete osc;
+#endif
 
 #if USE_FLUIDSYNTH
   delete fluidp;
@@ -3478,6 +3487,16 @@ int Fweelin::setup()
     }
   }
 
+  // Setup parameter sets to listen for events
+  {
+    FloDisplay *cur = cfg->displays;
+    while (cur != 0) {
+      if (cur->GetFloDisplayType() == FD_ParamSet)
+        ((FloDisplayParamSet *) cur)->ListenEvents();
+      cur = cur->next;
+    }
+  }
+
   // FluidSynth
 #if USE_FLUIDSYNTH
   // Create synth
@@ -3631,6 +3650,13 @@ int Fweelin::setup()
     return 1;
   }
   
+  // Create Hardware Mixer interface
+  hmix = new HardwareMixerInterface(this);
+
+#ifndef __MACOSX__
+  osc = new OSCClient(this);
+#endif
+
   // Linkup system variables
   cfg->LinkSystemVariable("SYSTEM_num_midi_outs",T_int,
                           (char *) &(cfg->midiouts));

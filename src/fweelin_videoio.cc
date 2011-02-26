@@ -2,7 +2,7 @@
    Art is the beginning.
 */
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -41,6 +41,7 @@
 
 #include "fweelin_videoio.h"
 #include "fweelin_core.h"
+#include "fweelin_paramset.h"
 #include "fweelin_logo.h"
 
 #ifdef __MACOSX__
@@ -391,6 +392,82 @@ void Browser::Draw(SDL_Surface *screen) {
 
   UnlockBrowser();
 }
+
+void FloDisplayParamSet::Draw(SDL_Surface *screen) {
+  const static SDL_Color titleclr = { 0x77, 0x88, 0x99, 0 };
+  const static SDL_Color barclr = { 0xFF, 0x50, 0x20, 0 };
+  const static SDL_Color borderclr = { 0xFF, 0x50, 0x20, 0 };
+
+  boxRGBA(screen,
+          xpos,ypos,xpos+sx,ypos+sy,
+          0,0,0,190);
+  vlineRGBA(screen,xpos,ypos,ypos+sy,
+            borderclr.r,borderclr.g,borderclr.b,255);
+  vlineRGBA(screen,xpos+sx,ypos,ypos+sy,
+            borderclr.r,borderclr.g,borderclr.b,255);
+  hlineRGBA(screen,xpos,xpos+sx,ypos,
+            borderclr.r,borderclr.g,borderclr.b,255);
+  hlineRGBA(screen,xpos,xpos+sx,ypos+sy,
+            borderclr.r,borderclr.g,borderclr.b,255);
+
+  if (font == 0 || font->font == 0) {
+    printf("VIDEO: WARNING: No font specified for parameter set.\n");
+    return;
+  }
+
+  int textheight = 0;
+  TTF_SizeText(font->font,VERSION,0,&textheight);
+
+  // Draw title
+  if (title != 0)
+    VideoIO::draw_text(screen,font->font,
+                       title,xpos+sx-margin,ypos,titleclr,2,0);
+
+  if (curbank < numbanks) {
+    ParamSetBank *b = &banks[curbank];
+
+    if (b->name != 0)
+      VideoIO::draw_text(screen,font->font,banks[curbank].name,
+          xpos+margin,ypos,titleclr,0,0);
+
+    // Draw bars for all active parameters in this bank
+    int spacing = (sx - margin*2) / numactiveparams,
+        cury = ypos + sy - margin,
+        curbary = cury - textheight - margin;
+
+    int maxheight = sy - margin*3 - textheight*3;
+    float barscale = maxheight / b->maxvalue;
+    int thickness = spacing / 4;
+
+    int curx = xpos + thickness*2 + margin;
+
+    for (int i = b->firstparamidx;
+        i < b->numparams && i < b->firstparamidx + numactiveparams; i++, curx += spacing) {
+      // Param name
+      if (b->params[i].name != 0)
+        VideoIO::draw_text(screen,font->font,b->params[i].name,
+            curx,cury,titleclr,1,2);
+
+      float lvl = b->params[i].value * barscale;
+
+      // Show max value
+      boxRGBA(screen,
+              curx-thickness/2,curbary,
+              curx+thickness/2,curbary-maxheight,
+              barclr.r/2,barclr.g/2,barclr.b/2,255);
+
+      // Bar
+      boxRGBA(screen,
+          curx-thickness,curbary,
+          curx+thickness,curbary-lvl,
+          barclr.r/2,barclr.g/2,barclr.b/2,255);
+      boxRGBA(screen,
+          curx-thickness/2,curbary,
+          curx+thickness/2,curbary-lvl,
+          barclr.r,barclr.g,barclr.b,255);
+    }
+  }
+};
 
 // Draw text display
 void FloDisplayText::Draw(SDL_Surface *screen) {

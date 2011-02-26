@@ -1,7 +1,7 @@
 #ifndef __FWEELIN_CONFIG_H
 #define __FWEELIN_CONFIG_H
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -85,6 +85,7 @@ class SDLIO;
 class MidiIO;
 class CircularMap;
 class PatchBrowser;
+class ParamSetBank;
 
 // ****************** CONFIG CLASSES
 
@@ -477,7 +478,8 @@ class FloFont {
 enum FloDisplayType {
   FD_Unknown,
   FD_Browser,
-  FD_Snapshots
+  FD_Snapshots,
+  FD_ParamSet,
 };
 
 // List of variable displays used in video
@@ -727,6 +729,11 @@ class FloConfig {
   void ConfigureEventBindings(xmlDocPtr doc, xmlNode *events, 
                               int interfaceid = 0, char firstpass = 0);
 
+  // Configuring displays
+  void SetupParamSetBank(xmlDocPtr doc, xmlNode *banknode, ParamSetBank *bank);
+  FloDisplay *SetupParamSet(xmlDocPtr doc, xmlNode *paramset, int interfaceid);
+
+  // Configuration sections
   void ConfigureElement(xmlDocPtr doc, xmlNode *elemn, 
                         FloLayoutElement *elem, float xscale, float yscale);
   void ConfigureLayout(xmlDocPtr doc, xmlNode *layn, 
@@ -745,6 +752,9 @@ class FloConfig {
   // Creates an empty variable based on the given name. The config file
   // can then refer to the variable
   UserVariable *AddEmptyVariable(char *name);
+
+  // Returns a pointer to the given variable
+  UserVariable *GetVariable(char *name);
 
   // Makes the given variable into a system variable by linking it to
   // the pointer

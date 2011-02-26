@@ -14,8 +14,9 @@ ALSA_NAME=$1
 # **** You will have to change the following line to reflect the name of your MIDI hardware
 # On my system aconnect -li reports client 72: 'MidiSport 2x2', so the name can be any subset of that:
 
-ALSA_IN_NAME=MidiSport
+#ALSA_IN_NAME=MidiSport
 #ALSA_IN_NAME=PCR
+ALSA_IN_NAME=BCF
 
 while ((`aconnect -lo | grep $ALSA_NAME | awk 'END { print NR }'` == 0))
 do 

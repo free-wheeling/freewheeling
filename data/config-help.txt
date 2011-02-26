@@ -261,8 +261,8 @@ Event "midicontroller"
                                              and controlval=64>127"
     A MIDI controller is changed.
 
-    "outport": # of MIDI output to echo event to
-    "midichannel": Channel of event
+    "outport": # of MIDI output to echo event to (1 is the first port)
+    "midichannel": Channel of event (0 is the first channel)
     "controlnum": Number of control change
     "controlval": Value of control change
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
@@ -275,9 +275,9 @@ Event "midikey"
                                       notenum=VAR_noterange and velocity=1>127"
     A MIDI note is pressed or released.
 
-    "outport": # of MIDI output to echo event to
+    "outport": # of MIDI output to echo event to (1 is the first port)
     "keydown": 1 if note is pressed, 0 if note is released
-    "midichannel": Channel of event
+    "midichannel": Channel of event (0 is the first channel)
     "notenum": Number of note
     "velocity": Velocity of noteon/noteoff
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
@@ -290,8 +290,8 @@ Event "midichannelpressure"
                                                   pressureval=64"
     A MIDI channel pressure (channel aftertouch) message.
 
-    "outport": # of MIDI output to echo event to
-    "midichannel": Channel of event
+    "outport": # of MIDI output to echo event to (1 is the first port)
+    "midichannel": Channel of event (0 is the first channel)
     "pressureval": Pressure of keys
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
                          given by the current patch. 
@@ -303,8 +303,8 @@ Event "midiprogramchange"
                                                 programval=64"
     A MIDI program change message.
 
-    "outport": # of MIDI output to echo event to
-    "midichannel": Channel of event
+    "outport": # of MIDI output to echo event to (1 is the first port)
+    "midichannel": Channel of event (0 is the first channel)
     "programval": Program change #
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
                          given by the current patch. 
@@ -316,8 +316,8 @@ Event "midipitchbend"
                                             pitchval=6000"
     A MIDI pitch bend message.
 
-    "outport": # of MIDI output to echo event to
-    "midichannel": Channel of event
+    "outport": # of MIDI output to echo event to (1 is the first port)
+    "midichannel": Channel of event (0 is the first channel)
     "pitchval": Pitch bender value
     "routethroughpatch": 1 sends this MIDI message through the port/channel(s)
                          given by the current patch. 

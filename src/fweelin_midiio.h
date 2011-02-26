@@ -1,7 +1,7 @@
 #ifndef __FWEELIN_MIDIIO_H
 #define __FWEELIN_MIDIIO_H
 
-/* Copyright 2004-2008 Jan Pekau (JP Mercury) <swirlee@vcn.bc.ca>
+/* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
    
@@ -141,6 +141,7 @@ protected:
 
   // MIDI Sync messages
   void OutputClock (int port);
+  void OutputSPP (int port);
   void OutputStart (int port);
   void OutputStop (int port);
   
