@@ -93,6 +93,7 @@ void OSCClient::SendPlayingLoops() {
     // Get long count
     Pulse *p = 0;
     int lc = app->getLOOPMGR()->GetLongCountForAllPlayingLoops(p);
+    nframes_t max_len = 0;
 
     // Set QTractor tempo based on pulse
     if (p != 0) {
@@ -155,6 +156,8 @@ void OSCClient::SendPlayingLoops() {
                     (int) curstart, 0, len, cflen, gain, buf) == -1) {
                   printf("OSC: Error %d: %s\n", lo_address_errno(qtractor_addr), lo_address_errstr(qtractor_addr));
                 }
+                if (curstart + len > max_len)
+                  max_len = curstart + len; // Length of pattern in frames
               }
             } else
               printf("OSC: Can't get path for loop: %s\n",loopfile.name.c_str());
@@ -162,6 +165,11 @@ void OSCClient::SendPlayingLoops() {
             printf("OSC: Can't find loop: %s\n",s.c_str());
         }
       }
+    }
+
+    // Update loop point
+    if (lo_send(qtractor_addr, "/AdvanceLoopRange", "ii", 0, max_len) == -1) {
+      printf("OSC: Error %d: %s\n", lo_address_errno(qtractor_addr), lo_address_errstr(qtractor_addr));
     }
   } else {
     printf("OSC: Couldn't open an OSC connection to QTractor on port %d\n",QTRACTOR_OSC_PORT);
