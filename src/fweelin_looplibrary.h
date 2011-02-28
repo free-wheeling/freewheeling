@@ -36,6 +36,55 @@ public:
 
 class LibraryHelper {
 public:
+  // Returns the stub (base of filename) for a given loop in memory
+  static const std::string GetStubnameFromLoop (Fweelin *app, Loop *l) {
+    std::ostringstream tmp;
+    GET_SAVEABLE_HASH_TEXT(l->GetSaveHash());
+    tmp << app->getCFG()->GetLibraryPath() << "/" << FWEELIN_OUTPUT_LOOP_NAME << "-" <<
+        hashtext;
+
+    return tmp.str();
+  };
+
+  static const std::string GetNextAvailableStreamOutFilename (Fweelin *app, int &stream_num, std::string &timingname) {
+    // Create appropriate filename for output
+    char go = 1;
+
+    printf("Start SS\n");
+    fflush(stdout);
+
+    do {
+      std::ostringstream tmp;
+      tmp << app->getCFG()->GetLibraryPath() << "/" << FWEELIN_OUTPUT_STREAM_NAME << stream_num <<
+          app->getCFG()->GetAudioFileExt(app->getCFG()->GetStreamOutFormat());
+      const std::string s = tmp.str();
+
+      struct stat st;
+      printf("DISK: Opening '%s' for streaming.\n",s.c_str());
+      fflush(stdout);
+      if (stat(s.c_str(),&st) == 0) {
+        printf("DISK: File exists, trying another.\n");
+        stream_num++;
+      } else {
+        // Also check for timing data file- don't overwrite that
+        std::ostringstream ttmp;
+        ttmp << app->getCFG()->GetLibraryPath() << "/" << FWEELIN_OUTPUT_STREAM_NAME << stream_num <<
+            FWEELIN_OUTPUT_TIMING_EXT;
+        const std::string ts = ttmp.str();
+        if (stat(ts.c_str(),&st) == 0) {
+          printf("DISK: Timing file exists, trying another.\n");
+          stream_num++;
+        } else {
+          go = 0;
+          timingname = ts;
+          return s;
+        }
+      }
+    } while (go);
+
+    return "";
+  };
+
   // Finds the loop with given stubname in the loop library. Returns information about it.
   static LibraryFileInfo GetLoopFilenameFromStub (Fweelin *app, const char *stubname) {
     struct stat st;

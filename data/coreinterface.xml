@@ -20,6 +20,8 @@
     <declare var="DISPLAY_browser_patch" type="int" init="0"/>
     <declare var="DISPLAY_browser_loop" type="int" init="1"/>
     <declare var="DISPLAY_browser_scene" type="int" init="2"/>
+    <declare var="DISPLAY_syncpanel" type="int" init="3"/>
+
     <declare var="VAR_max_browser" type="int" init="2"/>
     <declare var="VAR_cur_browser" type="int" init="0"/>
 
@@ -542,6 +544,11 @@
     <binding input="key" conditions="key=f7 and keydown=1"
      output="save-current-scene"/>
 
+    <!-- HELP: F10: Transfer playing loops to QTractor -->
+    <binding input="key" conditions="key=f10 and 
+                                     keydown=1"
+     output="transmit-playing-loops-to-daw"/>
+
     <!-- HELP: -->
     <!-- HELP: __ BROWSING __ -->
     <!-- HELP: -->
@@ -629,15 +636,7 @@
                                      keydown=1"
      output1="toggle-variable" parameters1="var=VAR_syncpanel_show and 
                                             maxvalue=1"
-     output2="video-show-display" parameters2="displayid=1000 and
-                                               show=VAR_syncpanel_show"
-     output3="video-show-display" parameters3="displayid=1001 and
-                                               show=VAR_syncpanel_show"
-     output4="video-show-display" parameters4="displayid=1002 and
-                                               show=VAR_syncpanel_show"
-     output5="video-show-display" parameters5="displayid=1003 and
-                                               show=VAR_syncpanel_show"
-     output6="video-show-display" parameters6="displayid=1004 and
+     output2="video-show-display" parameters2="displayid=DISPLAY_syncpanel and
                                                show=VAR_syncpanel_show"/>
 
     <!-- HELP: (space) F1: (Delete)/create/select pulse -->
@@ -681,11 +680,6 @@
      conditions="controlnum=VAR_midi_footswitch and controlval=VAR_switch_on"
      output="tap-pulse" parameters="pulse=0 and newlen=1"/>
       -->
-
-    <!-- HELP: F10: Transfer playing loops to QTractor -->
-    <binding input="key" conditions="key=f10 and 
-                                     keydown=1"
-     output="transmit-playing-loops-to-daw"/>
 
     <!-- HELP: [F5] F11: Toggle metronome -->
     <binding input="key" conditions="VAR_laptopkeymode=1 and key=f5 and 
@@ -818,22 +812,6 @@
      title="LMT" pos="0.6,0.8" 
      orientation="vertical" barscale="0.3" thickness="0.03" dbscale="1" marks="1"/>
 
-  <!-- Sync panel -->
-    <display var="VAR_numsync_per_pulse" id="1000" type="text" font="small"
-     title="sync " pos="0.0,0.87" show="0"/>
-    <display var="VAR_synctype" id="1001" 
-     type="text-switch" font="small" pos="0.1,0.87"
-     text0="bars per pulse" text1="beats per pulse" show="0"/>
-    <display var="SYSTEM_sync_active" id="1002" type="circle-switch" 
-     font="small" title="Jack Sync"
-     pos="0.5,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
-    <display var="SYSTEM_sync_transmit" id="1003" type="circle-switch" 
-     font="small" title="Jack Sync XMit"
-     pos="0.66,0.87" size1="0.012" size0="0.01" flash="0" show="0"/>
-    <display var="SYSTEM_midisync_transmit" id="1004" type="circle-switch"
-     font="small" title="MIDI Sync Xmit"
-     pos="0.66,0.84" size1="0.012" size0="0.01" flash="0" show="0"/>
-
     <display var="VAR_overdubfeedback" type="bar" font="main"
      title="FBK" pos="0.75,0.8" 
      orientation="vertical" barscale="0.3" thickness="0.03"/>
@@ -851,14 +829,33 @@
     <display var="VAR_auto_loop_save" type="switch" font="small" pos="0.914,0.68" 
      title="SAVE"/> 
     <display var="VAR_xferloop" type="switch" font="small" pos="0.925,0.6" 
-     title="X"/> 
+     title="XFR"/> 
     <display var="VAR_overdubmode" type="switch" font="small" pos="0.925,0.72" 
      title="DUB"/> 
     <display var="VAR_cutmode" type="switch" font="small" pos="0.925,0.76" 
      title="CUT"/> 
 
+    <!-- Sync panel -->
+    <display id="DISPLAY_syncpanel" show="0" type="panel" font="small"
+     title="Sync Panel" pos="0.69,0.5" size="0.3,0.17">
+      <display var="VAR_numsync_per_pulse" id="1000" type="text" font="small"
+       title="sync " pos="0.0,0.07"/>
+      <display var="VAR_synctype" id="1001" 
+       type="text-switch" font="small" pos="0.1,0.07"
+       text0="bars per pulse" text1="beats per pulse"/>
+      <display var="SYSTEM_sync_active" id="1002" type="circle-switch" 
+       font="small" title="Jack Sync"
+       pos="0.02,0.12" size1="0.012" size0="0.01" flash="0"/>
+      <display var="SYSTEM_sync_transmit" id="1003" type="circle-switch" 
+       font="small" title="Jack Sync XMit"
+       pos="0.02,0.16" size1="0.012" size0="0.01" flash="0"/>
+      <display var="SYSTEM_midisync_transmit" id="1004" type="circle-switch"
+       font="small" title="MIDI Sync Xmit"
+       pos="0.02,0.20" size1="0.012" size0="0.01" flash="0"/>
+    </display>
+
     <display interfaceid="0" id="DISPLAY_scenes" show="0"
-     type="snapshots" font="small" pos="0.69,0.4" size="0.3,0.22" 
+     type="snapshots" font="small" pos="0.69,0.15" size="0.3,0.22" 
      title="SNAPS"/> 
   </graphics>
 </interface>

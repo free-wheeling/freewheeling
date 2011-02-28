@@ -2682,10 +2682,475 @@ FloDisplay *FloConfig::SetupParamSet(xmlDocPtr doc, xmlNode *paramset, int inter
   return nw;
 };
 
-void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid, 
+// Common config options for every display
+void FloConfig::ConfigureDisplay_Common(xmlNode *disp, FloDisplay *nw, FloDisplayPanel *parent) {
+  if (parent != 0) {
+    // Link this child display into parent
+    int idx = 0;
+    for (; parent->child_displays[idx] != 0; idx++);
+
+    // printf("IDX : %d",idx);
+    parent->child_displays[idx] = nw;
+  }
+
+  // Title
+  xmlChar *n = xmlGetProp(disp, (const xmlChar *)"title");
+  if (n != 0) {
+    nw->title = new char[xmlStrlen(n)+1];
+    strcpy(nw->title,(char*)n);
+    printf("'%s' ",nw->title);
+    xmlFree(n);
+  }
+
+  // Position
+  n = xmlGetProp(disp, (const xmlChar *)"pos");
+  if (n != 0) {
+    int cs;
+    float *coord = ExtractArray((char *)n, &cs);
+    if (cs) {
+      nw->xpos = XCvt(coord[0]);
+      nw->ypos = YCvt(coord[1]);
+
+      if (parent != 0) {
+        // If we're in a panel, offset our draw coordinates
+        nw->xpos += parent->xpos + parent->margin;
+        nw->ypos += parent->ypos + parent->margin;
+      }
+
+      printf("@ (%d,%d) ",nw->xpos,nw->ypos);
+      delete[] coord;
+    }
+    xmlFree(n);
+  }
+
+  // Show?
+  if (parent == 0) {
+    n = xmlGetProp(disp, (const xmlChar *)"show");
+    if (n != 0) {
+      nw->show = atoi((char *)n);
+      if (nw->show)
+        printf("(show) ");
+      xmlFree(n);
+    }
+  } else {
+    // If we're in a panel, inherit our parent's show status
+    nw->show = parent->show;
+  }
+
+  // Font for display
+  n = xmlGetProp(disp, (const xmlChar *)"font");
+  if (n != 0) {
+    nw->font = GetFont((char *) n);
+    if (nw->font != 0)
+      printf("(font: %s) ",nw->font->name);
+    else
+      printf("(ERR: no font named '%s'!) ",n);
+    xmlFree(n);
+  }
+
+  // ID
+  n = xmlGetProp(disp, (const xmlChar *)"id");
+  if (n != 0) {
+    ParsedExpression *tmp = im.ParseExpression((char *) n, 0);
+    nw->id = (int) tmp->Evaluate(0);
+    printf("(id: %d) ",nw->id);
+    delete tmp;
+    xmlFree(n);
+  }
+
+  // Expression to display
+  n = xmlGetProp(disp, (const xmlChar *)"var");
+  if (n != 0) {
+    printf("\n   expression: ");
+    nw->exp = im.ParseExpression((char *) n, 0);
+    nw->exp->Print();
+    xmlFree(n);
+  }
+
+  // Link in the new display
+  if (displays == 0)
+    displays = nw;
+  else {
+    FloDisplay *cur = displays;
+    while (cur->next != 0)
+      cur = cur->next;
+    cur->next = nw;
+  }
+
+  printf("\n");
+}
+
+void FloConfig::ConfigureDisplay(xmlDocPtr doc, xmlNode *disp, int interfaceid, FloDisplayPanel *parent) {
+  // Onscreen display declaration
+  FloDisplay *nw = 0;
+  printf("CONFIG: New onscreen display: ");
+  char to_link = 1;
+
+  int iid = interfaceid;
+  xmlChar *n = xmlGetProp(disp, (const xmlChar *)"interfaceid");
+  if (n != 0) {
+    iid = atoi((char *) n);
+    printf("(interface ID: %d) ",iid);
+    xmlFree(n);
+  }
+
+  // Type of display?
+  n = xmlGetProp(disp, (const xmlChar *)"type");
+  if (n != 0) {
+    if (!xmlStrcmp(n, (const xmlChar *)"text")) {
+      printf("(text) ");
+      nw = new FloDisplayText(iid);
+    } else if (!xmlStrcmp(n, (const xmlChar *)"browser")) {
+      printf("(browser) ");
+
+      // Browser type
+      BrowserItemType btype = (BrowserItemType) 0;
+      xmlChar *nn = xmlGetProp(disp, (const xmlChar *)"browsetype");
+      if (nn != 0) {
+        ParsedExpression *tmp = im.ParseExpression((char *) nn, 0);
+        btype = (BrowserItemType) (int) tmp->Evaluate(0);
+        printf("type: %s ",Browser::GetTypeName(btype));
+        delete tmp;
+        xmlFree(nn);
+      }
+
+      // Expanded browser view
+      char xpand = 0;
+      int xpand_x1 = 0,
+        xpand_x2 = 0,
+        xpand_y1 = 0,
+        xpand_y2 = 0;
+      float xpand_delay = 1.0;
+      nn = xmlGetProp(disp, (const xmlChar *)"xpand");
+      if (nn != 0) {
+        xpand = atoi((char *) nn);
+        printf("xpand: %d ",xpand);
+        xmlFree(nn);
+      }
+      nn = xmlGetProp(disp, (const xmlChar *)"xdelay");
+      if (nn != 0) {
+        xpand_delay = atof((char *) nn);
+        printf("xdelay: %f ",xpand_delay);
+        xmlFree(nn);
+      }
+      nn = xmlGetProp(disp, (const xmlChar *)"xbox");
+      if (nn != 0) {
+        int cs;
+        float *coord = ExtractArray((char *)nn, &cs);
+        if (cs >= 4) {
+          xpand_x1 = (int) round(XCvtf(coord[0]));
+          xpand_y1 = (int) round(YCvtf(coord[1]));
+          xpand_x2 = (int) round(XCvtf(coord[2]));
+          xpand_y2 = (int) round(YCvtf(coord[3]));
+          printf("xpand_box: (%d,%d)-(%d,%d) ",xpand_x1,xpand_y1,
+                 xpand_x2,xpand_y2);
+          delete[] coord;
+        }
+        xmlFree(nn);
+      }
+
+      // Check for another browser with the same type-- not allowed
+      FloDisplay *checkd = displays;
+      char dupe = 0;
+      while (!dupe && checkd != 0) {
+        if (checkd->GetFloDisplayType() == FD_Browser &&
+            ((Browser *) checkd)->GetType() == btype)
+          dupe = 1;
+        checkd = checkd->next;
+      }
+
+      if (!dupe) {
+        switch (btype) {
+        case B_Loop_Tray :
+          {
+            int loopsize = 0;
+            nn = xmlGetProp(disp, (const xmlChar *)"loopsize");
+            if (nn != 0) {
+              loopsize = (int) round(XCvtf(atof((char *) nn)));
+              xmlFree(nn);
+            }
+
+            nw = new LoopTray(iid,
+                              btype,xpand,xpand_x1,xpand_y1,
+                              xpand_x2,xpand_y2,loopsize);
+          }
+          break;
+
+        case B_Scene_Tray :
+          {
+          }
+          break;
+
+        case B_Patch :
+          {
+            nw = new PatchBrowser(iid,
+                                  btype,xpand,xpand_x1,xpand_y1,
+                                  xpand_x2,xpand_y2,xpand_delay);
+            ConfigurePatchBanks(disp,(PatchBrowser *) nw);
+          }
+          break;
+
+        default :
+          {
+            // All other kinds of browsers
+            nw = new Browser(iid,
+                             btype,xpand,xpand_x1,xpand_y1,
+                             xpand_x2,xpand_y2,xpand_delay);
+          }
+          break;
+        }
+      } else {
+        printf(FWEELIN_ERROR_COLOR_ON
+               "\n*** INIT: WARNING: Duplicate browser of type: '%s'\n"
+               FWEELIN_ERROR_COLOR_OFF,
+               Browser::GetTypeName(btype));
+        nw = 0;
+      }
+    } else if (!xmlStrcmp(n, (const xmlChar *)"panel")) {
+      if (parent == 0) {
+        printf("(panel) ");
+        FloDisplayPanel *nwp = new FloDisplayPanel(iid);
+        nw = nwp;
+
+        // Snapshots display size
+        xmlChar *nn = xmlGetProp(disp, (const xmlChar *)"size");
+        if (nn != 0) {
+          int cs;
+          float *coord = ExtractArray((char *)nn, &cs);
+          if (cs) {
+            nwp->sx = XCvt(coord[0]);
+            nwp->sy = XCvt(coord[1]);
+            printf("size (%d,%d) ",nwp->sx,nwp->sy);
+          }
+          delete[] coord;
+          xmlFree(nn);
+        }
+
+        nwp->margin = XCvt(0.005);
+
+        // Get position and link it in early
+        to_link = 0;
+        ConfigureDisplay_Common(disp,nw,parent);
+
+        // Count number of child displays
+        xmlNode *cur_node;
+        for (cur_node = disp->children; cur_node != NULL;
+             cur_node = cur_node->next) {
+          if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"display")))
+            nwp->num_children++;
+        }
+
+        nwp->child_displays = new FloDisplay *[nwp->num_children];
+        memset(nwp->child_displays,0,sizeof(FloDisplay *) * nwp->num_children);
+
+        // Configure child displays
+        for (cur_node = disp->children; cur_node != NULL;
+             cur_node = cur_node->next) {
+          // Check for a help node
+          CheckForHelp(cur_node);
+
+          if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"display"))) {
+            // Recursively add this display
+            ConfigureDisplay(doc, cur_node, interfaceid, nwp);
+          }
+        }
+      } else
+        // Already inside a panel
+        printf(FWEELIN_ERROR_COLOR_ON
+               "*** CONFIG: ERROR: Can't nest panels.\n"
+               FWEELIN_ERROR_COLOR_OFF);
+    } else if (!xmlStrcmp(n, (const xmlChar *)"switch")) {
+      printf("(switch) ");
+      nw = new FloDisplaySwitch(iid);
+    } else if (!xmlStrcmp(n, (const xmlChar *)"circle-switch")) {
+      printf("(circle-switch) ");
+      nw = new FloDisplayCircleSwitch(iid);
+
+      // Circle radii
+      xmlChar *nn = xmlGetProp(disp, (const xmlChar *)"size1");
+      if (nn != 0) {
+        float sz = atof((char *)nn);
+        ((FloDisplayCircleSwitch *) nw)->rad1 = XCvt(sz);
+        printf("size1 %d ",((FloDisplayCircleSwitch *) nw)->rad1);
+        xmlFree(nn);
+      }
+      nn = xmlGetProp(disp, (const xmlChar *)"size0");
+      if (nn != 0) {
+        float sz = atof((char *)nn);
+        ((FloDisplayCircleSwitch *) nw)->rad0 = XCvt(sz);
+        printf("size0 %d ",((FloDisplayCircleSwitch *) nw)->rad0);
+        xmlFree(nn);
+      }
+
+      // Flashing?
+      nn = xmlGetProp(disp, (const xmlChar *)"flash");
+      if (nn != 0) {
+        ((FloDisplayCircleSwitch *) nw)->flash = atoi((char *)nn);
+        if (((FloDisplayCircleSwitch *) nw)->flash)
+          printf("(flashing) ");
+        xmlFree(nn);
+      }
+    } else if (!xmlStrcmp(n, (const xmlChar *)"text-switch")) {
+      printf("(text-switch) ");
+      nw = new FloDisplayTextSwitch(iid);
+
+      // Text lines
+      xmlChar *nn = xmlGetProp(disp, (const xmlChar *)"text1");
+      if (nn != 0) {
+        char *text1 = new char[xmlStrlen(nn)+1];
+        strcpy(text1,(char*)nn);
+        ((FloDisplayTextSwitch *) nw)->text1 = text1;
+        printf("'%s' ",text1);
+
+        xmlFree(nn);
+      }
+      nn = xmlGetProp(disp, (const xmlChar *)"text0");
+      if (nn != 0) {
+        char *text0 = new char[xmlStrlen(nn)+1];
+        strcpy(text0,(char*)nn);
+        ((FloDisplayTextSwitch *) nw)->text0 = text0;
+        printf("'%s' ",text0);
+
+        xmlFree(nn);
+      }
+    } else if (!xmlStrcmp(n, (const xmlChar *)"snapshots")) {
+      printf("(snapshots) ");
+      nw = new FloDisplaySnapshots(GetInputMatrix()->app,iid);
+      FloDisplaySnapshots *nws = (FloDisplaySnapshots *) nw;
+
+      nws->margin = XCvt(0.005);
+
+      // Snapshots display size
+      xmlChar *nn = xmlGetProp(disp, (const xmlChar *)"size");
+      if (nn != 0) {
+        int cs;
+        float *coord = ExtractArray((char *)nn, &cs);
+        if (cs) {
+          nws->sx = XCvt(coord[0]);
+          nws->sy = XCvt(coord[1]);
+          printf("size (%d,%d) ",nws->sx,nws->sy);
+        }
+        delete[] coord;
+        xmlFree(nn);
+      }
+    } else if (!xmlStrcmp(n, (const xmlChar *)"paramset")) {
+      nw = SetupParamSet(doc,disp,iid);
+    } else if (!xmlStrcmp(n, (const xmlChar *)"bar") ||
+               !xmlStrcmp(n, (const xmlChar *)"bar-switch")) {
+      // Bar or bar-switch?
+      char sw = 0;
+      FloDisplayBar *nwb;
+      if (!xmlStrcmp(n, (const xmlChar *)"bar-switch")) {
+        sw = 1;
+        printf("(bar-switch) ");
+        nwb = new FloDisplayBarSwitch(iid);
+      } else {
+        printf("(bar) ");
+        nwb = new FloDisplayBar(iid);
+      }
+
+      nw = nwb;
+
+      // Bar orientation
+      xmlChar *nn = xmlGetProp(disp, (const xmlChar *)"orientation");
+      if (nn != 0) {
+        if (!xmlStrcmp(nn,(const xmlChar *)"horizontal")) {
+          nwb->orient = O_Horizontal;
+          printf("(horizontal) ");
+        }
+        else if (!xmlStrcmp(nn,(const xmlChar *)"vertical")) {
+          nwb->orient = O_Vertical;
+          printf("(vertical) ");
+        }
+        else
+          printf("(invalid bar orient: '%s') ",nn);
+        xmlFree(nn);
+      }
+
+      // Bar scale
+      nn = xmlGetProp(disp, (const xmlChar *)"barscale");
+      if (nn != 0) {
+        nwb->barscale = atof((char *)nn);
+        xmlFree(nn);
+      }
+      nwb->barscale = (nwb->orient == O_Horizontal ?
+                       XCvtf(nwb->barscale) : YCvtf(nwb->barscale));
+      printf("barscale %.2f ",nwb->barscale);
+
+      // Bar thickness
+      nn = xmlGetProp(disp, (const xmlChar *)"thickness");
+      if (nn != 0) {
+        float bt = atof((char *)nn);
+        nwb->thickness = (nwb->orient == O_Horizontal ? YCvt(bt) : XCvt(bt));
+        printf("thickness %d ",nwb->thickness);
+        xmlFree(nn);
+      }
+
+      // dB scale?
+      nn = xmlGetProp(disp, (const xmlChar *)"dbscale");
+      if (nn != 0) {
+        nwb->dbscale = atoi((char *)nn);
+        printf("(%s) ",(nwb->dbscale ? "dB scale" : "linear scale"));
+        xmlFree(nn);
+      }
+
+      // calibration marks?
+      nn = xmlGetProp(disp, (const xmlChar *)"marks");
+      if (nn != 0) {
+        nwb->marks = atoi((char *)nn);
+        printf("%s",(nwb->marks ? "(marks) " : ""));
+        xmlFree(nn);
+      }
+
+      if (nwb->dbscale)
+        nwb->maxdb = fadermaxdb;
+
+      if (sw) {
+        // Color
+        nn = xmlGetProp(disp, (const xmlChar *)"color");
+        if (nn != 0) {
+          ((FloDisplayBarSwitch *) nwb)->color = atoi((char *) nn);
+          printf(" color %d ",((FloDisplayBarSwitch *) nwb)->color);
+          xmlFree(nn);
+        }
+
+        // Calibration mark
+        nn = xmlGetProp(disp, (const xmlChar *)"calibrate");
+        if (nn != 0) {
+          ((FloDisplayBarSwitch *) nwb)->calibrate = 1;
+          ((FloDisplayBarSwitch *) nwb)->cval = atof((char *) nn);
+          printf(" calibrate %.2f ",((FloDisplayBarSwitch *) nwb)->cval);
+          xmlFree(nn);
+        }
+
+        // Expression to display
+        nn = xmlGetProp(disp, (const xmlChar *)"switchvar");
+        if (nn != 0) {
+          printf(" switch-expression: ");
+          ((FloDisplayBarSwitch *) nwb)->switchexp = im.ParseExpression((char *) nn, 0);
+          ((FloDisplayBarSwitch *) nwb)->switchexp->Print();
+          printf(" ");
+          xmlFree(nn);
+        }
+      }
+    } else {
+      printf(FWEELIN_ERROR_COLOR_ON
+             "(invalid display type: '%s')\n"
+             FWEELIN_ERROR_COLOR_OFF,n);
+    }
+    xmlFree(n);
+  }
+
+  if (nw != 0) {
+    if (to_link)
+      ConfigureDisplay_Common(disp,nw,parent);
+  }
+}
+
+void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid,
                                   int interfaceid) {
   xmlNode *cur_node;
-  for (cur_node = vid->children; cur_node != NULL; 
+  for (cur_node = vid->children; cur_node != NULL;
        cur_node = cur_node->next) {
     // Check for a help node
     CheckForHelp(cur_node);
@@ -2695,7 +3160,7 @@ void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid,
 
       // Check
       xmlChar *n = 0;
-      if ((n = xmlGetProp(cur_node, (const xmlChar *)"resolution")) != 
+      if ((n = xmlGetProp(cur_node, (const xmlChar *)"resolution")) !=
           0) {
         // Video resolution
         int cs;
@@ -2709,7 +3174,7 @@ void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid,
 
         printf("CONFIG: Starting with (%d,%d) resolution.\n",vsize[0],
                vsize[1]);
-        
+
         xmlFree(n);
       }
 
@@ -2749,7 +3214,7 @@ void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid,
       }
 
       // Link in the new font
-      if (fonts == 0) 
+      if (fonts == 0)
         fonts = nw;
       else {
         FloFont *cur = fonts;
@@ -2759,386 +3224,7 @@ void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid,
       }
       printf("\n");
     } else if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"display"))) {
-      // Onscreen display declaration
-      FloDisplay *nw = 0;
-      printf("CONFIG: New onscreen display: ");
-
-      int iid = interfaceid;
-      xmlChar *n = xmlGetProp(cur_node, (const xmlChar *)"interfaceid");
-      if (n != 0) {
-        iid = atoi((char *) n);
-        printf("(interface ID: %d) ",iid);
-        xmlFree(n);
-      }
-
-      // Type of display?
-      n = xmlGetProp(cur_node, (const xmlChar *)"type");
-      if (n != 0) {
-        if (!xmlStrcmp(n, (const xmlChar *)"text")) {
-          printf("(text) ");
-          nw = new FloDisplayText(iid);
-        } else if (!xmlStrcmp(n, (const xmlChar *)"browser")) {
-          printf("(browser) ");
-
-          // Browser type
-          BrowserItemType btype = (BrowserItemType) 0;
-          xmlChar *nn = xmlGetProp(cur_node, (const xmlChar *)"browsetype");
-          if (nn != 0) {
-            ParsedExpression *tmp = im.ParseExpression((char *) nn, 0);
-            btype = (BrowserItemType) (int) tmp->Evaluate(0);
-            printf("type: %s ",Browser::GetTypeName(btype));
-            delete tmp;
-            xmlFree(nn);
-          }
-
-          // Expanded browser view
-          char xpand = 0;
-          int xpand_x1 = 0,
-            xpand_x2 = 0,
-            xpand_y1 = 0,
-            xpand_y2 = 0;
-          float xpand_delay = 1.0;
-          nn = xmlGetProp(cur_node, (const xmlChar *)"xpand");
-          if (nn != 0) {
-            xpand = atoi((char *) nn);
-            printf("xpand: %d ",xpand);
-            xmlFree(nn);
-          }
-          nn = xmlGetProp(cur_node, (const xmlChar *)"xdelay");
-          if (nn != 0) {
-            xpand_delay = atof((char *) nn);
-            printf("xdelay: %f ",xpand_delay);
-            xmlFree(nn);
-          }
-          nn = xmlGetProp(cur_node, (const xmlChar *)"xbox");
-          if (nn != 0) {
-            int cs; 
-            float *coord = ExtractArray((char *)nn, &cs);
-            if (cs >= 4) {
-              xpand_x1 = (int) round(XCvtf(coord[0]));
-              xpand_y1 = (int) round(YCvtf(coord[1]));
-              xpand_x2 = (int) round(XCvtf(coord[2]));
-              xpand_y2 = (int) round(YCvtf(coord[3]));
-              printf("xpand_box: (%d,%d)-(%d,%d) ",xpand_x1,xpand_y1,
-                     xpand_x2,xpand_y2);
-              delete[] coord;
-            }
-            xmlFree(nn);
-          }
-
-          // Check for another browser with the same type-- not allowed
-          FloDisplay *checkd = displays;
-          char dupe = 0;
-          while (!dupe && checkd != 0) {
-            if (checkd->GetFloDisplayType() == FD_Browser &&
-                ((Browser *) checkd)->GetType() == btype)
-              dupe = 1;
-            checkd = checkd->next;
-          }
-
-          if (!dupe) {
-            switch (btype) {
-            case B_Loop_Tray :
-              {
-                int loopsize = 0;
-                nn = xmlGetProp(cur_node, (const xmlChar *)"loopsize");
-                if (nn != 0) {
-                  loopsize = (int) round(XCvtf(atof((char *) nn)));
-                  xmlFree(nn);
-                }
-                
-                nw = new LoopTray(iid,
-                                  btype,xpand,xpand_x1,xpand_y1,
-                                  xpand_x2,xpand_y2,loopsize);
-              }
-              break;
-              
-            case B_Scene_Tray :
-              {
-              }
-              break;
-
-            case B_Patch :
-              {
-                nw = new PatchBrowser(iid,
-                                      btype,xpand,xpand_x1,xpand_y1,
-                                      xpand_x2,xpand_y2,xpand_delay);
-                ConfigurePatchBanks(cur_node,(PatchBrowser *) nw);
-              }
-              break;
-
-            default :
-              {
-                // All other kinds of browsers
-                nw = new Browser(iid,
-                                 btype,xpand,xpand_x1,xpand_y1,
-                                 xpand_x2,xpand_y2,xpand_delay);
-              }
-              break;
-            }
-          } else {
-            printf(FWEELIN_ERROR_COLOR_ON
-                   "\n*** INIT: WARNING: Duplicate browser of type: '%s'\n"
-                   FWEELIN_ERROR_COLOR_OFF,
-                   Browser::GetTypeName(btype));
-            nw = 0;
-          }
-        } else if (!xmlStrcmp(n, (const xmlChar *)"switch")) {
-          printf("(switch) ");
-          nw = new FloDisplaySwitch(iid);
-        } else if (!xmlStrcmp(n, (const xmlChar *)"circle-switch")) {
-          printf("(circle-switch) ");
-          nw = new FloDisplayCircleSwitch(iid);
-
-          // Circle radii
-          xmlChar *nn = xmlGetProp(cur_node, (const xmlChar *)"size1");
-          if (nn != 0) {
-            float sz = atof((char *)nn);
-            ((FloDisplayCircleSwitch *) nw)->rad1 = XCvt(sz);
-            printf("size1 %d ",((FloDisplayCircleSwitch *) nw)->rad1);
-            xmlFree(nn);
-          } 
-          nn = xmlGetProp(cur_node, (const xmlChar *)"size0");
-          if (nn != 0) {
-            float sz = atof((char *)nn);
-            ((FloDisplayCircleSwitch *) nw)->rad0 = XCvt(sz);
-            printf("size0 %d ",((FloDisplayCircleSwitch *) nw)->rad0);
-            xmlFree(nn);
-          } 
-
-          // Flashing?
-          nn = xmlGetProp(cur_node, (const xmlChar *)"flash");
-          if (nn != 0) {
-            ((FloDisplayCircleSwitch *) nw)->flash = atoi((char *)nn);
-            if (((FloDisplayCircleSwitch *) nw)->flash)
-              printf("(flashing) ");
-            xmlFree(nn);
-          } 
-        } else if (!xmlStrcmp(n, (const xmlChar *)"text-switch")) {
-          printf("(text-switch) ");
-          nw = new FloDisplayTextSwitch(iid);
-
-          // Text lines
-          xmlChar *nn = xmlGetProp(cur_node, (const xmlChar *)"text1");
-          if (nn != 0) {
-            char *text1 = new char[xmlStrlen(nn)+1];
-            strcpy(text1,(char*)nn);
-            ((FloDisplayTextSwitch *) nw)->text1 = text1;
-            printf("'%s' ",text1);
-
-            xmlFree(nn);
-          } 
-          nn = xmlGetProp(cur_node, (const xmlChar *)"text0");
-          if (nn != 0) {
-            char *text0 = new char[xmlStrlen(nn)+1];
-            strcpy(text0,(char*)nn);
-            ((FloDisplayTextSwitch *) nw)->text0 = text0;
-            printf("'%s' ",text0);
-
-            xmlFree(nn);
-          } 
-        } else if (!xmlStrcmp(n, (const xmlChar *)"snapshots")) {
-          printf("(snapshots) ");
-          nw = new FloDisplaySnapshots(GetInputMatrix()->app,iid);
-          FloDisplaySnapshots *nws = (FloDisplaySnapshots *) nw;
-
-          nws->margin = XCvt(0.005);
-
-          // Snapshots display size
-          xmlChar *nn = xmlGetProp(cur_node, (const xmlChar *)"size");
-          if (nn != 0) {
-            int cs; 
-            float *coord = ExtractArray((char *)nn, &cs);
-            if (cs) {
-              nws->sx = XCvt(coord[0]);
-              nws->sy = XCvt(coord[1]);
-              printf("size (%d,%d) ",nws->sx,nws->sy);
-            }
-            delete[] coord;
-            xmlFree(nn);
-          }
-        } else if (!xmlStrcmp(n, (const xmlChar *)"paramset")) {
-          nw = SetupParamSet(doc,cur_node,iid);
-        } else if (!xmlStrcmp(n, (const xmlChar *)"bar") || 
-                   !xmlStrcmp(n, (const xmlChar *)"bar-switch")) {
-          // Bar or bar-switch?
-          char sw = 0;
-          FloDisplayBar *nwb;
-          if (!xmlStrcmp(n, (const xmlChar *)"bar-switch")) {
-            sw = 1;
-            printf("(bar-switch) ");
-            nwb = new FloDisplayBarSwitch(iid);
-          } else {
-            printf("(bar) ");
-            nwb = new FloDisplayBar(iid);
-          }
-
-          nw = nwb;
-
-          // Bar orientation
-          xmlChar *nn = xmlGetProp(cur_node, (const xmlChar *)"orientation");
-          if (nn != 0) {
-            if (!xmlStrcmp(nn,(const xmlChar *)"horizontal")) {
-              nwb->orient = O_Horizontal;
-              printf("(horizontal) ");
-            }
-            else if (!xmlStrcmp(nn,(const xmlChar *)"vertical")) {
-              nwb->orient = O_Vertical;
-              printf("(vertical) ");
-            }
-            else
-              printf("(invalid bar orient: '%s') ",nn);
-            xmlFree(nn);
-          }
-
-          // Bar scale
-          nn = xmlGetProp(cur_node, (const xmlChar *)"barscale");
-          if (nn != 0) {
-            nwb->barscale = atof((char *)nn);
-            xmlFree(nn);
-          }
-          nwb->barscale = (nwb->orient == O_Horizontal ? 
-                           XCvtf(nwb->barscale) : YCvtf(nwb->barscale));
-          printf("barscale %.2f ",nwb->barscale);
-
-          // Bar thickness
-          nn = xmlGetProp(cur_node, (const xmlChar *)"thickness");
-          if (nn != 0) {
-            float bt = atof((char *)nn);
-            nwb->thickness = (nwb->orient == O_Horizontal ? YCvt(bt) : XCvt(bt));
-            printf("thickness %d ",nwb->thickness);
-            xmlFree(nn);
-          } 
-
-          // dB scale?
-          nn = xmlGetProp(cur_node, (const xmlChar *)"dbscale");
-          if (nn != 0) {
-            nwb->dbscale = atoi((char *)nn);
-            printf("(%s) ",(nwb->dbscale ? "dB scale" : "linear scale"));
-            xmlFree(nn);
-          } 
-
-          // calibration marks?
-          nn = xmlGetProp(cur_node, (const xmlChar *)"marks");
-          if (nn != 0) {
-            nwb->marks = atoi((char *)nn);
-            printf("%s",(nwb->marks ? "(marks) " : ""));
-            xmlFree(nn);
-          } 
-
-          if (nwb->dbscale)
-            nwb->maxdb = fadermaxdb;
-            
-          if (sw) {
-            // Color
-            nn = xmlGetProp(cur_node, (const xmlChar *)"color");
-            if (nn != 0) {
-              ((FloDisplayBarSwitch *) nwb)->color = atoi((char *) nn);
-              printf(" color %d ",((FloDisplayBarSwitch *) nwb)->color);
-              xmlFree(nn);
-            }
-
-            // Calibration mark
-            nn = xmlGetProp(cur_node, (const xmlChar *)"calibrate");
-            if (nn != 0) {
-              ((FloDisplayBarSwitch *) nwb)->calibrate = 1;
-              ((FloDisplayBarSwitch *) nwb)->cval = atof((char *) nn);
-              printf(" calibrate %.2f ",((FloDisplayBarSwitch *) nwb)->cval);
-              xmlFree(nn);
-            }
-
-            // Expression to display
-            nn = xmlGetProp(cur_node, (const xmlChar *)"switchvar");
-            if (nn != 0) {
-              printf(" switch-expression: ");
-              ((FloDisplayBarSwitch *) nwb)->switchexp = im.ParseExpression((char *) nn, 0);
-              ((FloDisplayBarSwitch *) nwb)->switchexp->Print();
-              printf(" ");
-              xmlFree(nn);
-            }
-          }
-        } else {
-          printf(FWEELIN_ERROR_COLOR_ON
-                 "(invalid display type: '%s')\n"
-                 FWEELIN_ERROR_COLOR_OFF,n);
-        }
-        xmlFree(n);
-      }
-
-      if (nw != 0) {
-        // Title
-        n = xmlGetProp(cur_node, (const xmlChar *)"title");
-        if (n != 0) {
-          nw->title = new char[xmlStrlen(n)+1];
-          strcpy(nw->title,(char*)n);
-          printf("'%s' ",nw->title);
-          xmlFree(n);
-        }      
-        
-        // Position
-        n = xmlGetProp(cur_node, (const xmlChar *)"pos");
-        if (n != 0) {
-          int cs; 
-          float *coord = ExtractArray((char *)n, &cs);
-          if (cs) {
-            nw->xpos = XCvt(coord[0]);
-            nw->ypos = YCvt(coord[1]);
-            printf("@ (%d,%d) ",nw->xpos,nw->ypos);
-            delete[] coord;
-          }
-          xmlFree(n);
-        }
-
-        // Show?
-        n = xmlGetProp(cur_node, (const xmlChar *)"show");
-        if (n != 0) {
-          nw->show = atoi((char *)n);
-          if (nw->show)
-            printf("(show) ");
-          xmlFree(n);
-        }
-
-        // Font for display
-        n = xmlGetProp(cur_node, (const xmlChar *)"font");
-        if (n != 0) {
-          nw->font = GetFont((char *) n);
-          if (nw->font != 0)
-            printf("(font: %s) ",nw->font->name);
-          else 
-            printf("(ERR: no font named '%s'!) ",n);
-          xmlFree(n);
-        }
-
-        // ID
-        n = xmlGetProp(cur_node, (const xmlChar *)"id");
-        if (n != 0) {
-          ParsedExpression *tmp = im.ParseExpression((char *) n, 0);
-          nw->id = (int) tmp->Evaluate(0);
-          printf("(id: %d) ",nw->id);
-          delete tmp;
-          xmlFree(n);
-        }
-
-        // Expression to display
-        n = xmlGetProp(cur_node, (const xmlChar *)"var");
-        if (n != 0) {
-          printf("\n   expression: ");
-          nw->exp = im.ParseExpression((char *) n, 0);
-          nw->exp->Print();
-          xmlFree(n);
-        }
-
-        // Link in the new display
-        if (displays == 0) 
-          displays = nw;
-        else {
-          FloDisplay *cur = displays;
-          while (cur->next != 0)
-            cur = cur->next;
-          cur->next = nw;
-        }
-        printf("\n");
-      }
+      ConfigureDisplay(doc, cur_node, interfaceid);
     } else if ((!xmlStrcmp(cur_node->name, (const xmlChar *)"layout"))) {
       // Layout declaration
       FloLayout *nw = new FloLayout();

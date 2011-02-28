@@ -31,11 +31,25 @@
 #include <SDL/SDL_ttf.h>
 #endif
 
+#ifdef __MACOSX__
+#define CAPITAL_FILLED_PIE
+#endif
+
+// Different versions of sdl-gfx have different naming
+#ifdef CAPITAL_FILLED_PIE
+#define FILLED_PIE filledPieRGBA
+#else
+#define FILLED_PIE filledpieRGBA
+#endif
+
 // Convert from 640,480 screen size to the user's coordinate system
 #define OCX(x) (app->getCFG()->XCvt((float)(x)/640))
 #define OCY(y) (app->getCFG()->YCvt((float)(y)/480))
 
 #define FWEELIN_TITLE_IMAGE FWEELIN_DATADIR "/fweelin.bmp"
+
+extern double mygettime(void);
+extern int round(float num);
 
 class Fweelin;
 class LoopManager;

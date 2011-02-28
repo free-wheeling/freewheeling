@@ -502,6 +502,9 @@ class FloDisplay {
 
   virtual FloDisplayType GetFloDisplayType() { return FD_Unknown; };
 
+  // Set whether this display is showing
+  virtual void SetShow(char show) { this->show = show; };
+
   int iid,  // Interface id. Interface id + display id uniquely identify 
             // a display
     id;     // Display ID
@@ -514,6 +517,37 @@ class FloDisplay {
     forceshow;           // Force display to show?
     
   FloDisplay *next;
+};
+
+// Panel is a 'container' that holds several child displays and surrounds it with a frame
+// Allows easy showing and hiding of a number of displays together
+class FloDisplayPanel : public FloDisplay
+{
+ public:
+  FloDisplayPanel (int iid) : FloDisplay(iid), sx(100), sy(100), num_children(0), child_displays(0) {};
+  ~FloDisplayPanel () {
+    if (child_displays != 0)
+      delete[] child_displays;
+  };
+
+  virtual void Draw(SDL_Surface *screen);
+
+  // Set whether this display is showing
+  virtual void SetShow(char show) {
+    this->show = show;
+
+    // Show/hide child displays
+    for (int i = 0; i < num_children; i++)
+      child_displays[i]->SetShow(show);
+  };
+
+  int sx, sy; // Size of panel
+  int margin; // Margin for displays inside panel
+
+  // Array of pointers to all child displays. Child displays are still stored in the master list of
+  // displays, and drawn independently of the panel.
+  int num_children;
+  FloDisplay **child_displays;
 };
 
 // Text display shows the value of expression 'exp' as onscreen text
@@ -738,6 +772,8 @@ class FloConfig {
                         FloLayoutElement *elem, float xscale, float yscale);
   void ConfigureLayout(xmlDocPtr doc, xmlNode *layn, 
                        FloLayout *lay, float xscale, float yscale);
+  void ConfigureDisplay_Common(xmlNode *disp, FloDisplay *nw, FloDisplayPanel *parent);
+  void ConfigureDisplay(xmlDocPtr doc, xmlNode *disp, int interfaceid, FloDisplayPanel *parent = 0);
   void ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br);
   void ConfigureGraphics(xmlDocPtr doc, xmlNode *vid, int interfaceid = 0);
   void ConfigureBasics(xmlDocPtr doc, xmlNode *gen);

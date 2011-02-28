@@ -894,7 +894,7 @@ class Fweelin : public EventProducer, public BrowserCallback {
   int go();
 
   void ToggleDiskOutput();
-  void FlushStreamOutName() { strcpy(streamoutname,""); };
+  void FlushStreamOutName() { streamoutname = ""; };
 
   inline nframes_t getBUFSZ() { return fragmentsize; };
   inline sample_t *getSCOPE() { return scope; };
@@ -930,7 +930,7 @@ class Fweelin : public EventProducer, public BrowserCallback {
 
   inline FloConfig *getCFG() { return cfg; };
 
-  inline char *getSTREAMOUTNAME() { return streamoutname; };
+  inline const std::string &getSTREAMOUTNAME() { return streamoutname; };
 
   inline SceneBrowserItem *getCURSCENE() { return curscene; };
   inline void setCURSCENE(SceneBrowserItem *nw) { curscene = nw; };
@@ -1058,8 +1058,8 @@ class Fweelin : public EventProducer, public BrowserCallback {
   // ******************  DISK STREAMER
   FileStreamer *fs;
   int writenum; // Number of audio output file currently being written
-  char streamoutname[FWEELIN_OUTNAME_LEN], // Name of output file
-    timingname[FWEELIN_OUTNAME_LEN];       // Name of timing stripe file
+  std::string streamoutname,        // Name of output file
+    timingname;                     // Name of timing stripe file
 
   // ******************  LOOP SELECTIONS
   LoopList *loopsel[NUM_LOOP_SELECTION_SETS];

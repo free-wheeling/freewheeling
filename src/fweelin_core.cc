@@ -3327,41 +3327,14 @@ void Fweelin::ToggleDiskOutput()
 {
   if (fs->GetStatus() == FileStreamer::STATUS_STOPPED) {
     // Create appropriate filename for output
-    char tmp[FWEELIN_OUTNAME_LEN];
-    char go = 1;
-    do {
-      snprintf(tmp,FWEELIN_OUTNAME_LEN,"%s/%s%d%s",
-               cfg->GetLibraryPath(),FWEELIN_OUTPUT_STREAM_NAME,writenum,
-               getCFG()->GetAudioFileExt(getCFG()->GetStreamOutFormat()));
-      struct stat st;
-      printf("DISK: Opening '%s' for streaming.\n",tmp);
-      if (stat(tmp,&st) == 0) {
-        printf("DISK: File exists, trying another.\n");
-        writenum++;
-      } else {
-        // Also check for timing data file- don't overwrite that
-        snprintf(timingname,FWEELIN_OUTNAME_LEN,"%s/%s%d%s",
-                 cfg->GetLibraryPath(),FWEELIN_OUTPUT_STREAM_NAME,
-                 writenum,FWEELIN_OUTPUT_TIMING_EXT);
-        if (stat(timingname,&st) == 0) {
-          printf("DISK: Timing file exists, trying another.\n");
-          writenum++;
-        } else
-          go = 0;
-      }
-    } while (go);
+    streamoutname = LibraryHelper::GetNextAvailableStreamOutFilename(this,writenum,timingname);
 
-    // Compose filename & start writing
-    strcpy(streamoutname,tmp);
-    snprintf(timingname,FWEELIN_OUTNAME_LEN,"%s/%s%d%s",
-             cfg->GetLibraryPath(),FWEELIN_OUTPUT_STREAM_NAME,
-             writenum,FWEELIN_OUTPUT_TIMING_EXT);
     fs->StartWriting(streamoutname,timingname,getCFG()->GetStreamOutFormat());
   } else {
     // Stop disk output
     fs->StopWriting();
-    strcpy(streamoutname,"");
-    strcpy(timingname,"");
+    streamoutname = "";
+    timingname = "";
 
     // Advance to next logical filename
     writenum++;
@@ -3542,13 +3515,13 @@ int Fweelin::setup()
   rp->AddChild(fs = new FileStreamer(this),
                ProcessorItem::TYPE_FINAL);
   writenum = 1;
-  strcpy(streamoutname,"");
+  streamoutname = "";
   curscene = 0;
 #if 0
   strcpy(scenedispname,"");
   strcpy(scenefilename,"");
 #endif
-  strcpy(timingname,"");
+  timingname = "";
 
   // Fixed audio memory
   nframes_t memlen = (nframes_t) (audio->get_srate() * 
