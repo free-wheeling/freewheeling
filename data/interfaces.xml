@@ -32,7 +32,7 @@ for
   <!-- Added user interfaces -->
   <interface setup="midifootswitch.xml" switchable="0"/>
   <interface setup="bcf2000.xml"/>
-  <interface setup="pckeyboard.xml"/>
+<!-- <interface setup="pckeyboard.xml"/> -->
   <interface setup="midikeyboard.xml"/>
 <!-- <interface setup="pcr-m1.xml" switchable="0"/> -->
   <interface setup="dancemat.xml"/>

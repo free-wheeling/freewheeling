@@ -18,6 +18,9 @@
    You should have received a copy of the GNU General Public License
    along with Freewheeling.  If not, see <http://www.gnu.org/licenses/>. */
 
+#include <string>
+#include <sstream>
+
 #include "fweelin_core.h"
 #include "fweelin_event.h"
 #include "fweelin_block.h"
@@ -767,8 +770,8 @@ class FileStreamer : public Processor, public EventListener {
 
   // Starts writing to a new audio stream
   // Note all the heavy work is done in the encode thread!
-  int StartWriting(char *filename, char *timingname, codec type) {
-    if (outname != 0) 
+  int StartWriting(const std::string &filename, const std::string &timingname, codec type) {
+    if (writerstatus != STATUS_STOPPED)
       return -1; // Already writing!
 
     outname = filename;
@@ -812,8 +815,8 @@ class FileStreamer : public Processor, public EventListener {
   // File
   FILE *outfd,   // Current output filedescriptor (audio)
     *timingfd;   // Current timing output filedescriptor (data- USX)
-  char *outname, // Current output filename
-    *timingname; // Current timing output filename
+  std::string outname, // Current output filename
+    timingname; // Current timing output filename
 
   // Time markers for storing downbeat points along with audio
   TimeMarker *marks;

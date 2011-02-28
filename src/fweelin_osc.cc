@@ -125,11 +125,7 @@ void OSCClient::SendPlayingLoops() {
         Loop *l = app->getTMAP()->GetMap(i);
         if (l != 0 && l->GetSaveStatus() == SAVE_DONE) {
           // Saved loop. Get filename
-          std::ostringstream tmp;
-          GET_SAVEABLE_HASH_TEXT(l->GetSaveHash());
-          tmp << app->getCFG()->GetLibraryPath() << "/" << FWEELIN_OUTPUT_LOOP_NAME << "-" <<
-              hashtext;
-          const std::string s = tmp.str();
+          const std::string s = LibraryHelper::GetStubnameFromLoop(app,l);
 
           LibraryFileInfo loopfile = LibraryHelper::GetLoopFilenameFromStub(app,s.c_str());
           if (loopfile.exists) {
@@ -144,7 +140,7 @@ void OSCClient::SendPlayingLoops() {
               float gain = l->vol;
 
               printf("OSC: Transfer loop: %s to Qtractor (nbeats: %d, lc: %d, cflen: %d, len: %d, gain: %0.2f)\n",
-                  buf,l->nbeats,lc,cflen,len,gain);
+                  buf,(int) l->nbeats,lc,cflen,len,gain);
 
               // Fill pattern with reps
               int nbeats = (l->pulse != 0 && l->nbeats > 0 ? l->nbeats : lc);  // Only 1 rep if there is no pulse

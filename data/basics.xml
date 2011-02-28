@@ -114,6 +114,7 @@
      See www.fluidsynth.org for details.
      See www.hammersound.net for free soundfonts.  -->
   <fluidsynth param="synth.polyphony" setint="64"/>
+  <fluidsynth param="synth.parallel-render" setint="0"/>
  
 <!-- Interpolation setting for FluidSynth- lower setting, lower quality, 
      faster. FluidSynth default is 4. -->

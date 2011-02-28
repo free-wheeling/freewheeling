@@ -136,6 +136,8 @@
                  controlnum=VAR_bcf2000_se_toggle_midicontrol"        
      output1="video-show-display" parameters1="interfaceid=VAR_synthedit_interfaceid and 
                                                displayid=DISPLAY_synthedit and
-                                               show=controlval"/>
+                                               show=controlval"
+     output2="video-show-display" parameters2="interfaceid=VAR_synthedit_interfaceid and 
+                                               displayid=DISPLAY_synthedit_chanselect and show=controlval"/>
   </bindings>
 </interface>

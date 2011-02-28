@@ -2200,7 +2200,7 @@ void PlayProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
 
 FileStreamer::FileStreamer(Fweelin *app, nframes_t outbuflen) :
   Processor(app), writerstatus(STATUS_STOPPED),
-  outname(0), timingname(0), nbeats(0), outbuflen(outbuflen), threadgo(1) {
+  outname(""), timingname(""), nbeats(0), outbuflen(outbuflen), threadgo(1) {
   // Encode in stereo if master FW is running in stereo
   stereo = preab->IsStereoMaster();
 
@@ -2420,8 +2420,8 @@ void *FileStreamer::run_encode_thread (void *ptr) {
     case STATUS_START_PENDING:
       // Open output file
       // printf("DISK: Open output file.\n");
-      inst->outfd = fopen(inst->outname,"wb");
-      inst->timingfd = fopen(inst->timingname,"wb");
+      inst->outfd = fopen(inst->outname.c_str(),"wb");
+      inst->timingfd = fopen(inst->timingname.c_str(),"wb");
       if (inst->outfd != 0 && inst->timingfd != 0) {
         // Setup vorbis lib
         printf("DISK: Initialize streamer.\n");
@@ -2463,8 +2463,8 @@ void *FileStreamer::run_encode_thread (void *ptr) {
           fclose(inst->timingfd);
         inst->writerstatus = STATUS_STOPPED;
         inst->timingfd = 0;
-        inst->outname = 0;
-        inst->timingname = 0;
+        inst->outname = "";
+        inst->timingname = "";
         inst->app->FlushStreamOutName();
       }
       break; 
@@ -2488,8 +2488,8 @@ void *FileStreamer::run_encode_thread (void *ptr) {
       printf("DISK: ..done\n");
 
       inst->writerstatus = STATUS_STOPPED;
-      inst->outname = 0; // OK to start a new file
-      inst->timingname = 0;
+      inst->outname = "";
+      inst->timingname = "";
       break; 
     }
 
