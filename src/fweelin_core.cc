@@ -1801,8 +1801,9 @@ void LoopManager::DeletePulse(int pulseindex) {
         DeleteLoop(i);
 
     // Erase this pulse
-    app->getRP()->DelChild(pulses[pulseindex]);
+    Processor *p = pulses[pulseindex];
     pulses[pulseindex] = 0;
+    app->getRP()->DelChild(p);
   }
 }
 
@@ -1887,8 +1888,9 @@ void LoopManager::DeleteLoop (int index) {
       numrecordingloops--;
 
     // Remove the record/play processor
-    app->getRP()->DelChild(plist[index]);
+    Processor *p = plist[index];
     plist[index] = 0;
+    app->getRP()->DelChild(p);
     status[index] = T_LS_Off;
     waitactivate[index] = 0;
     waitactivate_shot[index] = 0;
@@ -2059,7 +2061,7 @@ void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs,
   Loop *lp = app->getTMAP()->GetMap(index);
   if (lp == 0) {
     // Record a new loop
-    float *inputvol = &(app->getRP()->inputvol); // Where to get input vol from
+    float *inputvol = app->getRP()->GetInputVolumePtr(); // Where to get input vol from
     app->getRP()->AddChild(plist[index] =
                            new RecordProcessor(app,app->getISET(),inputvol,
                                                GetCurPulse(),
@@ -2082,7 +2084,7 @@ void LoopManager::Activate (int index, char shot, float vol, nframes_t ofs,
 
     if (overdub) {
       // Overdub
-      float *inputvol = &(app->getRP()->inputvol); // Get input vol from main
+      float *inputvol = app->getRP()->GetInputVolumePtr(); // Get input vol from main
       app->getRP()->AddChild(plist[index] = 
                              new RecordProcessor(app,
                                                  app->getISET(),inputvol,
@@ -2164,8 +2166,9 @@ void LoopManager::Deactivate (int index) {
     ((RecordProcessor *) plist[index])->End();
   } else if (status[index] == T_LS_Playing) {
     // Stop playing/overdubbing
-    app->getRP()->DelChild(plist[index]);
+    Processor *p = plist[index];
     plist[index] = 0;
+    app->getRP()->DelChild(p);
     status[index] = T_LS_Off;    
   }
 }
@@ -2399,10 +2402,11 @@ void LoopManager::ReceiveEvent(Event *ev, EventProducer *from) {
           }
 
           // Remove recordprocessor from chain
-          app->getRP()->DelChild(plist[i]);
+          Processor *p = plist[i];
+          plist[i] = 0;
+          app->getRP()->DelChild(p);
           numrecordingloops--;
           status[i] = T_LS_Off;
-          plist[i] = 0;
 
           // Check if we need to activate a playprocessor
           if (waitactivate[i]) {
@@ -3164,6 +3168,7 @@ int Fweelin::go()
 {
   running = 1;
 
+  // Final setup
   // Broadcast start session event!
   Event *proto = Event::GetEventByType(T_EV_StartSession);
   if (proto == 0) {
@@ -3348,7 +3353,9 @@ int Fweelin::setup()
   // Keep all memory inline
   mlockall(MCL_CURRENT | MCL_FUTURE);
 
+  // Init and Register main thread as a writer
   SRMWRingBuffer_Writers::InitAll();
+  SRMWRingBuffer_Writers::RegisterWriter();
   
   // Initialize vars
   for (int i = 0; i < NUM_LOOP_SELECTION_SETS; i++)
@@ -3507,13 +3514,6 @@ int Fweelin::setup()
                                         NUM_PREALLOCATED_TIME_MARKERS);
 
   rp = new RootProcessor(this,iset);
-  // Add monitor mix
-  float *inputvol = &(rp->inputvol); // Where to get input vol from
-  rp->AddChild(new PassthroughProcessor(this,iset,inputvol),
-               ProcessorItem::TYPE_GLOBAL);
-  // Add disk writer
-  rp->AddChild(fs = new FileStreamer(this),
-               ProcessorItem::TYPE_FINAL);
   writenum = 1;
   streamoutname = "";
   curscene = 0;
@@ -3555,14 +3555,6 @@ int Fweelin::setup()
   audiomem->SetupPreallocated(pre_audioblock,
                               Preallocated::PREALLOC_BASE_INSTANCE);
 
-  // Begin recording into audio memory (use mono/stereo memory as appropriate)
-  amrec = new RecordProcessor(this,iset,inputvol,audiomem,
-                              cfg->IsStereoMaster());
-  if (amrec == 0) {
-    printf("CORE: ERROR: Can't create core RecordProcessor!\n");
-    exit(1);
-  }
-  rp->AddChild(amrec,ProcessorItem::TYPE_HIPRIORITY);
   // Compute running peaks and averages from audio mem (for scope)
   AudioBlock *peaks = ::new AudioBlock(scopelen),
     *avgs = ::new AudioBlock(scopelen);
@@ -3578,7 +3570,6 @@ int Fweelin::setup()
   avgs->SetupPreallocated(pre_audioblock,
                           Preallocated::PREALLOC_BASE_INSTANCE);
   audiomem->AddExtendedData(new BED_PeaksAvgs(peaks,avgs,chunksize));
-  bmg->PeakAvgOn(audiomem,amrec->GetIterator());
 
   int nt = cfg->GetNumTriggers();
   tmap = new TriggerMap(this,nt);
@@ -3636,7 +3627,7 @@ int Fweelin::setup()
   cfg->LinkSystemVariable("SYSTEM_midi_transpose",T_int,
                           (char *) &(cfg->transpose));
   cfg->LinkSystemVariable("SYSTEM_master_in_volume",T_float,
-                          (char *) &(rp->inputvol));
+                          (char *) rp->GetInputVolumePtr());
   cfg->LinkSystemVariable("SYSTEM_master_out_volume",T_float,
                           (char *) &(rp->outputvol));
   cfg->LinkSystemVariable("SYSTEM_cur_pitchbend",T_int,
@@ -3709,6 +3700,33 @@ int Fweelin::setup()
     printf("MAIN: Error with signal processing start!\n");
     return 1;
   }
+
+  fs = new FileStreamer(this);
+
+  // *** ALL THREADS THAT WRITE TO SRMWRingBuffers MUST BE CREATED BEFORE THIS POINT ***
+
+  // Now that all threads are present, initialize ring buffers
+  emg->FinalPrep();
+  rp->FinalPrep();
+
+  // Add children to rootprocessor (requires event queue, initialized above)
+
+  // Add monitor mix
+  float *inputvol = rp->GetInputVolumePtr(); // Where to get input vol from
+  rp->AddChild(new PassthroughProcessor(this,iset,inputvol),
+               ProcessorItem::TYPE_GLOBAL);
+  // Add disk writer
+  rp->AddChild(fs,ProcessorItem::TYPE_FINAL);
+
+  // Begin recording into audio memory (use mono/stereo memory as appropriate)
+  amrec = new RecordProcessor(this,iset,inputvol,audiomem,
+                              cfg->IsStereoMaster());
+  if (amrec == 0) {
+    printf("CORE: ERROR: Can't create core RecordProcessor!\n");
+    exit(1);
+  }
+  bmg->PeakAvgOn(audiomem,amrec->GetIterator());
+  rp->AddChild(amrec,ProcessorItem::TYPE_HIPRIORITY);
 
   return 0;
 }
