@@ -541,6 +541,7 @@ public:
       printf("CORE: ERROR: Too many writer threads for Ring Buffer!\n");
       exit(1);
     }
+    printf("CORE: Register ringbuffer writer thread: %lu\n",id);
     ids[num_writers] = id;
     num_writers++;
     pthread_mutex_unlock (&register_lock);    
@@ -551,6 +552,7 @@ public:
       printf("CORE: ERROR: Too many writer threads for Ring Buffer!\n");
       exit(1);
     }
+    printf("CORE: Register ringbuffer writer thread: %lu\n",pthread_self());
     ids[num_writers] = pthread_self();
     num_writers++;
     pthread_mutex_unlock (&register_lock);    
@@ -565,41 +567,55 @@ public:
 //
 // This expands to a set of ringbuffers- one for each writer thread. The order of elements between threads is not preserved.
 // Elements are written and read using COPY operations.
+//
+// NOTE: All writer threads MUST be registered before the first SRMWRingBuffer instance is created.
 template <class T> class SRMWRingBuffer {
+public:
+
   // Create a ringbuffer with numel elements of class T
-  SRMWRingBuffer (int numel) : numel(numel) {
-    wbufs = new jack_ringbuffer_t *[SRMWRingBuffer_Writers::num_writers];
-    for (int i = 0; i < SRMWRingBuffer_Writers::num_writers; i++)
+  SRMWRingBuffer (int numel) : numel(numel), num_writers(SRMWRingBuffer_Writers::num_writers) {
+    wbufs = new jack_ringbuffer_t *[num_writers];
+    for (int i = 0; i < num_writers; i++)
       wbufs[i] = jack_ringbuffer_create(sizeof(T) * numel);
   };
   ~SRMWRingBuffer() {
-    for (int i = 0; i < SRMWRingBuffer_Writers::num_writers; i++)
+    for (int i = 0; i < num_writers; i++)
       jack_ringbuffer_free(wbufs[i]);
     delete[] wbufs;
   };
   
   // Instance methods
   
-  int WriteElement (T *el) {
+  int WriteElement (const T &el) {
+    if (num_writers != SRMWRingBuffer_Writers::num_writers) {
+      printf("CORE: ERROR: SRMWRingBuffer initialized too early - before all writer threads registered.\n");
+      exit(1);
+    }
+
     // Determine which write thread we are
     pthread_t id = pthread_self();
-    for (int i = 0; i < SRMWRingBuffer_Writers::num_writers; i++)
+    for (int i = 0; i < num_writers; i++)
       if (pthread_equal(id,SRMWRingBuffer_Writers::ids[i])) {
         // Write to the appropriate ringbuf
-        if (jack_ringbuffer_write(wbufs[i],el,sizeof(T)) < sizeof(T)) {
+        if (jack_ringbuffer_write(wbufs[i],(const char *) &el,sizeof(T)) < sizeof(T)) {
           printf("CORE: No space in RingBuffer for element\n");
           return -1;
         } else
           return 0;
       }
       
-    printf("CORE: RingBuffer write from unregistered write thread!\n");
+    printf("CORE: RingBuffer write from unregistered write thread: %lu!\n",id);
     return -1;
   };
   
-  T *ReadElement () {
+  const T ReadElement () {
+    if (num_writers != SRMWRingBuffer_Writers::num_writers) {
+      printf("CORE: ERROR: SRMWRingBuffer initialized too early - before all writer threads registered.\n");
+      exit(1);
+    }
+
     // Check each ring buffer
-    for (int i = 0; i < SRMWRingBuffer_Writers::num_writers; i++) {
+    for (int i = 0; i < num_writers; i++) {
       size_t avail = jack_ringbuffer_read_space(wbufs[i]);
       if (avail >= sizeof(T)) {
         // Read element here
@@ -607,7 +623,7 @@ template <class T> class SRMWRingBuffer {
           printf("CORE: Size mismatch during RingBuffer read\n");
           return 0;
         } else
-          return tmpread;
+          return *((T *) tmpread);
       }
     }
     
@@ -619,7 +635,8 @@ protected:
 
   // Array of single-read single-write ring buffers: one for each writer thread
   jack_ringbuffer_t **wbufs;
-  int numel;  // Number of elements of class T in the buffer
+  int numel,      // Number of elements of class T in the buffer
+    num_writers;  // Local copy of SRMWRingBuffer_Writers::num_writers
   char tmpread[sizeof(T)];  // Holding spot for read
 };
 

@@ -467,19 +467,14 @@ public:
 // This is the base of signal processing tree- it connects to system level audio
 // and calls child processors which do signal processing
 // Child processes execute in parallel and their signals are summed
-class RootProcessor : public Processor {
+class RootProcessor : public Processor, public EventListener {
+#define RP_QUEUE_SIZE 200 // Number of events that can be queued up here. Things like 'starting loops playing'.
+
+  friend class Fweelin;
+
 public:
   RootProcessor(Fweelin *app, InputSettings *iset);
   virtual ~RootProcessor();
-
-  // Adds a child processor.. the processor begins processing immediately
-  // Possibly realtime safe?
-  void AddChild (Processor *o, int type = ProcessorItem::TYPE_DEFAULT);
-
-  // Removes a child processor from receiving processing time..
-  // also, deletes the child processor
-  // Realtime safe!
-  void DelChild (Processor *o);
 
   void AdjustOutputVolume(float adjust);
   void SetOutputVolume(float set) { 
@@ -500,6 +495,7 @@ public:
     dinputvol = 1.0;
   };
   inline float GetInputVolume() { return inputvol; }
+  inline float *GetInputVolumePtr() { return &inputvol; }
 
   float GetLimiterVolume() { return curlimitvol; };
   char GetLimiterFreeze() { return limiterfreeze; };
@@ -518,10 +514,26 @@ public:
 
   virtual void process(char pre, nframes_t len, AudioBuffers *ab);
 
-  static void *run_cleanup_thread (void *ptr);
-      
-  pthread_t cleanup_thread;
-  int threadgo;
+  // Adds a child processor.. the processor begins processing immediately
+  // Possibly realtime safe?
+  void AddChild (Processor *o, int type = ProcessorItem::TYPE_DEFAULT);
+
+  // Removes a child processor from receiving processing time..
+  // also, deletes the child processor
+  // Realtime safe!
+  void DelChild (Processor *o);
+
+  // Create ring buffers once all threads are present
+  void FinalPrep ();
+
+  void ReceiveEvent(Event *ev, EventProducer *from);
+
+private:
+
+  // Event queue (read in RT). Used to handle events in the RT audio thread, that are generated from multiple
+  // writers in other threads.
+  SRMWRingBuffer<Event *> *eq;
+  volatile char protect_plist;  // Nonzero if the processor list is being read and SHOULD NOT be modified
 
   // Volumes- we are responsible for adjusting volumes in RT
   InputSettings *iset;

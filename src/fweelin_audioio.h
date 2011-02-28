@@ -33,7 +33,7 @@ class Processor;
 
 class AudioIO {
 public:
-  AudioIO(Fweelin *app) : sync_start_frame(0), timebase_master(0), sync_active(0), app(app) {};
+  AudioIO(Fweelin *app) : sync_start_frame(0), timebase_master(0), sync_active(0), audio_thread(0), app(app) {};
 
   // Open up system level audio
   int open ();
@@ -117,6 +117,8 @@ public:
   char timebase_master; // Nonzero if we are the JACK timebase master
   char sync_active;     // Nonzero if sync is active
   char transport_roll;  // Nonzero if the transport is rolling
+
+  volatile pthread_t audio_thread;  // RT audio thread (created by JACK)
 
   // Pointer to the main app
   Fweelin *app;

@@ -47,6 +47,9 @@
 int AudioIO::process (nframes_t nframes, void *arg) {
   AudioIO *inst = static_cast<AudioIO *>(arg);
 
+  if (inst->audio_thread == 0)
+    inst->audio_thread = pthread_self();
+
   // Get CPU load
   inst->cpuload = jack_cpu_load(inst->client);
 
@@ -237,6 +240,12 @@ int AudioIO::activate (Processor *rp) {
 #endif
 
   free(ports);
+
+  while (audio_thread == 0)
+    // Wait for first process callback to register audio thread
+    usleep(10000);
+
+  SRMWRingBuffer_Writers::RegisterWriter(audio_thread);
 
   return 0;
 }

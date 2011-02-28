@@ -44,6 +44,8 @@
 
 #include "fweelin_event.h"
 
+#define EVENT_QUEUE_SIZE 100  // Number of events in event queue, per writer thread
+
 EventTypeTable *Event::ett = 0;
 
 // Events are allocated in blocks using the Memory Manager
@@ -318,6 +320,9 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_SceneMarker,"__internal__",SceneMarkerEvent);
       SET_ETYPE(T_EV_PulseSync,"__internal__",PulseSyncEvent);
       SET_ETYPE(T_EV_TriggerSet,"__internal__",TriggerSetEvent);
+      SET_ETYPE_NUMPREALLOC(T_EV_AddProcessor,"__internal__",AddProcessorEvent,100);
+      SET_ETYPE_NUMPREALLOC(T_EV_DelProcessor,"__internal__",DelProcessorEvent,100);
+      SET_ETYPE_NUMPREALLOC(T_EV_CleanupProcessor,"__internal__",CleanupProcessorEvent,100);
       SET_ETYPE(T_EV_Input_MouseButton,"__internal__",MouseButtonInputEvent);
       SET_ETYPE(T_EV_Input_MouseMotion,"__internal__",MouseMotionInputEvent);
       
@@ -409,6 +414,49 @@ Event *Event::GetEventByName(char *evtname, char wait) {
   return 0;
 };
 
+EventManager::EventManager () : eq(0), threadgo(1) {
+  printf("Start event manager.\n");
+
+  // Create listener structure..
+  int evnum = (int) EventType(T_EV_Last);
+  listeners = new EventListenerItem *[evnum];
+  for (int i = 0; i < evnum; i++)
+    listeners[i] = 0;
+
+  pthread_mutex_init(&dispatch_thread_lock,0);
+  pthread_mutex_init(&listener_list_lock,0);
+  pthread_cond_init(&dispatch_ready,0);
+
+  const static size_t STACKSIZE = 1024*128;
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setstacksize(&attr,STACKSIZE);
+  printf("EVENT: Stacksize: %d.\n",STACKSIZE);
+
+  // Hold dispatch thread until ready
+  pthread_mutex_lock(&dispatch_thread_lock);
+
+  // Start an event dispatch thread
+  int ret = pthread_create(&dispatch_thread,
+                           &attr,
+                           run_dispatch_thread,
+                           static_cast<void *>(this));
+  if (ret != 0) {
+    printf("(eventmanager) pthread_create failed, exiting");
+    exit(1);
+  }
+  SRMWRingBuffer_Writers::RegisterWriter(dispatch_thread);
+
+  struct sched_param schp;
+  memset(&schp, 0, sizeof(schp));
+
+  // Event dispatch thread is NOT RT
+  schp.sched_priority = sched_get_priority_max(SCHED_OTHER);
+  if (pthread_setschedparam(dispatch_thread, SCHED_OTHER, &schp) != 0) {
+    printf("EVENT: Can't set hi priority thread, will use regular!\n");
+  }
+};
+
 EventManager::~EventManager() {
   //printf("Event Manager: cleanup... this: %p\n",this);   
   
@@ -435,6 +483,8 @@ EventManager::~EventManager() {
   }
   
   delete[] listeners;
+  if (eq != 0)
+    delete eq;
   
   // Takedown event type table
   // printf(" .. ETT takedown (this: %p)\n",this);   
@@ -443,3 +493,166 @@ EventManager::~EventManager() {
   
   printf("EVENT: manager end.\n");
 };
+
+// Create ring buffers after ALL writer threads are created
+void EventManager::FinalPrep() {
+  printf("EVENT: Create ringbuffers and begin.\n");
+
+  eq = new SRMWRingBuffer<Event *>(EVENT_QUEUE_SIZE);
+
+  // Start processing
+  pthread_mutex_unlock(&dispatch_thread_lock);
+};
+
+// Event queue functions ** NOT THREADSAFE **
+
+Event *EventManager::DeleteQueue(Event *first) {
+  Event *cur = first;
+  while (cur != 0) {
+    Event *tmp = cur->next;
+    cur->RTDelete();
+    cur = tmp;
+  }
+
+  return 0;
+}
+
+void EventManager::QueueEvent(Event **first, Event *nw) {
+  Event *cur = *first;
+  if (cur == 0)
+    *first = nw;
+  else {
+    while (cur->next != 0)
+      cur = cur->next;
+
+    cur->next = nw;
+  }
+};
+
+void EventManager::RemoveEvent(Event **first, Event *prev, Event **cur) {
+  Event *tmp = (*cur)->next;
+  if (prev != 0)
+    prev->next = tmp;
+  else
+    *first = tmp;
+  (*cur)->RTDelete();
+  *cur = tmp;
+};
+
+// Broadcast through dispatch thread!
+// RT safe! -- so long as you allocate your event with RTNew()
+void EventManager::BroadcastEvent(Event *ev,
+                    EventProducer *source) {
+  // printf("*** THREAD (BROADCAST): %li\n",pthread_self());
+
+  ev->from = source;
+  //ev->time = mygettime();
+
+  eq->WriteElement(ev);
+
+  // Wake up the dispatch thread
+  if (pthread_mutex_trylock (&dispatch_thread_lock) == 0) {
+    pthread_cond_signal (&dispatch_ready);
+    pthread_mutex_unlock (&dispatch_thread_lock);
+  }
+  else
+    // Priority inversion
+    printf("EVENT: WARNING: Priority inversion during event broadcast!\n",Event::ett[(int) ev->GetType()].name);
+
+  // printf("EVENT: SENT: %s!\n",Event::ett[(int) ev->GetType()].name);
+};
+
+void *EventManager::run_dispatch_thread (void *ptr) {
+  EventManager *inst = static_cast<EventManager *>(ptr);
+
+  pthread_mutex_lock(&inst->dispatch_thread_lock);
+
+  while (inst->threadgo) {
+    // Scan through all events
+    Event *cur = inst->eq->ReadElement();
+    while (cur != 0) {
+      //printf("broadcast thread\n");
+      // Print time elapsed since broadcast
+      //double dt = (mygettime()-cur->time) * 1000;
+      //printf("Evt dispatch- dt: %2.2f ms\n",dt);
+
+      if (cur->GetMgr() == 0)
+        printf("EVENT: WARNING: Broadcast from RT nonRT event!!\n");
+
+      // printf("EVENT: DISPATCH: %s!\n",Event::ett[(int) cur->GetType()].name);
+      inst->BroadcastEventNow(cur,cur->from,0,0); // Force delivery now,
+                                                  // don't erase til we
+                                                  // advance
+
+      cur->RTDelete();
+      cur = inst->eq->ReadElement();
+    }
+
+    // No more events in queue
+
+    // Wait for wakeup
+    pthread_cond_wait (&inst->dispatch_ready, &inst->dispatch_thread_lock);
+    // printf("EVENT: WAKEUP!\n");
+  }
+
+  printf("Event Manager: end dispatch thread\n");
+
+  pthread_mutex_unlock(&inst->dispatch_thread_lock);
+
+  return 0;
+};
+
+// Not RT safe, but threadsafe!
+// Listen for the given event (optionally from the given producer) and callme
+// when it occurs-- optionally, block calls from myself
+void EventManager::ListenEvent(EventListener *callme,
+                 EventProducer *from, EventType type,
+                 char block_self_calls) {
+  EventListenerItem *nw = new EventListenerItem(callme,from,type,
+                                                block_self_calls);
+
+  pthread_mutex_lock(&listener_list_lock);
+
+  // Add to the listeners list
+  int evnum = (int) type;
+  EventListenerItem *cur = listeners[evnum];
+  if (cur == 0)
+    listeners[evnum] = nw; // That was easy, now we have 1 item
+  else {
+    while (cur->next != 0)
+      cur = cur->next;
+    cur->next = nw; // Link up the last item to new1
+  }
+
+  pthread_mutex_unlock(&listener_list_lock);
+};
+
+// Not RT safe!
+void EventManager::UnlistenEvent(EventListener *callme,
+                   EventProducer *from, EventType type) {
+  pthread_mutex_lock(&listener_list_lock);
+
+  // Remove from the listeners list
+  int evnum = (int) type;
+  EventListenerItem *cur = listeners[evnum],
+    *prev = 0;
+
+  // Search for those listening to 'from' & 'type'
+  while (cur != 0 && (cur->callwhom != callme ||
+                      cur->eventsfrom != from)) {
+    prev = cur;
+    cur = cur->next;
+  }
+
+  if (cur != 0) {
+    // Got it, unlink!
+    if (prev != 0)
+      prev->next = cur->next;
+    else
+      listeners[evnum] = cur->next;
+    delete cur;
+  }
+
+  pthread_mutex_unlock(&listener_list_lock);
+};
+

@@ -676,29 +676,12 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
 }
 
 RootProcessor::RootProcessor(Fweelin *app, InputSettings *iset) :
-  Processor(app), 
-  threadgo(1), iset(iset), outputvol(1.0), doutputvol(1.0), 
+  Processor(app), eq(0), protect_plist(0),
+  iset(iset), outputvol(1.0), doutputvol(1.0),
   inputvol(1.0), dinputvol(1.0), 
   firstchild(0), samplecnt(0) {
   // Reset limiter
   ResetLimiter();
-
-  const static size_t STACKSIZE = 1024*64;
-  pthread_attr_t attr;
-  pthread_attr_init(&attr);
-  pthread_attr_setstacksize(&attr,STACKSIZE);
-  printf("CLEANUP: Stacksize: %d.\n",STACKSIZE);
-
-  // Start a new thread for cleanup
-  int ret = pthread_create(&cleanup_thread,
-                           &attr,
-                           run_cleanup_thread,
-                           static_cast<void *>(this));
-  if (ret != 0) {
-    printf("(rootprocessor) pthread_create failed, exiting\n");
-    exit(1);
-  }
-  SRMWRingBuffer_Writers::RegisterWriter(cleanup_thread);
 
   // Temporary buffers and routing
   abtmp = new AudioBuffers(app);
@@ -716,14 +699,23 @@ RootProcessor::RootProcessor(Fweelin *app, InputSettings *iset) :
 
   //printf (" :: Processor: RootProcessor begin (block size: %d)\n",
   //      app->getBUFSZ());
+
+  app->getEMG()->ListenEvent(this,0,T_EV_CleanupProcessor);
 };
 
 RootProcessor::~RootProcessor() {
   // printf(" :: Processor: RootProcessor cleanup...\n");
  
-  // The cleanup thread will erase all child processors
-  threadgo = 0;
-  pthread_join(cleanup_thread,0);
+  // RootProcessor closing..
+  // All child processors must end!
+  ProcessorItem *cur = firstchild;
+  while (cur != 0) {
+    ProcessorItem *tmp = cur->next;
+    // Stop child!
+    delete cur->p;
+    delete cur;
+    cur = tmp;
+  }
 
   delete[] buf[0];
   delete[] prebuf[0];
@@ -735,7 +727,11 @@ RootProcessor::~RootProcessor() {
   delete abtmp;
   delete preabtmp;
 
+  if (eq != 0)
+    delete eq;
+
   // printf(" :: Processor: RootProcessor end\n");
+  app->getEMG()->UnlistenEvent(this,0,T_EV_CleanupProcessor);
 }
 
 void RootProcessor::ResetLimiter() {
@@ -760,35 +756,45 @@ void RootProcessor::AdjustInputVolume(float adjust) {
     dinputvol = 0.0;
 }
 
+void RootProcessor::FinalPrep () {
+  printf("RP: Create ringbuffers and begin.\n");
+
+  eq = new SRMWRingBuffer<Event *>(RP_QUEUE_SIZE);
+}
+
 // Adds a child processor.. the processor begins processing immediately
 // Not realtime safe
 void RootProcessor::AddChild (Processor *o, int type) {
   // Do a preprocess for fadein
   dopreprocess();
+
+  // Prepare an event for RT process to add a new processor to its list
+  AddProcessorEvent *addevt = (AddProcessorEvent *) Event::GetEventByType(T_EV_AddProcessor);
+  addevt->new_processor = new ProcessorItem(o,type);
+
+  // Add event to queue
+  eq->WriteElement(addevt);
   
-  ProcessorItem *cur = firstchild;
-  if (cur == 0)
-    firstchild = new ProcessorItem(o,type); // That was easy, now we have 1 child
-  else {
-    while (cur->next != 0)
-      cur = cur->next;
-    cur->next = new ProcessorItem(o,type); // Link up the last item to the new one
-  }
+  // This way, no modifications to the processor list are done, except by the RT thread.
 }
 
 // Removes a child processor from receiving processing time..
 // also, deletes the child processor
-// Realtime safe!
+// Realtime safe! Should also be threadsafe.
 void RootProcessor::DelChild (Processor *o) {
   ProcessorItem *cur = firstchild,
     *prev = 0;
   
+  protect_plist++;  // Tell the RT thread - DON'T modify the processor list during this critical section
+
   // Search for processor 'o' in our list
   while (cur != 0 && cur->p != o) {
     prev = cur;
     cur = cur->next;
   }
-  
+
+  protect_plist--;  // OK now
+
   if (cur != 0) {
     // Found it!
     
@@ -814,8 +820,16 @@ void RootProcessor::processchain(char pre, nframes_t len, AudioBuffers *ab,
     if (cur->status != ProcessorItem::STATUS_PENDING_DELETE &&
         cur->type == ptype) {
       cur->p->process(pre, len, abchild);
-      if (cur->status == ProcessorItem::STATUS_LIVE_PENDING_DELETE)
-        cur->status = ProcessorItem::STATUS_PENDING_DELETE; // Last run finished through RT, now delete
+      if (!pre && cur->status == ProcessorItem::STATUS_LIVE_PENDING_DELETE) {
+        cur->status = ProcessorItem::STATUS_PENDING_DELETE; // Last run finished, now delete
+
+        // Flag this processor for removal from our list, the next time through RT
+        DelProcessorEvent *delevt = (DelProcessorEvent *) Event::GetEventByType(T_EV_DelProcessor);
+        delevt->processor = cur;
+
+        // Add event to queue
+        eq->WriteElement(delevt);
+      }
 
       // Sum from temporary output into actual output 
       if (mixintoout) {
@@ -832,13 +846,110 @@ void RootProcessor::processchain(char pre, nframes_t len, AudioBuffers *ab,
   }
 }
 
+void RootProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
+  switch (ev->GetType()) {
+  case T_EV_CleanupProcessor :
+  {
+    CleanupProcessorEvent *cleanevt = (CleanupProcessorEvent *) ev;
+    delete cleanevt->processor->p;
+    delete cleanevt->processor;
+    // printf("CORE: Freed mem\n");
+  }
+  break;
+
+  default:
+    break;
+  }
+};
+
 void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
   nframes_t fragmentsize = app->getBUFSZ();
   if (len > fragmentsize) 
     len = fragmentsize;
 
-  // First, apply changes to volumes
+  if (pre)
+    // Do not allow processor list modification by RT thread when non-RT preprocess is engaged
+    protect_plist++;
+
   if (!pre) {
+    // RT pass.
+    if (eq == 0) {
+      // printf("*** RET FROM RT PASS\n");
+      return; // Event queue not up yet - abort
+    }
+
+    if (protect_plist < 0) {
+      printf("RP: ERROR: Corrupt protect_plist (%d)\n",protect_plist);
+      protect_plist = 0;
+    }
+
+    if (protect_plist == 0) { // Only mess with processor list when no thread is in a critical section
+      // First, process any events coming from non-RT threads
+      Event *curev = eq->ReadElement();
+      while (curev != 0) {
+        switch (curev->GetType()) {
+          case T_EV_AddProcessor :
+          {
+            AddProcessorEvent *addevt = (AddProcessorEvent *) curev;
+
+            // Add processor to the list
+            ProcessorItem *cur = firstchild;
+            if (cur == 0)
+              firstchild = addevt->new_processor;
+            else {
+              while (cur->next != 0)
+                cur = cur->next;
+              cur->next = addevt->new_processor;
+            }
+          }
+          break;
+
+          case T_EV_DelProcessor :
+          {
+            DelProcessorEvent *delevt = (DelProcessorEvent *) curev;
+
+            // Traverse the list of children and look for a processor pending delete
+            ProcessorItem *cur = firstchild,
+              *prev = 0;
+
+            while (cur != 0) {
+              // Search for any processor pending delete in our list
+              while (cur != 0 && cur->status !=
+                     ProcessorItem::STATUS_PENDING_DELETE) {
+                prev = cur;
+                cur = cur->next;
+              }
+
+               if (cur != 0) {
+                // Got one to delete, unlink!
+                if (prev != 0)
+                  prev->next = cur->next;
+                else
+                  firstchild = cur->next;
+
+                ProcessorItem *tmp = cur->next;
+
+                // Queue for memory free via EventManager
+                CleanupProcessorEvent *cleanevt = (CleanupProcessorEvent *) Event::GetEventByType(T_EV_CleanupProcessor);
+                cleanevt->processor = cur;
+                app->getEMG()->BroadcastEvent(cleanevt,this);
+
+                cur = tmp;
+              }
+            }
+
+          }
+          break;
+
+          default:
+            printf("RP: ERROR: Unknown event in my queue (%d)!\n",curev->GetType());
+        }
+
+        curev->RTDelete();
+        curev = eq->ReadElement();
+      }
+    }
+
     // Run FluidSynth first, because its out feeds an input
     // Later support may come for true multiple signal chains
 #if USE_FLUIDSYNTH
@@ -1099,56 +1210,9 @@ void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
         memcpy(ab->outs[chan][i],ab->outs[chan][0],sizeof(sample_t) * len);
     }
   }
-}
 
-void *RootProcessor::run_cleanup_thread (void *ptr) {
-  RootProcessor *inst = static_cast<RootProcessor *>(ptr);
-  
-  while (inst->threadgo) {
-    // Traverse the list of children and look for a processor pending delete
-    ProcessorItem *cur = inst->firstchild,
-      *prev = 0;
-    
-    while (cur != 0) {
-      // Search for any processor pending delete in our list
-      while (cur != 0 && cur->status !=
-             ProcessorItem::STATUS_PENDING_DELETE) {
-        prev = cur;
-        cur = cur->next;
-      }
-      
-      if (cur != 0) {
-        // Got one to delete, unlink!
-        if (prev != 0)
-          prev->next = cur->next;
-        else
-          inst->firstchild = cur->next;
-        
-        ProcessorItem *tmp = cur->next;
-        delete cur->p;
-        delete cur;
-        cur = tmp;
-      }
-    }
-
-    // Consider changing this from fixed sleep to mutex-
-    // or letting memmgr do the processor deletion
-    usleep(10000);
-  }
-  
-  // RootProcessor closing..
-  // Cleanup thread ending-- that means all child processors must end!
-  ProcessorItem *cur = inst->firstchild;
-  while (cur != 0) {
-    ProcessorItem *tmp = cur->next;
-    // Stop child!
-    delete cur->p;
-    delete cur;
-    cur = tmp;
-  }
-  
-  // printf(" :: Processor: RootProcessor- all children finished.\n");
-  return 0;
+  if (pre)
+    protect_plist--;  // Allow processor list update in RT audio
 }
 
 // Overdubbing version of record into existing loop
