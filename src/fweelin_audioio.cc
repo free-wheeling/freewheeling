@@ -50,6 +50,9 @@ int AudioIO::process (nframes_t nframes, void *arg) {
   if (inst->audio_thread == 0)
     inst->audio_thread = pthread_self();
 
+  // Check if EMG needs wakeup
+  inst->app->getEMG()->WakeupIfNeeded();
+
   // Get CPU load
   inst->cpuload = jack_cpu_load(inst->client);
 
