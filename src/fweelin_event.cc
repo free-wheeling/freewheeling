@@ -414,7 +414,7 @@ Event *Event::GetEventByName(char *evtname, char wait) {
   return 0;
 };
 
-EventManager::EventManager () : eq(0), threadgo(1) {
+EventManager::EventManager () : eq(0), needs_wakeup(0), threadgo(1) {
   printf("Start event manager.\n");
 
   // Create listener structure..
@@ -539,8 +539,10 @@ void EventManager::RemoveEvent(Event **first, Event *prev, Event **cur) {
   *cur = tmp;
 };
 
+// ** End event queue functions
+
 // Broadcast through dispatch thread!
-// RT safe! -- so long as you allocate your event with RTNew()
+// RT and threadsafe, so long as you allocate your event with RTNew()
 void EventManager::BroadcastEvent(Event *ev,
                     EventProducer *source) {
   // printf("*** THREAD (BROADCAST): %li\n",pthread_self());
@@ -548,16 +550,11 @@ void EventManager::BroadcastEvent(Event *ev,
   ev->from = source;
   //ev->time = mygettime();
 
+  // Write to queue
   eq->WriteElement(ev);
 
-  // Wake up the dispatch thread
-  if (pthread_mutex_trylock (&dispatch_thread_lock) == 0) {
-    pthread_cond_signal (&dispatch_ready);
-    pthread_mutex_unlock (&dispatch_thread_lock);
-  }
-  else
-    // Priority inversion
-    printf("EVENT: WARNING: Priority inversion during event broadcast!\n",Event::ett[(int) ev->GetType()].name);
+  // Wakeup dispatch thread
+  WakeupIfNeeded(1);
 
   // printf("EVENT: SENT: %s!\n",Event::ett[(int) ev->GetType()].name);
 };
@@ -592,7 +589,9 @@ void *EventManager::run_dispatch_thread (void *ptr) {
 
     // Wait for wakeup
     pthread_cond_wait (&inst->dispatch_ready, &inst->dispatch_thread_lock);
+
     // printf("EVENT: WAKEUP!\n");
+    inst->needs_wakeup = 0; // Woken!
   }
 
   printf("Event Manager: end dispatch thread\n");

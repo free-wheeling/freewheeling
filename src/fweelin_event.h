@@ -2868,6 +2868,29 @@ class EventManager {
   void UnlistenEvent(EventListener *callme,
                      EventProducer *from, EventType type);
 
+  // Wakeup the event dispatch thread. Non blocking, RT safe.
+  inline void WakeupIfNeeded(char always_wakeup = 0) {
+    if (always_wakeup || needs_wakeup) {
+      if (!always_wakeup)
+        printf("EVENT: Woken because of priority inversion\n");
+
+      // Wake up the dispatch thread
+      if (pthread_mutex_trylock (&dispatch_thread_lock) == 0) {
+        pthread_cond_signal (&dispatch_ready);
+        pthread_mutex_unlock (&dispatch_thread_lock);
+      }
+      else {
+        // Priority inversion - we are interrupting the event dispatch thread while it's processing eq
+        // This is not an issue, because eq uses SRMWRingBuffer. However, we the event dispatch thread
+        // may go to sleep, missing the new messages until it's woken again. So, set a flag and the RT audio
+        // thread will wake it up next process cycle.
+        printf("EVENT: WARNING: Priority inversion during event broadcast!\n"); // ,Event::ett[(int) ev->GetType()].name);
+
+        needs_wakeup = 1;
+      }
+    }
+  };
+
 private:
 
   static void *run_dispatch_thread (void *ptr);
@@ -2876,6 +2899,8 @@ private:
   EventListenerItem **listeners;
   // Event queue- for calling listeners in lowpriority
   SRMWRingBuffer<Event *> *eq;
+
+  volatile char needs_wakeup; // Event dispatch thread needs wakeup? (priority inversion)
   
   pthread_t dispatch_thread;
   pthread_mutex_t dispatch_thread_lock,
