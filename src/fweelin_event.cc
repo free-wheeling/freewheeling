@@ -169,7 +169,7 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
                 MIDIChannelPressureInputEvent);
       SET_ETYPE(T_EV_Input_MIDIPitchBend,"midipitchbend",
                 MIDIPitchBendInputEvent);
-      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIClock,"midiclock",MIDIClockInputEvent,20);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIClock,"midiclock",MIDIClockInputEvent,50);
       SET_ETYPE(T_EV_Input_MIDIStartStop,"midistartstop",MIDIStartStopInputEvent);
 
       SET_ETYPE_SLOW(T_EV_ALSAMixerControlSet,"alsa-mixer-control-set",ALSAMixerControlSetEvent);
@@ -328,7 +328,7 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE(T_EV_LoopList,"__internal__looplist",LoopListEvent);
       SET_ETYPE(T_EV_SceneMarker,"__internal__scenemarker",SceneMarkerEvent);
       SET_ETYPE(T_EV_PulseSync,"__internal__pulsesync",PulseSyncEvent);
-      SET_ETYPE(T_EV_TriggerSet,"__internal__triggerset",TriggerSetEvent);
+      SET_ETYPE_NUMPREALLOC(T_EV_TriggerSet,"__internal__triggerset",TriggerSetEvent,100);
       SET_ETYPE_NUMPREALLOC(T_EV_AddProcessor,"__internal__addprocessor",AddProcessorEvent,100);
       SET_ETYPE_NUMPREALLOC(T_EV_DelProcessor,"__internal__delprocessor",DelProcessorEvent,100);
       SET_ETYPE_NUMPREALLOC(T_EV_CleanupProcessor,"__internal__cleanupprocessor",CleanupProcessorEvent,100);
