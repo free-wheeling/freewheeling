@@ -484,7 +484,7 @@ void BlockReadManager::End(char error) {
   }
 
   if (in != 0) {
-    printf("DISK: Close input.\n");
+    // printf("DISK: Close input.\n");
     // Vorbis decoder closes file through ov_clear!
     in = 0;
   }
@@ -496,10 +496,12 @@ void BlockReadManager::End(char error) {
       b = 0;
     } else {
       // Finished read, handle looppoint smoothing
-      if (smooth_end)
+
+      // if (smooth_end)
         // New way
-        printf("blen: %d\n",b->GetTotalLen()); // b->Smooth(0,BlockWriteManager::ENCODE_CROSSOVER_LEN);
-      else {
+        // printf("blen: %d\n",b->GetTotalLen()); // b->Smooth(0,BlockWriteManager::ENCODE_CROSSOVER_LEN);
+
+      if (!smooth_end) {
         // Old way
         b->Smooth(1,BlockReadManager::SMOOTH_FIX_LEN);
         // We will have to adjust the pulselength because we are changing the

@@ -927,7 +927,7 @@ void TriggerMap::SetMap (int index, Loop *smp) {
     
     // Fire off a TriggerSet event
     TriggerSetEvent *tevt = (TriggerSetEvent *) 
-      Event::GetEventByType(T_EV_TriggerSet);
+      Event::GetEventByType(T_EV_TriggerSet,1);
     tevt->idx = index;
     tevt->nw = smp;
     app->getEMG()->BroadcastEventNow(tevt, this);
