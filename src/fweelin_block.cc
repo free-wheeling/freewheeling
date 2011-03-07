@@ -396,7 +396,7 @@ BlockReadManager::~BlockReadManager() {
 };
 
 void BlockReadManager::SetLoopType (codec looptype){
-  printf("DISK: Looptype: %s\n", bmg->GetApp()->getCFG()->GetCodecName(looptype));
+  // printf("DISK: Looptype: %s\n", bmg->GetApp()->getCFG()->GetCodecName(looptype));
   filetype = looptype;
 };
 
