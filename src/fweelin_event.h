@@ -2871,8 +2871,8 @@ class EventManager {
   // Wakeup the event dispatch thread. Non blocking, RT safe.
   inline void WakeupIfNeeded(char always_wakeup = 0) {
     if (always_wakeup || needs_wakeup) {
-      if (!always_wakeup)
-        printf("EVENT: Woken because of priority inversion\n");
+      /* if (!always_wakeup)
+        printf("EVENT: Woken because of priority inversion\n"); */
 
       // Wake up the dispatch thread
       if (pthread_mutex_trylock (&dispatch_thread_lock) == 0) {
@@ -2886,7 +2886,7 @@ class EventManager {
         // thread will wake it up next process cycle.
 
         if (always_wakeup) {
-          printf("EVENT: WARNING: Priority inversion during event broadcast!\n"); // ,Event::ett[(int) ev->GetType()].name);
+          // printf("EVENT: WARNING: Priority inversion during event broadcast!\n"); // ,Event::ett[(int) ev->GetType()].name);
           needs_wakeup = 1;
         }
       }

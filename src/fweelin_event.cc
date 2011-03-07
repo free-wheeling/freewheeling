@@ -324,16 +324,16 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
 
       // Internal events-- don't try to bind to these
 
-      SET_ETYPE(T_EV_EndRecord,"__internal__",EndRecordEvent);
-      SET_ETYPE(T_EV_LoopList,"__internal__",LoopListEvent);
-      SET_ETYPE(T_EV_SceneMarker,"__internal__",SceneMarkerEvent);
-      SET_ETYPE(T_EV_PulseSync,"__internal__",PulseSyncEvent);
-      SET_ETYPE(T_EV_TriggerSet,"__internal__",TriggerSetEvent);
-      SET_ETYPE_NUMPREALLOC(T_EV_AddProcessor,"__internal__",AddProcessorEvent,100);
-      SET_ETYPE_NUMPREALLOC(T_EV_DelProcessor,"__internal__",DelProcessorEvent,100);
-      SET_ETYPE_NUMPREALLOC(T_EV_CleanupProcessor,"__internal__",CleanupProcessorEvent,100);
-      SET_ETYPE(T_EV_Input_MouseButton,"__internal__",MouseButtonInputEvent);
-      SET_ETYPE(T_EV_Input_MouseMotion,"__internal__",MouseMotionInputEvent);
+      SET_ETYPE(T_EV_EndRecord,"__internal__endrecord",EndRecordEvent);
+      SET_ETYPE(T_EV_LoopList,"__internal__looplist",LoopListEvent);
+      SET_ETYPE(T_EV_SceneMarker,"__internal__scenemarker",SceneMarkerEvent);
+      SET_ETYPE(T_EV_PulseSync,"__internal__pulsesync",PulseSyncEvent);
+      SET_ETYPE(T_EV_TriggerSet,"__internal__triggerset",TriggerSetEvent);
+      SET_ETYPE_NUMPREALLOC(T_EV_AddProcessor,"__internal__addprocessor",AddProcessorEvent,100);
+      SET_ETYPE_NUMPREALLOC(T_EV_DelProcessor,"__internal__delprocessor",DelProcessorEvent,100);
+      SET_ETYPE_NUMPREALLOC(T_EV_CleanupProcessor,"__internal__cleanupprocessor",CleanupProcessorEvent,100);
+      SET_ETYPE(T_EV_Input_MouseButton,"__internal__mousebutton",MouseButtonInputEvent);
+      SET_ETYPE(T_EV_Input_MouseMotion,"__internal__mousemotion",MouseMotionInputEvent);
       
     default:
       break;
@@ -373,13 +373,14 @@ Event *Event::GetEventByType(EventType typ, char wait) {
       // No instance available
       if (wait) {
         // Wait
-        printf("EVENT: Waiting for memory to be allocated.\n"); 
+        printf("EVENT: Waiting for memory allocation of event '%s'.\n",ett[i].name);
         do {
           usleep(10000);
           ret = (Event *) ett[i].mgr->RTNew();
         } while (ret == 0);
         return ret;
       } else {
+        printf("EVENT: ERROR: No wait condition and no instances available for event '%s'\n",ett[i].name);
         return 0; // Don't wait
       }
     }
@@ -392,13 +393,14 @@ Event *Event::GetEventByType(EventType typ, char wait) {
       // No instance available
       if (wait) {
         // Wait
-        printf("EVENT: Waiting for mem alloc...\n");    
+        printf("EVENT: Waiting for memory allocation of event '%s'.\n",ett[i].name);
         do {
           usleep(10000);
           ret = (Event *) ett[i].proto->RTNew();
         } while (ret == 0);
         return ret;
       } else {
+        printf("EVENT: ERROR: No wait condition and no instances available for event '%s'\n",ett[i].name);
         return 0; // Don't wait
       }
     }

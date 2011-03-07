@@ -288,8 +288,8 @@ class MemoryManager {
   // Wakeup the memory manager thread. Non blocking, RT safe.
   inline void WakeupIfNeeded(char always_wakeup = 0) {
     if (always_wakeup || needs_wakeup) {
-      if (!always_wakeup)
-        printf("MEM: Woken because of priority inversion\n");
+      /* if (!always_wakeup)
+        printf("MEM: Woken because of priority inversion\n"); */
 
       // Wake up the memory manager thread
       if (pthread_mutex_trylock (&mgr_thread_lock) == 0) {
@@ -303,7 +303,7 @@ class MemoryManager {
         // thread will wake it up next process cycle.
 
         if (always_wakeup) {
-          printf("MEM: WARNING: Priority inversion while filling update queue!\n");
+          // printf("MEM: WARNING: Priority inversion while filling update queue!\n");
           needs_wakeup = 1;
         }
       }
