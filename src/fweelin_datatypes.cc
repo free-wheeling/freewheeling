@@ -38,7 +38,11 @@
 
 int SRMWRingBuffer_Writers::num_writers = 0;
 pthread_t SRMWRingBuffer_Writers::ids[MAX_WRITER_THREADS];
-pthread_mutex_t SRMWRingBuffer_Writers::register_lock;
+pthread_mutex_t SRMWRingBuffer_Writers::register_writer_lock;
+
+int SRMWRingBuffer_Writers::num_bufs = 0;
+SRMWRingBuffer_Updater *SRMWRingBuffer_Writers::bufs[MAX_RING_BUFFERS];
+pthread_mutex_t SRMWRingBuffer_Writers::register_buffer_lock;
 
 CoreDataType GetCoreDataType(char *name) {
   if (!strcmp(name, "char")) 

@@ -52,6 +52,9 @@ EventTypeTable *Event::ett = 0;
 
 // These macros help populate the event type table with names and managers
 // They also determine which, if any, event parameters are indexed for speed
+
+// Event with normal (direct method call) delivery using block allocation with
+// default number of instances preallocated
 #define SET_ETYPE(etyp,nm,typ) \
   case etyp : \
     { \
@@ -74,6 +77,8 @@ EventTypeTable *Event::ett = 0;
     } \
     break; 
 
+// Event with slow (guaranteed non-RT) delivery using block allocation
+// with default number of instances preallocated
 #define SET_ETYPE_SLOW(etyp,nm,typ) \
   case etyp : \
     { \
@@ -96,6 +101,8 @@ EventTypeTable *Event::ett = 0;
     } \
     break; 
 
+// Event with normal (direct method call) delivery using SINGLE INSTANCE allocation with
+// default number of instances preallocated
 #define SET_ETYPE_NO_BLOCK(etyp,nm,typ) \
   case etyp : \
     { \
@@ -117,6 +124,8 @@ EventTypeTable *Event::ett = 0;
     } \
     break; 
 
+// Event with normal (direct method call) delivery using block allocation with
+// a SET number of instances preallocated
 #define SET_ETYPE_NUMPREALLOC(etyp,nm,typ,numpre) \
   case etyp : \
     { \
@@ -337,8 +346,11 @@ void Event::TakedownEventTypeTable() {
   for (int i = 0; i < evnum; i++) {
     // Deleting the manager will delete all instances
     // allocated thru it--
-    if (ett[i].mgr != 0) 
+    if (ett[i].mgr != 0) {
+      // printf("Deleting manager for event: %s\n",ett[i].name);
       delete ett[i].mgr;
+    }
+
     // so the prototype base instance is already deleted
     ett[i].proto = 0;
   }
@@ -551,7 +563,10 @@ void EventManager::BroadcastEvent(Event *ev,
   //ev->time = mygettime();
 
   // Write to queue
-  eq->WriteElement(ev);
+  if (eq->WriteElement(ev) != 0) {
+    printf("EVENT: BroadcastEvent failed!\n");
+    return;
+  }
 
   // Wakeup dispatch thread
   WakeupIfNeeded(1);
@@ -565,6 +580,8 @@ void *EventManager::run_dispatch_thread (void *ptr) {
   pthread_mutex_lock(&inst->dispatch_thread_lock);
 
   while (inst->threadgo) {
+    // printf("EVENT: start process queue\n");
+
     // Scan through all events
     Event *cur = inst->eq->ReadElement();
     while (cur != 0) {
@@ -586,6 +603,7 @@ void *EventManager::run_dispatch_thread (void *ptr) {
     }
 
     // No more events in queue
+    // printf("EVENT: end process queue\n");
 
     // Wait for wakeup
     pthread_cond_wait (&inst->dispatch_ready, &inst->dispatch_thread_lock);

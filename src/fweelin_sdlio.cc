@@ -463,7 +463,8 @@ void SDLIO::handle_key(int keycode, char press) {
     else
       prevcnt = 0;
     prevkeycode = keycode;
- 
+
+#if 0
     if (keycode == 51) {
       // Backslash freezes & resets limiter
       if (sets.leftshift || sets.rightshift) {
@@ -476,7 +477,9 @@ void SDLIO::handle_key(int keycode, char press) {
         app->getRP()->SetLimiterFreeze(limiterfreeze);
       }
     }
-    else if (keycode == 108) {
+#endif
+
+    if (keycode == 108) {
       // greyENTER
       // Produce stdout status report
       app->getCFG()->status_report = 1;

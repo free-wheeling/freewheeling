@@ -1,4 +1,4 @@
-/* 
+/*
    I surrender,
    and God comes singing.
 */
@@ -37,10 +37,16 @@
 #include "fweelin_mem.h"
 #include "fweelin_datatypes.h"
 
-MemoryManager::MemoryManager() : pts(0), apts(0) {
+// Room for this many instances created / deleted between manager thread passes
+#define MEMMGR_UPDATE_QUEUE_SIZE 1000
+
+MemoryManager::MemoryManager() : update_queue(0) {
   // Init mutex/conditions
   pthread_mutex_init(&mgr_thread_lock,0);
   pthread_cond_init(&mgr_go,0);
+
+  // Create update queue
+  update_queue = new SRMWRingBuffer<MemoryManagerUpdate>(MEMMGR_UPDATE_QUEUE_SIZE);
 
   const static size_t STACKSIZE = 1024*128;
   pthread_attr_t attr;
@@ -81,131 +87,85 @@ MemoryManager::~MemoryManager() {
   pthread_cond_destroy (&mgr_go);
   pthread_mutex_destroy (&mgr_thread_lock);
 
+  delete update_queue;
+
   printf("MEM: End manager thread.\n");
 };
 
-void MemoryManager::WakeUp(PreallocatedType *t) {
-  // First, add the specified type to the list of active types
-  if (apts == 0) {
-    t->anext = 0;
-    apts = t;
-  }
-  else {
-    // Only add to active type list if it isn't already there!
-    // This should be low overhead since the active types list will usually
-    // be small
-    PreallocatedType *cur = apts;
-    while (cur->anext != 0 && cur != t)
-      cur = cur->anext;
-    if (cur != t) {
-      t->anext = 0;
-      cur->anext = t;
-    }
+void MemoryManager::WakeUp(MemoryManagerUpdate &upd) {
+  if (update_queue->WriteElement(upd) != 0) {
+    printf("MEM: ERROR: No space in memory manager update queue!\nMust increase MEMMGR_UPDATE_QUEUE_SIZE.\n");
+    exit(1);
   }
 
   // Wake up the manager thread
-  if (pthread_mutex_trylock (&mgr_thread_lock) == 0) {
-    pthread_cond_signal (&mgr_go);
-    pthread_mutex_unlock (&mgr_thread_lock);
-  }
-
-  // *** Redesign active types list to be circular ring buffer--
-  // this would avoid potential loss of update on race condition to reset/read
-  // apts
-
-  /* else
-     printf("MEM: Warning: Mgr thread active during mutex trylock.\n"); */
+  WakeupIfNeeded(1);
 };
 
 void MemoryManager::AddType(PreallocatedType *t) {
   pthread_mutex_lock (&mgr_thread_lock);
-  if (pts == 0) 
-    pts = t;
-  else {
-    t->next = pts;
-    pts = t;
-  }
+  pts.AddToHead(t);
   pthread_mutex_unlock (&mgr_thread_lock);
 };
 
 void MemoryManager::DelType(PreallocatedType *t) {
   pthread_mutex_lock (&mgr_thread_lock);
+  if (pts.FindAndRemove(t) != 0)
+    t->Cleanup();
+  pthread_mutex_unlock (&mgr_thread_lock);
+};
 
-  if (apts != 0)
-    printf("MEM: Warning: Active pre types not zero during DelType\n");
+// Look through update queue and perform all updates needed
+void MemoryManager::ProcessQueue() {
+  // printf("MEM: start process queue\n");
 
-  PreallocatedType *cur = pts,
-    *prev = 0;
-  
-  // Search for type 't' in our list
-  while (cur != 0 && cur != t) {
-    prev = cur;
-    cur = cur->next;
-  }
+  MemoryManagerUpdate mmu = 0;
+  do {
+    // printf("MEM: ...Processing queue...\n");
+    mmu = update_queue->ReadElement();
+    if (mmu.IsValid()) {
+      // printf("MEM: Valid item: updatetype: %d typeptr: %p restockidx: %d freeptr: %p\n",mmu.update_type,mmu.which_pt,mmu.updatedat.update_idx,mmu.updatedat.tofree);
 
-  if (cur != 0) {
-    // Got one to delete, unlink!
-    if (prev != 0)
-      prev->next = cur->next;
-    else
-      pts = cur->next;
-
-    // Look in the active list
-    {
-      PreallocatedType *cur = apts;
-      while (cur != 0 && cur != t)
-        cur = cur->anext;
-      if (cur != 0) {
-        printf("MEM: ERROR: Deleted type found in active list!\n");
+      if (mmu.update_type == T_MU_FreeInstance) {
+        // Free item in free list *take out trash*
+        mmu.which_pt->GoPostdelete(mmu.updatedat.tofree);
+      } else if (mmu.update_type == T_MU_RestockInstance) {
+        // Allocate new item for ready list *restock*
+        mmu.which_pt->GoPreallocate(mmu.updatedat.update_idx);
+      } else {
+        printf("MEM: ERROR: Invalid update type\n");
         exit(1);
       }
     }
+    //else
+    //  printf("MEM: No more items received from queue.\n");
+  } while (mmu.IsValid());
 
-    // Necessary?
-    cur->Cleanup();
-  }
-
-  if (apts != 0)
-    printf("MEM: Warning: Active pre types not zero during DelType\n");
-
-  pthread_mutex_unlock (&mgr_thread_lock);
+  // printf("MEM: end process queue\n");
 };
 
 void *MemoryManager::run_mgr_thread (void *ptr) {
   MemoryManager *inst = static_cast<MemoryManager *>(ptr);
 
   // printf("*** THREAD: %p\n",pthread_self());
-  
+
   pthread_mutex_lock(&inst->mgr_thread_lock);
   while (inst->threadgo) {
-    // Go through all PreallocatedTypes in our active list
-    PreallocatedType *cur = inst->apts;
-    while (cur != 0) {
-      if (cur->GetUpdateLists())
-        // Update free/inuse lists for this type
-        cur->UpdateLists();
-
-      // Make sure there are enough free instances of this type
-      cur->GoPreallocate();
-
-      // Next, look for instances pending delete!
-      cur->GoPostdelete();
-
-      cur = cur->anext;
-    }
+    inst->ProcessQueue();
     
-    // Clear active type list until we are woken up again
-    inst->apts = 0;
-
     // Wait for wakeup
     pthread_cond_wait (&inst->mgr_go, &inst->mgr_thread_lock);
+
+    inst->needs_wakeup = 0; // Woken!
   }
 
   printf("MEM: Begin cleanup.\n"); 
-  PreallocatedType *cur = inst->pts;
+  inst->ProcessQueue();
+
+  PreallocatedType *cur = (PreallocatedType *) inst->pts.GetFirstItem();
   while (cur != 0) {
     cur->Cleanup();
-    cur = cur->next;
+    cur = (PreallocatedType *) inst->pts.GetNextItem(cur);
   }
   printf("MEM: End cleanup.\n");
 
@@ -219,50 +179,78 @@ PreallocatedType::PreallocatedType(MemoryManager *mmgr,
                                    int instance_size,
                                    int prealloc_num_instances,
                                    char block_mode) : 
-  update_lists(0), instance_size(instance_size), 
-  prealloc_num_instances(prealloc_num_instances), block_mode(block_mode),
-  block_last_idx(0), mmgr(mmgr), next(0), anext(0) {
+  prealloc_base(prealloc_base), instance_size(instance_size),
+  prealloc_num_instances(prealloc_num_instances), block_mode(block_mode), blocks_list(0),
+  mmgr(mmgr) {
+  // Set up ready and free lists
+  ready_list = new RTStore<PreallocatedInstance>(prealloc_num_instances);
+
+  // Setup base instance
+  prealloc_base->
+    SetupPreallocated(this,Preallocated::PREALLOC_BASE_INSTANCE);
+
   if (block_mode) {
-    // Setup base block of instances
+    // Setup one base block of instances
     if (prealloc_num_instances < 3) {
-      printf("MEM: ERROR- Block mode must have at least 3 instances.");
+      printf("MEM: ERROR- Types using block mode must have at least 3 instances.");
       exit(1);
     }
 
     // Mark first instance in block as base
     Preallocated *cur = prealloc_base;
-    cur->SetupPreallocated(this,Preallocated::PREALLOC_BASE_INSTANCE);
+
+    // Store the first block of instances
+    blocks_list = prealloc_base;
 
     /* printf("MEM: NEW BLOCK (STARTUP): %p, size: %d\n",cur,
        instance_size); */
 
-    // Rest are free
+    // The rest are going right into the 'ready list'.. mark them and set them up
     cur = (Preallocated *) (((char *) cur) + instance_size);
-    for (int i = 1; i < prealloc_num_instances; i++, 
+    for (int i = 1; i < prealloc_num_instances; i++,
            cur = (Preallocated *) (((char *) cur) + instance_size)) {
-      cur->SetupPreallocated(this,
-                             Preallocated::PREALLOC_PENDING_USE);
+      cur->SetupPreallocated(this,Preallocated::PREALLOC_IN_USE);
       if (i == 1) // Second instance contains # of free instances
-        cur->predata.prealloc_num_free = prealloc_num_instances-1;
+        cur->predata.prealloc_num_free = 0; // None are free. We have the base instance and then the
+                                            // rest go straight to the ready list.
+
+      // Add to ready list...
+      PreallocatedInstance *inst = 0;
+      int inst_idx; // Index in ready list
+      if ((inst = ready_list->FindItemWithState(RTStore<PreallocatedInstance>::ITEM_DONE,
+          RTStore<PreallocatedInstance>::ITEM_BUSY,inst_idx)) == 0) {
+        printf("MEM: ERROR: Ready_list size mismatch.\n");
+        exit(1);
+      } else
+        inst->ptr = cur;
+      if (!ready_list->ChangeStateAtIdx(inst_idx,RTStore<PreallocatedInstance>::ITEM_BUSY,
+          RTStore<PreallocatedInstance>::ITEM_WAITING)) {
+        printf("MEM: ERROR: State mismatch in ready_list\n");
+        exit(1);
+      }
     }
-
-    // Put base block in free (doesn't go in use until all are used)
-    this->prealloc_base = prealloc_base;
-    prealloc_free = prealloc_base;
-    prealloc_inuse = 0;
   } else {
-    // Setup the base instance
-    prealloc_base->
-      SetupPreallocated(this,Preallocated::PREALLOC_BASE_INSTANCE);
+    // Instance mode
 
-    // Put base instance in use
-    this->prealloc_base = prealloc_base;
-    prealloc_free = 0;
-    prealloc_inuse = prealloc_base;
+    // Create full ready list
+    PreallocatedInstance *i = 0;
+    do {
+      int idx;
+      if ((i = ready_list->FindItemWithState(RTStore<PreallocatedInstance>::ITEM_DONE,
+          RTStore<PreallocatedInstance>::ITEM_BUSY,idx)) != 0) {
+        // Prepare an instance and store in the list
+        i->ptr = prealloc_base->NewInstance();
+        i->ptr->SetupPreallocated(this,Preallocated::PREALLOC_IN_USE);
+
+        // Update state to waiting (for consumption)
+        if (!ready_list->ChangeStateAtIdx(idx,RTStore<PreallocatedInstance>::ITEM_BUSY,
+            RTStore<PreallocatedInstance>::ITEM_WAITING)) {
+          printf("MEM: ERROR: State mismatch in ready_list\n");
+          exit(1);
+        }
+      }
+    } while (i != 0);
   }
-
-  // Make sure there are enough free instances 
-  GoPreallocate();
 
   // Add ourselves to list of managed types
   mmgr->AddType(this);
@@ -271,10 +259,40 @@ PreallocatedType::PreallocatedType(MemoryManager *mmgr,
 PreallocatedType::~PreallocatedType() {
   // Remove ourselves from list of managed types
   mmgr->DelType(this);
+
+  delete ready_list;
 }; 
 
-// Realtime-safe function to get a new instance of this class
+// Realtime and thread-safe function to get a new instance of this class
 Preallocated *PreallocatedType::RTNew() {
+  // Simply scan through the ready list and get an item marked 'waiting' (for consumption)
+  int idx;
+  PreallocatedInstance *i = ready_list->FindItemWithState(RTStore<PreallocatedInstance>::ITEM_WAITING,
+      RTStore<PreallocatedInstance>::ITEM_BUSY,idx);
+  if (i != 0) {
+    // Now, grab the pointer
+    Preallocated *ptr = i->ptr;
+
+    // And mark it as 'done' (in use)
+    if (!ready_list->ChangeStateAtIdx(idx,RTStore<PreallocatedInstance>::ITEM_BUSY,
+        RTStore<PreallocatedInstance>::ITEM_DONE)) {
+      printf("MEM: ERROR: State mismatch in ready_list\n");
+      exit(1);
+    }
+
+    // Wake up manager thread to replace the consumed instance
+    MemoryManagerUpdate mmu(this,T_MU_RestockInstance,idx,0);
+    mmgr->WakeUp(mmu);
+
+    return ptr;
+  } else {
+    // No instances ready for consumption
+    printf("\nMEM: RTNew- No instances available.\n");
+    // mmgr->WakeupIfNeeded(1);
+    return 0;
+  }
+
+#if 0
   Preallocated *nw = 0;
   if (block_mode) {
     Preallocated *cur = prealloc_free;
@@ -386,8 +404,7 @@ Preallocated *PreallocatedType::RTNew() {
     // Wake up the memory manager to allocate new
     mmgr->WakeUp(this);
   }
-
-  return nw;
+#endif
 };
 
 Preallocated *PreallocatedType::RTNewWithWait() {
@@ -403,9 +420,13 @@ Preallocated *PreallocatedType::RTNewWithWait() {
   return ret;
 };
 
-// Realtime-safe function to delete this instance of this class
-// It might get slow if you have many blocks of instances
+// Realtime and thread-safe function to delete this instance of this class
 void PreallocatedType::RTDelete(Preallocated *inst) {
+  // Wake up manager thread to free the instance
+  MemoryManagerUpdate mmu(this,T_MU_FreeInstance,0,inst);
+  mmgr->WakeUp(mmu);
+
+  #if 0
   if (block_mode) {
     // Recycle the instance
     inst->Recycle();
@@ -452,8 +473,10 @@ void PreallocatedType::RTDelete(Preallocated *inst) {
     // Wake up the memory manager to delete the instance
     mmgr->WakeUp(this);
   }
+#endif
 };
 
+#if 0
 void PreallocatedType::UpdateLists() {
   // Flag that we have updated our lists
   update_lists = 0;
@@ -529,127 +552,166 @@ void PreallocatedType::UpdateLists() {
     }
   }
 };
+#endif
 
-void PreallocatedType::GoPostdelete() {
+void PreallocatedType::GoPostdelete(Preallocated *tofree) {
   // *** NOTE: Currently no support for deleting additional blocks
   // of instances- so if we are bursting to many instances
   // the memory overhead will remain ***
-  
-  if (!block_mode) {
-    // *** This could be optimized with a separate list for instances
-    // *** pending delete!
-    Preallocated *cur = prealloc_inuse,
-      *prev = 0;
-    while (cur != 0) {
-      if (cur->prealloc_status == Preallocated::PREALLOC_PENDING_DELETE) {
-        // Remove instance from list
-        Preallocated *tmp = cur->predata.prealloc_next;
-        if (prev != 0) 
-          prev->predata.prealloc_next = tmp;
-        else 
-          prealloc_inuse = tmp;
-        // printf("del ptr: %p sz: %d!!\n",cur,sizeof(*cur));
-        ::delete cur;
-        cur = tmp;
-      } else {
-        // Next instance
-        prev = cur;
-        cur = cur->predata.prealloc_next;
-      }
+  //
+  // This should not use significant memory because, in Freewheeling, the large data structures
+  // such as AudioBlock are allocated in instance mode, not block mode.
+
+  if (block_mode) {
+    // Recycle the instance (instead of deleting)
+    tofree->Recycle();
+
+    // Mark as free
+    tofree->prealloc_status = Preallocated::PREALLOC_FREE;
+
+    // Check pointer range to see which block this instance is in
+    Preallocated *cur = blocks_list;
+    int blocksize = instance_size*prealloc_num_instances;
+    while (cur != 0 && (tofree < cur || (char *) tofree >= ((char *) cur) + blocksize))
+      cur = cur->predata.prealloc_next;
+    if (cur == 0) {
+      printf("MEM: ERROR: Postdelete: Instance not found in any blocks\n");
+      exit(1);
+    } else {
+      // Add to free count
+      Preallocated *second = (Preallocated *) (((char *) cur) + instance_size);
+      second->predata.prealloc_num_free++;
     }
+  } else {
+    // Single instance, simply delete it - no internal data structures to modify
+    ::delete tofree;
   }
 };
 
-void PreallocatedType::GoPreallocate() {
-  if (block_mode) {
-    Preallocated *second = (Preallocated *) (((char *) prealloc_free) + 
-                                             instance_size);
+void PreallocatedType::GoPreallocate(int ready_list_idx) {
+  Preallocated *nw = 0;
 
-    // Less than half the block is free?
-    if (prealloc_free == 0 || 
-        second->predata.prealloc_num_free < prealloc_num_instances/2) {
-      // OK, allocate a new block
-      // * NewInstance must create an array of the right size for block
-      //   mode to work *
-      Preallocated *nw_b = prealloc_base->NewInstance();
-      // printf("MEM: NEW BLOCK: %p!\n",nw_b);
+  if (block_mode) {
+    // In block mode, we get a new index from our blocks list.
+    // Find a block with a free instance.
+    Preallocated *curblk = blocks_list;
+    char found = 0;
+    while (!found && curblk != 0) {
+      // Second instance in block contains # of free instances
+      Preallocated *second = (Preallocated *) (((char *) curblk) +
+                                               instance_size);
+      if (second->predata.prealloc_num_free > 0) {
+        // This block has a free instance. Use it.
+        found = 1;
+      } else
+        curblk = curblk->predata.prealloc_next;
+    }
+
+    if (found) {
+      // Find a free instance in this block
+      Preallocated *curinst = curblk;
+      int i = 0;
+      for (; i < prealloc_num_instances && curinst->prealloc_status != Preallocated::PREALLOC_FREE;
+          i++, curinst = (Preallocated *) (((char *) curinst) + instance_size));
+      if (i >= prealloc_num_instances) {
+        // Failed, even though this block says it has free instances
+        printf("MEM: ERROR: Block marked with free instances but has none.\n");
+        exit(1);
+      } else {
+        // Use this instance
+        nw = curinst;
+        nw->prealloc_status = Preallocated::PREALLOC_IN_USE;
+
+        // Reduce free count
+        Preallocated *second = (Preallocated *) (((char *) curblk) +
+                                                 instance_size);
+        second->predata.prealloc_num_free--;
+      }
+    } else {
+      // No blocks found with free instances. We need a new block
+      nw = prealloc_base->NewInstance();
 
       // Setup new block
-      Preallocated *cur = nw_b;
-      for (int i = 0; i < prealloc_num_instances; i++, 
+      Preallocated *cur = nw;
+      for (int i = 0; i < prealloc_num_instances; i++,
              cur = (Preallocated *) (((char *) cur) + instance_size)) {
-        cur->SetupPreallocated(this,Preallocated::PREALLOC_PENDING_USE);
+        if (i == 0)
+          cur->SetupPreallocated(this,Preallocated::PREALLOC_IN_USE); // Use first instance
+        else
+          cur->SetupPreallocated(this,Preallocated::PREALLOC_FREE);
+
         if (i == 1) // Second instance contains # of free instances
-          cur->predata.prealloc_num_free = prealloc_num_instances;
+          // All but 1 (which we'll use) will be free
+          cur->predata.prealloc_num_free = prealloc_num_instances-1;
       }
 
       // Link it in
-      nw_b->predata.prealloc_next = prealloc_free;
-      prealloc_free = nw_b;
+      nw->predata.prealloc_next = blocks_list;
+      blocks_list = nw;
     }
   } else {
-    // Make sure there are enough free instances 
-    int cnt = prealloc_num_instances;
-    Preallocated *cur = prealloc_free,
-      *prev = 0;
-    
-    while (cnt > 0 && cur != 0) {
-      cnt--;
-      prev = cur;
-      cur = cur->predata.prealloc_next;
+    // Single instance mode. Easy. Since one instance was consumed, we must allocate one more and
+    // put it in the ready list.
+    nw = prealloc_base->NewInstance();
+    nw->SetupPreallocated(this,Preallocated::PREALLOC_IN_USE);
+  }
+
+  // Now place this instance in the ready list
+  if (nw != 0) {
+    if (!ready_list->ChangeStateAtIdx(ready_list_idx,RTStore<PreallocatedInstance>::ITEM_DONE,
+        RTStore<PreallocatedInstance>::ITEM_BUSY)) {
+      printf("MEM: ERROR: State mismatch in ready_list\n");
+      exit(1);
     }
-    
-    if (cnt > 0) {
-      // We need more free instances, so let's make em
-      if (prev == 0) {
-        // First new instance
-        prealloc_free = prev = prealloc_base->NewInstance();
-        prev->SetupPreallocated(this,
-                                /*Preallocated::PREALLOC_BASE_INSTANCE*/
-                                Preallocated::PREALLOC_PENDING_USE);
-        // printf("MEM: First new instance in free list!\n");
-        cnt--;
-      }
-      
-      while (cnt > 0) {
-        // More new instances
-        // printf("MEM: new instance- typ: %p inuse: %p\n",this,prealloc_inuse);
-        prev->predata.prealloc_next = cur = prealloc_base->NewInstance();
-        cur->SetupPreallocated(this,Preallocated::PREALLOC_PENDING_USE);
-        prev = cur;
-        cnt--;
-      }
+
+    ready_list->GetItemAtIdx(ready_list_idx)->ptr = nw;
+
+    // Mark as waiting-for-consumption
+    if (!ready_list->ChangeStateAtIdx(ready_list_idx,RTStore<PreallocatedInstance>::ITEM_BUSY,
+        RTStore<PreallocatedInstance>::ITEM_WAITING)) {
+      printf("MEM: ERROR: State mismatch in ready_list\n");
+      exit(1);
     }
+  } else {
+    printf("MEM: ERROR: Can't allocate more instances.\n");
+    exit(1);
   }
 };
 
 void PreallocatedType::Cleanup() {
   // Ok, we've been told to stop
   // So we have to delete all preallocated instances/blocks!
-  Preallocated *cur = prealloc_free;
-  prealloc_free = 0;
-  while (cur != 0) {
-    // Remove instance from list
-    Preallocated *tmp = cur->predata.prealloc_next;
-    if (block_mode) {
-      // printf("MEM: block delete from prealloc_free list: %p\n",cur);
-      cur->DelBlock();
+
+  if (block_mode) {
+    // Delete all blocks from blocks list
+    Preallocated *curblk = blocks_list;
+    while (curblk != 0) {
+      Preallocated *curinst = curblk;
+
+      int numfree = 0, numfree_verify = 0;
+      for (int i = 0; i < prealloc_num_instances; i++,
+        curinst = (Preallocated *) (((char *) curinst) + instance_size)) {
+        if (i == 1)
+          numfree = curinst->predata.prealloc_num_free;
+
+        // The check below does not work because instances marked 'in use' could still be in the ready list
+        // if (curinst->prealloc_status == Preallocated::PREALLOC_IN_USE)
+          // printf("MEM: WARNING: Freeing block with instance #%d marked in use.\n",i);
+
+        if (curinst->prealloc_status == Preallocated::PREALLOC_FREE)
+          numfree_verify++;
+      }
+
+      if (numfree != numfree_verify)
+        printf("MEM: WARNING: Number of free blocks listed and actual number of free blocks don't match.\n");
+
+      Preallocated *tmp = curblk->predata.prealloc_next;
+      curblk->DelBlock();
+      curblk = tmp;
     }
-    else 
-      ::delete cur;
-    cur = tmp;
-  }
-  cur = prealloc_inuse;
-  prealloc_inuse = 0;
-  while (cur != 0) {
-    // Remove instance from list
-    Preallocated *tmp = cur->predata.prealloc_next;
-    if (block_mode) {
-      // printf("MEM: block delete from prealloc_inuse list: %p\n",cur);
-      cur->DelBlock();
-    }
-    else 
-      ::delete cur;
-    cur = tmp;
+
+    blocks_list = 0;
+  } else {
+    // No internal data structures to free
   }
 };

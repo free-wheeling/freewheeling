@@ -520,23 +520,43 @@ class UserVariable {
   UserVariable *next;
 };
 
+// Abstract class to allow updating ring buffers with a new # of writer threads
+class SRMWRingBuffer_Updater {
+  friend class SRMWRingBuffer_Writers;
+
+protected:
+
+  virtual void UpdateNumWriters(int new_num_writers) = 0;
+};
+
 // Data for writer threads (common to all instances of SRMWRingBuffer)
 class SRMWRingBuffer_Writers {
+  template <typename T> friend class SRMWRingBuffer;
+
 public:
   
   #define MAX_WRITER_THREADS 50  // Hard-wired maximum number of writer threads
+  #define MAX_RING_BUFFERS 10    // System-wide total number of ring buffers
 
   // Global prep methods
   static void InitAll() {
-     pthread_mutex_init(&register_lock,0);
+     pthread_mutex_init(&register_writer_lock,0);
+     pthread_mutex_init(&register_buffer_lock,0);
      num_writers = 0;
+     num_bufs = 0;
   };  
   static void CloseAll() {
-     pthread_mutex_destroy(&register_lock);
+     pthread_mutex_destroy(&register_writer_lock);
+     pthread_mutex_destroy(&register_buffer_lock);
      num_writers = 0;
+     num_bufs = 0;
   };  
+
+  // Registration of writer threads
+
+  // Register a given thread as a writer
   static void RegisterWriter (pthread_t id) {
-    pthread_mutex_lock (&register_lock);
+    pthread_mutex_lock (&register_writer_lock);
     if (num_writers >= MAX_WRITER_THREADS) {
       printf("CORE: ERROR: Too many writer threads for Ring Buffer!\n");
       exit(1);
@@ -544,10 +564,15 @@ public:
     printf("CORE: Register ringbuffer writer thread: %lu\n",id);
     ids[num_writers] = id;
     num_writers++;
-    pthread_mutex_unlock (&register_lock);    
+    pthread_mutex_unlock (&register_writer_lock);
+
+    // Update existing buffers with new writer thread
+    UpdateBufs();
   };
+
+  // Registers this thread as a writer
   static void RegisterWriter () {
-    pthread_mutex_lock (&register_lock);
+    pthread_mutex_lock (&register_writer_lock);
     if (num_writers >= MAX_WRITER_THREADS) {
       printf("CORE: ERROR: Too many writer threads for Ring Buffer!\n");
       exit(1);
@@ -555,12 +580,62 @@ public:
     printf("CORE: Register ringbuffer writer thread: %lu\n",pthread_self());
     ids[num_writers] = pthread_self();
     num_writers++;
-    pthread_mutex_unlock (&register_lock);    
+    pthread_mutex_unlock (&register_writer_lock);
+
+    // Update existing buffers with new writer thread
+    UpdateBufs();
   };
   
+  // Ring buffers are automatically registered and unregistered here.
+  // This allows them to be notified of additional writer threads that are starting later.
+  // This is important during initialization if ringbuffers need to be created before all
+  // threads that write to them are initialized.
+  static void RegisterRingBuffer (SRMWRingBuffer_Updater *r) {
+    pthread_mutex_lock (&register_buffer_lock);
+    if (num_bufs >= MAX_RING_BUFFERS) {
+      printf("CORE: ERROR: Too many ring buffers!\n");
+      exit(1);
+    }
+    printf("CORE: Register ringbuffer #%d: %p\n",num_bufs,r);
+    bufs[num_bufs] = r;
+    num_bufs++;
+    pthread_mutex_unlock (&register_buffer_lock);
+  };
+
+  static void UnregisterRingBuffer (SRMWRingBuffer_Updater *r) {
+    pthread_mutex_lock (&register_buffer_lock);
+    char done = 0;
+    for (int i = 0; i < num_bufs; i++)
+      if (bufs[i] == r) {
+        printf("CORE: Unregister ringbuffer #%d: %p\n",i,r);
+        bufs[i] = 0;
+        done = 1;
+      }
+
+    if (!done)
+      printf("CORE: ERROR: Could not find ringbuffer %p to unregister.\n",r);
+
+    pthread_mutex_unlock (&register_buffer_lock);
+  };
+
+private:
+
+  static void UpdateBufs() {
+    // Notify every buffer of a new writer thread
+    pthread_mutex_lock (&register_buffer_lock);
+    for (int i = 0; i < num_bufs; i++)
+      if (bufs[i] != 0)
+        bufs[i]->UpdateNumWriters(num_writers);
+    pthread_mutex_unlock (&register_buffer_lock);
+  };
+
   static int num_writers;                   // Number of writer threads registered
   static pthread_t ids[MAX_WRITER_THREADS]; // Thread ID for each writer
-  static pthread_mutex_t register_lock;
+  static pthread_mutex_t register_writer_lock;
+
+  static int num_bufs;                      // Number of ring buffers
+  static SRMWRingBuffer_Updater *bufs[MAX_RING_BUFFERS]; // Array of pointers to ring buffers
+  static pthread_mutex_t register_buffer_lock;
 };
 
 // Ringbuffer implementation for a Single Reader Thread & Multiple Writer Threads
@@ -568,17 +643,32 @@ public:
 // This expands to a set of ringbuffers- one for each writer thread. The order of elements between threads is not preserved.
 // Elements are written and read using COPY operations.
 //
-// NOTE: All writer threads MUST be registered before the first SRMWRingBuffer instance is created.
-template <class T> class SRMWRingBuffer {
+// NOTE: Writer threads should not be added and removed once multithreaded operation has begun.
+// New writer threads may be registered after the ringbuffer is created, but only while that RingBuffer
+// is being written to by a single thread (ie during a single initialization thread).
+//
+// Class T must be able to be assigned to a null integer.
+// If class T is a pointer, no problem.
+// If class T is an instance, you must provide an initializer accepting an integer.
+
+template <class T> class SRMWRingBuffer : public SRMWRingBuffer_Updater {
+  friend class SRMWRingBuffer_Writers;
+
 public:
 
   // Create a ringbuffer with numel elements of class T
   SRMWRingBuffer (int numel) : numel(numel), num_writers(SRMWRingBuffer_Writers::num_writers) {
-    wbufs = new jack_ringbuffer_t *[num_writers];
+    wbufs = new jack_ringbuffer_t *[MAX_WRITER_THREADS];
     for (int i = 0; i < num_writers; i++)
       wbufs[i] = jack_ringbuffer_create(sizeof(T) * numel);
+
+    // Register this ringbuf
+    SRMWRingBuffer_Writers::RegisterRingBuffer(this);
   };
   ~SRMWRingBuffer() {
+    // Unregister this ringbuf
+    SRMWRingBuffer_Writers::UnregisterRingBuffer(this);
+
     for (int i = 0; i < num_writers; i++)
       jack_ringbuffer_free(wbufs[i]);
     delete[] wbufs;
@@ -619,25 +709,186 @@ public:
       size_t avail = jack_ringbuffer_read_space(wbufs[i]);
       if (avail >= sizeof(T)) {
         // Read element here
-        if (jack_ringbuffer_read(wbufs[i],tmpread,sizeof(T)) != sizeof(T)) {
+        if (jack_ringbuffer_read(wbufs[i],(char *) &tmpread,sizeof(T)) != sizeof(T)) {
           printf("CORE: Size mismatch during RingBuffer read\n");
-          return 0;
-        } else
-          return *((T *) tmpread);
+          exit(1);
+        } else {
+          // printf("CORE: Ringbuf got item\n");
+          return tmpread;
+        }
       }
     }
     
     // No data available
+    // printf("CORE: Ringbuf empty\n");
     return 0;
   };
   
-protected:
+private:
+
+  virtual void UpdateNumWriters(int new_num_writers) {
+    printf("CORE: RingBuffer %p: Update writer threads to %d\n",this,new_num_writers);
+    if (new_num_writers <= num_writers) {
+      printf("CORE: ERROR: Can't go from %d to %d writer threads during initialization.\n",num_writers,
+          new_num_writers);
+      exit(1);
+    } else {
+      for (; num_writers < new_num_writers; num_writers++)
+        wbufs[num_writers] = jack_ringbuffer_create(sizeof(T) * numel);
+    }
+  };
 
   // Array of single-read single-write ring buffers: one for each writer thread
   jack_ringbuffer_t **wbufs;
   int numel,      // Number of elements of class T in the buffer
     num_writers;  // Local copy of SRMWRingBuffer_Writers::num_writers
-  char tmpread[sizeof(T)];  // Holding spot for read
+  T tmpread;      // Holding spot for read
+};
+
+// An RTStore is the concept of a store shelf stocked with cans of something (class T)
+// The store shelf has a number of items. Each item has a state. The state can be compared and swapped
+// atomically. This allows several threads to work together without locks, stocking and pulling items
+// from the shelf.
+//
+// RTStore does not care about the content of class T. It does not care about the cans.
+// It only cares about managing the state of each item on the shelf in a thread-safe, RT-safe way.
+//
+// This design pattern is used in the memory manager classes (fweelin_mem).
+template <class T> class RTStore {
+public:
+  // 3 states of the transaction at a given index- waiting, busy and done.
+  const static int ITEM_WAITING = 0,
+    ITEM_BUSY = 1,
+    ITEM_DONE = 2;
+
+private:
+  class RTStoreItem : public T {
+  public:
+    RTStoreItem() : item_status(ITEM_DONE) {};
+
+    volatile int item_status;  // Current status of this item (update using careful atomic ops)
+  };
+
+public:
+  RTStore (int num_items) : num_items(num_items) {
+    items = new RTStoreItem[num_items];
+  };
+  ~RTStore () {
+    delete [] items;
+  };
+
+  // Finds the first RTStoreItem with the given state 'find_state' and resets the state atomically to
+  // 'replace_state'. Returns the index of the store item in the store (in idx), as well as a pointer to the
+  // item object itself (return).
+  //
+  // Returns null if no item could be found with the given state.
+  inline T *FindItemWithState (int find_state, int replace_state, int &idx) {
+    for (int i = 0; i < num_items; i++) {
+      // printf("RTStore Find (%p): %d: state is %d : find %d replace %d\n",this,i,items[i].item_status,find_state,replace_state);
+
+      // Compare and swap, atomically. This guarantees that only one thread can modify an RTStoreItem
+      // at a time, without locking.
+      if (__sync_bool_compare_and_swap(&items[i].item_status,find_state,replace_state)) {
+        // printf(" got it\n");
+
+        // Found.
+        idx = i;
+        return &items[i];
+      }
+    }
+
+    // None found
+    return 0;
+  };
+
+  // Change the state of store item with given index to 'new_state', if the item has the expected state.
+  // Returns nonzero if the state matched and was changed. Returns zero if the state did not match.
+  inline char ChangeStateAtIdx (int idx, int expect_state, int new_state) {
+    // printf("RTStore Change (%p): %d: state is %d : expect %d replace %d\n",this,idx,items[idx].item_status,expect_state,new_state);
+    return __sync_bool_compare_and_swap(&items[idx].item_status,expect_state,new_state);
+  };
+
+  // Returns the item at the given index. To modify the item, change to the BUSY state first.
+  inline T *GetItemAtIdx (int idx) { return &items[idx]; };
+
+private:
+
+  RTStoreItem *items;
+  int num_items; // Number of items in the store
+};
+
+// Base class for single linked list
+class SListItem {
+  friend class SLinkList;
+
+public:
+  SListItem() : slist_next(0) {};
+
+private:
+  SListItem *slist_next;    // Next item pointer
+};
+
+// Single linked list. RT-safe but not threadsafe. Must be locked.
+class SLinkList {
+public:
+
+  SLinkList() : first(0) {};
+
+  inline void AddToHead(SListItem *i) {
+    if (first == 0)
+      first = i;
+    else {
+      i->slist_next = first;
+      first = i;
+    }
+  };
+
+  // Finds and removes item i from the list. Returns i if successful, otherwise null.
+  inline SListItem *FindAndRemove(SListItem *i) {
+    SListItem *cur = first,
+      *prev = 0;
+
+    // Search for 'i' in our list
+    while (cur != 0 && cur != i) {
+      prev = cur;
+      cur = cur->slist_next;
+    }
+
+    if (cur != 0) {
+      // Got one to delete, unlink!
+      if (prev != 0)
+        prev->slist_next = cur->slist_next;
+      else
+        first = cur->slist_next;
+    }
+
+    return cur;
+  };
+
+  inline SListItem *GetFirstItem() {
+    return first;
+  };
+
+  inline SListItem *GetNextItem(SListItem *cur) {
+    return cur->slist_next;
+  };
+
+private:
+
+  SListItem *first;
+};
+
+class DListItem {
+public:
+  DListItem() : slist_prev(0), slist_next(0) {};
+
+  SListItem *slist_prev, *slist_next;    // Previous and next item pointers
+};
+
+class DLinkList {
+  DLinkList() : first(0) {};
+
+  DListItem *first;
 };
 
 #endif

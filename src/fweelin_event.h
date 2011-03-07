@@ -2884,9 +2884,11 @@ class EventManager {
         // This is not an issue, because eq uses SRMWRingBuffer. However, we the event dispatch thread
         // may go to sleep, missing the new messages until it's woken again. So, set a flag and the RT audio
         // thread will wake it up next process cycle.
-        printf("EVENT: WARNING: Priority inversion during event broadcast!\n"); // ,Event::ett[(int) ev->GetType()].name);
 
-        needs_wakeup = 1;
+        if (always_wakeup) {
+          printf("EVENT: WARNING: Priority inversion during event broadcast!\n"); // ,Event::ett[(int) ev->GetType()].name);
+          needs_wakeup = 1;
+        }
       }
     }
   };
