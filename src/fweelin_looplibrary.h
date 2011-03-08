@@ -22,6 +22,8 @@
 
 #include <string>
 #include <sstream>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "fweelin_core.h"
 
