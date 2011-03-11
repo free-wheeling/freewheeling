@@ -1929,6 +1929,40 @@ void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
         
         printf("\n");
       } else if ((n = xmlGetProp(cur_node, 
+                                 (const xmlChar *)"audioinputmonitoring")) != 0) {
+        int intaudioins = AudioBuffers::GetIntAudioIns();
+        monitor_inputs = new char[extaudioins + intaudioins];
+
+        // Assign stereo/mono and create input variables
+        char tmp[255];
+        for (int i = 0; i < extaudioins + intaudioins; i++) {
+          if (i < extaudioins && i < xmlStrlen(n)) {
+            switch (n[i]) {
+            case 'Y' :
+            case 'y' :
+              monitor_inputs[i] = 1;
+              printf("CONFIG: Input #%d is monitored\n",i+1);
+              break;
+
+            case 'N' :
+            case 'n' :
+              monitor_inputs[i] = 0;
+              printf("CONFIG: Input #%d is not monitored\n",i+1);
+              break;
+
+            default:
+              printf(FWEELIN_ERROR_COLOR_ON
+                     "*** INIT: WARNING: I don't understand input monitoring #%d = %c\n"
+                     "Assuming input is monitored.\n"
+                     FWEELIN_ERROR_COLOR_OFF,
+                     i+1,n[i]);
+              monitor_inputs[i] = 1;
+              break;
+            }
+          } else
+            monitor_inputs[i] = 1;  // Assume monitoring
+        }
+      } else if ((n = xmlGetProp(cur_node,
                                  (const xmlChar *)"externalaudioinputs")) != 0) {
         // # of inputs
         extaudioins = xmlStrlen(n);
@@ -3486,6 +3520,8 @@ FloConfig::~FloConfig()
 
   if (ms_inputs != 0)
     delete[] ms_inputs;
+  if (monitor_inputs != 0)
+    delete [] monitor_inputs;
 
   if (librarypath != 0)
     delete librarypath;
@@ -3495,7 +3531,7 @@ FloConfig::FloConfig(Fweelin *app) : im(app),
   
   ev_hook(0), librarypath(0), midiouts(1), msnumouts(0), msouts(0),
 
-  ms_inputs(0), extaudioins(0), 
+  ms_inputs(0), monitor_inputs(0), extaudioins(0),
 
   maxplayvol(0.0), maxlimitergain(1.0), limiterthreshhold(0.9), 
   limiterreleaserate(0.000020),

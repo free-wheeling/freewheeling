@@ -58,6 +58,10 @@
 <!-- Create inputs- one input per letter- M is mono and S is stereo! -->
   <var externalaudioinputs="MMSS"/>
 
+<!-- Enable/disable software monitoring per input. Y for software monitoring, N for no monitoring
+     (must be done in hardware/alsa/jack). -->
+  <var audioinputmonitoring="YYNN"/>
+  
 <!-- Limit the maximum play amplification to protect your sound system-
      this is a maximum level for each loop.
      

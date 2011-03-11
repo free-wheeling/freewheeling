@@ -2590,9 +2590,9 @@ void PassthroughProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
     // Copy current input settings
     *alliset = *iset;
 
-    // And set all inputs to selected for our mix
+    // And only mix inputs that are set to monitor
     for (int i = 0; i < alliset->numins; i++)
-      alliset->selins[i] = 0; // All monitor mixes off
+      alliset->selins[i] = app->getCFG()->IsInputMonitoring(i);
     // ***
 
     // Mix all inputs together into single output- this is a monitor mix

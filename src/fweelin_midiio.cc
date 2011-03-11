@@ -25,6 +25,10 @@
 
 #include <sys/time.h>
 
+#if HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -410,10 +414,26 @@ int MidiIO::activate() {
   // Setup high priority threads
   struct sched_param schp;
   memset(&schp, 0, sizeof(schp));
+
   // MIDI thread at SCHED_FIFO- yes! High priority!
   //schp.sched_priority = sched_get_priority_max(SCHED_OTHER);
   //schp.sched_priority = sched_get_priority_min(SCHED_FIFO);
   schp.sched_priority = sched_get_priority_max(SCHED_FIFO);
+
+#ifdef RLIMIT_RTPRIO
+  // Check the rtprio limit (/etc/security/limits.conf)
+  struct rlimit user_limits;
+  memset(&user_limits, 0, sizeof(user_limits));
+  if(getrlimit(RLIMIT_RTPRIO, &user_limits) == 0) {
+    // David comments :
+    // dunno how to get rid of the comparison between signed and unsigned warning...
+    // cause of my limited skills in C/C++ I won't play with cast
+    if(user_limits.rlim_max > 0 && user_limits.rlim_max < schp.sched_priority) {
+      schp.sched_priority = user_limits.rlim_max;
+    }
+  }
+#endif
+
   printf("MIDI: HiPri Thread %d\n",schp.sched_priority);
   if (pthread_setschedparam(midi_thread, SCHED_FIFO /* OTHER */, &schp) != 0) {    
     printf("MIDI: Can't set realtime thread, will use nonRT!\n");
