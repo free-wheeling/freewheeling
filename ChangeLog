@@ -1,5 +1,13 @@
 IN PROGRESS v0.6.1 - SVN
 
+            Thursday March 10, 2011
+
+            * Configurable soft monitoring is now available in basics.xml:
+
+            <var audioinputmonitoring="YYNN"/>
+
+            * QTractor OSC integration is now working.
+
             Saturday February 26, 2011
 
             After more than two years, activity has resumed on Freewheeling's
