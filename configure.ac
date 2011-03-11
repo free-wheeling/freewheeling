@@ -107,7 +107,7 @@ LIBS="$LIBS $SDL_LIBS"
 # Checks for header files.
 AC_PATH_X
 AC_HEADER_STDC
-AC_CHECK_HEADERS([errno.h stdlib.h string.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([errno.h stdlib.h string.h sys/time.h unistd.h sys/resource.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

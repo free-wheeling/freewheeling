@@ -27,7 +27,7 @@
 
             values are:
                amixer cset numid=5 input_source,output_source,value
-               value=16384 is 0.0 dB,
+               value=16384 is 0.0 dB (assuming -6.0 dB gain at master)
                valid range is [0..65535]
     -->
 
