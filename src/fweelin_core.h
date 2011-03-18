@@ -48,6 +48,7 @@
 class SDLIO;
 class EventManager;
 class BlockManager;
+class AutoLimitProcessor;
 class RootProcessor;
 class RecordProcessor;
 class TriggerMap;
@@ -918,7 +919,16 @@ class Fweelin : public EventProducer, public BrowserCallback {
   inline BlockManager *getBMG() { return bmg; };
   inline EventManager *getEMG() { return emg; };
   inline RootProcessor *getRP() { return rp; };
-  inline FileStreamer *getSTREAMER() { return fs; };
+  inline FileStreamer *getSTREAMER_INPUT(int n) { return fs_inputs[n]; };
+  inline FileStreamer *getSTREAMER_LOOPMIX() { return fs_loopout; };
+  inline FileStreamer *getSTREAMER_FINALMIX() { return fs_finalout; };
+
+  char CheckStreamStatus(char status);
+
+  // Returns the total number of bytes written from all disk streamer instances.
+  // Also returns the number of streams being written.
+  long int getSTREAMER_TotalOutputSize(int &numstreams);
+
   inline TriggerMap *getTMAP() { return tmap; };
   inline LoopManager *getLOOPMGR() { return loopmgr; };
   
@@ -931,6 +941,18 @@ class Fweelin : public EventProducer, public BrowserCallback {
   inline FloConfig *getCFG() { return cfg; };
 
   inline const std::string &getSTREAMOUTNAME() { return streamoutname; };
+  inline const std::string &getSTREAMOUTNAME_DISPLAY() { return streamoutname_display; };
+
+  // FIXME move to filestream manager
+
+  // Returns the stream size in frames or bytes written.
+  // Returns nonzero in frames if frames are being returned.
+  // Returns zero in frames if bytes are being returned.
+  inline long int getSTREAMSIZE(FileStreamer *fs, char &frames);
+
+  // Returns stats about output streams-
+  // The type (file extension .ogg, etc), The number of output streams open, the total number of megabytes written (Return value).
+  float getSTREAMSTATS(char *&stream_type, int &num_streams);
 
   inline SceneBrowserItem *getCURSCENE() { return curscene; };
   inline void setCURSCENE(SceneBrowserItem *nw) { curscene = nw; };
@@ -941,6 +963,8 @@ class Fweelin : public EventProducer, public BrowserCallback {
 
   inline AudioBuffers *getABUFS() { return abufs; };
   inline InputSettings *getISET() { return iset; };
+
+  inline AutoLimitProcessor *getMASTERLIMITER() { return masterlimit; };
 
   inline Browser *getBROWSER(BrowserItemType b) { 
     if (b >= 0 && b < B_Last)
@@ -1055,11 +1079,17 @@ class Fweelin : public EventProducer, public BrowserCallback {
     *pre_extrachannel,
     *pre_timemarker;
 
-  // ******************  DISK STREAMER
-  FileStreamer *fs;
-  int writenum; // Number of audio output file currently being written
-  std::string streamoutname,        // Name of output file
-    timingname;                     // Name of timing stripe file
+  // ******************  DISK STREAMERS
+  FileStreamer *fs_finalout,        // Final output disk stream
+    *fs_loopout,                    // Loop output disk stream
+    **fs_inputs;                    // Array of pointers to disk streams for audio inputs
+
+  int writenum;                     // Number of audio output file currently being written
+  std::string streamoutname,        // Full path and base name of output stream (for example, fw-lib/live52)
+    streamoutname_display;          // Base name of output stream, excluding path (for example, live52)
+
+  // ******************  MASTER LIMITER
+  AutoLimitProcessor *masterlimit;
 
   // ******************  LOOP SELECTIONS
   LoopList *loopsel[NUM_LOOP_SELECTION_SETS];

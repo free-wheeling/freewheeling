@@ -97,11 +97,11 @@ class AudioBuffers {
 
   Fweelin *app; // Main app
 
-  int numins, // Total number of ins
-    numins_ext, // Number of external inputs
-    numouts;  // & outs
-  sample_t **ins[2], // 2 list of input sample buffers (mono/left and right) 
-    **outs[2]; // & 2 lists of output sample buffers (mono/left and right)
+  int numins,        // Total number of inputs (including internal Fluidsynth)
+    numins_ext,      // Number of external inputs (not including internal Fluidsynth)
+    numouts;         // & outs
+  sample_t **ins[2], // 2 lists of input sample buffers (mono/left and right)
+    **outs[2];       // & 2 lists of output sample buffers (mono/left and right)
 };
 
 // Settings for each input coming into FreeWheeling
@@ -149,7 +149,7 @@ class InputSettings {
   };
 
   // (de)Select input
-  void SelectInput(int n, char selected) { 
+  inline void SelectInput(int n, char selected) {
     if (n >= 0 || n < numins) {
       selins[n] = selected;
     } else {
@@ -157,7 +157,7 @@ class InputSettings {
     }
   };
   // Is input n selected?
-  char InputSelected(int n) { 
+  inline char InputSelected(int n) {
     if (n >= 0 || n < numins) {
       return selins[n];
     } else {
@@ -172,7 +172,7 @@ class InputSettings {
   // Set input volume for input n
   void AdjustInputVol(int n, float adjust); 
   void SetInputVol(int n, float vol, float logvol);
-  float GetInputVol(int n) { 
+  inline float GetInputVol(int n) {
     if (n >= 0 || n < numins) {
       return invols[n];
     } else {
@@ -180,7 +180,9 @@ class InputSettings {
       return 0;
     }
   };
-  float *GetInputVols() { return invols; };
+  inline float *GetInputVols() { return invols; };
+
+  inline int GetNumInputs() { return numins; };
 
   // Copy contents of settings from source object- don't fuss with pointers
   inline void operator = (InputSettings &src) {
@@ -272,25 +274,29 @@ public:
     STATUS_PENDING_DELETE = 2;      // Delete at next non-RT opportunity
 
   // Processor type- 
-  // Global: processor will process
-  //   after output volume transformation, and so, is not affected by it
-  // Hipriority: these processors will process
-  //   before all other processors
-  // Final: processor will process after all other processors--
-  // after TYPE_GLOBAL, after autolimit-- 
-  // it will be fed the end signal chain of all other processors *as input*
+  //
+  // Global processors get their input from the external audio inputs.
+  //   They are executed near the end of the signal chain (after output volume transformation)
+  //
+  // Hipriority: these processors will process before all other processors
+  //
+  // Final processors will process after all other processors--
+  // after TYPE_GLOBAL
+  // They will be fed the end signal chain of all other processors as input
   const static int TYPE_DEFAULT = 0,
     TYPE_GLOBAL = 1,
-    TYPE_HIPRIORITY = 2,
-    TYPE_FINAL = 3;
+    TYPE_GLOBAL_SECOND_CHAIN = 2,
+    TYPE_HIPRIORITY = 3,
+    TYPE_FINAL = 4;
 
-  ProcessorItem(Processor *p, int type = TYPE_DEFAULT) : p(p), next(0), 
-    status(STATUS_GO), type(type) {};
+  ProcessorItem(Processor *p, int type = TYPE_DEFAULT, char silent = 0) : p(p), next(0),
+    status(STATUS_GO), type(type), silent(silent) {};
 
   Processor *p;
   ProcessorItem *next;
   int status,
     type;
+  char silent;    // Nonzero if this processor should always be silent (no output)
 };
 
 class PulseSyncCallback {
@@ -464,6 +470,41 @@ public:
   SyncStateType clockrun;  // Status of MIDI clock
 };
 
+// This class implements a quick auto limiter.
+// This design does not add latency to the output. It is not a brickwall or look-ahead design.
+// It cannot guarantee that no samples are clipped.
+// It is essentially a compressor with fast attack time.
+//
+// It is intended to prevent hard overdriving of the signal chain and potential damage to audio components.
+// It does produce some distortion when peaking. It is fairly musical and low on CPU usage.
+class AutoLimitProcessor : public Processor {
+  friend class Fweelin;
+
+public:
+
+  AutoLimitProcessor(Fweelin *app);
+  virtual ~AutoLimitProcessor();
+
+  float GetLimiterVolume() { return curlimitvol; };
+  char GetLimiterFreeze() { return limiterfreeze; };
+  void SetLimiterFreeze(char set) { limiterfreeze = set; };
+  void ResetLimiter();
+
+  // This process function processes in place on the output. It does not read the input at all.
+  virtual void process(char pre, nframes_t len, AudioBuffers *ab);
+
+private:
+
+  const static float LIMITER_ATTACK_LENGTH,
+    LIMITER_START_AMP;
+  const static nframes_t LIMITER_ADJUST_PERIOD;
+  float dlimitvol,    // Limiter volume delta- how fast vol is being changed
+    limitvol,         // Target volume- amplitude needed to stop clipping
+    curlimitvol,      // Current volume- volume is moving towards limitvol
+    maxvol;           // Maximum volume found in audio coming into limiter
+  char limiterfreeze; // Nonzero if limiter is frozen- no changes in amp
+};
+
 // This is the base of signal processing tree- it connects to system level audio
 // and calls child processors which do signal processing
 // Child processes execute in parallel and their signals are summed
@@ -497,11 +538,6 @@ public:
   inline float GetInputVolume() { return inputvol; }
   inline float *GetInputVolumePtr() { return &inputvol; }
 
-  float GetLimiterVolume() { return curlimitvol; };
-  char GetLimiterFreeze() { return limiterfreeze; };
-  void SetLimiterFreeze(char set) { limiterfreeze = set; };
-  void ResetLimiter();
-
   // Sample accurate timing is provided through samplecnt
   inline nframes_t GetSampleCnt() { return samplecnt; };
 
@@ -516,7 +552,7 @@ public:
 
   // Adds a child processor.. the processor begins processing immediately
   // Possibly realtime safe?
-  void AddChild (Processor *o, int type = ProcessorItem::TYPE_DEFAULT);
+  void AddChild (Processor *o, int type = ProcessorItem::TYPE_DEFAULT, char silent = 0);
 
   // Removes a child processor from receiving processing time..
   // also, deletes the child processor
@@ -529,6 +565,9 @@ public:
   void ReceiveEvent(Event *ev, EventProducer *from);
 
 private:
+
+  // Update the list of processors
+  void UpdateProcessors();
 
   // Event queue (read in RT). Used to handle events in the RT audio thread, that are generated from multiple
   // writers in other threads.
@@ -550,16 +589,6 @@ private:
  
   // Count samples processed from start of execution
   volatile nframes_t samplecnt;
-
-  // Autolimiter
-  const static float LIMITER_ATTACK_LENGTH,
-    LIMITER_START_AMP; 
-  const static nframes_t LIMITER_ADJUST_PERIOD;
-  float dlimitvol, // Limiter volume delta- how fast vol is being changed
-    limitvol,      // Target volume- amplitude needed to stop clipping
-    curlimitvol,   // Current volume- volume is moving towards limitvol
-    maxvol;        // Maximum volume found in audio coming into limiter
-  char limiterfreeze; // Nonzero if limiter is frozen- no changes in amp
 };
 
 class RecordProcessor : public Processor, public PulseSyncCallback {
@@ -774,7 +803,8 @@ class FileStreamer : public Processor, public EventListener {
   const static nframes_t OUTPUTBUFLEN = 100000;
   const static int MARKERBUFLEN = 50;
 
-  FileStreamer(Fweelin *app, nframes_t outbuflen = OUTPUTBUFLEN);
+  // Initialize a disk stream recording input #input_idx, with the given buffer size
+  FileStreamer(Fweelin *app, int input_idx, char stereo, nframes_t outbuflen = OUTPUTBUFLEN);
   virtual ~FileStreamer();
 
   virtual void process(char pre, nframes_t len, AudioBuffers *ab);
@@ -782,18 +812,7 @@ class FileStreamer : public Processor, public EventListener {
 
   // Starts writing to a new audio stream
   // Note all the heavy work is done in the encode thread!
-  int StartWriting(const std::string &filename, const std::string &timingname, codec type) {
-    if (writerstatus != STATUS_STOPPED)
-      return -1; // Already writing!
-
-    outname = filename;
-    outputsize = 0;
-    filetype = type;
-    this->timingname = timingname;
-    writerstatus = STATUS_START_PENDING;
-
-    return 0;
-  };
+  int StartWriting(const std::string &filename_stub, const char *stream_type_name, char write_timing, codec type);
 
   // Stop writing to a stream
   // Note all the heavy work is done in the encode thread!
@@ -802,6 +821,7 @@ class FileStreamer : public Processor, public EventListener {
   };
 
   char GetStatus() { return writerstatus; };
+  const std::string &GetOutputName() { return outname; };
 
   // Returns the number of *frames* written so far-- not bytes
   // The actual file size will vary depending on the codec used
@@ -809,6 +829,7 @@ class FileStreamer : public Processor, public EventListener {
 
   static void *run_encode_thread (void *ptr);
 
+  // Writer status flags
   const static char STATUS_STOPPED = 0,
     STATUS_RUNNING = 1,
     STATUS_STOP_PENDING = 2,
@@ -818,21 +839,21 @@ class FileStreamer : public Processor, public EventListener {
   void InitStreamer();
   void EndStreamer();
   
-  char writerstatus;  
-
-  // Encoding in stereo?
-  char stereo;
-  codec filetype;
+  char writerstatus;     // Status flag
+  int input_idx;         // Index of input to record
+  char stereo;           // Encoding in stereo?
+  codec filetype;        // Audio file type
 
   // File
-  FILE *outfd,   // Current output filedescriptor (audio)
-    *timingfd;   // Current timing output filedescriptor (data- USX)
+  FILE *outfd,         // Current output filedescriptor (audio)
+    *timingfd;         // Current timing output filedescriptor (data- USX)
   std::string outname, // Current output filename
-    timingname; // Current timing output filename
+    timingname;        // Current timing output filename
+  char write_timing;   // Nonzero if a timing file is being written by this streamer
 
-  // Time markers for storing downbeat points along with audio
+  // Time markers for storing downbeat points along with audio (ring buffer)
   TimeMarker *marks;
-  int mkwriteidx,
+  volatile int mkwriteidx,
     mkreadidx;
 
   // Number of beat triggers passed in this recording 
@@ -841,10 +862,10 @@ class FileStreamer : public Processor, public EventListener {
   nframes_t startcnt;
 
   // Output buffers
-  sample_t *outbuf[2];
-  nframes_t outbuflen,
-    outpos, // Current position of realtime data coming into output buffer
-    encodepos; // Current position of encoder in buffer (lags behind outpos)
+  sample_t *outbuf[2];       // Two channel ring buffer
+  nframes_t outbuflen;
+  volatile nframes_t outpos, // Current position of realtime data coming into output buffer
+    encodepos;               // Current position of encoder in buffer (lags behind outpos)
   char wrap; // Nonzero if outpos has wrapped but encodepos hasn't yet
 
   // Number of bytes written to output file
@@ -858,7 +879,7 @@ class FileStreamer : public Processor, public EventListener {
   iFileEncoder *enc;
 };
 
-// PassthroughProcessor creates a monitor mix of all inputs into the given output
+// PassthroughProcessor creates a monitor mix of several given inputs into one output
 class PassthroughProcessor : public Processor {
 public:
   PassthroughProcessor(Fweelin *app, InputSettings *iset, float *inputvol);

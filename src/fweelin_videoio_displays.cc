@@ -204,7 +204,7 @@ void LoopTray::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
     if (!app->getVIDEO()->
         DrawLoop(loopmgr,li->loopid,screen,app->getVIDEO()->getLSCOPEPIC(),
                  loop_color,colormag,app->getCFG(),0,loopmap,x,y,
-                 app->getRP()->GetLimiterVolume(),0)) {
+                 app->getMASTERLIMITER()->GetLimiterVolume(),0)) {
       // Place name
       if (li->placename != 0)
         VideoIO::draw_text(screen,font->font,li->placename,x,y,white);

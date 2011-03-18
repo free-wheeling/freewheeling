@@ -1929,6 +1929,54 @@ void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
         
         printf("\n");
       } else if ((n = xmlGetProp(cur_node, 
+                                 (const xmlChar *)"streamfinalmix")) != 0) {
+        if (n[0] == 'Y' || n[0] == 'y')
+          stream_final = 1;
+        else
+          stream_final = 0;
+        printf("CONFIG: %s final stream\n",(stream_final ? "Enable" : "Disable"));
+      } else if ((n = xmlGetProp(cur_node,
+                                 (const xmlChar *)"streamloopmix")) != 0) {
+        if (n[0] == 'Y' || n[0] == 'y')
+          stream_loops = 1;
+        else
+          stream_loops = 0;
+        printf("CONFIG: %s loop stream\n",(stream_loops ? "Enable" : "Disable"));
+      } else if ((n = xmlGetProp(cur_node,
+                                 (const xmlChar *)"streaminputs")) != 0) {
+        int intaudioins = AudioBuffers::GetIntAudioIns();
+        stream_inputs = new char[extaudioins + intaudioins];
+
+        // Assign stream status for each input
+        char tmp[255];
+        for (int i = 0; i < extaudioins + intaudioins; i++) {
+          if (i < xmlStrlen(n)) {
+            switch (n[i]) {
+            case 'Y' :
+            case 'y' :
+              stream_inputs[i] = 1;
+              printf("CONFIG: Input #%d is streamed\n",i+1);
+              break;
+
+            case 'N' :
+            case 'n' :
+              stream_inputs[i] = 0;
+              printf("CONFIG: Input #%d is not streamed\n",i+1);
+              break;
+
+            default:
+              printf(FWEELIN_ERROR_COLOR_ON
+                     "*** INIT: WARNING: I don't understand streaming input #%d = %c\n"
+                     "Assuming input is not streamed.\n"
+                     FWEELIN_ERROR_COLOR_OFF,
+                     i+1,n[i]);
+              stream_inputs[i] = 0;
+              break;
+            }
+          } else
+            stream_inputs[i] = 0;  // Assume not streamed
+        }
+      } else if ((n = xmlGetProp(cur_node,
                                  (const xmlChar *)"audioinputmonitoring")) != 0) {
         int intaudioins = AudioBuffers::GetIntAudioIns();
         monitor_inputs = new char[extaudioins + intaudioins];
@@ -3522,6 +3570,8 @@ FloConfig::~FloConfig()
     delete[] ms_inputs;
   if (monitor_inputs != 0)
     delete [] monitor_inputs;
+  if (stream_inputs != 0)
+    delete [] stream_inputs;
 
   if (librarypath != 0)
     delete librarypath;

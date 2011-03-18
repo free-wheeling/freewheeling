@@ -367,8 +367,8 @@ long int VorbisEncoder::Encode() {
 
 void VorbisEncoder::Preprocess(sample_t *l, sample_t *r, nframes_t len) {
   if (r == 0) //mono
-  for (nframes_t i = 0; i < len; i++) 
-    l[i] *= 0.9;
+    for (nframes_t i = 0; i < len; i++)
+      l[i] *= 0.9;
   else {
     for (nframes_t i = 0; i < len; i++) {
       l[i] *= 0.9;

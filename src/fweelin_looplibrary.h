@@ -48,39 +48,38 @@ public:
     return tmp.str();
   };
 
-  static const std::string GetNextAvailableStreamOutFilename (Fweelin *app, int &stream_num, std::string &timingname) {
+  // Returns, for example, fw-lib/live24. Does not return the file extension.
+  static const std::string GetNextAvailableStreamOutFilename (Fweelin *app, int &stream_num, std::string &display_name) {
     // Create appropriate filename for output
     char go = 1;
 
-    printf("Start SS\n");
-    fflush(stdout);
-
     do {
+      // Scan for already existing output streams, using the timing file as a check
       std::ostringstream tmp;
       tmp << app->getCFG()->GetLibraryPath() << "/" << FWEELIN_OUTPUT_STREAM_NAME << stream_num <<
-          app->getCFG()->GetAudioFileExt(app->getCFG()->GetStreamOutFormat());
+          FWEELIN_OUTPUT_TIMING_EXT;
       const std::string s = tmp.str();
 
       struct stat st;
-      printf("DISK: Opening '%s' for streaming.\n",s.c_str());
+      printf("DISK: Test '%s' for streaming.\n",s.c_str());
       fflush(stdout);
       if (stat(s.c_str(),&st) == 0) {
         printf("DISK: File exists, trying another.\n");
         stream_num++;
       } else {
-        // Also check for timing data file- don't overwrite that
-        std::ostringstream ttmp;
-        ttmp << app->getCFG()->GetLibraryPath() << "/" << FWEELIN_OUTPUT_STREAM_NAME << stream_num <<
-            FWEELIN_OUTPUT_TIMING_EXT;
-        const std::string ts = ttmp.str();
-        if (stat(ts.c_str(),&st) == 0) {
-          printf("DISK: Timing file exists, trying another.\n");
-          stream_num++;
-        } else {
-          go = 0;
-          timingname = ts;
-          return s;
-        }
+        // No file with this name. Name is free.
+
+        // Prepare base name with and without path
+        go = 0;
+        std::ostringstream tmp2;
+        tmp2 << app->getCFG()->GetLibraryPath() << "/" << FWEELIN_OUTPUT_STREAM_NAME << stream_num;
+        const std::string s2 = tmp2.str();
+
+        std::ostringstream display_tmp;
+        display_tmp << FWEELIN_OUTPUT_STREAM_NAME << stream_num;
+        display_name = display_tmp.str();
+
+        return s2;
       }
     } while (go);
 
