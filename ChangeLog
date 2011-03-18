@@ -18,6 +18,11 @@ IN PROGRESS v0.6.1 - SVN
               <var streamfinalmix="N"/>
               <var streamloopmix="Y"/>
 
+              As always, the disk streams can be toggled in real-time with the
+              PrintScreen key (see help). Freewheeling finds an unused
+              filename for each new stream. The streams are time-aligned,
+              so they can be loaded as tracks into a multi-track sequencer.
+
             Thursday March 10, 2011
 
             * Configurable soft monitoring is now available in basics.xml:
