@@ -863,6 +863,14 @@ class FloConfig {
   // Is FreeWheeling running in stereo or completely in mono?
   char IsStereoMaster();
 
+  // Stream settings
+  inline char IsStreamFinal() { return stream_final; };
+  inline char IsStreamLoops() { return stream_loops; };
+  inline char IsStreamInputs(int n) { return stream_inputs[n]; };
+  char stream_final,
+    stream_loops,
+    *stream_inputs;
+
   // Number of external audio inputs into FreeWheeling (specified in config file)
   // AudioIO may add its own inputs internal to FreeWheeling 
   // (for example, softsynth)

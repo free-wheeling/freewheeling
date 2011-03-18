@@ -60,7 +60,17 @@
 
 <!-- Enable/disable software monitoring per input. Y for software monitoring, N for no monitoring
      (must be done in hardware/alsa/jack). -->
-  <var audioinputmonitoring="YYNN"/>
+  <var audioinputmonitoring="NNNN"/>
+  
+<!-- Which audio inputs to stream to disk when streaming is enabled? For each input, Y enables streaming, N disables. -->
+  <var streaminputs="NYYN"/>
+  
+<!-- Stream final output of Freewheeling- exactly what is heard. Note that if software audio input monitoring is disabled,
+     then the final output mix will not contain the sound of the audio inputs. -->
+  <var streamfinalmix="N"/>
+  
+<!-- Stream the loop mix (output of all playing loops, and nothing else). -->
+  <var streamloopmix="Y"/>
   
 <!-- Limit the maximum play amplification to protect your sound system-
      this is a maximum level for each loop.
@@ -73,7 +83,7 @@
      Set to 0 to disable maximum loop play levels. The limiter (below) will still work. -->
   <var maxplayvol="0.0"/>
 
-<!-- Peak limiter. Applied to outputs after final mix.
+<!-- Peak limiter. 
 
      Maximum gain for limiter. When this is above 1.0 (100% amplitude), the
      limiter acts like a high-ratio compressor, rising in gain until it reaches 

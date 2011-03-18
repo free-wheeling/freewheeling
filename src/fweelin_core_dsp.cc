@@ -45,10 +45,12 @@ const nframes_t Pulse::METRONOME_HIT_LEN = 800;
 const nframes_t Pulse::METRONOME_TONE_LEN = 4400;
 // Initial metronome volume
 const float Pulse::METRONOME_INIT_VOL = 0.1;
-// Autolimiter
-const float RootProcessor::LIMITER_ATTACK_LENGTH = 1024,
-  RootProcessor::LIMITER_START_AMP = 1.0; 
-const nframes_t RootProcessor::LIMITER_ADJUST_PERIOD = 64;
+
+// AutoLimitProcessor
+const float AutoLimitProcessor::LIMITER_ATTACK_LENGTH = 1024,
+  AutoLimitProcessor::LIMITER_START_AMP = 1.0;
+const nframes_t AutoLimitProcessor::LIMITER_ADJUST_PERIOD = 64;
+//
 
 const float RecordProcessor::OVERDUB_DEFAULT_FEEDBACK = 0.5;
 
@@ -675,25 +677,200 @@ void Pulse::process(char pre, nframes_t l, AudioBuffers *ab) {
     memcpy(ab->outs[1][0],ab->outs[0][0],sizeof(sample_t) * l);
 }
 
+AutoLimitProcessor::AutoLimitProcessor(Fweelin *app) :
+  Processor(app) {
+  ResetLimiter();
+};
+
+AutoLimitProcessor::~AutoLimitProcessor() {
+};
+
+void AutoLimitProcessor::ResetLimiter() {
+  dlimitvol = app->getCFG()->GetLimiterReleaseRate();
+  limitvol = LIMITER_START_AMP;
+  curlimitvol = LIMITER_START_AMP;
+  maxvol = app->getCFG()->GetLimiterThreshhold();
+  limiterfreeze = 0;
+}
+
+void AutoLimitProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
+  // Autolimit treats stereo channels as linked
+  float localmaxvol = 0.0,
+    maxamp = app->getCFG()->GetMaxLimiterGain(),
+    limitthresh = app->getCFG()->GetLimiterThreshhold(),
+    limitrr = app->getCFG()->GetLimiterReleaseRate();
+  int clipcnt = 0;
+
+  sample_t *s_left = ab->outs[0][0],  // Process in place on the output
+    *s_right = ab->outs[1][0];
+  int stereo = (s_right != 0 ? 1 : 0);
+
+  if (stereo) {
+    // Stereo limit
+    for (nframes_t l = 0; l < len; l++, s_left++, s_right++) {
+      float abssamp_l = fabs(*s_left),
+        abssamp_r = fabs(*s_right);
+
+      // Volume scale
+      *s_left *= curlimitvol;
+      *s_right *= curlimitvol;
+
+      float abssamp2_l = fabs(*s_left),
+        abssamp2_r = fabs(*s_right);
+
+      if (!limiterfreeze) {
+        // Find local maxima
+        if (abssamp_l > localmaxvol)
+          localmaxvol = abssamp_l;
+        if (abssamp_r > localmaxvol)
+          localmaxvol = abssamp_r;
+
+        // Find clipping after limit
+        if (abssamp2_l > limitthresh)
+          clipcnt++; // Force limit
+        if (abssamp2_r > limitthresh)
+          clipcnt++; // Force limit
+
+        // Adjust volume scale
+        curlimitvol += dlimitvol;
+      }
+
+      // Clipping kludge--
+      // Some output formats clip near 1.0.. brickwall limit to 1.0
+      if (abssamp2_l > 0.99) {
+        // Absolute clip! Truncate
+        if (*s_left > 0.0)
+          *s_left = 0.99;
+        else
+          *s_left = -0.99;
+      }
+      if (abssamp2_r > 0.99) {
+        // Absolute clip! Truncate
+        if (*s_right > 0.0)
+          *s_right = 0.99;
+        else
+          *s_right = -0.99;
+      }
+
+      if (l+1 == len || l % LIMITER_ADJUST_PERIOD == 0) {
+        // Time to check & adjust limit parameters
+
+        if (clipcnt > 0 || localmaxvol > maxvol) {
+          // We got more clipping!
+          clipcnt = 0;
+
+          float newlimitvol = limitthresh/localmaxvol;
+
+          // Compute volume reduction necessary to bring in peak
+          limitvol = newlimitvol;
+
+          // Compute delta (speed) to get to that reduction (attack time)
+          dlimitvol = (limitvol-curlimitvol)/LIMITER_ATTACK_LENGTH;
+
+          // Store new max
+          maxvol = localmaxvol;
+        }
+
+        if (dlimitvol < 0.0 && curlimitvol <= limitvol) {
+          // We are done the attack phase- switch to release!
+          dlimitvol = limitrr;
+        }
+
+        if (dlimitvol > 0.0 && curlimitvol > maxamp) {
+          // Too much amp!
+          dlimitvol = 0.0;
+        }
+      }
+    }
+  } else {
+    // Mono limit
+    for (nframes_t l = 0; l < len; l++, s_left++) {
+      float abssamp_l = fabs(*s_left);
+
+      // Volume scale
+      *s_left *= curlimitvol;
+
+      float abssamp2_l = fabs(*s_left);
+
+      if (!limiterfreeze) {
+        // Find local maxima
+        if (abssamp_l > localmaxvol)
+          localmaxvol = abssamp_l;
+
+        // Find clipping after limit
+        if (abssamp2_l > limitthresh)
+          clipcnt++; // Force limit
+
+        // Adjust volume scale
+        curlimitvol += dlimitvol;
+      }
+
+      // Vorbis clipping kludge--
+      // Vorbis clips near 1.0.. 1st step is brickwall at 1.0
+      // then scale down.. (scaling happens in FileStreamer)
+      if (abssamp2_l > 0.99) {
+        // Absolute clip! Truncate
+        if (*s_left > 0.0)
+          *s_left = 0.99;
+        else
+          *s_left = -0.99;
+      }
+
+      if (l+1 == len || l % LIMITER_ADJUST_PERIOD == 0) {
+        // Time to check & adjust limit parameters
+
+        if (clipcnt > 0 || localmaxvol > maxvol) {
+          // We got more clipping!
+          clipcnt = 0;
+
+          float newlimitvol = limitthresh/localmaxvol;
+
+          // Compute volume reduction necessary to bring in peak
+          limitvol = newlimitvol;
+
+          // Compute delta (speed) to get to that reduction (attack time)
+          dlimitvol = (limitvol-curlimitvol)/LIMITER_ATTACK_LENGTH;
+
+          // Store new max
+          maxvol = localmaxvol;
+        }
+
+        if (dlimitvol < 0.0 && curlimitvol <= limitvol) {
+          // We are done the attack phase- switch to release!
+          dlimitvol = limitrr;
+        }
+
+        if (dlimitvol > 0.0 && curlimitvol > maxamp) {
+          // Too much amp!
+          dlimitvol = 0.0;
+        }
+      }
+    }
+  }
+}
+
 RootProcessor::RootProcessor(Fweelin *app, InputSettings *iset) :
   Processor(app), eq(0), protect_plist(0),
-  iset(iset), outputvol(1.0), doutputvol(1.0),
+  iset(iset),
+  outputvol(1.0), doutputvol(1.0),
   inputvol(1.0), dinputvol(1.0), 
   firstchild(0), samplecnt(0) {
-  // Reset limiter
-  ResetLimiter();
-
   // Temporary buffers and routing
   abtmp = new AudioBuffers(app);
+  // abtmp2 = new AudioBuffers(app); // Second chain temp
+
   // Pre needs a separate set because preprocess runs in a different thread
   preabtmp = new AudioBuffers(app); 
   buf[0] = new sample_t[app->getBUFSZ()];
+  // buf2[0] = new sample_t[app->getBUFSZ()];
   prebuf[0] = new sample_t[prelen];
   if (abtmp->IsStereoMaster()) {
     buf[1] = new sample_t[app->getBUFSZ()];
+    // buf2[1] = new sample_t[app->getBUFSZ()];
     prebuf[1] = new sample_t[prelen];
   } else {
     buf[1] = 0;
+    // buf2[1] = 0;
     prebuf[1] = 0;
   }
 
@@ -711,20 +888,24 @@ RootProcessor::~RootProcessor() {
   ProcessorItem *cur = firstchild;
   while (cur != 0) {
     ProcessorItem *tmp = cur->next;
-    // Stop child!
+    // Stop child and delete processor!
     delete cur->p;
     delete cur;
     cur = tmp;
   }
 
   delete[] buf[0];
+  // delete[] buf2[0];
   delete[] prebuf[0];
   if (buf[1] != 0)
     delete[] buf[1];
+  //if (buf2[1] != 0)
+  //  delete[] buf2[1];
   if (prebuf[1] != 0)
     delete[] prebuf[1];
 
   delete abtmp;
+  // delete abtmp2;
   delete preabtmp;
 
   if (eq != 0)
@@ -734,12 +915,10 @@ RootProcessor::~RootProcessor() {
   app->getEMG()->UnlistenEvent(this,0,T_EV_CleanupProcessor);
 }
 
-void RootProcessor::ResetLimiter() {
-  dlimitvol = app->getCFG()->GetLimiterReleaseRate();
-  limitvol = LIMITER_START_AMP;
-  curlimitvol = LIMITER_START_AMP;
-  maxvol = app->getCFG()->GetLimiterThreshhold();
-  limiterfreeze = 0;
+void RootProcessor::FinalPrep () {
+  printf("RP: Create ringbuffers and begin.\n");
+
+  eq = new SRMWRingBuffer<Event *>(RP_QUEUE_SIZE);
 }
 
 void RootProcessor::AdjustOutputVolume(float adjust) {
@@ -756,21 +935,17 @@ void RootProcessor::AdjustInputVolume(float adjust) {
     dinputvol = 0.0;
 }
 
-void RootProcessor::FinalPrep () {
-  printf("RP: Create ringbuffers and begin.\n");
-
-  eq = new SRMWRingBuffer<Event *>(RP_QUEUE_SIZE);
-}
-
 // Adds a child processor.. the processor begins processing immediately
 // Not realtime safe
-void RootProcessor::AddChild (Processor *o, int type) {
+//
+// If the processor should not produce any output, pass nonzero in silent
+void RootProcessor::AddChild (Processor *o, int type, char silent) {
   // Do a preprocess for fadein
   dopreprocess();
 
   // Prepare an event for RT process to add a new processor to its list
   AddProcessorEvent *addevt = (AddProcessorEvent *) Event::GetEventByType(T_EV_AddProcessor);
-  addevt->new_processor = new ProcessorItem(o,type);
+  addevt->new_processor = new ProcessorItem(o,type,silent);
 
   // Add event to queue
   eq->WriteElement(addevt);
@@ -786,6 +961,8 @@ void RootProcessor::DelChild (Processor *o) {
     *prev = 0;
   
   protect_plist++;  // Tell the RT thread - DON'T modify the processor list during this critical section
+
+  // ** Just do this search in RT instead!!! FIXME
 
   // Search for processor 'o' in our list
   while (cur != 0 && cur->p != o) {
@@ -819,7 +996,9 @@ void RootProcessor::processchain(char pre, nframes_t len, AudioBuffers *ab,
   while (cur != 0) {
     if (cur->status != ProcessorItem::STATUS_PENDING_DELETE &&
         cur->type == ptype) {
+      // Run audio processing...
       cur->p->process(pre, len, abchild);
+
       if (!pre && cur->status == ProcessorItem::STATUS_LIVE_PENDING_DELETE) {
         cur->status = ProcessorItem::STATUS_PENDING_DELETE; // Last run finished, now delete
 
@@ -831,8 +1010,8 @@ void RootProcessor::processchain(char pre, nframes_t len, AudioBuffers *ab,
         eq->WriteElement(delevt);
       }
 
-      // Sum from temporary output into actual output 
-      if (mixintoout) {
+      if (mixintoout && !cur->silent) {
+        // Sum from temporary output (abchild) into main output (ab)
         for (int chan = 0; chan <= stereo; chan++) {
           sample_t *sumout = ab->outs[chan][0],
             *out = abchild->outs[chan][0];
@@ -862,6 +1041,76 @@ void RootProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
   }
 };
 
+// Update the list of processors
+void RootProcessor::UpdateProcessors() {
+  if (protect_plist == 0) { // Only mess with processor list when no thread is in a critical section
+    // First, process any events coming from non-RT threads
+    Event *curev = eq->ReadElement();
+    while (curev != 0) {
+      switch (curev->GetType()) {
+        case T_EV_AddProcessor :
+        {
+          AddProcessorEvent *addevt = (AddProcessorEvent *) curev;
+
+          // Add processor to the end of the list
+          ProcessorItem *cur = firstchild;
+          if (cur == 0)
+            firstchild = addevt->new_processor;
+          else {
+            while (cur->next != 0)
+              cur = cur->next;
+            cur->next = addevt->new_processor;
+          }
+        }
+        break;
+
+        case T_EV_DelProcessor :
+        {
+          DelProcessorEvent *delevt = (DelProcessorEvent *) curev;
+
+          // Traverse the list of children and look for a processor pending delete
+          ProcessorItem *cur = firstchild,
+            *prev = 0;
+
+          while (cur != 0) {
+            // Search for any processor pending delete in our list
+            while (cur != 0 && cur->status !=
+                   ProcessorItem::STATUS_PENDING_DELETE) {
+              prev = cur;
+              cur = cur->next;
+            }
+
+             if (cur != 0) {
+              // Got one to delete, unlink!
+              if (prev != 0)
+                prev->next = cur->next;
+              else
+                firstchild = cur->next;
+
+              ProcessorItem *tmp = cur->next;
+
+              // Queue for memory free via EventManager
+              CleanupProcessorEvent *cleanevt = (CleanupProcessorEvent *) Event::GetEventByType(T_EV_CleanupProcessor);
+              cleanevt->processor = cur;
+              app->getEMG()->BroadcastEvent(cleanevt,this);
+
+              cur = tmp;
+            }
+          }
+
+        }
+        break;
+
+        default:
+          printf("RP: ERROR: Unknown event in my queue (%d)!\n",curev->GetType());
+      }
+
+      curev->RTDelete();
+      curev = eq->ReadElement();
+    }
+  }
+};
+
 void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
   nframes_t fragmentsize = app->getBUFSZ();
   if (len > fragmentsize) 
@@ -883,72 +1132,8 @@ void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
       protect_plist = 0;
     }
 
-    if (protect_plist == 0) { // Only mess with processor list when no thread is in a critical section
-      // First, process any events coming from non-RT threads
-      Event *curev = eq->ReadElement();
-      while (curev != 0) {
-        switch (curev->GetType()) {
-          case T_EV_AddProcessor :
-          {
-            AddProcessorEvent *addevt = (AddProcessorEvent *) curev;
-
-            // Add processor to the list
-            ProcessorItem *cur = firstchild;
-            if (cur == 0)
-              firstchild = addevt->new_processor;
-            else {
-              while (cur->next != 0)
-                cur = cur->next;
-              cur->next = addevt->new_processor;
-            }
-          }
-          break;
-
-          case T_EV_DelProcessor :
-          {
-            DelProcessorEvent *delevt = (DelProcessorEvent *) curev;
-
-            // Traverse the list of children and look for a processor pending delete
-            ProcessorItem *cur = firstchild,
-              *prev = 0;
-
-            while (cur != 0) {
-              // Search for any processor pending delete in our list
-              while (cur != 0 && cur->status !=
-                     ProcessorItem::STATUS_PENDING_DELETE) {
-                prev = cur;
-                cur = cur->next;
-              }
-
-               if (cur != 0) {
-                // Got one to delete, unlink!
-                if (prev != 0)
-                  prev->next = cur->next;
-                else
-                  firstchild = cur->next;
-
-                ProcessorItem *tmp = cur->next;
-
-                // Queue for memory free via EventManager
-                CleanupProcessorEvent *cleanevt = (CleanupProcessorEvent *) Event::GetEventByType(T_EV_CleanupProcessor);
-                cleanevt->processor = cur;
-                app->getEMG()->BroadcastEvent(cleanevt,this);
-
-                cur = tmp;
-              }
-            }
-
-          }
-          break;
-
-          default:
-            printf("RP: ERROR: Unknown event in my queue (%d)!\n",curev->GetType());
-        }
-
-        curev->RTDelete();
-        curev = eq->ReadElement();
-      }
-    }
+    // Only update the processor list from this one thread
+    UpdateProcessors();
 
     // Run FluidSynth first, because its out feeds an input
     // Later support may come for true multiple signal chains
@@ -981,7 +1166,7 @@ void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
     }
   }
 
-  // Zero the output buffers- we'll be summing into them
+  // Zero the main output buffers- we'll be summing into them
   sample_t *out[2] = {ab->outs[0][0], ab->outs[1][0]};
   int stereo = (out[1] != 0 ? 1 : 0);
   memset(out[0],0,sizeof(sample_t)*len);
@@ -1013,12 +1198,12 @@ void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
     preabtmp->outs[0][0] = prebuf[0];
     preabtmp->outs[1][0] = prebuf[1];
     
-    // Go through 1st all hipri, then all default children and mix 
+    // Go through 1st all hipri, then all default children and mix back into main out (out)
     processchain(pre,len,ab,preabtmp,ProcessorItem::TYPE_HIPRIORITY,1);
     processchain(pre,len,ab,preabtmp,ProcessorItem::TYPE_DEFAULT,1);
   }
 
-  // Output volume
+  // Output volume transform - main outputs
   for (int chan = 0; chan <= stereo; chan++) {
     sample_t *o = out[chan];
     for (nframes_t l = 0; l < len; l++)
@@ -1029,161 +1214,33 @@ void RootProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
     // Fade together current with preprocessed to create smoothed
     fadepreandcurrent(ab);
   
-    // Now go through all global children after volume xform and mix
-    processchain(pre,len,ab,abtmp,ProcessorItem::TYPE_GLOBAL,1);
+    // Route the output through a second chain of global children - each of these processors is connected in serial
+    // with the output from one feeding the input of the next
+    // The final output of this chain is not used- it is actually only used for the intermediary steps, such as
+    // limiting the loop mix prior to streaming it
+    /* memset(abtmp2->ins[0],0,sizeof(sample_t *) * ab->numins);
+    memset(abtmp2->ins[1],0,sizeof(sample_t *) * ab->numins);
+    memset(abtmp2->outs[0],0,sizeof(sample_t *) * ab->numouts);
+    memset(abtmp2->outs[1],0,sizeof(sample_t *) * ab->numouts);
+    abtmp2->ins[0][0] = buf2[0];
+    abtmp2->ins[1][0] = buf2[1];
+    abtmp2->outs[0][0] = buf2[0];
+    abtmp2->outs[1][0] = buf2[1]; */
 
-    // ** autolimit ** to be moved to its own processor **
-    // Autolimit treats stereo channels as linked
-    float localmaxvol = 0.0,
-      maxamp = app->getCFG()->GetMaxLimiterGain(),
-      limitthresh = app->getCFG()->GetLimiterThreshhold(),
-      limitrr = app->getCFG()->GetLimiterReleaseRate();
-    int clipcnt = 0;
-    
-    sample_t *s_left = out[0],
-      *s_right = out[1];      
-    if (stereo) {
-      // Stereo limit
-      for (nframes_t l = 0; l < len; l++, s_left++, s_right++) {
-        float abssamp_l = fabs(*s_left),
-          abssamp_r = fabs(*s_right);
-        
-        // Volume scale
-        *s_left *= curlimitvol;
-        *s_right *= curlimitvol;
-        
-        float abssamp2_l = fabs(*s_left),
-          abssamp2_r = fabs(*s_right);
-        
-        if (!limiterfreeze) {
-          // Find local maxima
-          if (abssamp_l > localmaxvol)
-            localmaxvol = abssamp_l;
-          if (abssamp_r > localmaxvol)
-            localmaxvol = abssamp_r;
-          
-          // Find clipping after limit
-          if (abssamp2_l > limitthresh) 
-            clipcnt++; // Force limit
-          if (abssamp2_r > limitthresh) 
-            clipcnt++; // Force limit
-          
-          // Adjust volume scale
-          curlimitvol += dlimitvol;
-        }
-        
-        // Clipping kludge-- 
-        // Some output formats clip near 1.0.. brickwall limit to 1.0
-        if (abssamp2_l > 0.99) {
-          // Absolute clip! Truncate
-          if (*s_left > 0.0)
-            *s_left = 0.99;
-          else
-            *s_left = -0.99;
-        }
-        if (abssamp2_r > 0.99) {
-          // Absolute clip! Truncate
-          if (*s_right > 0.0)
-            *s_right = 0.99;
-          else
-            *s_right = -0.99;
-        }
-        
-        if (l+1 == len || l % LIMITER_ADJUST_PERIOD == 0) {
-          // Time to check & adjust limit parameters
-          
-          if (clipcnt > 0 || localmaxvol > maxvol) {
-            // We got more clipping!
-            clipcnt = 0;
-            
-            float newlimitvol = limitthresh/localmaxvol;
-            
-            // Compute volume reduction necessary to bring in peak
-            limitvol = newlimitvol;
-            
-            // Compute delta (speed) to get to that reduction (attack time)
-            dlimitvol = (limitvol-curlimitvol)/LIMITER_ATTACK_LENGTH; 
-            
-            // Store new max
-            maxvol = localmaxvol;
-          }
-          
-          if (dlimitvol < 0.0 && curlimitvol <= limitvol) {
-            // We are done the attack phase- switch to release!
-            dlimitvol = limitrr;
-          }
-          
-          if (dlimitvol > 0.0 && curlimitvol > maxamp) {
-            // Too much amp!
-            dlimitvol = 0.0;
-          }
-        }
-      }
-    } else {
-      // Mono limit
-      for (nframes_t l = 0; l < len; l++, s_left++) {
-        float abssamp_l = fabs(*s_left);
-        
-        // Volume scale
-        *s_left *= curlimitvol;
-        
-        float abssamp2_l = fabs(*s_left);
-        
-        if (!limiterfreeze) {
-          // Find local maxima
-          if (abssamp_l > localmaxvol)
-            localmaxvol = abssamp_l;
-          
-          // Find clipping after limit
-          if (abssamp2_l > limitthresh) 
-            clipcnt++; // Force limit
-          
-          // Adjust volume scale
-          curlimitvol += dlimitvol;
-        }
-        
-        // Vorbis clipping kludge-- 
-        // Vorbis clips near 1.0.. 1st step is brickwall at 1.0
-        // then scale down.. (scaling happens in FileStreamer)
-        if (abssamp2_l > 0.99) {
-          // Absolute clip! Truncate
-          if (*s_left > 0.0)
-            *s_left = 0.99;
-          else
-            *s_left = -0.99;
-        }
-        
-        if (l+1 == len || l % LIMITER_ADJUST_PERIOD == 0) {
-          // Time to check & adjust limit parameters
-          
-          if (clipcnt > 0 || localmaxvol > maxvol) {
-            // We got more clipping!
-            clipcnt = 0;
-            
-            float newlimitvol = limitthresh/localmaxvol;
-            
-            // Compute volume reduction necessary to bring in peak
-            limitvol = newlimitvol;
-            
-            // Compute delta (speed) to get to that reduction (attack time)
-            dlimitvol = (limitvol-curlimitvol)/LIMITER_ATTACK_LENGTH; 
-            
-            // Store new max
-            maxvol = localmaxvol;
-          }
-          
-          if (dlimitvol < 0.0 && curlimitvol <= limitvol) {
-            // We are done the attack phase- switch to release!
-            dlimitvol = limitrr;
-          }
-          
-          if (dlimitvol > 0.0 && curlimitvol > maxamp) {
-            // Too much amp!
-            dlimitvol = 0.0;
-          }
-        }
-      }
-    }
+    // Second global chain works in place on the current output, like a side-chain
+    memcpy(buf[0],out[0],sizeof(sample_t)*len);
+    if (out[1] != 0)
+      memcpy(buf[1],out[1],sizeof(sample_t)*len);
+    abtmp->ins[0][0] = buf[0];
+    abtmp->ins[1][0] = buf[1];
+    abtmp->outs[0][0] = buf[0];
+    abtmp->outs[1][0] = buf[1];
+    processchain(pre,len,abtmp,abtmp,ProcessorItem::TYPE_GLOBAL_SECOND_CHAIN,0); // No mixing back in
+
+    // Restore inputs to come from system inputs, and go through all global children after volume xform and mix.
+    memcpy(abtmp->ins[0],ab->ins[0],sizeof(sample_t *) * ab->numins);
+    memcpy(abtmp->ins[1],ab->ins[1],sizeof(sample_t *) * ab->numins);
+    processchain(pre,len,ab,abtmp,ProcessorItem::TYPE_GLOBAL,1);
 
     // Make a copy for the visual scope
     // Output scope is disabled
@@ -2262,12 +2319,9 @@ void PlayProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
   }
 }
 
-FileStreamer::FileStreamer(Fweelin *app, nframes_t outbuflen) :
-  Processor(app), writerstatus(STATUS_STOPPED),
-  outname(""), timingname(""), nbeats(0), outbuflen(outbuflen), threadgo(1) {
-  // Encode in stereo if master FW is running in stereo
-  stereo = preab->IsStereoMaster();
-
+FileStreamer::FileStreamer(Fweelin *app, int input_idx, char stereo, nframes_t outbuflen) :
+  Processor(app), writerstatus(STATUS_STOPPED), input_idx(input_idx), stereo(stereo),
+  outname(""), timingname(""), write_timing(0), nbeats(0), outbuflen(outbuflen), threadgo(1) {
   const static size_t STACKSIZE = 1024*128;
   pthread_attr_t attr;
   pthread_attr_init(&attr);
@@ -2342,9 +2396,27 @@ void FileStreamer::EndStreamer() {
   delete enc;
 };
 
+int FileStreamer::StartWriting(const std::string &filename_stub, const char *stream_type_name, char write_timing, codec type) {
+  if (writerstatus != STATUS_STOPPED)
+    return -1; // Already writing!
+
+  outname = filename_stub + stream_type_name + app->getCFG()->GetAudioFileExt(type);
+  printf("DISK: Open %s for writing\n",outname.c_str());
+  outputsize = 0;
+  filetype = type;
+  this->write_timing = write_timing;
+  if (write_timing)
+    this->timingname = filename_stub + FWEELIN_OUTPUT_TIMING_EXT;
+  else
+    this->timingname = "";
+  writerstatus = STATUS_START_PENDING;
+
+  return 0;
+};
+
 void FileStreamer::process(char pre, nframes_t len, AudioBuffers *ab) {
-  // Hack- take first input and stream to disk
-  sample_t *in[2] = {ab->ins[0][0], ab->ins[1][0]}; 
+  // Stream a given input to disk
+  sample_t *in[2] = {ab->ins[0][input_idx], ab->ins[1][input_idx]};
   // sample_t *out = ab->outs[0];
 
   if (!pre && writerstatus == STATUS_RUNNING) {
@@ -2357,6 +2429,10 @@ void FileStreamer::process(char pre, nframes_t len, AudioBuffers *ab) {
     if (stereo && b_r != 0) {
       // Stereo
       enc->Preprocess(b_l,b_r,len);
+
+      if (outpos < encodepos && outpos + len > encodepos)
+        // Encode thread is not keeping up. We are about to wrap around the ring buffer
+        printf("DISK: FileStreamer encoder thread is behind. CPU use too high / too many streams.\n");
 
       if (outpos + len < outbuflen) {
         memcpy(&outbuf[0][outpos],in[0],sizeof(sample_t) * len);
@@ -2400,9 +2476,6 @@ void FileStreamer::process(char pre, nframes_t len, AudioBuffers *ab) {
       }
     }
   }
-  
-  // Don't touch output as we are processing in serial
-  //memset(out,0,sizeof(sample_t) * len);
 };
 
 void FileStreamer::ReceiveEvent(Event *ev, EventProducer *from) {
@@ -2462,7 +2535,7 @@ void *FileStreamer::run_encode_thread (void *ptr) {
             // Wrap not set but buffer seems wrapped- this could be caused
             // by extreme processor load and this thread not keeping up with
             // RT- print warning
-            printf("STREAMER: WARNING: Buffer wrap possible?\n");
+            printf("DISK: WARNING: FileStreamer Buffer wrap possible?\n");
           }
         }
 
@@ -2471,9 +2544,10 @@ void *FileStreamer::run_encode_thread (void *ptr) {
       
       // Now dump markers to gnusound USX for later edit points
       while (inst->mkreadidx != inst->mkwriteidx) {
-        fprintf(inst->timingfd,"%ld=4 0 0.000000 lb%d\n",
-                (long int) inst->marks[inst->mkreadidx].markofs,
-                (int) inst->marks[inst->mkreadidx].data);
+        if (inst->timingfd != 0)
+          fprintf(inst->timingfd,"%ld=4 0 0.000000 lb%d\n",
+                  (long int) inst->marks[inst->mkreadidx].markofs,
+                  (int) inst->marks[inst->mkreadidx].data);
         inst->mkreadidx++;
         if (inst->mkreadidx >= MARKERBUFLEN)
           inst->mkreadidx = 0;
@@ -2485,20 +2559,25 @@ void *FileStreamer::run_encode_thread (void *ptr) {
       // Open output file
       // printf("DISK: Open output file.\n");
       inst->outfd = fopen(inst->outname.c_str(),"wb");
-      inst->timingfd = fopen(inst->timingname.c_str(),"wb");
-      if (inst->outfd != 0 && inst->timingfd != 0) {
+      if (inst->write_timing)
+        inst->timingfd = fopen(inst->timingname.c_str(),"wb");
+      else
+        inst->timingfd = 0;
+      if (inst->outfd != 0) {
         // Setup vorbis lib
         printf("DISK: Initialize streamer.\n");
         inst->InitStreamer();
         
-        // Write header block for GNUSound
-        fprintf(inst->timingfd,
-                "[Mixer]\n"
-                "0=1.000000\n"
-                "1=1.000000\n"
-                "Source Is Mute=0\n"
-                "Source Is Solo=0\n\n"
-                "[Markers for track 0]\n");
+        if (inst->timingfd) {
+          // Write header block for GNUSound
+          fprintf(inst->timingfd,
+                  "[Mixer]\n"
+                  "0=1.000000\n"
+                  "1=1.000000\n"
+                  "Source Is Mute=0\n"
+                  "Source Is Solo=0\n\n"
+                  "[Markers for track 0]\n");
+        }
         
         // Setup beat counting
         inst->nbeats = 0;
@@ -2546,9 +2625,10 @@ void *FileStreamer::run_encode_thread (void *ptr) {
       inst->app->getEMG()->UnlistenEvent(inst,0,T_EV_PulseSync);
 
       fclose(inst->outfd);
-      fclose(inst->timingfd);
-      inst->timingfd = 0;
-
+      if (inst->timingfd != 0) {
+        fclose(inst->timingfd);
+        inst->timingfd = 0;
+      }
       printf("DISK: ..done\n");
 
       inst->writerstatus = STATUS_STOPPED;

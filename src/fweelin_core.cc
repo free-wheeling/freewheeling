@@ -22,6 +22,9 @@
    You should have received a copy of the GNU General Public License
    along with Freewheeling.  If not, see <http://www.gnu.org/licenses/>. */
 
+#include <string>
+#include <sstream>
+
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <utime.h>
@@ -3213,6 +3216,7 @@ int Fweelin::go()
   delete iset;
   delete abufs;
   delete[] snaps;
+  delete[] fs_inputs;
 
 #ifndef __MACOSX__
   delete osc;
@@ -3328,22 +3332,126 @@ Browser *Fweelin::GetBrowserFromConfig(BrowserItemType b) {
   return 0;
 };
 
+// Returns non-zero if all streamers have status 'status', else zero
+char Fweelin::CheckStreamStatus(char status) {
+  char check = 1;
+
+  if (fs_finalout != 0)
+    check &= fs_finalout->GetStatus() == status;
+  if (fs_loopout != 0)
+    check &= fs_loopout->GetStatus() == status;
+  for (int i = 0; i < iset->GetNumInputs(); i++)
+    if (fs_inputs[i] != 0)
+      check &= fs_inputs[i]->GetStatus() == status;
+
+  return check;
+};
+
 void Fweelin::ToggleDiskOutput()
 {
-  if (fs->GetStatus() == FileStreamer::STATUS_STOPPED) {
-    // Create appropriate filename for output
-    streamoutname = LibraryHelper::GetNextAvailableStreamOutFilename(this,writenum,timingname);
+  if (CheckStreamStatus(FileStreamer::STATUS_STOPPED)) {
+    // Create appropriate base filename for output
+    streamoutname = LibraryHelper::GetNextAvailableStreamOutFilename(this,writenum,streamoutname_display);
 
-    fs->StartWriting(streamoutname,timingname,getCFG()->GetStreamOutFormat());
+    // Now start all streamers
+    char write_timing = 1;  // Only write timing file once
+    if (fs_finalout != 0) {
+      fs_finalout->StartWriting(streamoutname,"-final",write_timing,getCFG()->GetStreamOutFormat());
+      write_timing = 0;
+    }
+    if (fs_loopout != 0) {
+      fs_loopout->StartWriting(streamoutname,"-loops",write_timing,getCFG()->GetStreamOutFormat());
+      write_timing = 0;
+    }
+    for (int i = 0; i < iset->GetNumInputs(); i++)
+      if (fs_inputs[i] != 0) {
+        std::ostringstream tmp;
+        tmp << "-input" << i+1;
+        fs_inputs[i]->StartWriting(streamoutname,tmp.str().c_str(),write_timing,getCFG()->GetStreamOutFormat());
+        write_timing = 0;
+      }
   } else {
     // Stop disk output
-    fs->StopWriting();
+    if (fs_finalout != 0)
+      fs_finalout->StopWriting();
+    if (fs_loopout != 0)
+      fs_loopout->StopWriting();
+    for (int i = 0; i < iset->GetNumInputs(); i++)
+      if (fs_inputs[i] != 0)
+        fs_inputs[i]->StopWriting();
+
     streamoutname = "";
-    timingname = "";
+    streamoutname_display = "";
 
     // Advance to next logical filename
     writenum++;
   }
+};
+
+long int Fweelin::getSTREAMSIZE(FileStreamer *fs, char &frames) {
+  const char *streamname = fs->GetOutputName().c_str();
+  struct stat st;
+  if (stat(streamname,&st) == 0) {
+    frames = 0;
+    return st.st_size;
+  } else {
+    frames = 1;
+    return fs->GetOutputSize();
+  }
+}
+
+float Fweelin::getSTREAMSTATS(char *&stream_type, int &num_streams) {
+  stream_type = cfg->GetAudioFileExt(cfg->GetStreamOutFormat());
+  num_streams = 0;
+  char frames;
+  long int totalsize = 0;
+
+  if (fs_finalout != 0) {
+    long int tmp = getSTREAMSIZE(fs_finalout,frames);
+    if (!frames)
+      totalsize += tmp;
+    num_streams++;
+  }
+
+  if (fs_loopout != 0) {
+    long int tmp = getSTREAMSIZE(fs_loopout,frames);
+    if (!frames)
+      totalsize += tmp;
+    num_streams++;
+  }
+
+  for (int i = 0; i < iset->GetNumInputs(); i++)
+    if (fs_inputs[i] != 0) {
+      long int tmp = getSTREAMSIZE(fs_inputs[i],frames);
+      if (!frames)
+        totalsize += tmp;
+      num_streams++;
+    }
+
+  return totalsize / (1024.*1024);
+};
+
+long int Fweelin::getSTREAMER_TotalOutputSize(int &numstreams) {
+  long int totalsize = 0;
+  numstreams = 0;
+
+  if (fs_finalout != 0) {
+    totalsize += fs_finalout->GetOutputSize();
+    numstreams++;
+  }
+
+  if (fs_loopout != 0) {
+    totalsize += fs_loopout->GetOutputSize();
+    numstreams++;
+  }
+
+  for (int i = 0; i < iset->GetNumInputs(); i++)
+    if (fs_inputs[i] != 0) {
+      totalsize += fs_inputs[i]->GetOutputSize();
+      numstreams++;
+    }
+
+  return totalsize;
 };
 
 int Fweelin::setup()
@@ -3516,12 +3624,12 @@ int Fweelin::setup()
   rp = new RootProcessor(this,iset);
   writenum = 1;
   streamoutname = "";
+  streamoutname_display = "";
   curscene = 0;
 #if 0
   strcpy(scenedispname,"");
   strcpy(scenefilename,"");
 #endif
-  timingname = "";
 
   // Fixed audio memory
   nframes_t memlen = (nframes_t) (audio->get_srate() * 
@@ -3634,8 +3742,6 @@ int Fweelin::setup()
                           (char *) &(midi->curbender));
   cfg->LinkSystemVariable("SYSTEM_bender_tune",T_int,
                           (char *) &(midi->bendertune));
-  cfg->LinkSystemVariable("SYSTEM_cur_limiter_gain",T_float,
-                          (char *) &(rp->curlimitvol));
   cfg->LinkSystemVariable("SYSTEM_audio_cpu_load",T_float,
                           (char *) &(audio->cpuload));
   cfg->LinkSystemVariable("SYSTEM_sync_active",T_char,
@@ -3701,7 +3807,24 @@ int Fweelin::setup()
     return 1;
   }
 
-  fs = new FileStreamer(this);
+  // Add disk output threads
+  if (cfg->IsStreamFinal())
+    fs_finalout = new FileStreamer(this,0,cfg->IsStereoMaster());
+  else
+    fs_finalout = 0;
+
+  if (cfg->IsStreamLoops())
+    fs_loopout = new FileStreamer(this,0,cfg->IsStereoMaster());
+  else
+    fs_loopout = 0;
+
+  printf("CORE: Creating disk streamers for %d inputs\n",iset->GetNumInputs());
+  fs_inputs = new FileStreamer *[iset->GetNumInputs()];
+  for (int i = 0; i < iset->GetNumInputs(); i++)
+    if (cfg->IsStreamInputs(i))
+      fs_inputs[i] = new FileStreamer(this,i,cfg->IsStereoInput(i));
+    else
+      fs_inputs[i] = 0;
 
   // *** ALL THREADS THAT WRITE TO SRMWRingBuffers MUST BE CREATED BEFORE THIS POINT ***
 
@@ -3709,14 +3832,34 @@ int Fweelin::setup()
   emg->FinalPrep();
   rp->FinalPrep();
 
-  // Add children to rootprocessor (requires event queue, initialized above)
+  // Add core audio processing elements (requires event queue, initialized above)
+
+  // Add 'individual inputs' disk streams
+  for (int i = 0; i < iset->GetNumInputs(); i++)
+    if (fs_inputs[i] != 0)
+      rp->AddChild(fs_inputs[i],ProcessorItem::TYPE_GLOBAL,1);  // Silent- no output from file streamer
+
+  // Add 'loop output' disk stream
+  // In series following a limiter just for loop outputs
+  if (fs_loopout != 0) {
+    rp->AddChild(new AutoLimitProcessor(this),ProcessorItem::TYPE_GLOBAL_SECOND_CHAIN);
+    rp->AddChild(fs_loopout,ProcessorItem::TYPE_GLOBAL_SECOND_CHAIN,1); // Streamer is silent
+  }
 
   // Add monitor mix
   float *inputvol = rp->GetInputVolumePtr(); // Where to get input vol from
   rp->AddChild(new PassthroughProcessor(this,iset,inputvol),
-               ProcessorItem::TYPE_GLOBAL);
-  // Add disk writer
-  rp->AddChild(fs,ProcessorItem::TYPE_FINAL);
+               ProcessorItem::TYPE_GLOBAL); // Monitor mix is global- it is summed in after the gain stage for all loops
+
+  // Now do master output autolimit
+  masterlimit = new AutoLimitProcessor(this);
+  rp->AddChild(masterlimit,ProcessorItem::TYPE_FINAL);
+  cfg->LinkSystemVariable("SYSTEM_cur_limiter_gain",T_float,
+                          (char *) &(masterlimit->curlimitvol));
+
+  // Add 'final output' disk stream
+  if (fs_finalout != 0)
+    rp->AddChild(fs_finalout,ProcessorItem::TYPE_FINAL,1);
 
   // Begin recording into audio memory (use mono/stereo memory as appropriate)
   amrec = new RecordProcessor(this,iset,inputvol,audiomem,

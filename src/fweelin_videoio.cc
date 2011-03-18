@@ -1504,11 +1504,12 @@ void VideoIO::video_event_loop ()
   numhelppages++; // 1 is considered first help page
   helpx2 = helpx + helpmaxcol1 + helpmaxcol2;
 
+  // Only check stream stats periodically (not every video update)
   const static int CHECK_SIZE_FRAMES = 20;
   int checksizecnt = CHECK_SIZE_FRAMES;
-  nframes_t streamoutsize = 0;
-  char streamoutstatfailed = 0;
-  double streamoutfloatsize = 0.0;
+  int num_streams = 0;          // Number of output streams
+  char *stream_type = "";       // Type (extension) of output stream
+  double streamoutsize = 0.0;   // Last checked size of all output streams.
 
   video_time = 0;
   double video_start = mygettime();
@@ -1610,7 +1611,7 @@ void VideoIO::video_event_loop ()
 #ifndef NO_VIDEO
     //double t1 = mygettime();
 
-    float lvol = app->getRP()->GetLimiterVolume();
+    float lvol = app->getMASTERLIMITER()->GetLimiterVolume();
     sample_t *peakbuf, *avgbuf;
 
     // Clear screen
@@ -1810,32 +1811,19 @@ void VideoIO::video_event_loop ()
     // ** These two hardcoded displays could be made configurable
 
     // Stream output status
-    const char *writename = app->getSTREAMOUTNAME().c_str();
-    if (strlen(writename) == 0) {
+    if (app->getSTREAMOUTNAME_DISPLAY() == "") {
       strcpy(tmp,"stream off"); // No output
       checksizecnt = CHECK_SIZE_FRAMES;
     } else {
       if (++checksizecnt >= CHECK_SIZE_FRAMES) {
         // Stat for size of file
         checksizecnt = 0;
-        
-        struct stat st;
-        if (stat(writename,&st) == 0) {
-          streamoutstatfailed = 0;
-          streamoutsize = st.st_size;
-          streamoutfloatsize = streamoutsize / (1024.*1024);
-        } else {
-          streamoutstatfailed = 1;
-          streamoutsize = app->getSTREAMER()->GetOutputSize();
-        }
+
+        streamoutsize = app->getSTREAMSTATS(stream_type,num_streams);
       }
 
-      if (streamoutstatfailed) 
-        sprintf(tmp,"%s   %d frames",
-                writename,streamoutsize);
-      else
-        sprintf(tmp,"%s   %.1f mb",
-                writename,streamoutfloatsize);
+      sprintf(tmp,"%s   %.1f mb  (%d streams)",
+          app->getSTREAMOUTNAME_DISPLAY().c_str(),streamoutsize,num_streams);
     }
     draw_text(screen,mainfont,tmp,patchx,patchy-OCY(22),gray);
 

@@ -1,5 +1,23 @@
 IN PROGRESS v0.6.1 - SVN
 
+            Thursday March 17, 2011
+ 
+            * Multi-track streaming. 
+
+              Now you can stream each input to disk,
+              stream loops to disk,
+              and stream the whole final
+              mix to disk. Control what to stream from basics.xml:
+
+              This allows you to do more precise edits after a performance.
+              It is especially useful for live microphone pickups, which
+              often require separate gain and FX adjustments during later
+              editing.
+
+              <var streaminputs="NYYN"/>
+              <var streamfinalmix="N"/>
+              <var streamloopmix="Y"/>
+
             Thursday March 10, 2011
 
             * Configurable soft monitoring is now available in basics.xml:
