@@ -112,6 +112,7 @@ class Saveable {
   };
   inline SaveStatus GetSaveStatus() { return savestatus; };
   inline void SetSaveStatus(SaveStatus s) { savestatus = s; };
+  inline void ClearSaveHash() { memset(savehash,0,sizeof(unsigned char) * SAVEABLE_HASH_LENGTH); };
   inline int SetSaveableHashFromText(char *stext) {
     int slen = strlen(stext);
     if (slen != SAVEABLE_HASH_LENGTH*2) {
@@ -257,6 +258,9 @@ public:
 
   // Re-use an old instance in a block
   virtual void Recycle() {
+    SetSaveStatus(NO_SAVE);
+    ClearSaveHash();
+
     if (name != 0) {
       delete[] name;
       name = 0;
