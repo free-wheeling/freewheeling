@@ -37,6 +37,7 @@
 #include "fweelin_sdlio.h"
 #include "fweelin_audioio.h"
 
+#include "fweelin_rcu.h"
 #include "fweelin_core_dsp.h"
 #include "fweelin_block.h"
 #include "fweelin_event.h"
@@ -204,23 +205,30 @@ class Saveable {
   unsigned char savehash[SAVEABLE_HASH_LENGTH+1];
 };
 
-// Loop 
+// An audio loop
 // -Wraps around a list of audio blocks
 // -Stores basic parameters for a loop, such as volumes
-class Loop : public Saveable {
+class Loop : public Preallocated, public Saveable {
   friend class LoopManager;
 
 public:
   const static float MIN_VOL;
 
-  Loop (AudioBlock *blocks, Pulse *pulse, float quant, float vol, 
-        long nbeats, codec format) : 
-    name(0), format(format), blocks(blocks), pulse(pulse), quant(quant), 
-    vol(vol), dvol(1.0), nbeats(nbeats), selcnt(0) {};
-  virtual ~Loop () {
-    if (name != 0)
-      delete[] name; 
-  };
+  Loop () : name(0) {
+    Recycle();
+  }
+
+  // Initialize a loop data structure
+  void InitLoop (AudioBlock *blocks, Pulse *pulse, float quant, float vol, long nbeats, codec format) {
+    this->format = format;
+    this->blocks = blocks;
+    this->pulse = pulse;
+    this->quant = quant;
+    this->vol = vol;
+    this->dvol = 1.0;
+    this->nbeats = nbeats;
+    this->selcnt = 0;
+  }
 
   // Save loop
   virtual void Save(Fweelin *app);
@@ -240,7 +248,41 @@ public:
     if (selcnt < 0)
       selcnt = 0;
   };
-  
+
+  // ** LOOP PREALLOCATION **
+
+  // Loops are preallocated in blocks for quick creation and destruction
+  FWMEM_DEFINE_DELBLOCK;
+  virtual Preallocated *NewInstance() { return ::new Loop[GetMgr()->GetBlockSize()]; };
+
+  // Re-use an old instance in a block
+  virtual void Recycle() {
+    if (name != 0) {
+      delete[] name;
+      name = 0;
+    }
+
+    blocks = 0;
+    pulse = 0;
+  };
+
+#define NUM_LOOP_PREALLOCATED 100 // How many loops to preallocate in a block (more blocks will be created as needed)
+
+  static void SetupLoopPreallocation(MemoryManager *mmgr) {
+    loop_pretype = new PreallocatedType(mmgr,::new Loop[NUM_LOOP_PREALLOCATED],sizeof(Loop),NUM_LOOP_PREALLOCATED,1);
+  };
+
+  static void TakedownLoopPreallocation() {
+    delete loop_pretype;
+  };
+
+  // Get a new loop. Uses the RTNewWithWait method, so it shouldn't be called from RT.
+  static Loop *GetNewLoop() { return (Loop *) loop_pretype->RTNewWithWait(); };
+
+  static PreallocatedType *loop_pretype;        // Preallocated type for loops
+
+  // **
+
   // Perhaps store the length of the loop...
   // Because right now GetTotalLength is a calculation
   // in AudioBlock
@@ -823,7 +865,7 @@ public:
                      AudioBlockIterator **i, nframes_t *len);
   // Loads loop XML data & prepares to load loop audio-
   // returns nonzero on error
-  int SetupLoadLoop(FILE **in, char *smooth_end, 
+  int SetupLoadLoop(FILE **in, char *smooth_end,
                     Loop **new_loop, int l_idx, float l_vol,
                     char *l_filename);
 

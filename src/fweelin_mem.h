@@ -196,6 +196,8 @@ class Preallocated {
   // Code to destroy a block of instances- only called in block mode
   // This is a workaround because operator delete[] is not virtual
   // and can not handle our arrays of derived instances
+  //
+  // Any derived classes that use block mode must re-implement this method (ie use the macro below).
 #define FWMEM_DEFINE_DELBLOCK  virtual void DelBlock() { ::delete[] this; };
   FWMEM_DEFINE_DELBLOCK;
   
@@ -206,13 +208,18 @@ class Preallocated {
   // size
   virtual Preallocated *NewInstance() = 0;
   
-  // Code to recycle an old instance to be used again
-  // This is called *only* in block mode when an instance is RTDeleted.
-  // Instead of deleting and constructing instances, we recycle
-  // instances and pass them as new instances.
+  // For managed types in block mode only:
+  //
+  // This method should recycle an old instance to be used again.
+  // It is used instead of the constructor/destructor.
+  //
+  // In block mode, the default constructor is called by NewInstance (which you implement)
+  // ONCE when allocating a block of instances. When an instance is freed, it is not destructed
+  // but simply Recycled.
   // 
-  // So initialization code can go here, but this function
-  // must be RT safe.
+  // Initialization code can go here.
+  //
+  // This method is called from the memory manager thread, so it needn't be RT safe.
   virtual void Recycle() {};
 
   // Status of this instance

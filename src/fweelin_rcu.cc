@@ -1,6 +1,6 @@
 /*
-   To change the world,
-   I aspire to perceive it differently.
+   Does power come from fancy toys
+   or does power come from the integrity of our walk?
 */
 
 /* Copyright 2004-2011 Jan Pekau
@@ -34,28 +34,4 @@
 #include <sched.h>
 #include <sys/mman.h>
 
-#include "fweelin_datatypes.h"
-
-int RT_RWThreads::num_rw_threads = 0;
-pthread_t RT_RWThreads::ids[MAX_RW_THREADS];
-pthread_mutex_t RT_RWThreads::register_rw_lock;
-
-int RT_RWThreads::num_rt_structs = 0;
-RTDataStruct_Updater *RT_RWThreads::rtsructs[MAX_RT_STRUCTS];
-pthread_mutex_t RT_RWThreads::register_rtstruct_lock;
-
-CoreDataType GetCoreDataType(char *name) {
-  if (!strcmp(name, "char")) 
-    return T_char;
-  else if (!strcmp(name, "int")) 
-    return T_int;
-  else if (!strcmp(name, "long")) 
-    return T_long;
-  else if (!strcmp(name, "float")) 
-    return T_float;
-  else if (!strcmp(name, "range"))
-    return T_range;
-  else
-    return T_invalid;
-};
-
+#include "fweelin_rcu.h"

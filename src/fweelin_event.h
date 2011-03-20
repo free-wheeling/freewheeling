@@ -262,11 +262,11 @@ class EventTypeTable {
  public:
   EventTypeTable (char *name = 0, PreallocatedType *mgr = 0,
                   Event *proto = 0, int paramidx = -1, char slowdelivery = 0) :
-    name(name), mgr(mgr), proto(proto), paramidx(paramidx), 
+    name(name), pretype(mgr), proto(proto), paramidx(paramidx), 
     slowdelivery(slowdelivery) {};
 
   char *name;
-  PreallocatedType *mgr;
+  PreallocatedType *pretype;
   Event *proto;
   int paramidx; // Index of event parameter that is used for hash index
                 // For example, in the keyboard input event, the keysym 
@@ -302,7 +302,7 @@ class Event : public Preallocated {
 
   // Get the memory manager for the given type
   static inline PreallocatedType *GetMemMgrByType(EventType typ) {
-    return ett[(int) typ].mgr;
+    return ett[(int) typ].pretype;
   };
   // Returns an instance of the event named 'evtname'
   // If wait is nonzero and there are no free instances through RTNew,

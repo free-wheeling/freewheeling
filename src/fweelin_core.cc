@@ -51,6 +51,7 @@
 #include "fweelin_looplibrary.h"
 
 const float Loop::MIN_VOL = 0.01;
+PreallocatedType *Loop::loop_pretype = 0;
 
 // *********** CORE
 
@@ -533,6 +534,8 @@ LoopManager::LoopManager (Fweelin *app) :
 
   int mapsz = app->getTMAP()->GetMapSize();
 
+  Loop::SetupLoopPreallocation(app->getMMG());
+
   plist = new Processor *[mapsz];
   status = new LoopStatus[mapsz];
   waitactivate = new int[mapsz];
@@ -623,6 +626,8 @@ LoopManager::~LoopManager() {
   bwrite->End();
   app->getBMG()->DelManager(bread);
   app->getBMG()->DelManager(bwrite);
+
+  Loop::TakedownLoopPreallocation();
 
   // Stop listening
   app->getEMG()->UnlistenEvent(this,0,T_EV_EndRecord);
@@ -1290,7 +1295,7 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
 };
 
 // Loads loop XML data & prepares to load loop audio
-int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop, 
+int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
                                int l_idx, float l_vol, char *l_filename) {
   // Open up right file and begin loading
   LibraryFileInfo f = LibraryHelper::GetLoopFilenameFromStub(app,l_filename);
@@ -1309,7 +1314,8 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
   LibraryFileInfo data = LibraryHelper::GetDataFilenameFromStub(app,l_filename);
 
   // Create loop data
-  *new_loop = new Loop(0,0,1.0,l_vol,0,f.c);
+  *new_loop = Loop::GetNewLoop();
+  (*new_loop)->InitLoop(0,0,1.0,l_vol,0,f.c);
 
   if (!data.exists) {
     printf("DISK: WARNING: Loop data '%s' missing!\n"
@@ -1343,7 +1349,7 @@ int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
           printf("DISK: (DUPLICATE) Loop to load is already loaded at "
                  "ID #%d.\n",dupidx);
 
-          delete (*new_loop);
+          (*new_loop)->RTDelete();
           *new_loop = 0;
           fclose(*in);
           *in = 0;
@@ -1909,7 +1915,7 @@ void LoopManager::DeleteLoop (int index) {
       lp->blocks->DeleteChain(); // *** Not RT Safe
     }
 
-    delete lp;                   // *** Not RT Safe
+    lp->RTDelete();
     numloops--;
     
     // Update looplists/scenes to ensure that loop is removed from them
@@ -2152,8 +2158,9 @@ void LoopManager::Deactivate (int index) {
       }
     }
     
-    Loop *newlp = new
-      Loop(((RecordProcessor *) plist[index])->GetFirstRecordedBlock(),
+    // Create a loop out of the recorded blocks
+    Loop *newlp = Loop::GetNewLoop();
+    newlp->InitLoop(((RecordProcessor *) plist[index])->GetFirstRecordedBlock(),
            curpulse,1.0,adjustednewloopvol,nbeats,
            app->getCFG()->GetLoopOutFormat());
     app->getTMAP()->SetMap(index, newlp);
@@ -3273,7 +3280,7 @@ int Fweelin::go()
 
   SDL_Quit();
   
-  SRMWRingBuffer_Writers::CloseAll();
+  RT_RWThreads::CloseAll();
 
   printf("MAIN: end\n");
 
@@ -3462,8 +3469,8 @@ int Fweelin::setup()
   mlockall(MCL_CURRENT | MCL_FUTURE);
 
   // Init and Register main thread as a writer
-  SRMWRingBuffer_Writers::InitAll();
-  SRMWRingBuffer_Writers::RegisterWriter();
+  RT_RWThreads::InitAll();
+  RT_RWThreads::RegisterReaderOrWriter();
   
   // Initialize vars
   for (int i = 0; i < NUM_LOOP_SELECTION_SETS; i++)

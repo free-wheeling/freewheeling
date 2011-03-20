@@ -520,122 +520,128 @@ class UserVariable {
   UserVariable *next;
 };
 
-// Abstract class to allow updating ring buffers with a new # of writer threads
-class SRMWRingBuffer_Updater {
-  friend class SRMWRingBuffer_Writers;
+// Abstract class to allow updating RT data structures with a new # of reader and writer threads
+class RTDataStruct_Updater {
+  friend class RT_RWThreads;
 
 protected:
 
-  virtual void UpdateNumWriters(int new_num_writers) = 0;
+  virtual void UpdateNumRWThreads(int new_num_writers) = 0;
 };
 
-// Data for writer threads (common to all instances of SRMWRingBuffer)
-class SRMWRingBuffer_Writers {
+// Certain RT data structures require info about which threads read or write to them
+// This allows them to be lock-free while stile protecting the data from race conditions.
+//
+// This class holds data about all reader and writer threads for all RT data structures
+// Note that this is global. RT structures may contain extra protections for threads that
+// are not actually used for reading/writing to that structure.
+class RT_RWThreads {
   template <typename T> friend class SRMWRingBuffer;
+  friend class RT_RCU;
 
 public:
   
-  #define MAX_WRITER_THREADS 50  // Hard-wired maximum number of writer threads
-  #define MAX_RING_BUFFERS 10    // System-wide total number of ring buffers
+  #define MAX_RW_THREADS 50      // Hard-wired maximum number of reader and writer threads
+  #define MAX_RT_STRUCTS 20      // System-wide total number of RT data structures allowed
 
   // Global prep methods
   static void InitAll() {
-     pthread_mutex_init(&register_writer_lock,0);
-     pthread_mutex_init(&register_buffer_lock,0);
-     num_writers = 0;
-     num_bufs = 0;
+     pthread_mutex_init(&register_rw_lock,0);
+     pthread_mutex_init(&register_rtstruct_lock,0);
+     num_rw_threads = 0;
+     num_rt_structs = 0;
   };  
   static void CloseAll() {
-     pthread_mutex_destroy(&register_writer_lock);
-     pthread_mutex_destroy(&register_buffer_lock);
-     num_writers = 0;
-     num_bufs = 0;
+     pthread_mutex_destroy(&register_rw_lock);
+     pthread_mutex_destroy(&register_rtstruct_lock);
+     num_rw_threads = 0;
+     num_rt_structs = 0;
   };  
 
-  // Registration of writer threads
+  // Registration of reader/ writer threads
 
   // Register a given thread as a writer
-  static void RegisterWriter (pthread_t id) {
-    pthread_mutex_lock (&register_writer_lock);
-    if (num_writers >= MAX_WRITER_THREADS) {
+  static void RegisterReaderOrWriter (pthread_t id) {
+    pthread_mutex_lock (&register_rw_lock);
+    if (num_rw_threads >= MAX_RW_THREADS) {
       printf("CORE: ERROR: Too many writer threads for Ring Buffer!\n");
       exit(1);
     }
     printf("CORE: Register ringbuffer writer thread: %lu\n",id);
-    ids[num_writers] = id;
-    num_writers++;
-    pthread_mutex_unlock (&register_writer_lock);
+    ids[num_rw_threads] = id;
+    num_rw_threads++;
+    pthread_mutex_unlock (&register_rw_lock);
 
     // Update existing buffers with new writer thread
-    UpdateBufs();
+    UpdateRTStructs();
   };
 
   // Registers this thread as a writer
-  static void RegisterWriter () {
-    pthread_mutex_lock (&register_writer_lock);
-    if (num_writers >= MAX_WRITER_THREADS) {
+  static void RegisterReaderOrWriter () {
+    pthread_mutex_lock (&register_rw_lock);
+    if (num_rw_threads >= MAX_RW_THREADS) {
       printf("CORE: ERROR: Too many writer threads for Ring Buffer!\n");
       exit(1);
     }
     printf("CORE: Register ringbuffer writer thread: %lu\n",pthread_self());
-    ids[num_writers] = pthread_self();
-    num_writers++;
-    pthread_mutex_unlock (&register_writer_lock);
+    ids[num_rw_threads] = pthread_self();
+    num_rw_threads++;
+    pthread_mutex_unlock (&register_rw_lock);
 
     // Update existing buffers with new writer thread
-    UpdateBufs();
+    UpdateRTStructs();
   };
   
-  // Ring buffers are automatically registered and unregistered here.
-  // This allows them to be notified of additional writer threads that are starting later.
-  // This is important during initialization if ringbuffers need to be created before all
-  // threads that write to them are initialized.
-  static void RegisterRingBuffer (SRMWRingBuffer_Updater *r) {
-    pthread_mutex_lock (&register_buffer_lock);
-    if (num_bufs >= MAX_RING_BUFFERS) {
+  // RT data structures are automatically registered and unregistered here.
+  // This allows them to be notified of additional reader or writer threads that are starting later.
+  // This is important during initialization if RT data structures need to be created before all
+  // threads that read or write to them are initialized.
+  static void RegisterRTDataStruct (RTDataStruct_Updater *r) {
+    pthread_mutex_lock (&register_rtstruct_lock);
+    if (num_rt_structs >= MAX_RT_STRUCTS) {
       printf("CORE: ERROR: Too many ring buffers!\n");
       exit(1);
     }
-    printf("CORE: Register ringbuffer #%d: %p\n",num_bufs,r);
-    bufs[num_bufs] = r;
-    num_bufs++;
-    pthread_mutex_unlock (&register_buffer_lock);
+    printf("CORE: Register ringbuffer #%d: %p\n",num_rt_structs,r);
+    rtsructs[num_rt_structs] = r;
+    num_rt_structs++;
+    pthread_mutex_unlock (&register_rtstruct_lock);
   };
 
-  static void UnregisterRingBuffer (SRMWRingBuffer_Updater *r) {
-    pthread_mutex_lock (&register_buffer_lock);
+  static void UnregisterRTDataStruct (RTDataStruct_Updater *r) {
+    pthread_mutex_lock (&register_rtstruct_lock);
     char done = 0;
-    for (int i = 0; i < num_bufs; i++)
-      if (bufs[i] == r) {
+    for (int i = 0; i < num_rt_structs; i++)
+      if (rtsructs[i] == r) {
         printf("CORE: Unregister ringbuffer #%d: %p\n",i,r);
-        bufs[i] = 0;
+        rtsructs[i] = 0;
         done = 1;
       }
 
     if (!done)
       printf("CORE: ERROR: Could not find ringbuffer %p to unregister.\n",r);
 
-    pthread_mutex_unlock (&register_buffer_lock);
+    pthread_mutex_unlock (&register_rtstruct_lock);
   };
 
 private:
 
-  static void UpdateBufs() {
-    // Notify every buffer of a new writer thread
-    pthread_mutex_lock (&register_buffer_lock);
-    for (int i = 0; i < num_bufs; i++)
-      if (bufs[i] != 0)
-        bufs[i]->UpdateNumWriters(num_writers);
-    pthread_mutex_unlock (&register_buffer_lock);
+  static void UpdateRTStructs() {
+    // Notify every RT data struct of a new reader / writer thread
+    pthread_mutex_lock (&register_rtstruct_lock);
+    for (int i = 0; i < num_rt_structs; i++)
+      if (rtsructs[i] != 0)
+        rtsructs[i]->UpdateNumRWThreads(num_rw_threads);
+    pthread_mutex_unlock (&register_rtstruct_lock);
   };
 
-  static int num_writers;                   // Number of writer threads registered
-  static pthread_t ids[MAX_WRITER_THREADS]; // Thread ID for each writer
-  static pthread_mutex_t register_writer_lock;
+  static int num_rw_threads;                   // Number of reader and writer threads registered
+  static pthread_t ids[MAX_RW_THREADS];        // Thread ID for each reader / writer
+  static pthread_mutex_t register_rw_lock;
 
-  static int num_bufs;                      // Number of ring buffers
-  static SRMWRingBuffer_Updater *bufs[MAX_RING_BUFFERS]; // Array of pointers to ring buffers
-  static pthread_mutex_t register_buffer_lock;
+  static int num_rt_structs;                             // Number of RT data structures in the system
+  static RTDataStruct_Updater *rtsructs[MAX_RT_STRUCTS]; // Array of pointers to RT data structure updaters
+  static pthread_mutex_t register_rtstruct_lock;
 };
 
 // Ringbuffer implementation for a Single Reader Thread & Multiple Writer Threads
@@ -651,23 +657,23 @@ private:
 // If class T is a pointer, no problem.
 // If class T is an instance, you must provide an initializer accepting an integer.
 
-template <class T> class SRMWRingBuffer : public SRMWRingBuffer_Updater {
-  friend class SRMWRingBuffer_Writers;
+template <class T> class SRMWRingBuffer : public RTDataStruct_Updater {
+  friend class RT_RWThreads;
 
 public:
 
   // Create a ringbuffer with numel elements of class T
-  SRMWRingBuffer (int numel) : numel(numel), num_writers(SRMWRingBuffer_Writers::num_writers) {
-    wbufs = new jack_ringbuffer_t *[MAX_WRITER_THREADS];
+  SRMWRingBuffer (int numel) : numel(numel), num_writers(RT_RWThreads::num_rw_threads) {
+    wbufs = new jack_ringbuffer_t *[MAX_RW_THREADS];
     for (int i = 0; i < num_writers; i++)
       wbufs[i] = jack_ringbuffer_create(sizeof(T) * numel);
 
     // Register this ringbuf
-    SRMWRingBuffer_Writers::RegisterRingBuffer(this);
+    RT_RWThreads::RegisterRTDataStruct(this);
   };
   ~SRMWRingBuffer() {
     // Unregister this ringbuf
-    SRMWRingBuffer_Writers::UnregisterRingBuffer(this);
+    RT_RWThreads::UnregisterRTDataStruct(this);
 
     for (int i = 0; i < num_writers; i++)
       jack_ringbuffer_free(wbufs[i]);
@@ -677,15 +683,15 @@ public:
   // Instance methods
   
   int WriteElement (const T &el) {
-    if (num_writers != SRMWRingBuffer_Writers::num_writers) {
-      printf("CORE: ERROR: SRMWRingBuffer initialized too early - before all writer threads registered.\n");
+    if (num_writers != RT_RWThreads::num_rw_threads) {
+      printf("CORE: ERROR: SRMWRingBuffer thread count mismatch.\n");
       exit(1);
     }
 
     // Determine which write thread we are
     pthread_t id = pthread_self();
     for (int i = 0; i < num_writers; i++)
-      if (pthread_equal(id,SRMWRingBuffer_Writers::ids[i])) {
+      if (pthread_equal(id,RT_RWThreads::ids[i])) {
         // Write to the appropriate ringbuf
         if (jack_ringbuffer_write(wbufs[i],(const char *) &el,sizeof(T)) < sizeof(T)) {
           printf("CORE: No space in RingBuffer for element\n");
@@ -699,8 +705,8 @@ public:
   };
   
   const T ReadElement () {
-    if (num_writers != SRMWRingBuffer_Writers::num_writers) {
-      printf("CORE: ERROR: SRMWRingBuffer initialized too early - before all writer threads registered.\n");
+    if (num_writers != RT_RWThreads::num_rw_threads) {
+      printf("CORE: ERROR: SRMWRingBuffer thread count mismatch.\n");
       exit(1);
     }
 
@@ -726,14 +732,14 @@ public:
   
 private:
 
-  virtual void UpdateNumWriters(int new_num_writers) {
-    printf("CORE: RingBuffer %p: Update writer threads to %d\n",this,new_num_writers);
-    if (new_num_writers <= num_writers) {
-      printf("CORE: ERROR: Can't go from %d to %d writer threads during initialization.\n",num_writers,
-          new_num_writers);
+  virtual void UpdateNumRWThreads(int new_num_rw_threads) {
+    printf("CORE: RingBuffer %p: Update reader and writer threads to %d\n",this,new_num_rw_threads);
+    if (new_num_rw_threads <= num_writers) {
+      printf("CORE: ERROR: Can't go from %d to %d threads during initialization.\n",num_writers,
+          new_num_rw_threads);
       exit(1);
     } else {
-      for (; num_writers < new_num_writers; num_writers++)
+      for (; num_writers < new_num_rw_threads; num_writers++)
         wbufs[num_writers] = jack_ringbuffer_create(sizeof(T) * numel);
     }
   };
@@ -741,7 +747,7 @@ private:
   // Array of single-read single-write ring buffers: one for each writer thread
   jack_ringbuffer_t **wbufs;
   int numel,      // Number of elements of class T in the buffer
-    num_writers;  // Local copy of SRMWRingBuffer_Writers::num_writers
+    num_writers;  // Local copy of RT_RWThreads::num_rw_threads
   T tmpread;      // Holding spot for read
 };
 
