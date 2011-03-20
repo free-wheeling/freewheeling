@@ -317,7 +317,7 @@ int VideoIO::activate() {
     printf("VIDEO: (start) pthread_create failed, exiting");
     return 1;
   }
-  SRMWRingBuffer_Writers::RegisterWriter(video_thread);
+  RT_RWThreads::RegisterReaderOrWriter(video_thread);
 
   // Setup low priority thread
 #if 0

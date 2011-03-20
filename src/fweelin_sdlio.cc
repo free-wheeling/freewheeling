@@ -415,7 +415,7 @@ int SDLIO::activate() {
     printf("SDLIO: (SDL input) pthread_create failed, exiting");
     return 1;
   }
-  SRMWRingBuffer_Writers::RegisterWriter(sdl_thread);
+  RT_RWThreads::RegisterReaderOrWriter(sdl_thread);
 
   // Setup high priority threads
   struct sched_param schp;

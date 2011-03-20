@@ -249,7 +249,7 @@ int AudioIO::activate (Processor *rp) {
     // Wait for first process callback to register audio thread
     usleep(10000);
 
-  SRMWRingBuffer_Writers::RegisterWriter(audio_thread);
+  RT_RWThreads::RegisterReaderOrWriter(audio_thread);
 
   return 0;
 }

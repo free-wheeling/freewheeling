@@ -62,7 +62,7 @@ EventTypeTable *Event::ett = 0;
         ::new typ[PreallocatedType:: \
                   PREALLOC_DEFAULT_NUM_INSTANCES]; \
       ett[i].name = nm; \
-      ett[i].mgr = \
+      ett[i].pretype = \
         new PreallocatedType(mmgr,proto,sizeof(typ), \
                              PreallocatedType:: \
                              PREALLOC_DEFAULT_NUM_INSTANCES, \
@@ -86,7 +86,7 @@ EventTypeTable *Event::ett = 0;
         ::new typ[PreallocatedType:: \
                   PREALLOC_DEFAULT_NUM_INSTANCES]; \
       ett[i].name = nm; \
-      ett[i].mgr = \
+      ett[i].pretype = \
         new PreallocatedType(mmgr,proto,sizeof(typ), \
                              PreallocatedType:: \
                              PREALLOC_DEFAULT_NUM_INSTANCES, \
@@ -110,7 +110,7 @@ EventTypeTable *Event::ett = 0;
         ::new typ[PreallocatedType:: \
                 PREALLOC_DEFAULT_NUM_INSTANCES]; \
       ett[i].name = nm; \
-      ett[i].mgr = \
+      ett[i].pretype = \
         new PreallocatedType(mmgr,proto,sizeof(typ), \
                              PreallocatedType:: \
                              PREALLOC_DEFAULT_NUM_INSTANCES, \
@@ -131,7 +131,7 @@ EventTypeTable *Event::ett = 0;
     { \
       Event *proto = ::new typ[numpre]; \
       ett[i].name = nm; \
-      ett[i].mgr = new PreallocatedType(mmgr,proto,sizeof(typ),numpre,1); \
+      ett[i].pretype = new PreallocatedType(mmgr,proto,sizeof(typ),numpre,1); \
       int paramidx = -1, j = 0; \
       for (; j < proto->GetNumParams() && \
            proto->GetParam(j).max_index == -1; j++); \
@@ -155,22 +155,24 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       // thread. This means they will be delivered after SET_ETYPE events if
       // a sequence of events is sent.
 
-      SET_ETYPE(T_EV_Input_Key,"key",KeyInputEvent);
-      SET_ETYPE(T_EV_Input_JoystickButton,"joybutton",
-                JoystickButtonInputEvent);
-      SET_ETYPE(T_EV_Input_MIDIKey,"midikey",MIDIKeyInputEvent);
-      SET_ETYPE(T_EV_Input_MIDIController,"midicontroller",
-                MIDIControllerInputEvent);
-      SET_ETYPE(T_EV_Input_MIDIProgramChange,
+#define MIDI_EVENT_PREALLOCATION 50 // How many MIDI events to preallocate.
+
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_Key,"key",KeyInputEvent,MIDI_EVENT_PREALLOCATION);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_JoystickButton,"joybutton",
+                JoystickButtonInputEvent,MIDI_EVENT_PREALLOCATION);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIKey,"midikey",MIDIKeyInputEvent,MIDI_EVENT_PREALLOCATION);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIController,"midicontroller",
+                MIDIControllerInputEvent,MIDI_EVENT_PREALLOCATION);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIProgramChange,
                 "midiprogramchange",
-                MIDIProgramChangeInputEvent);
-      SET_ETYPE(T_EV_Input_MIDIChannelPressure,
+                MIDIProgramChangeInputEvent,MIDI_EVENT_PREALLOCATION);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIChannelPressure,
                 "midichannelpressure",
-                MIDIChannelPressureInputEvent);
-      SET_ETYPE(T_EV_Input_MIDIPitchBend,"midipitchbend",
-                MIDIPitchBendInputEvent);
-      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIClock,"midiclock",MIDIClockInputEvent,50);
-      SET_ETYPE(T_EV_Input_MIDIStartStop,"midistartstop",MIDIStartStopInputEvent);
+                MIDIChannelPressureInputEvent,MIDI_EVENT_PREALLOCATION);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIPitchBend,"midipitchbend",
+                MIDIPitchBendInputEvent,MIDI_EVENT_PREALLOCATION);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIClock,"midiclock",MIDIClockInputEvent,MIDI_EVENT_PREALLOCATION);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MIDIStartStop,"midistartstop",MIDIStartStopInputEvent,MIDI_EVENT_PREALLOCATION);
 
       SET_ETYPE_SLOW(T_EV_ALSAMixerControlSet,"alsa-mixer-control-set",ALSAMixerControlSetEvent);
 
@@ -333,7 +335,7 @@ void Event::SetupEventTypeTable(MemoryManager *mmgr) {
       SET_ETYPE_NUMPREALLOC(T_EV_DelProcessor,"__internal__delprocessor",DelProcessorEvent,100);
       SET_ETYPE_NUMPREALLOC(T_EV_CleanupProcessor,"__internal__cleanupprocessor",CleanupProcessorEvent,100);
       SET_ETYPE(T_EV_Input_MouseButton,"__internal__mousebutton",MouseButtonInputEvent);
-      SET_ETYPE(T_EV_Input_MouseMotion,"__internal__mousemotion",MouseMotionInputEvent);
+      SET_ETYPE_NUMPREALLOC(T_EV_Input_MouseMotion,"__internal__mousemotion",MouseMotionInputEvent,100);
       
     default:
       break;
@@ -346,9 +348,9 @@ void Event::TakedownEventTypeTable() {
   for (int i = 0; i < evnum; i++) {
     // Deleting the manager will delete all instances
     // allocated thru it--
-    if (ett[i].mgr != 0) {
+    if (ett[i].pretype != 0) {
       // printf("Deleting manager for event: %s\n",ett[i].name);
-      delete ett[i].mgr;
+      delete ett[i].pretype;
     }
 
     // so the prototype base instance is already deleted
@@ -365,8 +367,8 @@ Event *Event::GetEventByType(EventType typ, char wait) {
   }
 
   int i = (int) typ;
-  if (ett[i].mgr != 0) {
-    Event *ret = (Event *) ett[i].mgr->RTNew();
+  if (ett[i].pretype != 0) {
+    Event *ret = (Event *) ett[i].pretype->RTNew();
     if (ret != 0)
       return ret;
     else {
@@ -376,7 +378,7 @@ Event *Event::GetEventByType(EventType typ, char wait) {
         printf("EVENT: Waiting for memory allocation of event '%s'.\n",ett[i].name);
         do {
           usleep(10000);
-          ret = (Event *) ett[i].mgr->RTNew();
+          ret = (Event *) ett[i].pretype->RTNew();
         } while (ret == 0);
         return ret;
       } else {
@@ -459,7 +461,7 @@ EventManager::EventManager () : eq(0), needs_wakeup(0), threadgo(1) {
     printf("(eventmanager) pthread_create failed, exiting");
     exit(1);
   }
-  SRMWRingBuffer_Writers::RegisterWriter(dispatch_thread);
+  RT_RWThreads::RegisterReaderOrWriter(dispatch_thread);
 
   struct sched_param schp;
   memset(&schp, 0, sizeof(schp));

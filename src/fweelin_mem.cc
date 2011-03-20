@@ -64,7 +64,7 @@ MemoryManager::MemoryManager() : update_queue(0) {
     printf("MEM: (memorymanager) pthread_create failed, exiting");
     exit(1);
   }
-  SRMWRingBuffer_Writers::RegisterWriter(mgr_thread);
+  RT_RWThreads::RegisterReaderOrWriter(mgr_thread);
 
   // Setup high priority threads
   struct sched_param schp;

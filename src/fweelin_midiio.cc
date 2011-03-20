@@ -409,7 +409,7 @@ int MidiIO::activate() {
     printf("(start) pthread_create failed, exiting");
     return 1;
   }
-  SRMWRingBuffer_Writers::RegisterWriter(midi_thread);
+  RT_RWThreads::RegisterReaderOrWriter(midi_thread);
 
   // Setup high priority threads
   struct sched_param schp;

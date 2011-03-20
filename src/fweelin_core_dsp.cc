@@ -2337,7 +2337,7 @@ FileStreamer::FileStreamer(Fweelin *app, int input_idx, char stereo, nframes_t o
     printf("(FILESTREAMER) pthread_create failed, exiting\n");
     exit(1);
   }
-  SRMWRingBuffer_Writers::RegisterWriter(encode_thread);
+  RT_RWThreads::RegisterReaderOrWriter(encode_thread);
 
   // Allocate space for time markers
   marks = ::new TimeMarker[MARKERBUFLEN];
