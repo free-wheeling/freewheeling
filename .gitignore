@@ -1,0 +1,9 @@
+Makefile*
+autom4te.cache/
+compile
+config.log
+config.status
+src/.deps/
+src/Makefile*
+src/*.o
+src/fweelin
