@@ -49,7 +49,7 @@
 #define FWEELIN_TITLE_IMAGE FWEELIN_DATADIR "/fweelin.bmp"
 
 extern double mygettime(void);
-extern int round(float num);
+extern int roundToInt(float num);
 
 class Fweelin;
 class LoopManager;

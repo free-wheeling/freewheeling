@@ -50,7 +50,7 @@ double mygettime(void) {
   return(mytv.tv_sec+mytv.tv_usec/1000000.0);
 }
 
-int round(float num) {
+int roundToInt(float num) {
   if (num-(long)num < 0.5)
     return (int) floor(num);
   else
@@ -107,7 +107,7 @@ CircularMap::CircularMap(SDL_Surface *in,
           printf(" in[%d,%d]\n",(int)in_x,(int)in_y);*/
 
         // Yup-- write the map
-        map[idx] = in_base + round(in_y)*pitch + round(in_x)*bpp;
+        map[idx] = in_base + roundToInt(in_y)*pitch + roundToInt(in_x)*bpp;
         
         // Generate scan map
         if (pixelscount <= 0) {

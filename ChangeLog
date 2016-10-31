@@ -1,3 +1,9 @@
+2016-10-31  v0.6.1.1-arch
+
+            ** FreeWheeling now requires nettle-dev instead of gnutls-openssl
+               because gnutls-openssl is no longer supported on ArchLinux
+
+
 IN PROGRESS v0.6.1 - SVN
 
             Thursday March 17, 2011

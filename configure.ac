@@ -21,7 +21,7 @@ AC_PATH_XTRA
 # Checks for libraries.
 
 #AC_CHECK_LIB([X11], [XOpenDisplay], , [AC_MSG_ERROR(VIDEO: You need libx11-dev installed)])
-AC_CHECK_LIB([gnutls-openssl], [main], , [AC_MSG_ERROR(You need libgnutls11-dev installed)])
+AC_CHECK_LIB([nettle], [main], , [AC_MSG_ERROR(You need nettle-dev installed)])
 AC_CHECK_LIB([dl], [main], , [AC_MSG_ERROR(You need libc6-dev installed)])
 AC_CHECK_LIB([freetype], [FT_Init_FreeType], , 
   [AC_MSG_ERROR(VIDEO: You need libfreetype6-dev installed.
@@ -35,6 +35,10 @@ AC_CHECK_FUNC(filledPieRGBA, [AC_DEFINE(CAPITAL_FILLED_PIE)])
 
 AC_CHECK_LIB([SDL_ttf], [main], , 
   [AC_MSG_ERROR(VIDEO: You need libsdl-ttf2.0-dev installed.
+		http://www.libsdl.org/projects/SDL_ttf/)])
+
+AC_CHECK_LIB([SDL], [main], , 
+  [AC_MSG_ERROR(VIDEO: You need libsdl1.2-dev installed.
 		http://www.libsdl.org/projects/SDL_ttf/)])
 
 AC_CHECK_LIB([lo], [main], , [AC_MSG_ERROR(CONFIG: You need liblo-dev installed.
@@ -94,6 +98,9 @@ AC_CHECK_LIB([vorbisfile], [main], ,
 		http://www.xiph.org/ogg/vorbis/)])
 AC_CHECK_LIB([vorbisenc], [main], , 
   [AC_MSG_ERROR(AUDIO: You need libvorbis-dev installed.
+		http://www.xiph.org/ogg/vorbis/)])
+AC_CHECK_LIB([ogg], [main], , 
+  [AC_MSG_ERROR(AUDIO: You need libogg-dev installed.
 		http://www.xiph.org/ogg/vorbis/)])
 
 AC_CHECK_LIB([sndfile], [main], , 
