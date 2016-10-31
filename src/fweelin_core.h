@@ -28,7 +28,7 @@
 #ifdef __MACOSX__
 #include <openssl/md5.h>
 #else
-#include <gnutls/openssl.h>
+#include <nettle/md5.h>
 #endif
 
 #include "fweelin_amixer.h"

@@ -949,20 +949,23 @@ void TriggerMap::GoSave(char *filename) {
   if (newScene) {
     // Begin our save by generating a scene hash from the loop hashes
     // This will give us an appropriate scene filename
-    MD5_CTX md5gen;
-    MD5_Init(&md5gen);
+    md5_ctx md5gen;
+    md5_init(&md5gen);
     for (int i = 0; i < mapsize; i++)
       if (map[i] != 0) {
         if (map[i]->GetSaveStatus() == SAVE_DONE)
+        {
           // Update scene hash with hash from this loop
-          MD5_Update(&md5gen,map[i]->GetSaveHash(),SAVEABLE_HASH_LENGTH);
+          const uint8_t* data = (uint8_t*)map[i]->GetSaveHash();
+          md5_update(&md5gen,SAVEABLE_HASH_LENGTH,data);
+        }
         else
           printf("DISK: WARNING: Loop %d not saved yet but scene about to be "
                  "saved!\n",i);
       }
     
     // Done- compute our final hash
-    MD5_Final(GetSaveHash(),&md5gen);
+    md5_digest(&md5gen,SAVEABLE_HASH_LENGTH,GetSaveHash());
   }
   
   SetSaveStatus(SAVE_DONE);
@@ -1158,8 +1161,8 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
     // as we split up the write phase
     AudioBlockIterator *hashi = new AudioBlockIterator(l->blocks,
                                                        LOOP_HASH_CHUNKSIZE);
-    MD5_CTX md5gen;
-    MD5_Init(&md5gen);
+    md5_ctx md5gen;
+    md5_init(&md5gen);
     char go = 1;
     char stereo = l->blocks->IsStereo();
     
@@ -1169,17 +1172,21 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
       nframes_t num = MIN(LOOP_HASH_CHUNKSIZE,remaining);
       
       sample_t *ibuf[2];
+
       if (stereo) {
         // Stereo
         hashi->GetFragment(&ibuf[0],&ibuf[1]);
-        MD5_Update(&md5gen,ibuf[0],sizeof(sample_t) * num);
-        MD5_Update(&md5gen,ibuf[1],sizeof(sample_t) * num);
+        const uint8_t data0 = (uint8_t)(*ibuf[0] * (sample_t)256.0);
+        const uint8_t data1 = (uint8_t)(*ibuf[1] * (sample_t)256.0);
+        md5_update(&md5gen,sizeof(uint8_t) * num,&data0);
+        md5_update(&md5gen,sizeof(uint8_t) * num,&data1);
       } else {
         // Mono
         hashi->GetFragment(&ibuf[0],0);
-        MD5_Update(&md5gen,ibuf[0],sizeof(sample_t) * num);
+        const uint8_t data = (uint8_t)(*ibuf[0] * (sample_t)256.0);
+        md5_update(&md5gen,sizeof(uint8_t) * num,&data);
       }
-      
+
       if (remaining <= LOOP_HASH_CHUNKSIZE) {
         // Finished encoding
         go = 0;
@@ -1188,7 +1195,7 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
     } while (go);
     
     // Done- compute final hash
-    MD5_Final(l->GetSaveHash(),&md5gen);
+    md5_digest(&md5gen,SAVEABLE_HASH_LENGTH,l->GetSaveHash());
     l->SetSaveStatus(SAVE_DONE);
     delete hashi;
 

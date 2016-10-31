@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT([fweelin], [0.6.1])
+AC_INIT([fweelin], [0.6.2])
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/fweelin.cc])
 #AM_CONFIG_HEADER(config.h)
@@ -21,7 +21,7 @@ AC_PATH_XTRA
 # Checks for libraries.
 
 #AC_CHECK_LIB([X11], [XOpenDisplay], , [AC_MSG_ERROR(VIDEO: You need libx11-dev installed)])
-AC_CHECK_LIB([gnutls-openssl], [main], , [AC_MSG_ERROR(You need libgnutls11-dev installed)])
+AC_CHECK_LIB([nettle], [main], , [AC_MSG_ERROR(You need nettle-dev installed)])
 AC_CHECK_LIB([dl], [main], , [AC_MSG_ERROR(You need libc6-dev installed)])
 AC_CHECK_LIB([freetype], [FT_Init_FreeType], , 
   [AC_MSG_ERROR(VIDEO: You need libfreetype6-dev installed.

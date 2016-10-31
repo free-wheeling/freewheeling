@@ -1,5 +1,12 @@
+
+2017-04-01 v0.6.2
+
+            * FreeWheeling now requires nettle instead of gnutls-openssl
+              because gnutls-openssl is no longer supported on ArchLinux
+            * several deprecation, bug, and compiler warning fixes by Jajcus
+
 2016-10-31 v0.6.1
-            * new repo
+            * new repo - SVN history converted to git
               sadly, JP has been incommunicado for some time 
               so it is not possible to properly maintain the sourceforge repo.
               the project has been forked to notabug and github for further development

@@ -139,7 +139,7 @@ int main (int argc, char *argv[]) {
   if (!flo.setup())
     flo.go();
   else
-    printf("Error starting FreeWheeling!");
+    printf("Error starting FreeWheeling!\n");
   
   return 0;
 }
