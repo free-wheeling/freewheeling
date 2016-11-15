@@ -1,9 +1,12 @@
-Makefile*
+Makefile
 autom4te.cache/
-compile
 config.log
 config.status
-src/.deps/
-src/Makefile*
+data/Makefile
+src/Makefile
 src/*.o
 src/fweelin
+src/.deps/
+src/elastin/.deps/
+src/elastin/.dirstamp
+src/elastin/*.o

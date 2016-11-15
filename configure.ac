@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(src/fweelin.cc)
-AM_INIT_AUTOMAKE(fweelin,0.6.1)
+AC_INIT([fweelin], [0.6.1])
+AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/fweelin.cc])
 #AM_CONFIG_HEADER(config.h)
 
@@ -32,10 +32,11 @@ AC_CHECK_LIB([SDL_gfx], [main], ,
   [AC_MSG_ERROR(VIDEO: You need libsdl-gfx1.2-dev installed.
                 http://www.ferzkopp.net/~aschiffler/Software/SDL_gfx-2.0/)])
 AC_CHECK_FUNC(filledPieRGBA, [AC_DEFINE(CAPITAL_FILLED_PIE)])
-
 AC_CHECK_LIB([SDL_ttf], [main], , 
   [AC_MSG_ERROR(VIDEO: You need libsdl-ttf2.0-dev installed.
 		http://www.libsdl.org/projects/SDL_ttf/)])
+AC_CHECK_LIB([SDL], [main], , 
+  [AC_MSG_ERROR(VIDEO: You need libsdl1.2-dev installed. http://www.libsdl.org/)])
 
 AC_CHECK_LIB([lo], [main], , [AC_MSG_ERROR(CONFIG: You need liblo-dev installed.
              http://http://liblo.sourceforge.net/)])
@@ -94,6 +95,9 @@ AC_CHECK_LIB([vorbisfile], [main], ,
 		http://www.xiph.org/ogg/vorbis/)])
 AC_CHECK_LIB([vorbisenc], [main], , 
   [AC_MSG_ERROR(AUDIO: You need libvorbis-dev installed.
+		http://www.xiph.org/ogg/vorbis/)])
+AC_CHECK_LIB([ogg], [main], , 
+  [AC_MSG_ERROR(AUDIO: You need libogg-dev installed.
 		http://www.xiph.org/ogg/vorbis/)])
 
 AC_CHECK_LIB([sndfile], [main], , 
