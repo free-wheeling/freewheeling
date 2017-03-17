@@ -71,8 +71,6 @@ void OSCClient::ReceiveEvent(Event *ev, EventProducer *from) {
   switch (ev->GetType()) {
   case T_EV_TransmitPlayingLoopsToDAW :
     {
-      TransmitPlayingLoopsToDAWEvent *tev = (TransmitPlayingLoopsToDAWEvent *) ev;
-
       // OK!
       if (CRITTERS)
         printf("OSC: Received TransmitPlayingLoopsToDAWEvent\n");

@@ -923,9 +923,7 @@ char VideoIO::DrawLoop(LoopManager *loopmgr, int i,
       plen = pa->peaks->GetTotalLen();
   }
   
-  char selected = 0;
   if (l != 0 && l->selcnt > 0) {
-    selected = 1;
     loopcolors = selcolor; // Color loop selected
   }
 
@@ -1299,15 +1297,13 @@ void VideoIO::video_event_loop ()
   LoopManager *loopmgr = app->getLOOPMGR();
 
 #ifndef NO_VIDEO
-  int XSIZE = fs->GetVSize()[0];
 
   const static SDL_Color red = { 0xFF, 0x50, 0x20, 0 },
     //blue = { 0x30, 0x20, 0xEF, 0 },
       white = { 0xEF, 0xAF, 0xFF, 0 },
         truewhite = { 0xFF, 0xFF, 0xFF, 0 },
           gray = { 0x77, 0x88, 0x99, 0 },
-            yellow = { 0xDF, 0xEF, 0x20, 0 },
-              infobarclr = red;
+            yellow = { 0xDF, 0xEF, 0x20, 0 };
 
   int nt = app->getCFG()->GetNumTriggers();
 
@@ -1340,24 +1336,13 @@ void VideoIO::video_event_loop ()
     oldpeak[i] = 1.0;  
 
   // Video coordinates & settings
-  const int scopemag = OCY(40),
-    metermag = OCY(25), 
-    iscopey = OCY(350),
-    //oscopex = 260,
-    //oscopey = iscopey,
-    //oscopemag = 100,    
-    patchx = OCX(35),
+  const int patchx = OCX(35),
     patchy = OCY(460),
 
     pulsex = OCX(600),
     pulsey = OCY(30),
     pulsespc = OCY(40),
     pulsepiemag = OCX(10),
-
-    // Input scope width
-    scopewidth = XSIZE,
-    // Y position of time marker ticks
-    tmarky = iscopey + OCY(100),
 
     progressbar_x = OCX(20),
     progressbar_y = OCY(400),
@@ -1369,8 +1354,6 @@ void VideoIO::video_event_loop ()
   lscopeheight = OCY(30);
 
   const static float loop_colorbase = 0.5;
-
-  nframes_t scopelen = app->getCFG()->GetScopeSampleLen();
 
   // Loop scope bitmap
   Uint8 video_bpp = screen->format->BitsPerPixel;
@@ -1612,7 +1595,6 @@ void VideoIO::video_event_loop ()
     //double t1 = mygettime();
 
     float lvol = app->getMASTERLIMITER()->GetLimiterVolume();
-    sample_t *peakbuf, *avgbuf;
 
     // Clear screen
     SDL_FillRect(screen,NULL,0);
@@ -1736,6 +1718,25 @@ void VideoIO::video_event_loop ()
 
     // Draw input scope
 #if 0
+    int XSIZE = fs->GetVSize()[0];
+
+    const int scopemag = OCY(40),
+      metermag = OCY(25),
+      iscopey = OCY(350),
+    //oscopex = 260,
+    //oscopey = iscopey,
+    //oscopemag = 100
+
+    // Input scope width
+    scopewidth = XSIZE,
+
+    // Y position of time marker ticks
+    tmarky = iscopey + OCY(100);
+
+    nframes_t scopelen = app->getCFG()->GetScopeSampleLen();
+
+    sample_t *peakbuf, *avgbuf;
+
     peakbuf = app->getAMPEAKS()->buf,
     avgbuf = app->getAMAVGS()->buf;
     int midpt = iscopey;

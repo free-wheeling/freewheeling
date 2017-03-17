@@ -1948,7 +1948,6 @@ void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
         stream_inputs = new char[extaudioins + intaudioins];
 
         // Assign stream status for each input
-        char tmp[255];
         for (int i = 0; i < extaudioins + intaudioins; i++) {
           if (i < xmlStrlen(n)) {
             switch (n[i]) {
@@ -1982,7 +1981,6 @@ void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
         monitor_inputs = new char[extaudioins + intaudioins];
 
         // Assign stereo/mono and create input variables
-        char tmp[255];
         for (int i = 0; i < extaudioins + intaudioins; i++) {
           if (i < extaudioins && i < xmlStrlen(n)) {
             switch (n[i]) {

@@ -957,16 +957,14 @@ void RootProcessor::AddChild (Processor *o, int type, char silent) {
 // also, deletes the child processor
 // Realtime safe! Should also be threadsafe.
 void RootProcessor::DelChild (Processor *o) {
-  ProcessorItem *cur = firstchild,
-    *prev = 0;
-  
+  ProcessorItem *cur = firstchild;
+
   protect_plist++;  // Tell the RT thread - DON'T modify the processor list during this critical section
 
   // ** Just do this search in RT instead!!! FIXME
 
   // Search for processor 'o' in our list
   while (cur != 0 && cur->p != o) {
-    prev = cur;
     cur = cur->next;
   }
 
@@ -1066,8 +1064,6 @@ void RootProcessor::UpdateProcessors() {
 
         case T_EV_DelProcessor :
         {
-          DelProcessorEvent *delevt = (DelProcessorEvent *) curev;
-
           // Traverse the list of children and look for a processor pending delete
           ProcessorItem *cur = firstchild,
             *prev = 0;

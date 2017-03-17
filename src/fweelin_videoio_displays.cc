@@ -42,7 +42,6 @@
 void FloDisplayPanel::Draw(SDL_Surface *screen) {
   const static SDL_Color titleclr = { 0x77, 0x88, 0x99, 0 };
   const static SDL_Color borderclr = { 0xFF, 0x50, 0x20, 0 };
-  const static SDL_Color cursorclr = { 0xEF, 0x11, 0x11, 0 };
 
   boxRGBA(screen,
           xpos,ypos,xpos+sx,ypos+sy,

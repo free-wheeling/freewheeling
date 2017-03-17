@@ -170,6 +170,8 @@ static int my_popen(const char *command, pid_t *pid)
   return rc;
 }
 
+#if defined(__GNUC__) && defined(USE_BUILTIN)
+
 /*************************************************************************
  * my_getline [private]
  */
@@ -208,7 +210,6 @@ static int my_getline(int fd, char *buffer, int max)
  *  HP/UX    nm -x -p
  */
 
-#if defined(__GNUC__) && defined(USE_BUILTIN)
 
 typedef struct {
   unsigned long realAddress;
@@ -418,9 +419,7 @@ static int DumpStack(char *format, ...)
   int status = EXIT_FAILURE;
   int rc;
   va_list args;
-  char *buffer;
   char cmd[MAX_BUFFER_SIZE];
-  char buf[MAX_BUFFER_SIZE];
 
   /*
    * Please note that vsprintf() is not ASync safe (ie. cannot safely
@@ -451,6 +450,8 @@ static int DumpStack(char *format, ...)
 
       //FIXME: deactivated separate piping of debugger output, as it caused problems in conjunction with threads
 /*
+      char *buffer;
+      char buf[MAX_BUFFER_SIZE];
       if ((WIFEXITED(status)) && (WEXITSTATUS(status) == EXIT_SUCCESS))
 	{
 	  while (my_getline(fd, buf, sizeof(buf)))
