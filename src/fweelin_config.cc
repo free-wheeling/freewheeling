@@ -690,7 +690,7 @@ void InputMatrix::CreateParameterSets (int interfaceid,
   int str_len = strlen(str_base)+4;
   char basebuf[str_len];
   if (contnum == 0)
-    sprintf(basebuf,str_base);
+    sprintf(basebuf,"%s",str_base);
   else 
     snprintf(basebuf,str_len,"%s%d",str_base,contnum);
 
@@ -1140,7 +1140,7 @@ void InputMatrix::CreateBinding (int interfaceid, xmlNode *binding) {
           int str_len = strlen(str_base)+4;
           char buf[str_len];
           if (contnum == 0)
-            sprintf(buf,str_base);
+            sprintf(buf,"%s",str_base);
           else 
             snprintf(buf,str_len,"%s%d",str_base,contnum);
 
@@ -3284,7 +3284,7 @@ void FloConfig::ConfigureGraphics(xmlDocPtr doc, xmlNode *vid,
       if (n != 0) {
         nw->filename = new char[xmlStrlen(n)+1];
         strcpy(nw->filename,(char*)n);
-        printf(nw->filename);
+        printf("%s",nw->filename);
         xmlFree(n);
       }
 
