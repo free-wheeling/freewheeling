@@ -398,7 +398,7 @@ int MidiIO::activate() {
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setstacksize(&attr,STACKSIZE);
-  printf("MIDI: Stacksize: %d.\n",STACKSIZE);
+  printf("MIDI: Stacksize: %zd.\n",STACKSIZE);
 
   midithreadgo = 1;
   int ret = pthread_create(&midi_thread,

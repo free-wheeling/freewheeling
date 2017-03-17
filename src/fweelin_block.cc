@@ -1968,7 +1968,7 @@ BlockManager::BlockManager (Fweelin *app) :
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setstacksize(&attr,STACKSIZE);
-  printf("BLOCK: Stacksize: %d.\n",STACKSIZE);
+  printf("BLOCK: Stacksize: %zd.\n",STACKSIZE);
 
   // Start a block managing thread
   int ret = pthread_create(&manage_thread,

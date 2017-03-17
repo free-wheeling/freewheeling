@@ -447,7 +447,7 @@ EventManager::EventManager () : eq(0), needs_wakeup(0), threadgo(1) {
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setstacksize(&attr,STACKSIZE);
-  printf("EVENT: Stacksize: %d.\n",STACKSIZE);
+  printf("EVENT: Stacksize: %zd.\n",STACKSIZE);
 
   // Hold dispatch thread until ready
   pthread_mutex_lock(&dispatch_thread_lock);

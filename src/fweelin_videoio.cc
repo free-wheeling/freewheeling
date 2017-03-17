@@ -307,7 +307,7 @@ int VideoIO::activate() {
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setstacksize(&attr,STACKSIZE);
-  printf("VIDEO: Stacksize: %d.\n",STACKSIZE);
+  printf("VIDEO: Stacksize: %zd.\n",STACKSIZE);
 
   int ret = pthread_create(&video_thread,
                            &attr,

@@ -2326,7 +2326,7 @@ FileStreamer::FileStreamer(Fweelin *app, int input_idx, char stereo, nframes_t o
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setstacksize(&attr,STACKSIZE);
-  printf("FILESTREAMER: Stacksize: %d.\n",STACKSIZE);
+  printf("FILESTREAMER: Stacksize: %zd.\n",STACKSIZE);
 
   // Start encoding thread
   int ret = pthread_create(&encode_thread,

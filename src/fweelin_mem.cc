@@ -52,7 +52,7 @@ MemoryManager::MemoryManager() : update_queue(0) {
   pthread_attr_t attr;
   pthread_attr_init(&attr);
   pthread_attr_setstacksize(&attr,STACKSIZE);
-  printf("MEMMGR: Stacksize: %d.\n",STACKSIZE);
+  printf("MEMMGR: Stacksize: %zd.\n",STACKSIZE);
 
   // Setup manager thread
   threadgo = 1;
