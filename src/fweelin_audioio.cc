@@ -274,7 +274,8 @@ int AudioIO::open () {
   // **** AUDIO startup
   
   // Try to become a client of the JACK server
-  if ((client = jack_client_new ("FreeWheeling")) == 0) {
+  client = jack_client_open("FreeWheeling", JackNoStartServer, NULL);
+  if (!client) {
     fprintf (stderr, "AUDIO: ERROR: Jack server not running!\n");
     return 1;
   }
