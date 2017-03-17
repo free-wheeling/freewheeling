@@ -101,7 +101,7 @@ CircularMap::CircularMap(SDL_Surface *in,
 
       // Are we in range, honey?
       int idx = y*map_xs + x;
-      if (in_x >= 0 & in_y >= 0 &&
+      if (in_x >= 0 && in_y >= 0 &&
           in_x < in_xs && in_y < in_ys) {
         /*printf("%d %d\n", x, y);
           printf(" in[%d,%d]\n",(int)in_x,(int)in_y);*/
