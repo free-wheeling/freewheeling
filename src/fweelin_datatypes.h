@@ -671,7 +671,7 @@ public:
     // Register this ringbuf
     RT_RWThreads::RegisterRTDataStruct(this);
   };
-  ~SRMWRingBuffer() {
+  virtual ~SRMWRingBuffer() {
     // Unregister this ringbuf
     RT_RWThreads::UnregisterRTDataStruct(this);
 

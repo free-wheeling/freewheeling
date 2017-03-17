@@ -106,6 +106,8 @@ public:
   VideoIO (Fweelin *app) : app(app), screen(0), cmaps(0), 
     showlooprange(0,0), showhelppage(0), cur_iid(0), videothreadgo(0) {};
 
+  virtual ~VideoIO() {};
+
   int activate ();
   void close ();
 

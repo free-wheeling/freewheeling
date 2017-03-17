@@ -322,6 +322,8 @@ class FloLayoutElementGeometry {
  public:  
   FloLayoutElementGeometry() : next(0) {};
 
+  virtual ~FloLayoutElementGeometry() {};
+
   // Draw this element to the given screen-
   // implementation given in videoio.cc
   virtual void Draw(SDL_Surface *screen, SDL_Color clr) = 0;
@@ -361,7 +363,7 @@ class FloLayoutElement {
  public:  
   FloLayoutElement() : id(0), name(0), nxpos(0), nypos(0), bx(0.0), by(0.0), 
     loopmap(0), loopx(0), loopy(0), loopsize(0), geo(0), next(0) {};
-  ~FloLayoutElement() {
+  virtual ~FloLayoutElement() {
     if (name != 0)
       delete[] name;
     // Erase geometries

@@ -117,6 +117,8 @@ class ItemRenamer : public EventHook {
 
   ItemRenamer(Fweelin *app, RenameCallback *cb, char *oldname);
 
+  virtual ~ItemRenamer() {};
+
   // Hook events for typing new names
   virtual char HookEvent(Event *ev, EventProducer *from);
 
