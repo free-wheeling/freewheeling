@@ -52,7 +52,7 @@ AC_CHECK_LIB([asound], [main], ,
   [AC_MSG_ERROR(AUDIO: You need ALSA installed (libasound2-dev).
 		http://www.alsa-project.org/)])
 
-AC_CHECK_LIB([jack], [jack_client_new], , 
+AC_CHECK_LIB([jack], [jack_client_open], , 
   [AC_MSG_ERROR(AUDIO: You need JACK audio library (libjack-dev) installed.
 		http://jackit.sourceforge.net/)])
 
