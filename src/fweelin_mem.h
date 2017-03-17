@@ -132,12 +132,10 @@ class Preallocated {
     exit(1);
   };
   void operator delete(void *d) {
-    //printf("ERROR: Preallocated type can not be deleted directly\n");
-    //exit(1);
-
-    // We used to give an error message-
-    // now we pass this delete on to RTDelete
-    ((Preallocated *) d)->RTDelete();
+    // cannot pass to RTDelete as this would end with two delete executed
+    // and destructor called twice
+    printf("ERROR: Preallocated type can not be deleted directly\n");
+    exit(1);
   }
 
   // Realtime-safe function to get a new instance of this class

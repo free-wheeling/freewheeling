@@ -1000,7 +1000,10 @@ void AudioBlock::DeleteChain() {
     BlockExtendedData *curxt = cur->xt;
     while (curxt != 0) {
       BlockExtendedData *tmpxt = curxt->next;
-      delete curxt;
+      if (curxt->GetType() == T_BED_ExtraChannel)
+        ((BED_ExtraChannel *)curxt)->RTDelete();
+      else
+        delete curxt;
       curxt = tmpxt;
     }
 
