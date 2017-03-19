@@ -5588,9 +5588,9 @@ else
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for jack_client_new in -ljack" >&5
-$as_echo_n "checking for jack_client_new in -ljack... " >&6; }
-if ${ac_cv_lib_jack_jack_client_new+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for jack_client_open in -ljack" >&5
+$as_echo_n "checking for jack_client_open in -ljack... " >&6; }
+if ${ac_cv_lib_jack_jack_client_open+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -5604,27 +5604,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char jack_client_new ();
+char jack_client_open ();
 int
 main ()
 {
-return jack_client_new ();
+return jack_client_open ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_jack_jack_client_new=yes
+  ac_cv_lib_jack_jack_client_open=yes
 else
-  ac_cv_lib_jack_jack_client_new=no
+  ac_cv_lib_jack_jack_client_open=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jack_jack_client_new" >&5
-$as_echo "$ac_cv_lib_jack_jack_client_new" >&6; }
-if test "x$ac_cv_lib_jack_jack_client_new" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_jack_jack_client_open" >&5
+$as_echo "$ac_cv_lib_jack_jack_client_open" >&6; }
+if test "x$ac_cv_lib_jack_jack_client_open" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBJACK 1
 _ACEOF
