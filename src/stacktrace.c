@@ -39,7 +39,7 @@
 # define PLATFORM_WIN32
 #else
 # warning "No platform defined, automatic stack trace will fail!"
-#endif
+#endif // defined(unix) || defined(__unix) || defined(__xlC__)
 
 #if defined(_AIX) || defined(__xlC__)
 # define PLATFORM_AIX
@@ -57,7 +57,7 @@
 # if defined(__SVR4) || defined(__svr4__)
 #  define PLATFORM_SOLARIS
 # endif
-#endif
+#endif // defined(_AIX) || defined(__xlC__)
 
 /* ANSI C includes */
 #include <stdio.h>
@@ -67,7 +67,6 @@
 #include <limits.h>
 #include <errno.h>
 #include <signal.h>
-#include <unistd.h>
 #if defined(PLATFORM_UNIX)
 # include <unistd.h>
 # include <sys/types.h>
@@ -79,7 +78,7 @@
 /* Compile with -DUSE_BUILTIN and -lcl */
 extern void U_STACK_TRACE(void);
 # endif
-#endif
+#endif // defined(PLATFORM_UNIX)
 
 #include "stacktrace.h"
 
@@ -170,8 +169,6 @@ static int my_popen(const char *command, pid_t *pid)
   return rc;
 }
 
-#if defined(__GNUC__) && defined(USE_BUILTIN)
-
 /*************************************************************************
  * my_getline [private]
  */
@@ -190,6 +187,7 @@ static int my_getline(int fd, char *buffer, int max)
   return i;
 }
 
+# if defined(__GNUC__) && defined(USE_BUILTIN)
 /*************************************************************************
  * GCC_DumpStack [private]
  *
@@ -209,8 +207,6 @@ static int my_getline(int fd, char *buffer, int max)
  *  SCO/OpenServer: nm -x -p
  *  HP/UX    nm -x -p
  */
-
-
 typedef struct {
   unsigned long realAddress;
   unsigned long closestAddress;
@@ -338,13 +334,13 @@ static void GCC_DumpStack(void)
     }
   if (number == 0) /* vendor nm */
     {
-# if defined(PLATFORM_SOLARIS) || defined(PLATFORM_SCO) || defined(PLATFORM_HPUX)
+#   if defined(PLATFORM_SOLARIS) || defined(PLATFORM_SCO) || defined(PLATFORM_HPUX)
       strcpy(buffer, "nm -x -p ");
-# elif defined(PLATFORM_AIX) || defined(PLATFORM_IRIX) || defined(PLATFORM_OSF)
+#   elif defined(PLATFORM_AIX) || defined(PLATFORM_IRIX) || defined(PLATFORM_OSF)
       strcpy(buffer, "nm -x -B ");
-# else
+#   else
       strcpy(buffer, "nm -B ");
-# endif
+#   endif
     }
   else /* GNU nm */
     strcpy(buffer, "nm -B ");
@@ -406,7 +402,7 @@ static void GCC_DumpStack(void)
 	}
     }
 }
-#endif
+# endif // defined(__GNUC__) && defined(USE_BUILTIN)
 
 /*************************************************************************
  * DumpStack [private]
@@ -448,8 +444,12 @@ static int DumpStack(char *format, ...)
 	}
       while ((SYS_ERROR == rc) && (EINTR == errno));
 
+#define NO_SEPARATE_DEBUG_PIPING
+#ifdef NO_SEPARATE_DEBUG_PIPING
       //FIXME: deactivated separate piping of debugger output, as it caused problems in conjunction with threads
-/*
+      gotSomething = TRUE; //HACK:
+      my_getline(-1, NULL, 0); // avoid 'unused-function' compiler warning
+#else
       char *buffer;
       char buf[MAX_BUFFER_SIZE];
       if ((WIFEXITED(status)) && (WEXITSTATUS(status) == EXIT_SUCCESS))
@@ -474,14 +474,13 @@ static int DumpStack(char *format, ...)
 	      write(global_output, "\n", strlen("\n"));
 	    }
 	}
-*/
-      gotSomething = TRUE; //HACK: to compensate the commented FIXME block above
+#endif // NO_SEPARATE_DEBUG_PIPING
 
       my_pclose(fd, pid);
     }
   return gotSomething;
 }
-#endif /* PLATFORM_UNIX */
+#endif // defined(PLATFORM_UNIX)
 
 /*************************************************************************
  * StackTrace
@@ -742,7 +741,7 @@ void StackTrace(char *gdb_command_file)
     return;
 #endif
 
-# endif
+# endif // defined(PLATFORM_AIX)
 
 # if defined(__GNUC__) && defined(USE_BUILTIN)
 
@@ -755,7 +754,7 @@ void StackTrace(char *gdb_command_file)
 
 #elif defined(PLATFORM_WIN32)
   /* Use StackWalk() */
-#endif
+#endif // defined(PLATFORM_UNIX)
 }
 
 /*************************************************************************
@@ -766,7 +765,6 @@ void StackTraceInit(const char *in_name, int in_handle)
   global_progname = in_name;
   global_output = (in_handle == -1) ? STDOUT_FILENO : in_handle;
 }
-
 
 /*************************************************************************
  * test
@@ -807,4 +805,4 @@ int main(int argc, char *argv[])
   Crash();
   return EXIT_SUCCESS;
 }
-#endif
+#endif // defined(STANDALONE)

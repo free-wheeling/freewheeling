@@ -1258,9 +1258,9 @@ AudioBlockIterator::AudioBlockIterator(AudioBlock *firstblock,
   pre_extrachannel(pre_extrachannel), 
 
   currightblock(0), nextrightblock(0), currightblock_w(0), nextrightblock_w(0),
-  curblock(firstblock), nextblock(0), curblock_w(0 /*???*/), nextblock_w(0),
-  curblkofs(0), nextblkofs(0), curcnt(0), nextcnt(0), 
-  curblkofs_w(0), nextblkofs_w(0), curcnt_w(0), nextcnt_w(0), 
+  curblock(firstblock), nextblock(0), curblock_w(0), nextblock_w(0),
+  curblkofs(0), nextblkofs(0), curcnt(0), nextcnt(0),
+  curblkofs_w(0), nextblkofs_w(0), curcnt_w(0), nextcnt_w(0),
 
   fragmentsize(fragmentsize), stopped(0) {
   fragment[0] = new sample_t[fragmentsize];

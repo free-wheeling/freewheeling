@@ -5,8 +5,10 @@ config.status
 data/Makefile
 src/Makefile
 src/*.o
-src/fweelin
+src/.Tpo
 src/.deps/
+src/fweelin
 src/elastin/.deps/
 src/elastin/.dirstamp
 src/elastin/*.o
+**/fweelin-stackdump

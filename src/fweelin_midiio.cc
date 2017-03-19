@@ -424,10 +424,11 @@ int MidiIO::activate() {
   // Check the rtprio limit (/etc/security/limits.conf)
   struct rlimit user_limits;
   memset(&user_limits, 0, sizeof(user_limits));
-  if(getrlimit(RLIMIT_RTPRIO, &user_limits) == 0) {
-    if(user_limits.rlim_max > 0 && schp.sched_priority > 0 && user_limits.rlim_max < (rlim_t)schp.sched_priority) {
-      schp.sched_priority = user_limits.rlim_max;
-    }
+  if (getrlimit(RLIMIT_RTPRIO, &user_limits) == 0 &&
+      user_limits.rlim_max > 0 &&
+      schp.sched_priority > 0 &&
+      user_limits.rlim_max < static_cast<rlim_t>(schp.sched_priority)) {
+    schp.sched_priority = user_limits.rlim_max;
   }
 #endif
 
