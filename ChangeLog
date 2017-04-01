@@ -3,11 +3,12 @@
 
             * FreeWheeling now requires nettle instead of gnutls-openssl
               because gnutls-openssl is no longer supported on ArchLinux
-            * several deprecation, bug, and compiler warning fixes by Jajcus
+            * several deprecation, bug, and compiler warning fixes by GitHub user 'Jajcus'
 
 2016-10-31 v0.6.1
-            * new repo - SVN history converted to git
-              sadly, JP has been incommunicado for some time 
+
+            * new version control and repos - SVN history converted to git
+              sadly, JP has been incommunicado for some time
               so it is not possible to properly maintain the sourceforge repo.
               the project has been forked to notabug and github for further development
               https://notabug.org/freewheeling/freewheeling/
@@ -17,6 +18,8 @@
               https://github.com/free-wheeling/freewheeling/wiki
 
             * upgraded autotools files
+
+            * FreeWheeling will use semantic versioning from this point on (e.g. MAJOR.MINOR.REV)
 
 
 IN PROGRESS v0.6.1 - SVN
