@@ -1,1 +1,4 @@
-Please read data/.fweelin.rc or ~/.fweelin.rc.
+Please read data/config-help.txt in the source tree
+
+The same file can also be found at ~/.fweelin/config-help.txt
+    after freewheeling is installed and has run for the first time

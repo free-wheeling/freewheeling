@@ -164,9 +164,15 @@ char *FloConfig::PrepareLoadConfigFile (char *cfgname, char basecfg) {
                    "do you have write permission there?\n",
                    errno,buf);
           }
-        } else 
+        } else {
           printf("INIT: *** Created new config folder '%s'.\n",buf);
-        
+          printf("INIT: Copying static files from shared folder...\n");
+
+          // copy static assets to user config dir
+          CopyConfigFile("bcf2000-help.txt",0);
+          CopyConfigFile("bcf2000-preset.mid",0);
+          CopyConfigFile("config-help.txt",0);
+        }
         // Copy configuration file(s) from shared folder
         CopyConfigFile(cfgname,basecfg);
         go = 2;
