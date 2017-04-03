@@ -1,5 +1,7 @@
+#                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
-AC_INIT([fweelin], [0.6.2])
+AC_PREREQ([2.69])
+AC_INIT([fweelin], [0.6.3], [https://github.com/free-wheeling/freewheeling/issues])
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/fweelin.cc])
 #AM_CONFIG_HEADER(config.h)
@@ -111,13 +113,25 @@ LIBS="$LIBS $SDL_LIBS"
 # Checks for header files.
 AC_PATH_X
 AC_HEADER_STDC
-AC_CHECK_HEADERS([errno.h stdlib.h string.h sys/time.h unistd.h sys/resource.h])
+AC_CHECK_HEADERS([errno.h fcntl.h inttypes.h limits.h stdint.h stdlib.h string.h sys/resource.h sys/time.h termios.h unistd.h utime.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_HEADER_TIME
+AC_C_INLINE
+AC_TYPE_INT32_T
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_CHECK_HEADER_STDBOOL
+AC_TYPE_UINT32_T
+AC_TYPE_UINT8_T
 
 # Checks for library functions.
-AC_CHECK_FUNCS([floor gettimeofday memset pow sqrt])
+AC_FUNC_ALLOCA
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_FORK
+AC_FUNC_MALLOC
+AC_FUNC_STRTOD
+AC_CHECK_FUNCS([atexit dup2 floor gettimeofday memset pow realpath select sqrt strcasecmp strchr strncasecmp strrchr strtol])
 
 AC_OUTPUT(Makefile src/Makefile data/Makefile)
