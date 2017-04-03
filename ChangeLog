@@ -1,9 +1,16 @@
 
+2017-04-03 v0.6.3
+
+            * made font paths consistent with debian packaging
+            * implemented 'tiny' font specified in graphics.xml (although still unused)
+
+
 2017-04-01 v0.6.2
 
             * FreeWheeling now requires nettle instead of gnutls-openssl
               because gnutls-openssl is no longer supported on ArchLinux
             * several deprecation, bug, and compiler warning fixes by GitHub user 'Jajcus'
+
 
 2016-10-31 v0.6.1
 

@@ -34,15 +34,18 @@
 
 <!-- Fonts to load -
 
-     name="main" is the main font for all onscreen text displays 
-     name="help" is the font for help text 
- 
-     Font files must live in /usr/share/fonts/truetype/ -->
+     name="main" is the main font for most onscreen text displays
+     name="help" is the font for help panel
+     name="small" is the font for indicators and toggles
+     name="tiny" is the font for synthedit and looptray
 
-  <font name="main" file="verabd.ttf" size="20"/>
-  <font name="small" file="verabd.ttf" size="14"/>
-  <font name="tiny" file="vera.ttf" size="10"/>
-  <font name="help" file="vera.ttf" size="16"/>
+     FreeWheeling includes Bitstream Vera fonts by default.
+     Any custom font files specified below should be relative to /usr/share/fonts/ -->
+
+  <font name="main"  file="truetype/ttf-bitstream-vera/VeraBd.ttf" size="20" />
+  <font name="help"  file="truetype/ttf-bitstream-vera/Vera.ttf"   size="16" />
+  <font name="small" file="truetype/ttf-bitstream-vera/VeraBd.ttf" size="14" />
+  <font name="tiny"  file="truetype/ttf-bitstream-vera/Vera.ttf"   size="10" />
 
 <!-- All positions on screen follow a coordinate system with (0,0) at the 
      top left and (1,1) at the bottom right of the screen.

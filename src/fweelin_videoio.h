@@ -173,8 +173,8 @@ public:
 
   SDL_Surface *screen;
   
-  // Pointers to fonts that video uses-- links into FloFont structures
-  TTF_Font *mainfont, *helpfont, *smallfont;
+  // Pointers to fonts that video uses - links into FloFont structures
+  TTF_Font *mainfont, *helpfont, *smallfont, *tinyfont;
 
   // Planar->Circular mapping variables
   CircularMap *cmaps;
