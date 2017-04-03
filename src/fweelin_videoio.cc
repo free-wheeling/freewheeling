@@ -2111,7 +2111,7 @@ void *VideoIO::run_video_thread(void *ptr)
 #ifdef __MACOSX__
   inst->cocoa.SetupCocoaThread();
 #endif
-  
+
 #ifndef NO_VIDEO
   // Initialize the font library
   if ( TTF_Init() < 0 ) {
@@ -2124,30 +2124,38 @@ void *VideoIO::run_video_thread(void *ptr)
   inst->mainfont = 0;
   inst->helpfont = 0;
   inst->smallfont = 0;
+  inst->tinyfont = 0;
   {
     FloFont *cur = inst->app->getCFG()->GetFonts();
-    char tmp[255];
+    char system_font_path[255];
+    char fweelin_font_path[255];
     while (cur != 0) {
       if (cur->name != 0 && cur->filename != 0 && cur->size != 0) {
-        snprintf(tmp,255,"%s/%s",FWEELIN_DATADIR,cur->filename);
-        printf("VIDEO: Loading font %s: %s (%d pt)\n",cur->name,tmp,cur->size);
+        snprintf(system_font_path,255,"%s/%s","/usr/share/fonts/",cur->filename);
+        snprintf(fweelin_font_path,255,"%s/fonts/%s",FWEELIN_DATADIR,cur->filename);
+        printf("VIDEO: Loading %s font: %s (%d pt)\n",cur->name,cur->filename,cur->size);
 
         struct stat st;
-        if (stat(tmp,&st) != 0) {
-          printf("VIDEO: Couldn't find font file: %s\n"
-                 "Did you run 'make install'?\n",tmp);
+        if (stat(system_font_path,&st) != 0 && stat(fweelin_font_path,&st) != 0) {
+          printf("VIDEO: Couldn't find font file: %s "
+                 "in either %s/ or /usr/share/fonts/\n"
+                 "Did you run 'make install'?\n",
+                 cur->filename, FWEELIN_DATADIR);
           exit(1);
         }
-          
-        cur->font = TTF_OpenFont(tmp, cur->size);
+
+        cur->font = TTF_OpenFont(system_font_path, cur->size);
+        if (cur->font == 0)
+          cur->font = TTF_OpenFont(fweelin_font_path, cur->size);
         if (cur->font == 0) {
-          printf("VIDEO: Couldn't load %d pt font from: %s\n"
+          printf("VIDEO: Couldn't load %d pt font: %s "
+                 "from either %s/ or /usr/share/fonts/\n"
                  "Did you run 'make install'?\n",
-                 cur->size, tmp);
+                 cur->size, cur->filename, FWEELIN_DATADIR);
           exit(1);
         }
         TTF_SetFontStyle(cur->font, TTF_STYLE_NORMAL);
-        
+
         // Check if this is a font we use
         if (!strcmp(cur->name,"main")) 
           inst->mainfont = cur->font;
@@ -2155,8 +2163,10 @@ void *VideoIO::run_video_thread(void *ptr)
           inst->helpfont = cur->font;
         else if (!strcmp(cur->name,"small"))
           inst->smallfont = cur->font;
+        else if (!strcmp(cur->name,"tiny"))
+          inst->tinyfont = cur->font;
       }
-      
+
       cur = cur->next;
     }
   }
@@ -2171,6 +2181,10 @@ void *VideoIO::run_video_thread(void *ptr)
   }
   if (inst->smallfont == 0) {
     printf("VIDEO: Error, no 'small' font loaded!\n");
+    exit(1);
+  }
+  if (inst->tinyfont == 0) {
+    printf("VIDEO: Error, no 'tiny' font loaded!\n");
     exit(1);
   }
 #endif // NO_VIDEO

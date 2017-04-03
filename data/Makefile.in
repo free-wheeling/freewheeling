@@ -141,8 +141,8 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(fweelindir)"
-DATA = $(fweelin_DATA)
+am__installdirs = "$(DESTDIR)$(fontsdir)" "$(DESTDIR)$(fweelindir)"
+DATA = $(fonts_DATA) $(fweelin_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -245,8 +245,12 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-fweelindir = $(datadir)/fweelin
-fweelin_DATA = *.txt *.xml basic.sf2 vera.ttf verabd.ttf gdb-stackdump-cmds
+fweelin_dirname = fweelin
+fonts_path = fonts/truetype/ttf-bitstream-vera
+fweelindir = $(datadir)/$(fweelin_dirname)
+fontsdir = ${datadir}/$(fweelin_dirname)/${fonts_path}
+fweelin_DATA = *.txt *.xml *.mid basic.sf2 gdb-stackdump-cmds
+fonts_DATA = fonts/truetype/ttf-bitstream-vera/*
 all: all-am
 
 .SUFFIXES:
@@ -279,6 +283,27 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+install-fontsDATA: $(fonts_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(fonts_DATA)'; test -n "$(fontsdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(fontsdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(fontsdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(fontsdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(fontsdir)" || exit $$?; \
+	done
+
+uninstall-fontsDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(fonts_DATA)'; test -n "$(fontsdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(fontsdir)'; $(am__uninstall_files_from_dir)
 install-fweelinDATA: $(fweelin_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(fweelin_DATA)'; test -n "$(fweelindir)" || list=; \
@@ -341,7 +366,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(fweelindir)"; do \
+	for dir in "$(DESTDIR)$(fontsdir)" "$(DESTDIR)$(fweelindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -394,7 +419,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-fweelinDATA
+install-data-am: install-fontsDATA install-fweelinDATA
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
@@ -439,27 +464,33 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-fweelinDATA
-
-.MAKE: install-am install-data-am install-strip
+uninstall-am: uninstall-fontsDATA uninstall-fweelinDATA
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+.MAKE: install-am install-data-am install-strip uninstall-am
 
 .PHONY: all all-am check check-am clean clean-generic cscopelist-am \
 	ctags-am distclean distclean-generic distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-data-hook install-dvi install-dvi-am \
-	install-exec install-exec-am install-fweelinDATA install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-fweelinDATA
+	install-exec install-exec-am install-fontsDATA \
+	install-fweelinDATA install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
+	pdf-am ps ps-am tags-am uninstall uninstall-am \
+	uninstall-fontsDATA uninstall-fweelinDATA uninstall-hook
 
 .PRECIOUS: Makefile
 
 
 install-data-hook:
 	sed -i "s/<freewheeling version=\"_FWEELIN_VERSION_\">/<freewheeling version=\"${VERSION}\">/" $(DESTDIR)$(fweelindir)/fweelin.xml
+
+uninstall-hook:
+	-cd ${fweelindir} && rmdir -p ${fonts_path}
+	-rmdir $(fweelindir)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
