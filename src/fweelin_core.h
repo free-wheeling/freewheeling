@@ -25,11 +25,8 @@
    You should have received a copy of the GNU General Public License
    along with Freewheeling.  If not, see <http://www.gnu.org/licenses/>. */
 
-#ifdef __MACOSX__
-#include <openssl/md5.h>
-#else
+
 #include <nettle/md5.h>
-#endif
 
 #include "fweelin_amixer.h"
 #include "fweelin_midiio.h"
