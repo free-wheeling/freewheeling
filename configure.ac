@@ -103,7 +103,7 @@ AC_CHECK_LIB([ogg], [main], ,
 		http://www.xiph.org/ogg/vorbis/)])
 
 AC_CHECK_LIB([sndfile], [main], , 
-  [AC_MSG_ERROR(AUDIO: you need libsndfile installed.
+  [AC_MSG_ERROR(AUDIO: you need libsndfile-dev installed.
 		http://www.http://www.mega-nerd.com/libsndfile/)])
 
 CFLAGS="$CFLAGS $SDL_CFLAGS"

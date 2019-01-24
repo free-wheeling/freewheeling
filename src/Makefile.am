@@ -24,7 +24,7 @@ fweelin_SOURCES = stacktrace.c elastin/elastin.cc fweelin.cc fweelin_datatypes.c
 
 fweelindir = $(datadir)/fweelin
 
-FWEELIN_CFLAGS = -I. -g -Wall -Wno-write-strings -D_REENTRANT -DPTHREADS -DNDEBUG -DVERSION=\"$(VERSION)\" -DFWEELIN_DATADIR=\"$(fweelindir)\" -DADDON_DIR=\"/usr/local/lib/jack\" -I/usr/include/freetype2 -I/usr/include/libxml2 -funroll-loops -finline-functions -fomit-frame-pointer -ffast-math -fexpensive-optimizations -fstrict-aliasing -falign-loops=2 -falign-jumps=2 -falign-functions=2 -O9
+FWEELIN_CFLAGS = -I. -g -Wall -Wextra -Wno-write-strings -D_REENTRANT -DPTHREADS -DNDEBUG -DVERSION=\"$(VERSION)\" -DFWEELIN_DATADIR=\"$(fweelindir)\" -DADDON_DIR=\"/usr/local/lib/jack\" -I/usr/include/freetype2 -I/usr/include/libxml2 -funroll-loops -finline-functions -fomit-frame-pointer -ffast-math -fexpensive-optimizations -fstrict-aliasing -falign-loops=2 -falign-jumps=2 -falign-functions=2 -O9
 FWEELIN_CXXFLAGS = -Wno-non-virtual-dtor
 
 AM_CFLAGS = $(CFLAGS) $(FWEELIN_CFLAGS)
