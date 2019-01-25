@@ -1,5 +1,3 @@
-#if USE_FLUIDSYNTH
-
 /* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
@@ -17,6 +15,9 @@
    You should have received a copy of the GNU General Public License
    along with Freewheeling.  If not, see <http://www.gnu.org/licenses/>. */
 
+
+#if USE_FLUIDSYNTH
+
 #include <sys/time.h>
 
 #include <stdio.h>
@@ -33,11 +34,6 @@
 
 #include "fweelin_fluidsynth.h"
 
-#define fluid_sfont_iteration_start(_sf) (*(_sf)->iteration_start)(_sf)
-#define fluid_sfont_iteration_next(_sf,_pr) (*(_sf)->iteration_next)(_sf,_pr)
-#define fluid_preset_get_name(_preset) (*(_preset)->get_name)(_preset)
-#define fluid_preset_get_banknum(_preset) (*(_preset)->get_banknum)(_preset)
-#define fluid_preset_get_num(_preset) (*(_preset)->get_num)(_preset)
 
 void FluidSynthParam_Int::Send(fluid_settings_t *settings) {
   printf("FLUID: Setting parameter '%s' = '%d'\n",name,val);
@@ -91,11 +87,11 @@ FluidSynthProcessor::FluidSynthProcessor(Fweelin *app, char stereo) :
     double pitches[12];
     for (int i = 0; i < 12; i++)
       pitches[i] = tuning;
-    fluid_synth_create_octave_tuning(synth, 0, 0, "DETUNE", pitches);
+    fluid_synth_activate_octave_tuning(synth, 0, 0, "DETUNE", pitches, FALSE);
 
     // Select tuning
     for (int i = 0; i < MAX_MIDI_CHANNELS; i++) 
-      fluid_synth_select_tuning(synth, i, 0, 0);
+      fluid_synth_activate_tuning(synth, i, 0, 0, FALSE);
   } else 
     printf("FLUID: Using default tuning\n");
 
@@ -160,9 +156,18 @@ void FluidSynthProcessor::SendPatchChange(PatchItem *p) {
 
 // Sets up our internal patch list based on loaded soundfonts
 void FluidSynthProcessor::SetupPatches() {
-  fluid_preset_t preset;
-
   PatchBrowser *br = (PatchBrowser *) app->getBROWSER(B_Patch);
+#if FLUIDSYNTH_VERSION_MAJOR == 1
+  // NOTE: fluidsynth v2 implements these
+  #define fluid_sfont_iteration_start(_sf) (*(_sf)->iteration_start)(_sf)
+  #define fluid_sfont_iteration_next(_sf,_pr) (*(_sf)->iteration_next)(_sf,_pr)
+  #define fluid_preset_get_name(_preset) (*(_preset)->get_name)(_preset)
+  #define fluid_preset_get_banknum(_preset) (*(_preset)->get_banknum)(_preset)
+  #define fluid_preset_get_num(_preset) (*(_preset)->get_num)(_preset)
+  fluid_preset_t preset;
+#elif FLUIDSYNTH_VERSION_MAJOR == 2
+  fluid_preset_t* preset;
+#endif // FLUIDSYNTH_VERSION_MAJOR
 
   if (br != 0) {
     // Add FluidSynth patch bank
@@ -174,12 +179,21 @@ void FluidSynthProcessor::SetupPatches() {
     for (int i = 0; i < sfcnt; i++) {
       fluid_sfont_t *curfont = fluid_synth_get_sfont(synth,i);
       fluid_sfont_iteration_start(curfont);
+#if FLUIDSYNTH_VERSION_MAJOR == 1
       while (fluid_sfont_iteration_next(curfont, &preset))
         br->AddItem(new PatchItem(fluid_sfont_get_id(curfont),
                                   fluid_preset_get_banknum(&preset),
                                   fluid_preset_get_num(&preset),
                                   fluidchan,
                                   fluid_preset_get_name(&preset)));
+#elif FLUIDSYNTH_VERSION_MAJOR == 2
+      while ((preset = fluid_sfont_iteration_next(curfont)) != NULL)
+        br->AddItem(new PatchItem(fluid_sfont_get_id(curfont),
+                                  fluid_preset_get_banknum(preset),
+                                  fluid_preset_get_num(preset),
+                                  fluidchan,
+                                  fluid_preset_get_name(preset)));
+#endif // FLUIDSYNTH_VERSION_MAJOR
 
       if (i+1 < sfcnt) {
         // End of soundfont- put in a divider

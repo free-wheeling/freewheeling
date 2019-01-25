@@ -52,7 +52,7 @@ enum BrowserItemType {
 class BrowserItem {
  public:
   // Initialize a browser item with name n
-  BrowserItem(char *n = 0, char default_name = 1) : 
+  BrowserItem(const char *n = 0, char default_name = 1) :
     default_name(default_name), next(0), prev(0) {
     if (n == 0)
       name = 0;
@@ -415,7 +415,7 @@ class PatchItem : public BrowserItem {
 public:
 
   PatchItem (int id = 0, int bank = 0, int prog = 0, int channel = 0,
-             char *name = 0, char bypasscc = 0, int bypasschannel = -1, float bypasstime1 = 0.0, float bypasstime2 = 10.0) :
+             const char *name = 0, char bypasscc = 0, int bypasschannel = -1, float bypasstime1 = 0.0, float bypasstime2 = 10.0) :
     BrowserItem(name), id(id), bank(bank), prog(prog), channel(channel),
     bypasscc(bypasscc), bypasschannel(bypasschannel), bypasstime1(bypasstime1), bypasstime2(bypasstime2), 
     zones(0), numzones(0) {};
