@@ -1,8 +1,6 @@
 #ifndef __FWEELIN_DATATYPES_H
 #define __FWEELIN_DATATYPES_H
 
-#include <jack/ringbuffer.h>
-
 /* Copyright 2004-2011 Jan Pekau
    
    This file is part of Freewheeling.
@@ -19,6 +17,11 @@
    
    You should have received a copy of the GNU General Public License
    along with Freewheeling.  If not, see <http://www.gnu.org/licenses/>. */
+
+
+#include <jack/ringbuffer.h>
+#include <assert.h>
+
 
 enum CoreDataType {
   T_char,
@@ -48,7 +51,7 @@ class Range {
 class UserVariable {
 
  public:
-  UserVariable() : name(0), value(data), next(0) {};
+  UserVariable() : name(0), type(T_invalid), value(data), next(0) {};
   ~UserVariable() { 
     if (name != 0) 
       delete[] name;
@@ -436,12 +439,11 @@ class UserVariable {
   };
   operator Range () {
     switch (type) {
-    case T_char : return Range(*((char *) value), *((char *) value));
-    case T_int : return Range(*((int *) value), *((int *) value));
-    case T_long : return Range(*((long *) value), *((long *) value));
-    case T_float : return Range((int) *((float *) value), 
-                                (int) *((float *) value));
-    case T_range : return Range(*((int *) value),*(((int *) value)+1));
+    case T_char  : return Range(      *((char  *) value),       *((char  *) value   ));
+    case T_int   : return Range(      *((int   *) value),       *((int   *) value   ));
+    case T_long  : return Range(      *((long  *) value),       *((long  *) value   ));
+    case T_float : return Range((int) *((float *) value), (int) *((float *) value   ));
+    case T_range : return Range(      *((int   *) value),       *(((int  *) value)+1));
     case T_variable :
     case T_variableref :
       printf(" UserVariable: WARNING: Can't convert T_variable or "
@@ -450,6 +452,7 @@ class UserVariable {
     case T_invalid : 
       printf(" UserVariable: WARNING: Can't convert invalid variable!\n");
       return Range(0,0);
+    default: assert(0);
     }
 
     return Range(0,0);
@@ -503,7 +506,7 @@ class UserVariable {
   
   char *name;
   CoreDataType type;
-  char data[CFG_VAR_SIZE];
+  char data[CFG_VAR_SIZE] = {};
 
   // System variables are a special type of variable that is created by the 
   // core FreeWheeling system and not the user.
