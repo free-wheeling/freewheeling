@@ -247,7 +247,8 @@ void LoopTray::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
 void Browser::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
   const static SDL_Color white = { 0xEF, 0xAF, 0xFF, 0 };
   const static SDL_Color cursorclr = { 0x77, 0x77, 0x77, 0 };
-  static char tmp[255];
+  const static unsigned int tmp_size = 256;
+  static char tmp[tmp_size];
 
   if (font != 0 && font->font != 0 && i != 0) {
     switch (i->GetType()) {
@@ -256,10 +257,7 @@ void Browser::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
         PatchItem *p = (PatchItem *) i;
 
         // Current patch
-        snprintf(tmp,255,"%02d: %s",
-                 p->id,
-                 p->name);
-        tmp[254] = '\0';
+        snprintf(tmp,tmp_size,"%02d: %s",p->id,p->name);
         VideoIO::draw_text(screen,font->font,tmp,x,y,white);
       }
       break;
@@ -270,17 +268,17 @@ void Browser::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
     default :
       {
         if (i->GetType() == B_Loop)
-          snprintf(tmp,255,"%s-",FWEELIN_OUTPUT_LOOP_NAME);
+          snprintf(tmp,tmp_size,"%s-",FWEELIN_OUTPUT_LOOP_NAME);
         else if (i->GetType() == B_Scene)
-          snprintf(tmp,255,"%s-",FWEELIN_OUTPUT_SCENE_NAME);
+          snprintf(tmp,tmp_size,"%s-",FWEELIN_OUTPUT_SCENE_NAME);
         else
           tmp[0] = '\0';
 
         if (i == cur && renamer != 0) {
           RenameUIVars *rui = renamer->UpdateUIVars();
 
-          strncat(tmp,renamer->GetCurName(),255);
-          tmp[254] = '\0';
+          strncat(tmp,renamer->GetCurName(),tmp_size-1);
+          tmp[tmp_size-1] = '\0';
 
           // Draw text with cursor
           int sx, sy;
@@ -293,8 +291,8 @@ void Browser::Draw_Item(SDL_Surface *screen, BrowserItem *i, int x, int y) {
                     x+sx+sy/2,y+sy,
                     cursorclr.r,cursorclr.g,cursorclr.b,255);
         } else if (i->name != 0) {
-          strncat(tmp,i->name,255);
-          tmp[254] = '\0';
+          strncat(tmp,i->name,tmp_size-1);
+          tmp[tmp_size-1] = '\0';
           VideoIO::draw_text(screen,font->font,tmp,x,y,white);
         }
       }
