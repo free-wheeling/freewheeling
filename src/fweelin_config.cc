@@ -709,7 +709,8 @@ void InputMatrix::CreateParameterSets (int interfaceid,
     // Config specifies param sets
     
     // Separate into each param set
-    char *buf = new char[xmlStrlen(paramstr)+1],
+    int buf_len = xmlStrlen(paramstr)+1;
+    char *buf = new char[buf_len],
       *curp = (char *)paramstr, 
       *nextp;
 
@@ -717,7 +718,7 @@ void InputMatrix::CreateParameterSets (int interfaceid,
       nextp = strstr(curp,delim);
 
       int len = (nextp == 0 ? strlen(curp) : (int) (nextp-curp));
-      strncpy(buf,curp,len);
+      strncpy(buf,curp,buf_len);
       buf[len] = '\0';
 
       // Now buf contains one parameter- parse it
@@ -885,7 +886,8 @@ int InputMatrix::CreateConditions (int interfaceid,
     // Config specifies conditions
 
     // Separate into each condition
-    char *buf = new char[xmlStrlen(cond)+1],
+    int buf_len = xmlStrlen(cond)+1;
+    char *buf = new char[buf_len],
       *curc = (char *)cond, 
       *nextc;
 
@@ -893,7 +895,7 @@ int InputMatrix::CreateConditions (int interfaceid,
       nextc = strstr(curc,delim);
 
       int len = (nextc == 0 ? strlen(curc) : (int) (nextc-curc));
-      strncpy(buf,curc,len);
+      strncpy(buf,curc,buf_len);
       buf[len] = '\0';
 
       // Now buf contains one condition- parse it
