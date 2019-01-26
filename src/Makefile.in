@@ -116,18 +116,16 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__dirstamp = $(am__leading_dot)dirstamp
-am_fweelin_OBJECTS = stacktrace.$(OBJEXT) elastin/elastin.$(OBJEXT) \
-	fweelin.$(OBJEXT) fweelin_datatypes.$(OBJEXT) \
-	fweelin_rcu.$(OBJEXT) fweelin_osc.$(OBJEXT) \
-	fweelin_event.$(OBJEXT) fweelin_config.$(OBJEXT) \
-	fweelin_paramset.$(OBJEXT) fweelin_browser.$(OBJEXT) \
-	fweelin_audioio.$(OBJEXT) fweelin_sdlio.$(OBJEXT) \
-	fweelin_midiio.$(OBJEXT) fweelin_amixer.$(OBJEXT) \
-	fweelin_videoio.$(OBJEXT) fweelin_videoio_displays.$(OBJEXT) \
-	fweelin_core.$(OBJEXT) fweelin_mem.$(OBJEXT) \
-	fweelin_block.$(OBJEXT) fweelin_core_dsp.$(OBJEXT) \
-	fweelin_fluidsynth.$(OBJEXT)
+am_fweelin_OBJECTS = stacktrace.$(OBJEXT) fweelin.$(OBJEXT) \
+	fweelin_datatypes.$(OBJEXT) fweelin_rcu.$(OBJEXT) \
+	fweelin_osc.$(OBJEXT) fweelin_event.$(OBJEXT) \
+	fweelin_config.$(OBJEXT) fweelin_paramset.$(OBJEXT) \
+	fweelin_browser.$(OBJEXT) fweelin_audioio.$(OBJEXT) \
+	fweelin_sdlio.$(OBJEXT) fweelin_midiio.$(OBJEXT) \
+	fweelin_amixer.$(OBJEXT) fweelin_videoio.$(OBJEXT) \
+	fweelin_videoio_displays.$(OBJEXT) fweelin_core.$(OBJEXT) \
+	fweelin_mem.$(OBJEXT) fweelin_block.$(OBJEXT) \
+	fweelin_core_dsp.$(OBJEXT) fweelin_fluidsynth.$(OBJEXT)
 fweelin_OBJECTS = $(am_fweelin_OBJECTS)
 fweelin_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -156,7 +154,7 @@ am__depfiles_remade = ./$(DEPDIR)/fweelin.Po \
 	./$(DEPDIR)/fweelin_paramset.Po ./$(DEPDIR)/fweelin_rcu.Po \
 	./$(DEPDIR)/fweelin_sdlio.Po ./$(DEPDIR)/fweelin_videoio.Po \
 	./$(DEPDIR)/fweelin_videoio_displays.Po \
-	./$(DEPDIR)/stacktrace.Po elastin/$(DEPDIR)/elastin.Po
+	./$(DEPDIR)/stacktrace.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -314,7 +312,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-fweelin_SOURCES = stacktrace.c elastin/elastin.cc fweelin.cc fweelin_datatypes.cc fweelin_rcu.cc fweelin_osc.cc fweelin_event.cc fweelin_config.cc fweelin_paramset.cc fweelin_browser.cc fweelin_audioio.cc fweelin_sdlio.cc fweelin_midiio.cc fweelin_amixer.cc fweelin_videoio.cc fweelin_videoio_displays.cc fweelin_core.cc fweelin_mem.cc fweelin_block.cc fweelin_core_dsp.cc fweelin_fluidsynth.cc
+fweelin_SOURCES = stacktrace.c fweelin.cc fweelin_datatypes.cc fweelin_rcu.cc fweelin_osc.cc fweelin_event.cc fweelin_config.cc fweelin_paramset.cc fweelin_browser.cc fweelin_audioio.cc fweelin_sdlio.cc fweelin_midiio.cc fweelin_amixer.cc fweelin_videoio.cc fweelin_videoio_displays.cc fweelin_core.cc fweelin_mem.cc fweelin_block.cc fweelin_core_dsp.cc fweelin_fluidsynth.cc
 fweelindir = $(datadir)/fweelin
 FWEELIN_CFLAGS = -I. -g -Wall -Wextra -Wno-write-strings -D_REENTRANT -DPTHREADS -DNDEBUG -DVERSION=\"$(VERSION)\" -DFWEELIN_DATADIR=\"$(fweelindir)\" -DADDON_DIR=\"/usr/local/lib/jack\" -I/usr/include/freetype2 -I/usr/include/libxml2 -funroll-loops -finline-functions -fomit-frame-pointer -ffast-math -fexpensive-optimizations -fstrict-aliasing -falign-loops=2 -falign-jumps=2 -falign-functions=2 -O9
 FWEELIN_CXXFLAGS = -Wno-non-virtual-dtor
@@ -395,14 +393,6 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-elastin/$(am__dirstamp):
-	@$(MKDIR_P) elastin
-	@: > elastin/$(am__dirstamp)
-elastin/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) elastin/$(DEPDIR)
-	@: > elastin/$(DEPDIR)/$(am__dirstamp)
-elastin/elastin.$(OBJEXT): elastin/$(am__dirstamp) \
-	elastin/$(DEPDIR)/$(am__dirstamp)
 
 fweelin$(EXEEXT): $(fweelin_OBJECTS) $(fweelin_DEPENDENCIES) $(EXTRA_fweelin_DEPENDENCIES) 
 	@rm -f fweelin$(EXEEXT)
@@ -410,7 +400,6 @@ fweelin$(EXEEXT): $(fweelin_OBJECTS) $(fweelin_DEPENDENCIES) $(EXTRA_fweelin_DEP
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f elastin/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -435,7 +424,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fweelin_videoio.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fweelin_videoio_displays.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stacktrace.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@elastin/$(DEPDIR)/elastin.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -593,8 +581,6 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f elastin/$(DEPDIR)/$(am__dirstamp)
-	-rm -f elastin/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -624,7 +610,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/fweelin_videoio.Po
 	-rm -f ./$(DEPDIR)/fweelin_videoio_displays.Po
 	-rm -f ./$(DEPDIR)/stacktrace.Po
-	-rm -f elastin/$(DEPDIR)/elastin.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -690,7 +675,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/fweelin_videoio.Po
 	-rm -f ./$(DEPDIR)/fweelin_videoio_displays.Po
 	-rm -f ./$(DEPDIR)/stacktrace.Po
-	-rm -f elastin/$(DEPDIR)/elastin.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

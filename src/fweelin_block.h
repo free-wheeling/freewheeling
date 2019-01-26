@@ -31,7 +31,7 @@
 #include "fweelin_audioio.h"
 #include "fweelin_mem.h"
 #include "fweelin_event.h"
-#include "elastin/elastin.h"
+
 
 // Types of audio codecs supported
 typedef enum {
