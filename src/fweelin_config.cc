@@ -70,9 +70,8 @@ const int CfgMathOperation::numops = 4;
 const int FloConfig::NUM_PREALLOCATED_AUDIO_BLOCKS = 40;
 const int FloConfig::NUM_PREALLOCATED_TIME_MARKERS = 40;
 const float FloConfig::AUDIO_MEMORY_LEN = 10.0;
+const int FloConfig::CFG_PATH_MAX = 2048;
 
-// Maximum path length for config files
-#define CFG_PATH_MAX 2048
 
 // Copies configuration file 'cfgname' from shared to ~/.fweelin
 // If copyall is set, copies *all* .XML files from shared to ~/.fweelin
@@ -105,28 +104,30 @@ void FloConfig::CopyConfigFile (char *cfgname, char copyall) {
     struct stat st;
     if (stat(buf,&st) == 0) {
       // Find backup name
-      char tmp2[CFG_PATH_MAX];
-      int bCnt = 1;
+      unsigned int tmp2_size = CFG_PATH_MAX + 20;
+      char tmp2[tmp2_size];
+      unsigned char bCnt = 1;
       char go = 1;
-      while (go) {
-        snprintf(tmp2,CFG_PATH_MAX,"%s.backup.%d",buf,bCnt);
+      do {
+        snprintf(tmp2,tmp2_size,"%s.backup.%d",buf,bCnt);
         if (stat(tmp2,&st) != 0)
           go = 0; // Free backup filename
         else
           bCnt++;
-      }
+      } while (go && bCnt % 256) ;
 
       // Backup
       printf("Backing up your old configuration to: %s\n",tmp2);
-      char tmp3[CFG_PATH_MAX];
-      snprintf(tmp3,CFG_PATH_MAX,"cp \"%s\" \"%s\"",buf,tmp2);
+      unsigned int tmp3_size = (CFG_PATH_MAX * 2) + 20;
+      char tmp3[tmp3_size];
+      snprintf(tmp3,tmp3_size,"cp \"%s\" \"%s\"",buf,tmp2);
       printf("INIT: Copying: %s\n",tmp3);
       system(tmp3);
     }
 
     // Copy over from shared
-    char buf2[CFG_PATH_MAX];
-    snprintf(buf2,CFG_PATH_MAX,"cp \"%s/%s\" \"%s/%s\"",
+    char buf2[CFG_PATH_MAX*2];
+    snprintf(buf2,CFG_PATH_MAX*2,"cp \"%s/%s\" \"%s/%s\"",
              FWEELIN_DATADIR,cfgname,
              homedir,FWEELIN_CONFIG_DIR);
     printf("INIT: Copying: %s\n",buf2);
@@ -689,7 +690,7 @@ void InputMatrix::CreateVariable (xmlNode *declare) {
 // and sets us up to handle those
 void InputMatrix::CreateParameterSets (int interfaceid,
                                        EventBinding *bind, xmlNode *binding, 
-                                       Event *input, int contnum) {
+                                       Event *input, unsigned char contnum) {
   const static char *delim = " and ";
 
   const static char *str_base = "parameters";
@@ -1139,7 +1140,7 @@ void InputMatrix::CreateBinding (int interfaceid, xmlNode *binding) {
                                          nw,binding,inproto,pidx);
 
         // Output event(s)
-        int contnum = 0;
+        unsigned char contnum = 0;
         char go = 1, first = 1;
         do { 
           const static char *str_base = "output";
@@ -1204,7 +1205,7 @@ void InputMatrix::CreateBinding (int interfaceid, xmlNode *binding) {
           }
 
           contnum++;
-        } while (go);
+        } while (go && contnum % 256);
 
         if (first)
           printf(FWEELIN_ERROR_COLOR_ON 

@@ -214,12 +214,14 @@ void Saveable::RenameSaveable(char **filename_ptr, int baselen,
       sprintf(*filename_ptr,"%s-%s",
               fn_base,fn_hash);
 
-    char tmp_a[FWEELIN_OUTNAME_LEN],
-      tmp_b[FWEELIN_OUTNAME_LEN];
+    unsigned int tmp_a_size = FWEELIN_OUTNAME_LEN + 10;
+    unsigned int tmp_b_size = FWEELIN_OUTNAME_LEN;
+    char tmp_a[tmp_a_size],
+      tmp_b[tmp_b_size];
     for (int i = 0; i < num_exts; i++) {
       // Add each type of extension provided and rename the file
-      snprintf(tmp_a,FWEELIN_OUTNAME_LEN,"%s%s",tmp,exts[i]);
-      snprintf(tmp_b,FWEELIN_OUTNAME_LEN,"%s%s",*filename_ptr,exts[i]);
+      snprintf(tmp_a,tmp_a_size,"%s%s",tmp,exts[i]);
+      snprintf(tmp_b,tmp_b_size,"%s%s",*filename_ptr,exts[i]);
 
       if (!rename(tmp_a,tmp_b))
         printf("SAVEABLE: Rename file '%s' -> '%s'\n",tmp_a,tmp_b);
@@ -986,21 +988,22 @@ void TriggerMap::GoSave(char *filename) {
     struct stat st;
     if (stat(tmp,&st) == 0) {
       // First available backup filename
-      char tmp2[FWEELIN_OUTNAME_LEN];
-      int bCnt = 1;
+      unsigned int tmp2_size = FWEELIN_OUTNAME_LEN + 20;
+      char tmp2[tmp2_size];
+      unsigned char bCnt = 1;
       char go = 1;
-      
-      while (go) {
-        snprintf(tmp2,FWEELIN_OUTNAME_LEN,"%s.backup.%d",tmp,bCnt);
+      do {
+        snprintf(tmp2,tmp2_size,"%s.backup.%d",tmp,bCnt);
         if (stat(tmp2,&st) != 0)
           go = 0; // Free backup filename
         else
           bCnt++;
-      }
+      } while (go && bCnt % 256) ;
       
-      char buf[FWEELIN_OUTNAME_LEN * 2 + 20];
+      unsigned int buf_size = (FWEELIN_OUTNAME_LEN * 2) + 20;
+      char buf[buf_size];
       printf("INIT: Backup existing scene.\n");
-      sprintf(buf,"mv \"%s\" \"%s\"",tmp,tmp2);
+      snprintf(buf,buf_size,"mv \"%s\" \"%s\"",tmp,tmp2);
       printf("INIT: Executing: %s\n",buf);
       system(buf);      
     }
@@ -1016,7 +1019,7 @@ void TriggerMap::GoSave(char *filename) {
     // Save scene XML data
     xmlDocPtr ldat = xmlNewDoc((xmlChar *) "1.0");
     if (ldat != 0) {
-      const static int XT_LEN = 10;
+      const static int XT_LEN = 11;
       char xmltmp[XT_LEN];
       
       // Scene

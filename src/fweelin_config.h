@@ -297,7 +297,7 @@ class InputMatrix : public EventProducer, public EventListener {
   // and sets us up to handle those
   void CreateParameterSets (int interfaceid,
                             EventBinding *bind, xmlNode *binding, 
-                            Event *input, int contnum);
+                            Event *input, unsigned char contnum);
 
   // Scans in the given binding for conditions on input event parameters 
   // or user variables, and sets us up to handle those
@@ -1088,6 +1088,8 @@ class FloConfig {
   const static int NUM_PREALLOCATED_AUDIO_BLOCKS;
   // # of time markers to preallocate
   const static int NUM_PREALLOCATED_TIME_MARKERS;
+  // Maximum path length for config files
+  const static int CFG_PATH_MAX;
 };
 
 #endif
