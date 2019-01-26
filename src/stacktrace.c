@@ -749,8 +749,9 @@ void StackTrace(char *gdb_command_file)
 
 # endif
 
-  write(global_output,
-	"No debugger found\n", strlen("No debugger found\n"));
+  char *err_msg =	"No debugger found\n";
+  int io_err = write(global_output, err_msg, strlen(err_msg));
+  if (io_err) printf("DEBUG: I/O error writing to global_output - err: (%s)\n" , err_msg);
 
 #elif defined(PLATFORM_WIN32)
   /* Use StackWalk() */
