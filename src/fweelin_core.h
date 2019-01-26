@@ -422,7 +422,7 @@ public:
 
 // This class manages sets of loops, allowing them to be triggered..
 // like a keymap
-class TriggerMap : public Saveable, public EventProducer {
+class TriggerMap : public Saveable, public EventProducer { 
 public:
   TriggerMap (Fweelin *app, int mapsize) : app(app), mapsize(mapsize), 
     lastupdate(0) {
@@ -1028,7 +1028,11 @@ class Fweelin : public EventProducer, public BrowserCallback {
   Snapshot *getSNAP(int idx); 
   inline Snapshot *getSNAPS() { return snaps; }; 
 
+  // Trigger snapshot #idx - return nonzero on failure
+  char TriggerSnapshot (int idx);
+
   // Create snapshot from current state of all loops
+  void CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap);
   Snapshot *CreateSnapshot (int idx) { 
     Snapshot *s = getSNAP(idx);
     if (s != 0) {
@@ -1047,14 +1051,14 @@ class Fweelin : public EventProducer, public BrowserCallback {
       char tmp[sizeof(Snapshot)];
       tmap->TouchMap();
       memcpy(tmp,s1,sizeof(Snapshot));
-      memcpy(s1,s2,sizeof(Snapshot));
-      memcpy(s2,tmp,sizeof(Snapshot));
+      memcpy((unsigned char*)s1,s2,sizeof(Snapshot));
+      memcpy((unsigned char*)s2,tmp,sizeof(Snapshot));
       return 0;
     } else
       return -1;
   };
 
-  // Load snapshot from disk- just create space & name
+  // Load snapshot from disk - just create space & name
   Snapshot *LoadSnapshot (int idx, char *name) {
     Snapshot *s = getSNAP(idx);
     if (s != 0) {
@@ -1065,17 +1069,9 @@ class Fweelin : public EventProducer, public BrowserCallback {
     return s;
   };
 
-  // Trigger snapshot #idx - return nonzero on failure
-  char TriggerSnapshot (int idx);
-
-  // Create a snapshot from loops right now
-  void CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap);
-
   // Sync parameters
-  
   inline int GetSyncSpeed() { return sync_speed; };
   inline char GetSyncType() { return sync_type; };
-  
   inline void SetSyncSpeed(int sspd) { 
     if (sspd < 1)
       sync_speed = 1;
