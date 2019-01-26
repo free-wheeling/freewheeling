@@ -71,12 +71,12 @@ class BrowserItem {
   // Compare this item to a second item and return whether this item is
   // greater than (>0), less than (<0), or equal to (==0) second
   // Used for sorting browser items
-  virtual int Compare(BrowserItem *second) { return 0; };
+  virtual int Compare(BrowserItem */*second*/) { return 0; };
 
   // Return zero if the item described by 'itemmatch' matches this item
   // This is a type-neutral compare function to be overridden to provide
   // meaningful matches for different browsers
-  virtual int MatchItem(int itemmatch) { return 1; };
+  virtual int MatchItem(int /*itemmatch*/) { return 1; };
 
   char default_name; // Nonzero if the name for this item is a default name
   char *name;
@@ -120,7 +120,7 @@ class ItemRenamer : public EventHook {
   virtual ~ItemRenamer() {};
 
   // Hook events for typing new names
-  virtual char HookEvent(Event *ev, EventProducer *from);
+  virtual char HookEvent(Event *ev, EventProducer */*from*/);
 
   inline char *GetCurName() { return rename_tmpbuf; };
   inline RenameUIVars *UpdateUIVars() { 
@@ -201,9 +201,9 @@ class Browser : public FloDisplay, public EventListener, public EventProducer,
   void Rename();
 
   // Mouse button pressed (return nonzero to eat event, zero to ignore)
-  virtual char MouseButton(MouseButtonInputEvent *mev) { return 0; };
+  virtual char MouseButton(MouseButtonInputEvent */*evt*/) { return 0; };
   // Mouse moved (return nonzero to eat event, zero to ignore)
-  virtual char MouseMotion(MouseMotionInputEvent *mev) { return 0; };
+  virtual char MouseMotion(MouseMotionInputEvent */*evt*/) { return 0; };
 
   // Get the onscreen display name for a file with given name. 
   // (filename must refer to a file of the type this browser handles)
@@ -250,7 +250,7 @@ class Browser : public FloDisplay, public EventListener, public EventProducer,
   };
 
   // Receive events
-  virtual void ReceiveEvent(Event *ev, EventProducer *from);
+  virtual void ReceiveEvent(Event *ev, EventProducer */*from*/);
 
   // Draw to screen
   virtual void Draw(SDL_Surface *screen);

@@ -762,15 +762,15 @@ class FloConfig {
   char *PrepareLoadConfigFile (char *cfgname, char basecfg);
   
   // Configure bindings between events and their triggers
-  void ConfigureEventBindings(xmlDocPtr doc, xmlNode *events, 
+  void ConfigureEventBindings(xmlDocPtr /*doc*/, xmlNode *events,
                               int interfaceid = 0, char firstpass = 0);
 
   // Configuring displays
-  void SetupParamSetBank(xmlDocPtr doc, xmlNode *banknode, ParamSetBank *bank);
+  void SetupParamSetBank(xmlDocPtr /*doc*/, xmlNode *banknode, ParamSetBank *bank);
   FloDisplay *SetupParamSet(xmlDocPtr doc, xmlNode *paramset, int interfaceid);
 
   // Configuration sections
-  void ConfigureElement(xmlDocPtr doc, xmlNode *elemn, 
+  void ConfigureElement(xmlDocPtr /*doc*/, xmlNode *elemn,
                         FloLayoutElement *elem, float xscale, float yscale);
   void ConfigureLayout(xmlDocPtr doc, xmlNode *layn, 
                        FloLayout *lay, float xscale, float yscale);
@@ -778,8 +778,8 @@ class FloConfig {
   void ConfigureDisplay(xmlDocPtr doc, xmlNode *disp, int interfaceid, FloDisplayPanel *parent = 0);
   void ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br);
   void ConfigureGraphics(xmlDocPtr doc, xmlNode *vid, int interfaceid = 0);
-  void ConfigureBasics(xmlDocPtr doc, xmlNode *gen);
-  void ConfigureInterfaces (xmlDocPtr doc, xmlNode *ifs, char firstpass);
+  void ConfigureBasics(xmlDocPtr /*doc*/, xmlNode *gen);
+  void ConfigureInterfaces (xmlDocPtr /*doc*/, xmlNode *ifs, char firstpass);
   void ConfigureRoot (xmlDocPtr doc, xmlNode *root, int interfaceid = 0,
                       char firstpass = 0);
   
@@ -858,7 +858,7 @@ class FloConfig {
   
   // Is input/output #n stereo?
   inline char IsStereoInput(int n) { return ms_inputs[n]; };
-  inline char IsStereoOutput(int n) { return IsStereoMaster(); };
+  inline char IsStereoOutput(int /*out_n*/) { return IsStereoMaster(); };
   inline char IsInputMonitoring(int n) { return monitor_inputs[n]; };
   char *ms_inputs,    // Zero or nonzero for each input- is this input stereo?
     *monitor_inputs;  // Nonzero if monitoring is enabled for this input

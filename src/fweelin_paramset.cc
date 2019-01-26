@@ -48,7 +48,7 @@ void FloDisplayParamSet::LinkActiveParams() {
 };
 #endif
 
-void FloDisplayParamSet::ReceiveEvent(Event *ev, EventProducer *from) {
+void FloDisplayParamSet::ReceiveEvent(Event *ev, EventProducer */*from*/) {
   switch (ev->GetType()) {
     case T_EV_ParamSetGetAbsoluteParamIdx :
       {

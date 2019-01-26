@@ -1781,7 +1781,7 @@ void InputMatrix::ReceiveEvent(Event *ev, EventProducer *from) {
   }
 };
 
-void FloConfig::ConfigureEventBindings(xmlDocPtr doc, xmlNode *events, 
+void FloConfig::ConfigureEventBindings(xmlDocPtr /*doc*/, xmlNode *events,
                                        int interfaceid, char firstpass) {
   xmlNode *cur_node;
   for (cur_node = events->children; cur_node != NULL; 
@@ -1803,7 +1803,7 @@ void FloConfig::ConfigureEventBindings(xmlDocPtr doc, xmlNode *events,
   }
 };
 
-void FloConfig::ConfigureBasics(xmlDocPtr doc, xmlNode *gen) {
+void FloConfig::ConfigureBasics(xmlDocPtr /*doc*/, xmlNode *gen) {
   xmlNode *cur_node;
   for (cur_node = gen->children; cur_node != NULL; 
        cur_node = cur_node->next) {
@@ -2214,7 +2214,7 @@ int *FloConfig::ExtractArrayInt(char *n, int *size, char delim_char) {
   return array;
 };
 
-void FloConfig::ConfigureElement(xmlDocPtr doc, xmlNode *elemn, 
+void FloConfig::ConfigureElement(xmlDocPtr /*doc*/, xmlNode *elemn,
                                  FloLayoutElement *elem, float xscale,
                                  float yscale) {
   xmlNode *cur_node;
@@ -2653,7 +2653,7 @@ void FloConfig::ConfigurePatchBanks(xmlNode *pb, PatchBrowser *br) {
   }    
 };
 
-void FloConfig::SetupParamSetBank(xmlDocPtr doc, xmlNode *banknode, ParamSetBank *bank) {
+void FloConfig::SetupParamSetBank(xmlDocPtr /*doc*/, xmlNode *banknode, ParamSetBank *bank) {
   // Bank name
   char *name = 0;
   xmlChar *nn = xmlGetProp(banknode, (const xmlChar *)"name");
@@ -3614,7 +3614,7 @@ FloConfig::FloConfig(Fweelin *app) : im(app),
   scope_sample_len = vsize[0]; // Scope goes across screen
 };
 
-void FloConfig::ConfigureInterfaces (xmlDocPtr doc, xmlNode *ifs,
+void FloConfig::ConfigureInterfaces (xmlDocPtr /*doc*/, xmlNode *ifs,
                                      char firstpass) {
   int cur_iid = 1, // First interface has ID 1 (0 is main config) 
     // First non-switchable interface has this ID

@@ -131,7 +131,7 @@ VorbisDecoder::VorbisDecoder(Fweelin *app) : iFileDecoder(app) {};
 VorbisDecoder::~VorbisDecoder() {};
 
 // Returns nonzero on error
-int VorbisDecoder::ReadFromFile(FILE *in, nframes_t rbuf_len) {
+int VorbisDecoder::ReadFromFile(FILE *in, nframes_t /*rbuf_len*/) {
   if (ov_open(in, &vf, NULL, 0) < 0) {
     printf("DISK: (VorbisFile) Input does not appear to be an Ogg "
            "bitstream.\n");

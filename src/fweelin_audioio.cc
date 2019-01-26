@@ -115,8 +115,8 @@ void AudioIO::RelocateTransport(nframes_t pos) {
   }
 };
 
-void AudioIO::timebase_callback(jack_transport_state_t state, 
-                                jack_nframes_t nframes, 
+void AudioIO::timebase_callback(jack_transport_state_t /*state*/,
+                                jack_nframes_t /*nframes*/,
                                 jack_position_t *pos, int new_pos, void *arg) {
   AudioIO *inst = static_cast<AudioIO *>(arg);
 
@@ -194,7 +194,7 @@ int AudioIO::srate_callback (nframes_t nframes, void *arg) {
   return 0;
 }
 
-void AudioIO::audio_shutdown (void *arg)
+void AudioIO::audio_shutdown (void */*arg*/)
 {
   printf("AUDIO: shutdown! exiting..\n");
   exit(1);

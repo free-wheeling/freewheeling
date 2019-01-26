@@ -39,7 +39,7 @@ public:
 
   virtual void process(char pre, nframes_t len, AudioBuffers *ab);
 
-  virtual void ReceiveEvent(Event *ev, EventProducer *from);
+  virtual void ReceiveEvent(Event *ev, EventProducer */*from*/);
 
   // Send a new patch to synth
   void SendPatchChange(PatchItem *p);

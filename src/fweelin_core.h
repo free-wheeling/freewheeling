@@ -101,7 +101,7 @@ class Saveable {
  public:
   Saveable() : savestatus(NO_SAVE) {};
 
-  virtual void Save(Fweelin *app) {}; // Save the object
+  virtual void Save(Fweelin */*app*/) {}; // Save the object
 
   inline unsigned char *GetSaveHash() { return savehash; };
   inline int CompareHash(unsigned char *hash2) { 
@@ -862,12 +862,12 @@ public:
   void AddLoopToLoadQueue(char *filename, int index, float vol);
 
   // Saves loop XML data & prepares to save loop audio
-  void SetupSaveLoop(Loop *l, int l_idx, FILE **out, AudioBlock **b, 
+  void SetupSaveLoop(Loop *l, int /*l_idx*/, FILE **out, AudioBlock **b,
                      AudioBlockIterator **i, nframes_t *len);
   // Loads loop XML data & prepares to load loop audio-
   // returns nonzero on error
   int SetupLoadLoop(FILE **in, char *smooth_end,
-                    Loop **new_loop, int l_idx, float l_vol,
+                    Loop **new_loop, int /*l_idx*/, float l_vol,
                     char *l_filename);
 
   // Setup time marker striping on audio memory when a new
@@ -1092,13 +1092,13 @@ class Fweelin : public EventProducer, public BrowserCallback {
   };
 
   // Patch browser callbacks
-  virtual void ItemBrowsed(BrowserItem *i) { 
+  virtual void ItemBrowsed(BrowserItem */*item*/) {
     // Auto-select (disabled)
     // ItemSelected(i); 
   };
-  virtual void ItemSelected(BrowserItem *i);
+  virtual void ItemSelected(BrowserItem *item);
   // Patches can not yet be renamed
-  virtual void ItemRenamed(BrowserItem *i) { return; }; 
+  virtual void ItemRenamed(BrowserItem */*item*/) { return; };
 
  private:
   OSCClient *osc;

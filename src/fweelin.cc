@@ -98,8 +98,9 @@ void signal_handler (int iSignal) {
   kill(main_pid, SIGKILL);
 }
 
+
 #if 1
-int main (int argc, char *argv[]) {
+int main (int /*argc*/, char *argv[]) {
 #if !defined(WIN32)
   main_pid = getpid();
 #endif

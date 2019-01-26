@@ -132,7 +132,7 @@ public:
   };
 
   // Finds the data (XML) file with given stubname in the loop library. Returns information about it.
-  static LibraryFileInfo GetDataFilenameFromStub (Fweelin *app, const char *stubname) {
+  static LibraryFileInfo GetDataFilenameFromStub (Fweelin */*app*/, const char *stubname) {
     struct stat st;
 
     LibraryFileInfo ret;

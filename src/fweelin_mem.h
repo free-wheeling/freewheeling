@@ -127,11 +127,11 @@ class Preallocated {
   Preallocated() : prealloc_mgr(0) {};
   virtual ~Preallocated() {};
 
-  void *operator new(size_t s) {
+  void *operator new(size_t) {
     printf("ERROR: Preallocated type can not be allocated directly\n");
     exit(1);
   };
-  void operator delete(void *d) {
+  void operator delete(void*) {
     // cannot pass to RTDelete as this would end with two delete executed
     // and destructor called twice
     printf("ERROR: Preallocated type can not be deleted directly\n");
@@ -253,7 +253,7 @@ enum MemoryManagerUpdateType {
 class MemoryManagerUpdate {
 public:
   // Zero (invalid) update
-  MemoryManagerUpdate(int zero = 0) : which_pt(0) {};
+  MemoryManagerUpdate(int zero = 0) : which_pt(0) { if (zero) { /*zero is for what now?*/ } };
 
   // Valid update
   MemoryManagerUpdate(PreallocatedType *which_pt, MemoryManagerUpdateType update_type,

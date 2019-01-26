@@ -437,7 +437,7 @@ void SDLIO::close() {
   printf("SDLIO: end\n");
 }
 
-void SDLIO::ReceiveEvent(Event *ev, EventProducer *from) {
+void SDLIO::ReceiveEvent(Event *ev, EventProducer */*from*/) {
   switch (ev->GetType()) {
   case T_EV_ExitSession :
     sdlthreadgo = 0;

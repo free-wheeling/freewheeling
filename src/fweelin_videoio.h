@@ -118,7 +118,7 @@ public:
   void SetVideoMode(char fullscreen);
   char GetVideoMode() { return fullscreen; };
 
-  void ReceiveEvent(Event *ev, EventProducer *from);
+  void ReceiveEvent(Event *ev, EventProducer */*from*/);
 
   // Draw text, and optionally return size of text drawn in sx and sy
   static int draw_text(SDL_Surface *out, TTF_Font *font,

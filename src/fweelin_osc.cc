@@ -67,8 +67,8 @@ OSCClient::~OSCClient() {
   pthread_mutex_destroy (&osc_client_lock);
 }
 
-void OSCClient::ReceiveEvent(Event *ev, EventProducer *from) {
-  switch (ev->GetType()) {
+void OSCClient::ReceiveEvent(Event *evt, EventProducer */*from*/) {
+  switch (evt->GetType()) {
   case T_EV_TransmitPlayingLoopsToDAW :
     {
       // OK!

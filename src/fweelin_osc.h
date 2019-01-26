@@ -32,7 +32,7 @@ public:
   OSCClient (Fweelin *app);
   virtual ~OSCClient ();
 
-  void ReceiveEvent(Event *ev, EventProducer *from);
+  void ReceiveEvent(Event *ev, EventProducer */*from*/);
 
 protected:
   // Core app

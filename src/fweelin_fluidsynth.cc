@@ -246,7 +246,7 @@ void FluidSynthProcessor::ReceiveMIDIEvent(Event *ev) {
   }
 };
 
-void FluidSynthProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
+void FluidSynthProcessor::ReceiveEvent(Event *ev, EventProducer */*from*/) {
   switch (ev->GetType()) {
   case T_EV_FluidSynthEnable :
     {

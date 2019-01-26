@@ -57,7 +57,7 @@ public:
   MidiIO (Fweelin *app);
   virtual ~MidiIO ();
 
-  void ReceiveEvent(Event *ev, EventProducer *from);
+  void ReceiveEvent(Event *ev, EventProducer */*from*/);
 
   int activate ();
   void close ();
@@ -146,8 +146,8 @@ protected:
   void OutputStop (int port);
   
   // Start/End pass messages
-  void OutputStartOnPort ();       // First message for this port in this pass
-  void OutputEndOnPort (int port); // Last message for this port in this pass
+  void OutputStartOnPort ();           // First message for this port in this pass
+  void OutputEndOnPort (int /*port*/); // Last message for this port in this pass
 
   // Echo MIDI event to a single port and channel, and update bypass settings for the given channel
   // Return the port echoed to

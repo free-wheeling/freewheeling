@@ -368,7 +368,7 @@ void VideoIO::close() {
   printf("VIDEO: end\n");
 }
 
-void VideoIO::ReceiveEvent(Event *ev, EventProducer *from) {
+void VideoIO::ReceiveEvent(Event *ev, EventProducer */*from*/) {
   switch (ev->GetType()) {
   case T_EV_Input_MouseMotion :
     {

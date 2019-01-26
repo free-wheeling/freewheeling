@@ -486,7 +486,7 @@ class SndFileEncoder : public iFileEncoder {
   int SetupFileForWriting (FILE *file);
   long int WriteSamplesToDisk (sample_t **ibuf, nframes_t startframe, nframes_t numframes);
   void PrepareFileForClosing (void);
-  void Preprocess (sample_t *l, sample_t *r, nframes_t len) {};
+  void Preprocess (sample_t */*left*/, sample_t */*right*/, nframes_t /*n_frames*/) {};
 
  private:
 
@@ -549,7 +549,7 @@ class iFileDecoder {
   
   // Tell the decoder to decode from a given file
   // This reads the files header
-  virtual int ReadFromFile(FILE *in, nframes_t rbuf_len) = 0;
+  virtual int ReadFromFile(FILE *in, nframes_t /*rbuf_len*/) = 0;
   // Decode a maximum of max_len samples and return buffers in pcm_channels
   // (format as per VorbisFile ov_read_float)
   // Returns # of samples read, 0 if EOF, <0 if error
@@ -615,7 +615,7 @@ class VorbisDecoder : public iFileDecoder {
 
   // Tell the decoder to decode from a given file
   // This reads the vorbis header
-  int ReadFromFile(FILE *in, nframes_t rbuf_len);
+  int ReadFromFile(FILE *in, nframes_t /*rbuf_len*/);
 
  private:
 

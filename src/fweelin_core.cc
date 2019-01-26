@@ -408,7 +408,7 @@ void LoopManager::SetupSceneBrowser() {
   }
 };
 
-void LoopManager::ItemBrowsed(BrowserItem *i) {};
+void LoopManager::ItemBrowsed(BrowserItem */*item*/) {};
 void LoopManager::ItemSelected(BrowserItem *i) {
   // Loop manager handles selected browser callback for scenes and loops
   switch (i->GetType()) {
@@ -1136,7 +1136,7 @@ void LoopManager::CheckSaveMap() {
 }
 
 // Saves loop XML data & prepares to save loop audio
-void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out, 
+void LoopManager::SetupSaveLoop(Loop *l, int /*l_idx*/, FILE **out,
                                 AudioBlock **b, 
                                 AudioBlockIterator **i,
                                 nframes_t *len) {
@@ -1306,7 +1306,7 @@ void LoopManager::SetupSaveLoop(Loop *l, int l_idx, FILE **out,
 
 // Loads loop XML data & prepares to load loop audio
 int LoopManager::SetupLoadLoop(FILE **in, char *smooth_end, Loop **new_loop,
-                               int l_idx, float l_vol, char *l_filename) {
+                               int /*l_idx*/, float l_vol, char *l_filename) {
   // Open up right file and begin loading
   LibraryFileInfo f = LibraryHelper::GetLoopFilenameFromStub(app,l_filename);
 
@@ -3891,7 +3891,7 @@ int Fweelin::setup()
   return 0;
 }
 
-void Fweelin::ItemSelected (BrowserItem *i) { 
+void Fweelin::ItemSelected (BrowserItem *i) {
   // Main app handles selected callback for patch browser
   if (i->GetType() != B_Patch) 
     printf("CORE: ERROR- Patch Browser contains items of invalid type!\n");

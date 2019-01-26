@@ -75,7 +75,7 @@ public:
 
   KeySettings *getSETS() { return &sets; };
 
-  void ReceiveEvent(Event *ev, EventProducer *from);
+  void ReceiveEvent(Event *ev, EventProducer */*from*/);
 
   // We use slightly modified keynames for the config system:
   // Gets the SDL keysym that corresponds to key with a given name

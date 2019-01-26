@@ -693,7 +693,7 @@ void AutoLimitProcessor::ResetLimiter() {
   limiterfreeze = 0;
 }
 
-void AutoLimitProcessor::process(char pre, nframes_t len, AudioBuffers *ab) {
+void AutoLimitProcessor::process(char /*pre*/, nframes_t len, AudioBuffers *ab) {
   // Autolimit treats stereo channels as linked
   float localmaxvol = 0.0,
     maxamp = app->getCFG()->GetMaxLimiterGain(),
@@ -1023,7 +1023,7 @@ void RootProcessor::processchain(char pre, nframes_t len, AudioBuffers *ab,
   }
 }
 
-void RootProcessor::ReceiveEvent(Event *ev, EventProducer *from) {
+void RootProcessor::ReceiveEvent(Event *ev, EventProducer */*from*/) {
   switch (ev->GetType()) {
   case T_EV_CleanupProcessor :
   {
@@ -1640,7 +1640,7 @@ void RecordProcessor::AbortRecording() {
     app->getBMG()->GrowChainOff(recblk);
 }
 
-void RecordProcessor::PulseSync (int syncidx, nframes_t actualpos) {
+void RecordProcessor::PulseSync (int syncidx, nframes_t /*actualpos*/) {
   // printf("RecSync: %d ESIdx: %d Sync_Idx: %d ActualPos: %d\n",syncidx,endsyncidx,sync_idx,actualpos);
   
   if (syncidx == endsyncidx && endsyncwait) {
@@ -1738,7 +1738,7 @@ void RecordProcessor::End() {
 void RecordProcessor::FadeOut_Input(nframes_t len, 
                                     sample_t *input_l, sample_t *input_r,
                                     sample_t *loop_l, sample_t *loop_r, 
-                                    float old_fb, float new_fb, float fb_delta,
+                                    float old_fb, float /*new_fb*/, float fb_delta,
                                     sample_t *dest_l, sample_t *dest_r) {
   // Fade out input samples
   // (feedback to 1.0)
@@ -1791,7 +1791,7 @@ void RecordProcessor::FadeOut_Input(nframes_t len,
 void RecordProcessor::FadeIn_Input(nframes_t len, 
                                    sample_t *input_l, sample_t *input_r,
                                    sample_t *loop_l, sample_t *loop_r, 
-                                   float old_fb, float new_fb, float fb_delta,
+                                   float old_fb, float /*new_fb*/, float fb_delta,
                                    sample_t *dest_l, sample_t *dest_r) {
   // Left
 
@@ -2150,7 +2150,7 @@ PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
     sync_add = 1;
   }
   
-#if 0
+#ifdef FWEELIN_EXPERIMENTAL_NOTIFY_PULSE
     // OK, we are synced to a pulse, so notify on every beat of that pulse
     if (startofs == 0 && sync->GetPct() >= 0.5) {
       // Close to next downbeat- so delay play start til then
@@ -2181,8 +2181,9 @@ PlayProcessor::PlayProcessor(Fweelin *app, Loop *playloop, float playvol,
     // Start at specified position
     i->Jump(startofs);
   }
-#endif
-
+#else // FWEELIN_EXPERIMENTAL_NOTIFY_PULSE
+  if (startofs) {}
+#endif // FWEELIN_EXPERIMENTAL_NOTIFY_PULSE
 };
 
 PlayProcessor::~PlayProcessor() {
@@ -2211,7 +2212,7 @@ nframes_t PlayProcessor::GetPlayedLength() {
   return i->GetTotalLength2Cur();
 }
 
-void PlayProcessor::PulseSync (int syncidx, nframes_t actualpos) {
+void PlayProcessor::PulseSync (int /*syncidx*/, nframes_t /*actualpos*/) {
   switch (sync_state) { 
   case SS_START:
     // Start play now
@@ -2474,7 +2475,7 @@ void FileStreamer::process(char pre, nframes_t len, AudioBuffers *ab) {
   }
 };
 
-void FileStreamer::ReceiveEvent(Event *ev, EventProducer *from) {
+void FileStreamer::ReceiveEvent(Event *ev, EventProducer */*from*/) {
   switch (ev->GetType()) {
   case T_EV_PulseSync :
     // Called because of downbeat

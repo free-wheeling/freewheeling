@@ -291,12 +291,12 @@ class Event : public Preallocated {
     echo = 0;
   };
 
-  virtual void operator = (const Event &src) {};
+  virtual void operator = (const Event &/*evt*/) {};
   virtual EventType GetType() { return T_EV_None; };  
   // Returns the number of parameters this event has
   virtual int GetNumParams() { return 0; };
   // Returns the nth parameter
-  virtual EventParameter GetParam(int n) { 
+  virtual EventParameter GetParam(int /*param_n*/) {
     return EventParameter();
   };
 

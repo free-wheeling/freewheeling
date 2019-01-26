@@ -677,7 +677,7 @@ void MidiIO::OutputStop (int port) {
 
 // Events are sent directly- no buffer emptying necessary
 void MidiIO::OutputStartOnPort () {};
-void MidiIO::OutputEndOnPort (int port) {};
+void MidiIO::OutputEndOnPort (int /*port*/) {};
 
 #endif
 
@@ -969,7 +969,7 @@ void MidiIO::SetMIDIForPatch (int def_port, PatchItem *patch) {
   }
 }
 
-void MidiIO::ReceiveEvent(Event *ev, EventProducer *from) {
+void MidiIO::ReceiveEvent(Event *ev, EventProducer */*from*/) {
   // Handle special events for MIDI
   switch (ev->GetType()) {
   case T_EV_SetMidiTuning :

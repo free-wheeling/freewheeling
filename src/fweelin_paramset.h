@@ -134,7 +134,7 @@ public:
 
   virtual void Draw(SDL_Surface *screen);
   
-  virtual void ReceiveEvent(Event *ev, EventProducer *from);
+  virtual void ReceiveEvent(Event *ev, EventProducer */*from*/);
 
   Fweelin *app;
   char *name;           // Of parameter set

@@ -56,7 +56,7 @@ ItemRenamer::ItemRenamer (Fweelin *app, RenameCallback *cb,
   }
 };
 
-char ItemRenamer::HookEvent(Event *ev, EventProducer *from) {
+char ItemRenamer::HookEvent(Event *ev, EventProducer */*from*/) {
   switch (ev->GetType()) {
   case T_EV_Input_Key :
     {
@@ -487,7 +487,7 @@ void Browser::Rename() {
   }
 };
 
-void Browser::ReceiveEvent(Event *ev, EventProducer *from) {
+void Browser::ReceiveEvent(Event *ev, EventProducer */*from*/) {
   switch (ev->GetType()) {
   case T_EV_BrowserMoveToItem :
     {

@@ -237,7 +237,7 @@ public:
   // { if pre is nonzero, preprocess len bytes ahead- 
   // used for smoothing sudden changes-- don't actually
   // advance pointers }
-  virtual void process(char pre, nframes_t len, AudioBuffers *ab) = 0;
+  virtual void process(char /*pre*/, nframes_t len, AudioBuffers *ab) = 0;
 
   Fweelin *getAPP() { return app; };
 
@@ -562,7 +562,7 @@ public:
   // Create ring buffers once all threads are present
   void FinalPrep ();
 
-  void ReceiveEvent(Event *ev, EventProducer *from);
+  void ReceiveEvent(Event *ev, EventProducer */*from*/);
 
 private:
 
@@ -640,7 +640,7 @@ public:
   // In Halt() method we ensure that no stray Pulse_Syncs will be responded to
   virtual void Halt() { stopped = 1; sync_state = SS_ENDED; };
 
-  virtual void PulseSync (int syncidx, nframes_t actualpos);
+  virtual void PulseSync (int syncidx, nframes_t /*actualpos*/);
 
   // Sync up overdubbing of the loop to a newly created pulse
   void SyncUp();
@@ -669,14 +669,14 @@ public:
   void FadeOut_Input(nframes_t len, 
                      sample_t *input_l, sample_t *input_r,
                      sample_t *loop_l, sample_t *loop_r, 
-                     float old_fb, float new_fb, float fb_delta,
+                     float old_fb, float /*new_fb*/, float fb_delta,
                      sample_t *dest_l, sample_t *dest_r);
 
   // Fades input samples into mix- writing to 'dest'
   void FadeIn_Input(nframes_t len, 
                     sample_t *input_l, sample_t *input_r,
                     sample_t *loop_l, sample_t *loop_r, 
-                    float old_fb, float new_fb, float fb_delta,
+                    float old_fb, float /*new_fb*/, float fb_delta,
                     sample_t *dest_l, sample_t *dest_r);
 
   // Jumps to a position within an overdubbing loop- fade of input & output
@@ -758,7 +758,7 @@ public:
 
   virtual void process(char pre, nframes_t len, AudioBuffers *ab);
 
-  virtual void PulseSync (int syncidx, nframes_t actualpos);
+  virtual void PulseSync (int /*syncidx*/, nframes_t /*actualpos*/);
 
   nframes_t GetPlayedLength();
 
@@ -808,7 +808,7 @@ class FileStreamer : public Processor, public EventListener {
   virtual ~FileStreamer();
 
   virtual void process(char pre, nframes_t len, AudioBuffers *ab);
-  virtual void ReceiveEvent(Event *ev, EventProducer *from);
+  virtual void ReceiveEvent(Event *ev, EventProducer */*from*/);
 
   // Starts writing to a new audio stream
   // Note all the heavy work is done in the encode thread!
