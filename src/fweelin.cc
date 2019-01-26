@@ -99,19 +99,18 @@ void signal_handler (int iSignal) {
 }
 
 
-#if 1
+#ifndef NO_COMPILE_MAIN
 int main (int /*argc*/, char *argv[]) {
 #if !defined(WIN32)
   main_pid = getpid();
-#endif
+#endif // WIN32
 
   // Initialize the stack trace mechanism 
   StackTraceInit(argv[0], -1);
 
   signal(SIGINT, signal_handler);
 
-#if defined(WIN32)
-#else
+#if !defined(WIN32)
   // Register signal handlers
   struct sigaction sact;
   sigemptyset(&sact.sa_mask);
@@ -123,14 +122,7 @@ int main (int /*argc*/, char *argv[]) {
   sigaction(SIGFPE,  &sact, NULL);
   sigaction(SIGUSR1, &sact, NULL);
   sigaction(SIGUSR2, &sact, NULL);
-#endif
-
-#if 0
-  // CRESH TEST DUMMY
-  
-  char *test = 0;
-  *test = 'H';
-#endif
+#endif // WIN32
 
   Fweelin flo;
   
@@ -144,6 +136,7 @@ int main (int /*argc*/, char *argv[]) {
   
   return 0;
 }
-#endif
+#endif // NO_COMPILE_MAIN
+
 
 // Improvisation is loving what is.

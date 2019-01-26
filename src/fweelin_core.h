@@ -424,7 +424,7 @@ public:
 // like a keymap
 class TriggerMap : public Saveable, public EventProducer { 
 public:
-  TriggerMap (Fweelin *app, int mapsize) : app(app), mapsize(mapsize), 
+  TriggerMap (Fweelin *app, int mapsize) : app(app), mapsize(mapsize),
     lastupdate(0) {
     // Map is an array of pointers to different loops
     map = new Loop *[mapsize];
@@ -1032,7 +1032,7 @@ class Fweelin : public EventProducer, public BrowserCallback {
   char TriggerSnapshot (int idx);
 
   // Create snapshot from current state of all loops
-  void CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap);
+  void CreateSnapshot (char *_name, LoopManager *lm, TriggerMap *tmap);
   Snapshot *CreateSnapshot (int idx) { 
     Snapshot *s = getSNAP(idx);
     if (s != 0) {

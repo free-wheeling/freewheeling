@@ -1,6 +1,6 @@
 <interfaces>
-  <!-- Interfaces to load. Each interface defines visuals and behavior 
-for
+  <!-- Interfaces to load.
+       Each interface defines visuals and behavior for
        how Freewheeling responds to different hardware controllers. -->
 
   <!-- Each interface is automatically assigned an ID when loaded.
@@ -11,7 +11,7 @@ for
        buttons/sliders/keys/etc.
 
        Interfaces defined as 'switchable=0' have displays and layouts
-       that are always visible- never switched. For example, the
+       that are always visible - never switched. For example, the
        MIDI footswitch interface is always visible at the bottom right
        of Freewheeling's window for quick capturing of loops. -->
 
@@ -29,11 +29,11 @@ for
   <!-- Bare minimum -->
   <interface setup="browsers.xml" switchable="0"/>
 
-  <!-- Added user interfaces -->
+  <!-- Controller device<->loop mapping interfaces -->
   <interface setup="midifootswitch.xml" switchable="0"/>
-  <interface setup="bcf2000.xml"/>
-<!-- <interface setup="pckeyboard.xml"/> -->
+  <interface setup="pckeyboard.xml"/>
   <interface setup="midikeyboard.xml"/>
+  <interface setup="bcf2000.xml"/>
 <!-- <interface setup="pcr-m1.xml" switchable="0"/> -->
   <interface setup="dancemat.xml"/>
 </interfaces>

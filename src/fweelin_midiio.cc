@@ -123,7 +123,7 @@ char MidiIO::open_midi (int num_in, int num_out) {
   // Connect first input
   SetMIDIInput(0);
   
-#if 0
+#ifdef FWEELIN_MIDI_SEND
   // We no longer use MIDISend to send to destinations--
   // because many apps connect to sources, we instead create virtual sources for each output
   // and use MIDIReceived to send to them
@@ -150,7 +150,7 @@ char MidiIO::open_midi (int num_in, int num_out) {
   // MIDI transmit using destinations
 #define MIDI_TRANSMIT(idx) MIDISend(out_ports[idx], dest, packetList)
 
-#else
+#else // FWEELIN_MIDI_SEND
   dest = 0;
 
   // Create virtual sources
@@ -167,7 +167,7 @@ char MidiIO::open_midi (int num_in, int num_out) {
 // MIDI transmit using virtual sources
 #define MIDI_TRANSMIT(idx) MIDIReceived(out_sources[idx], packetList)
 
-#endif
+#endif // FWEELIN_MIDI_SEND
   
   return 0;
 }
@@ -348,7 +348,7 @@ void MidiIO::OutputEndOnPort (int port) {
   MIDI_TRANSMIT(port);
 };
 
-#else
+#else // __MACOSX__
 
 // ******** LINUX MIDI
 
@@ -494,7 +494,7 @@ void *MidiIO::run_midi_thread(void *ptr)
       do {
         snd_seq_event_input(inst->seq_handle, &ev);
         switch (ev->type) {
-#if 0
+#ifdef FWEELIN_LOG_UNHANDLED_MIDI_EVTS
           case SND_SEQ_EVENT_QFRAME:
             printf("MTC quarterframe\n");
             break;
@@ -515,7 +515,7 @@ void *MidiIO::run_midi_thread(void *ptr)
           case SND_SEQ_EVENT_TEMPO:
             printf("MIDI: 'tempo' not yet implemented\n");
             break;
-#endif
+#endif // FWEELIN_LOG_UNHANDLED_MIDI_EVTS
             
           case SND_SEQ_EVENT_CONTROLLER: 
             // Control Change
@@ -679,7 +679,7 @@ void MidiIO::OutputStop (int port) {
 void MidiIO::OutputStartOnPort () {};
 void MidiIO::OutputEndOnPort (int /*port*/) {};
 
-#endif
+#endif // __MACOSX__
 
 // ******** CROSS-PLATFORM MIDI CODE
 
@@ -853,7 +853,7 @@ MidiIO::~MidiIO() {
 #ifdef __MACOSX__
   if (out_sources != 0)
     delete[] out_sources;
-#endif
+#endif // __MACOSX__
 }
 
 void MidiIO::SetMIDIForPatch (int def_port, PatchItem *patch) {
@@ -984,7 +984,7 @@ void MidiIO::ReceiveEvent(Event *ev, EventProducer */*from*/) {
     }
     return;
     
-#if 0
+#ifdef FWEELIN_EXPERIMENTAL_MIDI_ECHO
   case T_EV_SetMidiEchoPort :
     {
       SetMidiEchoPortEvent *pev = (SetMidiEchoPortEvent *) ev;
@@ -1012,7 +1012,7 @@ void MidiIO::ReceiveEvent(Event *ev, EventProducer */*from*/) {
       echochan = cev->echochannel;
     }
     return;
-#endif
+#endif // FWEELIN_EXPERIMENTAL_MIDI_ECHO
     
   default:
     break;
@@ -1142,7 +1142,7 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel, int bypass
       } else
         printf("MIDI: Can't find BypassInfo struct for p/c [%d/%d]\n",p,c);
 
-#if 0
+#ifdef FWEELIN_EXPERIMENTAL_SOFTSYNTHS_KLUDGE
       // For poorly behaved softsynths, double up on Note Offs
       if (!mkev->down) 
         OutputNote(ret = (port == -1 ? mkev->outport-1 : port),
@@ -1150,7 +1150,7 @@ int MidiIO::EchoEventToPortChannel (Event *ev, int port, int channel, int bypass
                    mkev->down,
                    mkev->notenum + fs->transpose,
                    mkev->vel);
-#endif
+#endif // FWEELIN_EXPERIMENTAL_SOFTSYNTHS_KLUDGE
     }
     break;
 
@@ -1291,8 +1291,8 @@ void MidiIO::SendBankProgramChange (PatchItem *patch) {
 BypassInfo *MidiIO::getBP(int port, int channel) { 
   // printf("MIDI: getBP: %d/%d\n",port,channel);
   if (port >= 0 && port < app->getCFG()->GetNumMIDIOuts() &&
-	  channel >= 0 && channel < MAX_MIDI_CHANNELS)
-	  return &bp[port*MAX_MIDI_CHANNELS + channel];
+    channel >= 0 && channel < MAX_MIDI_CHANNELS)
+    return &bp[port*MAX_MIDI_CHANNELS + channel];
   else
     return 0;
 }
@@ -1305,7 +1305,7 @@ void MidiIO::CheckBypass() {
 
     // Run through all ports/channels and test time
     BypassInfo *b = bp;
-    for (int p = 0; p < app->getCFG()->GetNumMIDIOuts(); p++)
+    for (int p = 0; p < app->getCFG()->GetNumMIDIOuts(); p++) {
       for (int c = 0; c < MAX_MIDI_CHANNELS; c++, b++) {
         if (b->active && b->bypasscc != 0 && !b->bypassed) {
           // Time since last note press is greater than sustain time?? Then bypass
@@ -1324,7 +1324,8 @@ void MidiIO::CheckBypass() {
           } 
         }
       }      
-      
+    }
+
     lastchecktime = now;
   }
 };

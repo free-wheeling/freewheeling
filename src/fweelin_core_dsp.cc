@@ -121,10 +121,10 @@ float AudioLevel::fader_to_dB (float level, float maxDb)
   if (level == 0.) 
     return DB_FLOOR;
 
-	float maxPercent = iec_dB_to_fader(maxDb);
-	float percent = level * maxPercent;
-	float dB = iec_fader_to_dB(percent);
-	return dB;
+  float maxPercent = iec_dB_to_fader(maxDb);
+  float percent = level * maxPercent;
+  float dB = iec_fader_to_dB(percent);
+  return dB;
 }
 
 float AudioLevel::dB_to_fader (float dB, float maxDb)

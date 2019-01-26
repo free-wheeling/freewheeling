@@ -62,36 +62,36 @@ Snapshot *Fweelin::getSNAP (int idx) {
     return 0;
 }
 
-void Snapshot::CreateSnapshot (char *name, LoopManager *lm, TriggerMap *tmap) {
-  if (exists && this->name != 0 && name == 0) {
+void Snapshot::CreateSnapshot (char *_name, LoopManager *lm, TriggerMap *tmap) {
+  if (this->exists && this->name != 0 && _name == 0) {
     // Preserve name of snapshot
     DeleteSnapshot(0);
   } else  
     DeleteSnapshot();
 
-  exists = 1;
-  if (this->name == 0 && name != 0) {
-    this->name = new char[strlen(name)+1];
-    strcpy(this->name,name);
+  this->exists = 1;
+  if (this->name == 0 && _name != 0) {
+    this->name = new char[strlen(_name)+1];
+    strcpy(this->name,_name);
   }
 
   if (lm != 0) {
     // Count all loops
-    numls = tmap->CountLoops();
-    if (numls > 0) {
-      ls = new LoopSnapshot[numls];
+    this->numls = tmap->CountLoops();
+    if (this->numls > 0) {
+      this->ls = new LoopSnapshot[this->numls];
       
       int idx = 0;
       for (int i = 0; i < tmap->GetMapSize(); i++) {
         if (tmap->GetMap(i) != 0) {
-          Loop *l = tmap->GetMap(i);
-          if (idx >= numls) {
+          Loop *loop = tmap->GetMap(i);
+          if (idx >= this->numls) {
             printf("CORE: ERROR: Loop count mismatch creating snapshot!\n");
             return;
           }
           
-          ls[idx++] = LoopSnapshot(i,lm->GetStatus(i),
-                                   l->vol,lm->GetTriggerVol(i));
+          this->ls[idx++] = LoopSnapshot(i,lm->GetStatus(i),
+                                         loop->vol,lm->GetTriggerVol(i));
         }
       }
     }
@@ -409,30 +409,30 @@ void LoopManager::SetupSceneBrowser() {
 };
 
 void LoopManager::ItemBrowsed(BrowserItem */*item*/) {};
-void LoopManager::ItemSelected(BrowserItem *i) {
+void LoopManager::ItemSelected(BrowserItem *item) {
   // Loop manager handles selected browser callback for scenes and loops
-  switch (i->GetType()) {
+  switch (item->GetType()) {
   case B_Loop: 
-    printf("DISK: Load '%s'\n",((LoopBrowserItem *) i)->filename);
-    LoadLoop(((LoopBrowserItem *) i)->filename,loadloopid,
+    printf("DISK: Load '%s'\n",((LoopBrowserItem *) item)->filename);
+    LoadLoop(((LoopBrowserItem *) item)->filename,loadloopid,
              newloopvol / GetOutputVolume());
     break;
     
   case B_Scene:
-    printf("DISK: Load '%s'\n",((SceneBrowserItem *) i)->filename);
-    LoadScene((SceneBrowserItem *) i);
+    printf("DISK: Load '%s'\n",((SceneBrowserItem *) item)->filename);
+    LoadScene((SceneBrowserItem *) item);
     break;
 
   default:
     break;
   }
 };
-void LoopManager::ItemRenamed(BrowserItem *i) {
-  switch (i->GetType()) {
+void LoopManager::ItemRenamed(BrowserItem *item) {
+  switch (item->GetType()) {
   case B_Loop_Tray:
     // Change name inside the loop
     {
-      LoopTrayItem *curl = (LoopTrayItem *) i;
+      LoopTrayItem *curl = (LoopTrayItem *) item;
       char *old_filename = 0, 
         *new_filename = 0;
       
@@ -475,15 +475,15 @@ void LoopManager::ItemRenamed(BrowserItem *i) {
       exts[END_OF_FORMATS] = FWEELIN_OUTPUT_DATA_EXT;
 
       // Rename all possible audio files + XML metadata to new name
-      printf("DISK: Rename '%s'\n",((LoopBrowserItem *) i)->filename);
-      Saveable::RenameSaveable(&((LoopBrowserItem *) i)->filename,baselen,
-                               i->name,(const char **) exts,numexts);
+      printf("DISK: Rename '%s'\n",((LoopBrowserItem *) item)->filename);
+      Saveable::RenameSaveable(&((LoopBrowserItem *) item)->filename,baselen,
+                               item->name,(const char **) exts,numexts);
 
       // Is this loop loaded? If so, rename it
 
       // Find loop in memory (by hash, extracted from filename)
       char fn_hash[FWEELIN_OUTNAME_LEN];
-      if (!Saveable::SplitFilename(((LoopBrowserItem *) i)->filename,
+      if (!Saveable::SplitFilename(((LoopBrowserItem *) item)->filename,
                                    baselen,0,fn_hash,0,FWEELIN_OUTNAME_LEN)) {
         // Convert text 'fn_hash' to binary hash and scan for it
         Saveable tmp;
@@ -496,12 +496,12 @@ void LoopManager::ItemRenamed(BrowserItem *i) {
             Loop *foundloop = GetSlot(foundidx);
             
             // Rename in memory
-            RenameLoop(foundloop,i->name);
+            RenameLoop(foundloop,item->name);
             
             // We have to notify the LoopTray of the new name given
             LoopTray *tray = (LoopTray *) app->getBROWSER(B_Loop_Tray);
             if (tray != 0)
-              tray->ItemRenamedFromOutside(foundloop,i->name);
+              tray->ItemRenamedFromOutside(foundloop,item->name);
           }     
         }
       }      
@@ -514,9 +514,9 @@ void LoopManager::ItemRenamed(BrowserItem *i) {
         strlen(FWEELIN_OUTPUT_SCENE_NAME);
       const static char *exts[] = {FWEELIN_OUTPUT_DATA_EXT};
       
-      printf("DISK: Rename '%s'\n",((SceneBrowserItem *) i)->filename);
-      Saveable::RenameSaveable(&((SceneBrowserItem *) i)->filename,baselen,
-                               i->name,exts,1);
+      printf("DISK: Rename '%s'\n",((SceneBrowserItem *) item)->filename);
+      Saveable::RenameSaveable(&((SceneBrowserItem *) item)->filename,baselen,
+                               item->name,exts,1);
     }
     break;
 
@@ -953,12 +953,12 @@ void TriggerMap::GoSave(char *filename) {
     // This will give us an appropriate scene filename
     md5_ctx md5gen;
     md5_init(&md5gen);
-    for (int i = 0; i < mapsize; i++)
-      if (map[i] != 0) {
-        if (map[i]->GetSaveStatus() == SAVE_DONE)
+    for (int i = 0; i < this->mapsize; i++)
+      if (this->map[i] != 0) {
+        if (this->map[i]->GetSaveStatus() == SAVE_DONE)
         {
           // Update scene hash with hash from this loop
-          const uint8_t* data = (uint8_t*)map[i]->GetSaveHash();
+          const uint8_t* data = (uint8_t*)this->map[i]->GetSaveHash();
           md5_update(&md5gen,SAVEABLE_HASH_LENGTH,data);
         }
         else
@@ -1027,8 +1027,8 @@ void TriggerMap::GoSave(char *filename) {
                                      (xmlChar *) FWEELIN_OUTPUT_SCENE_NAME,0);
 
       // Loops
-      for (int i = 0; i < mapsize; i++)
-        if (map[i] != 0 && map[i]->GetSaveStatus() == SAVE_DONE) {
+      for (int i = 0; i < this->mapsize; i++)
+        if (this->map[i] != 0 && this->map[i]->GetSaveStatus() == SAVE_DONE) {
           xmlNodePtr lp = xmlNewChild(ldat->children, 0, 
                                       (xmlChar *) FWEELIN_OUTPUT_LOOP_NAME, 0);
 
@@ -1037,12 +1037,12 @@ void TriggerMap::GoSave(char *filename) {
           xmlSetProp(lp,(xmlChar *) "loopid",(xmlChar *) xmltmp);
 
           // Loop hash (used to find the loop on disk)
-          unsigned char *sh = map[i]->GetSaveHash();
+          unsigned char *sh = this->map[i]->GetSaveHash();
           GET_SAVEABLE_HASH_TEXT(sh);
           xmlSetProp(lp,(xmlChar *) "hash",(xmlChar *) hashtext);
 
           // Loop volume
-          snprintf(xmltmp,XT_LEN,"%.5f",map[i]->vol);
+          snprintf(xmltmp,XT_LEN,"%.5f",this->map[i]->vol);
           xmlSetProp(lp,(xmlChar *) "volume",(xmlChar *) xmltmp);
         }
 
@@ -3891,9 +3891,9 @@ int Fweelin::setup()
   return 0;
 }
 
-void Fweelin::ItemSelected (BrowserItem *i) {
+void Fweelin::ItemSelected (BrowserItem *item) {
   // Main app handles selected callback for patch browser
-  if (i->GetType() != B_Patch) 
+  if (item->GetType() != B_Patch)
     printf("CORE: ERROR- Patch Browser contains items of invalid type!\n");
   else {
     PatchBrowser *br = (PatchBrowser *) getBROWSER(B_Patch);
@@ -3906,7 +3906,7 @@ void Fweelin::ItemSelected (BrowserItem *i) {
       if (pb->port == 0) {
         // We are selecting in a Fluidsynth bank-- send patch change
 #if USE_FLUIDSYNTH
-        getFLUIDP()->SendPatchChange((PatchItem *) i);
+        getFLUIDP()->SendPatchChange((PatchItem *) item);
 #else
         printf("CORE: ERROR: Can't change FluidSynth patches- no FluidSynth "
                "support!\n");
@@ -3915,7 +3915,7 @@ void Fweelin::ItemSelected (BrowserItem *i) {
         // Check if change messages to be sent?
         if (!pb->suppresschg) {
           // Tell MIDI to send out bank/program change(s) for new patch
-          getMIDI()->SendBankProgramChange((PatchItem *) i);
+          getMIDI()->SendBankProgramChange((PatchItem *) item);
         }
       }
     }

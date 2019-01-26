@@ -857,9 +857,9 @@ class FloConfig {
   int msnumouts, *msouts;
   
   // Is input/output #n stereo?
-  inline char IsStereoInput(int n) { return ms_inputs[n]; };
+  inline char IsStereoInput(int out_n) { return ms_inputs[out_n]; };
   inline char IsStereoOutput(int /*out_n*/) { return IsStereoMaster(); };
-  inline char IsInputMonitoring(int n) { return monitor_inputs[n]; };
+  inline char IsInputMonitoring(int out_n) { return monitor_inputs[out_n]; };
   char *ms_inputs,    // Zero or nonzero for each input- is this input stereo?
     *monitor_inputs;  // Nonzero if monitoring is enabled for this input
   // Is FreeWheeling running in stereo or completely in mono?

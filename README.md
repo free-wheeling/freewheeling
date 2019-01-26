@@ -1,18 +1,4 @@
 
-<table>
-  <tr>
-    <td><img src="https://github.com/free-wheeling/freewheeling/wiki/freewheeling-logo-1.jpg" /></td>
-    <td><b>Freewheeling is live looper software.</b>
-           <br />
-           This wiki enables the Freewheeling community to collaborate on documentation.
-           <br />
-           The main Freewheeling website can be found at:
-           <a href="http://freewheeling.sourceforge.net/">http://freewheeling.sourceforge.net/</a>
-    </td>
-  </tr>
-</table>
-
-
 Introduction to Freewheeling
 ----------------------------
 
@@ -22,9 +8,9 @@ Introduction to Freewheeling
 
 Freewheeling provides a highly configurable, intuitive, and fluid user
 interface for instrumentalists to capture audio loops in real-time. Best
-way to understand Freewheeling?? [See and hear
-it](http://freewheeling.sourceforge.net/shots.shtml) in action. [Demo
-Video](http://freewheeling.sourceforge.net/video/fw-demo1.avi)
+way to understand Freewheeling?? [See and hear it][Freewheeling_Screenshots] in action.
+[Demo Video][Freewheeling_Demo_Video].
+
 
 ### Philosophy
 
@@ -42,12 +28,13 @@ directing loops from within spirited improvisation. It works because,
 down to the core, it's built around improv. We leave mice and menus, and
 dive into our own process of making sound. The principle author of
 Freewheeling is JP Mercury. Freewheeling was also originally a Max/MSP
-external.
+external. Since 2016, it is maintained by the user community.
+
 
 ### Technical Details
 
 Freewheeling runs under GNU/Linux (PC/Mac) and Mac OS X (PPC/Intel)
-using the [Jack Audio Connection Kit](http://jackaudio.org), and
+using the [Jack Audio Connection Kit][JACK] sound server, and
 is Free and Open Source Software, released under the GNU GPL license.
 The ChangeLog is a good resource, because all major new features have
 been documented there. It is humble enough to run on modest hardware but
@@ -76,8 +63,7 @@ package manager (such as synaptic) or your distro's Add/Remove Software
 Control Panel, search for a package named *freewheeling* or *fweelin*.
 
 -   Install one of the [OS Specific Packages][OS_Specific_Packages] - (recommended)
--   or, [Download](https://github.com/free-wheeling/freewheeling/releases)
-    a tarball - (advanced)
+-   or, [Download][Freewheeling_Tarballs] a tarball - (advanced)
 -   or, Debian, KxStudio, Mint, and Ubuntu users can download the
     sourecs with your package manager: - (advanced)
 
@@ -92,11 +78,13 @@ Control Panel, search for a package named *freewheeling* or *fweelin*.
     $ git clone https://notabug.org/freewheeling/freewheeling.git
 ```
 
+
 ### Installing
 
 -   [OS Specific Packages][OS_Specific_Packages] - (recommended)
 -   [Compiling][Compiling] - (advanced)
 -   [Dependencies][Dependencies]
+
 
 ### Configuring
 
@@ -106,6 +94,7 @@ Control Panel, search for a package named *freewheeling* or *fweelin*.
 -   [Configurations][Configurations] -
     a store for users to submit their custom interfaces, layouts, patches, etc
 
+
 ### Troubleshooting and Support
 
 -   [FAQS][FAQS] - Freeq-wheely Asked Questions
@@ -114,13 +103,14 @@ Control Panel, search for a package named *freewheeling* or *fweelin*.
 -   [Freewheeling Users Mailing List][Freewheeling_Users_Mailing_List] -
     If you're looking for help with Freewheeling,
     your question may already be answered there. If not, feel free to
-    [join the mailing list](https://lists.sourceforge.net/lists/listinfo/freewheeling-user)
+    [join the mailing list][Freewheeling_Users_Mailing_List]
     and ask your question to the community
 -   [Feature Requests][Freewheeling_Users_Mailing_List] -
     Please join the 'freewheeling-user' mailing list
--   [Bug Reporting](https://github.com/free-wheeling/freewheeling/issues) -
-    Please reports bugs on the GitHub issue tracker or the
-    [NotABug issue tracker](https://notabug.org/freewheeling/freewheeling/issues)
+-   [Bug Reporting][Github_Bug_Tracker] -
+    Please reports bugs on the [GitHub issue tracker][Github_Bug_Tracker] or the
+    [NotABug issue tracker][Notabug_Bug_Tracker]
+
 
 ### Using
 
@@ -131,17 +121,22 @@ Control Panel, search for a package named *freewheeling* or *fweelin*.
 -   [Default Key Bindings][Default_Key_Bindings] - what did I just pressed?
 -   [Tips and Tricks for Studio and Live Use][Tips_and_Tricks_for_Studio_and_Live_Use]
 
-NOTE: You'll also need JACK and a way to configure it (such as qJackCtl
-or Cadence). A very easy way to setup a GNU/Linux audio workstation is
-by installing the Ubuntu-based [KxStudio Operating
-System](http://kxstudio.linuxaudio.org/Downloads). Debian (and
-derrivatives such as Ubuntu and Mint) can transform their system into
-KxStudio simply by adding the [KxStudio
-repos](http://kxstudio.linuxaudio.org/Repositories) and installing the
-'kxstudio-meta-all' package (or 'kxstudio-meta-audio' for just the
+
+NOTE: You will also need the JACK audio server and a way to configure it
+(such as qJackCtl or Cadence). A very easy way to setup a GNU/Linux audio workstation
+is by installing the [KxStudio Operating System][KxStudio_Downloads].
+
+NOTE: Debian (and derrivatives such as Trisquel, Ubuntu, and Mint) can transform
+their system into KxStudio simply by adding the [KxStudio repos][KxStudio_Repos]
+and installing the 'kxstudio-meta-all' package (or 'kxstudio-meta-audio' for just the
 pro-audio programs). It is highly recommended that you install at least
 the 'kxstudio-default-settings' package which optimizes your system
 performance for real-time audio use.
+
+NOTE: ArchLinux (and derrivatives such as Parabola, Hyperbola, and Manjaro)
+can simply install the 'pro-audio' package group, which includes Freewheeling.
+It is highly recommended that you install at least the 'realtime-privileges' package
+which configures your system for real-time audio use.
 
 
 The Freewheeling Community
@@ -165,8 +160,12 @@ The Freewheeling Community
 
 
 [Freewheeling_Screenshot]:                 http://freewheeling.sourceforge.net/flo-051-looptray-t.png
+[Freewheeling_Screenshots]:                http://freewheeling.sourceforge.net/shots.shtml
+[Freewheeling_Demo_Video]:                 http://freewheeling.sourceforge.net/video/fw-demo1.avi
+[JACK]:                                    http://jackaudio.org
 [Technical_Features]:                      https://github.com/free-wheeling/freewheeling/wiki/Technical-Features
 [OS_Specific_Packages]:                    https://github.com/free-wheeling/freewheeling/wiki/OS-Specific-Packages
+[Freewheeling_Tarballs]:                   https://github.com/free-wheeling/freewheeling/releases
 [Compiling]:                               https://github.com/free-wheeling/freewheeling/wiki/Compiling
 [Dependencies]:                            https://github.com/free-wheeling/freewheeling/wiki/Dependencies
 [Configuration_Basics]:                    https://github.com/free-wheeling/freewheeling/wiki/Configuration-Basics
@@ -174,10 +173,14 @@ The Freewheeling Community
 [Configurations]:                          https://github.com/free-wheeling/freewheeling/wiki/Configurations
 [FAQS]:                                    https://github.com/free-wheeling/freewheeling/wiki/FAQS
 [Known_Issues]:                            https://github.com/free-wheeling/freewheeling/wiki/Known-Issues
+[Freewheeling_Users_Mailing_List]:         https://github.com/free-wheeling/freewheeling/wiki/Freewheeling-Users-Mailing-List
+[Github_Bug_Tracker]:                      https://github.com/free-wheeling/freewheeling/issues
+[Notabug_Bug_Tracker]:                     https://notabug.org/freewheeling/freewheeling/issues
 [Quick_Start_Guide]:                       https://github.com/free-wheeling/freewheeling/wiki/Quick-Start-Guide
 [Freewheeling_Video_Tutorials]:            https://github.com/free-wheeling/freewheeling/wiki/Freewheeling-Video-Tutorials
 [Controlling_Freewheeling]:                https://github.com/free-wheeling/freewheeling/wiki/Controlling-Freewheeling
 [Default_Key_Bindings]:                    https://github.com/free-wheeling/freewheeling/wiki/Default-Key-Bindings
 [Tips_and_Tricks_for_Studio_and_Live_Use]: https://github.com/free-wheeling/freewheeling/wiki/Tips-and-Tricks-for-Studio-and-Live-Use
+[KxStudio_Downloads]:                      https://kxstudio.linuxaudio.org/Downloads
+[KxStudio_Repos]:                          https://kxstudio.linuxaudio.org/Repositories
 [Music_made_with_Freewheeling]:            https://github.com/free-wheeling/freewheeling/wiki/Music-made-with-Freewheeling
-[Freewheeling_Users_Mailing_List]:         https://github.com/free-wheeling/freewheeling/wiki/Freewheeling-Users-Mailing-List
