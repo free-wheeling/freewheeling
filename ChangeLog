@@ -1,5 +1,11 @@
 
-2017-04-03 v0.6.3
+2019-01-29 v0.6.5
+            * made compatible with both fluidsynth v1 and v2
+            * fixed deprecation and compiler warnings and other housekeeping tasks
+            * removed experimental 'elastin' classes
+
+
+2017-04-03 v0.6.4
 
             * made font paths consistent with debian packaging
             * implemented 'tiny' font specified in graphics.xml (although still unused)
@@ -9,7 +15,7 @@
 
             * FreeWheeling now requires nettle instead of gnutls-openssl
               because gnutls-openssl is no longer supported on ArchLinux
-            * several deprecation, bug, and compiler warning fixes by GitHub user 'Jajcus'
+            * deprecation, bug, and compiler warning fixes by GitHub user 'Jajcus'
 
 
 2016-10-31 v0.6.1
@@ -17,9 +23,9 @@
             * new version control and repos - SVN history converted to git
               sadly, JP has been incommunicado for some time
               so it is not possible to properly maintain the sourceforge repo.
-              the project has been forked to notabug and github for further development
-              https://notabug.org/freewheeling/freewheeling/
+              the project has been forked to github and notabug for further development
               https://github.com/free-wheeling/freewheeling/
+              https://notabug.org/freewheeling/freewheeling/
 
             * restored freewheeling wiki on github
               https://github.com/free-wheeling/freewheeling/wiki
