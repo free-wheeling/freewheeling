@@ -87,11 +87,11 @@ FluidSynthProcessor::FluidSynthProcessor(Fweelin *app, char stereo) :
     double pitches[12];
     for (int i = 0; i < 12; i++)
       pitches[i] = tuning;
-    fluid_synth_activate_octave_tuning(synth, 0, 0, "DETUNE", pitches, FALSE);
+    fluid_synth_activate_octave_tuning(synth, 0, 0, "DETUNE", pitches, false);
 
     // Select tuning
     for (int i = 0; i < MAX_MIDI_CHANNELS; i++) 
-      fluid_synth_activate_tuning(synth, i, 0, 0, FALSE);
+      fluid_synth_activate_tuning(synth, i, 0, 0, false);
   } else 
     printf("FLUID: Using default tuning\n");
 
