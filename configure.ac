@@ -17,7 +17,7 @@ AC_PROG_CC
 # Add Xtra Paths for Checking
 AC_PATH_XTRA
 #if test x"$no_x" = xyes; then
-#      AC_ERROR([Can not find X11 development headers or libraries.])
+#      AC_MSG_ERROR(Can not find X11 development headers or libraries.)
 #fi
 
 # Checks for libraries.
@@ -56,7 +56,7 @@ AC_CHECK_LIB([asound], [main], ,
 
 AC_CHECK_LIB([jack], [jack_client_open], , 
   [AC_MSG_ERROR(AUDIO: You need JACK audio library (libjack-dev) installed.
-		http://jackit.sourceforge.net/)])
+		https://jackaudio.org/)])
 
 if test "$enable_fluidsynth" != "no"; then
    AC_CHECK_LIB([fluidsynth], [main], fluidsynth=yes, fluidsynth=no)
@@ -134,4 +134,5 @@ AC_FUNC_MALLOC
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([atexit dup2 floor gettimeofday memset pow realpath select sqrt strcasecmp strchr strncasecmp strrchr strtol])
 
-AC_OUTPUT(Makefile src/Makefile data/Makefile)
+AC_CONFIG_FILES([Makefile src/Makefile data/Makefile])
+AC_OUTPUT
