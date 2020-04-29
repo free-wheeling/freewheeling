@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Freewheeling
+Comment=A live looper
+Exec=fweelin
+Icon=freewheeling
+Terminal=false
+StartupNotify=false
+Categories=Audio;Sequencer;
