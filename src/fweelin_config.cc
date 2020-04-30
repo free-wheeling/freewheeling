@@ -345,10 +345,9 @@ void ParsedExpression::Print() {
 };
 
 // Evaluate this expression
-UserVariable ParsedExpression::Evaluate(Event *input) {
+void ParsedExpression::Evaluate(UserVariable *dst, Event *input) {
   // Starting token..
-  UserVariable cur;
-  start.Evaluate(&cur,input,1); // Setup cur with evaluation of start token
+  start.Evaluate(dst,input,1); // Setup dst with evaluation of start token
 
   // Move through the math..
   CfgMathOperation *cop = ops;
@@ -359,16 +358,16 @@ UserVariable ParsedExpression::Evaluate(Event *input) {
 
     switch (cop->otype) {
     case '/' :
-      cur /= tmp;
+      *dst /= tmp;
       break;
     case '*' :
-      cur *= tmp;
+      *dst *= tmp;
       break;
     case '+' :
-      cur += tmp;
+      *dst += tmp;
       break;
     case '-' :
-      cur -= tmp;
+      *dst -= tmp;
       break;
     default :
       printf("Evaluate Expression: Invalid math operand\n");
@@ -376,8 +375,6 @@ UserVariable ParsedExpression::Evaluate(Event *input) {
     
     cop = cop->next;
   }
-
-  return cur;
 };
 
 EventBinding::~EventBinding() {
@@ -768,7 +765,7 @@ void InputMatrix::CreateParameterSets (int interfaceid,
             // OK, check if expression is static
             if (exp->IsStatic()) {
               // Yup, so evaluate now
-              UserVariable val = exp->Evaluate(input);
+              UserVariable val; exp->Evaluate(&val, input);
               
               // Store directly in output prototype event
               char *nwofs = 
@@ -835,7 +832,7 @@ void InputMatrix::CreateParameterSets (int interfaceid,
         // OK, check if expression is static
         if (exp->IsStatic()) {
           // Yup, so evaluate now
-          UserVariable val = exp->Evaluate(input);
+          UserVariable val; exp->Evaluate(&val, input);
           
           // Store directly in output prototype event
           char *nwofs = 
@@ -948,7 +945,7 @@ int InputMatrix::CreateConditions (int interfaceid,
                 // in a hash or do we need to compute during runtime)?
                 if (exp->IsStatic()) {
                   // Yup, so evaluate now
-                  UserVariable val = exp->Evaluate(input);
+                  UserVariable val; exp->Evaluate(&val, input);
 
                   // Return hash value
                   ret_index = (int) val % param.max_index;
@@ -1047,7 +1044,7 @@ int InputMatrix::CreateConditions (int interfaceid,
           // in a hash or do we need to compute during runtime)?
           if (exp->IsStatic()) {
             // Yup, so evaluate now
-            UserVariable val = exp->Evaluate(input);
+            UserVariable val; exp->Evaluate(&val, input);
             
             // Return hash value
             ret_index = (int) val % param.max_index;
@@ -1458,7 +1455,7 @@ void InputMatrix::SetDynamicParameters(Event *input, Event *output,
       }
       else {
         // Evaluate expression with dynamic input & variable parameters
-        UserVariable val = cur->exp->Evaluate(input);
+        UserVariable val; cur->exp->Evaluate(&val, input);
         
         // Store the output data correctly
         StoreParameter(outofs,cur->token.evparam.dtype,&val);
@@ -1483,7 +1480,7 @@ char InputMatrix::CheckConditions(Event *input,
     // Compare evaluations of token and expression
     UserVariable cmp1;
     cur->token.Evaluate(&cmp1,input,1);
-    UserVariable cmp2 = cur->exp->Evaluate(input);
+    UserVariable cmp2; cur->exp->Evaluate(&cmp2, input);
     if (cmp1 != cmp2)
       match = 0;
     else
@@ -1643,7 +1640,7 @@ void InputMatrix::ReceiveEvent(Event *ev, EventProducer *from) {
           if (sv->maxjumpcheck) {
             // Maxjump check enabled
             // Compute change in variable
-            UserVariable jump = sv->var->GetDelta(sv->value);
+            UserVariable jump; sv->var->GetDelta(&jump, sv->value);
             if (jump > sv->maxjump) 
               goset = 0;  // Don't set variable
           }
@@ -2842,7 +2839,8 @@ void FloConfig::ConfigureDisplay_Common(xmlNode *disp, FloDisplay *nw, FloDispla
   n = xmlGetProp(disp, (const xmlChar *)"id");
   if (n != 0) {
     ParsedExpression *tmp = im.ParseExpression((char *) n, 0);
-    nw->id = (int) tmp->Evaluate(0);
+    UserVariable val; tmp->Evaluate(&val, 0);
+    nw->id = (int) val;
     printf("(id: %d) ",nw->id);
     delete tmp;
     xmlFree(n);
@@ -2898,7 +2896,8 @@ void FloConfig::ConfigureDisplay(xmlDocPtr doc, xmlNode *disp, int interfaceid, 
       xmlChar *nn = xmlGetProp(disp, (const xmlChar *)"browsetype");
       if (nn != 0) {
         ParsedExpression *tmp = im.ParseExpression((char *) nn, 0);
-        btype = (BrowserItemType) (int) tmp->Evaluate(0);
+        UserVariable val; tmp->Evaluate(&val, 0);
+        btype = (BrowserItemType) (int) val;
         printf("type: %s ",Browser::GetTypeName(btype));
         delete tmp;
         xmlFree(nn);
