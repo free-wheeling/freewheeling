@@ -1,0 +1,23 @@
+# Ref:
+# https://docs.travis-ci.com/user/job-lifecycle/
+# https://docs.travis-ci.com/user/languages/cpp/
+# https://docs.travis-ci.com/user/installing-dependencies
+# https://docs.travis-ci.com/user/customizing-the-build/
+
+os: linux
+dist: bionic
+language: cpp
+compiler: gcc
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y build-dep freewheeling
+  # build-dep is not sufficient, we need to explicitly install liblo-dev
+  - sudo apt-get -y install liblo-dev
+
+script:
+  - autoreconf -if
+  - ./configure
+  - make
+  - sudo make install
+  - make installcheck
