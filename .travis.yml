@@ -1,0 +1,18 @@
+dist:     bionic
+language: cpp
+compiler: gcc
+
+if: branch IN (master , development)
+
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get -y build-dep freewheeling
+  # build-dep is not sufficient, we need to explicitly install liblo-dev
+  - sudo apt-get -y install liblo-dev
+
+script:
+  - autoreconf -if
+  - ./configure
+  - make
+  - sudo make install
+  - make installcheck
