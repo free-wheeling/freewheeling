@@ -200,31 +200,28 @@ class UserVariable {
   };
 
   // Return the absolute value of the difference (delta) between this variable and arg
-  UserVariable GetDelta (UserVariable &arg) {
-    UserVariable ret;
-    ret.type = T_char;
-    ret.RaisePrecision(*this);
-    ret.RaisePrecision(arg);
+  void GetDelta (UserVariable* dst, UserVariable &arg) {
+    dst->type = T_char;
+    dst->RaisePrecision(*this);
+    dst->RaisePrecision(arg);
     
-    switch (ret.type) {
+    switch (dst->type) {
       case T_char :
-        ret = (char) abs((char) arg - (char) *this);
+        *dst = (char) abs((char) arg - (char) *this);
         break;
       case T_int :
-        ret = (int) abs((int) arg - (int) *this);
+        *dst = (int) abs((int) arg - (int) *this);
         break;
       case T_long :
-        ret = (long) labs((long) arg - (long) *this);
+        *dst = (long) labs((long) arg - (long) *this);
         break;
       case T_float :
-        ret = (float) fabsf((float) arg - (float) *this);
+        *dst = (float) fabsf((float) arg - (float) *this);
         break;
       default :
         printf(" UserVariable: WARNING: GetDelta() doesn't work on this type of variable!\n");
         break;
     }
-    
-    return ret;
   };
   
   void operator -= (UserVariable &src) { 
@@ -458,16 +455,17 @@ class UserVariable {
     return Range(0,0);
   };
 
-  void operator = (UserVariable &src) {
-    // Assignment operator does not copy name to avoid memory alloc 
-    // problems
-    type = src.type;
-    memcpy(data,src.data,CFG_VAR_SIZE);
-    if (src.value == src.data) 
-      value = data;
-    else
-      value = src.value; // System variable, copy data ptr directly
-  };
+// FIXME: this looks important; but is now unused
+//   void operator = (UserVariable &src) {
+//     Assignment operator does not copy name to avoid memory alloc
+//     problems
+//     type = src.type;
+//     memcpy(data,src.data,CFG_VAR_SIZE);
+//     if (src.value == src.data)
+//       value = data;
+//     else
+//       value = src.value; // System variable, copy data ptr directly
+//   };
 
   // Sets this UserVariable from src, converting from src type to this
   void SetFrom(UserVariable &src) {

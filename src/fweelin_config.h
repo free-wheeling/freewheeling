@@ -156,7 +156,7 @@ class ParsedExpression {
   };
 
   // Evaluate this expression
-  UserVariable Evaluate(Event *input);
+  void Evaluate(UserVariable *dst, Event *input);
  
   // Returns nonzero if this expression contains only static tokens
   // and no user variables and no input parameters

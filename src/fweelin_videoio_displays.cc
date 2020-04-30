@@ -458,7 +458,7 @@ void FloDisplayText::Draw(SDL_Surface *screen) {
                          &xofs,&yofs);
 
     // Draw value
-    UserVariable val = exp->Evaluate(0);
+    UserVariable val; exp->Evaluate(&val, 0);
     val.Print(tmp,255);
     VideoIO::draw_text(screen,font->font,
                        tmp,xpos+xofs,ypos,valclr,0,1);
@@ -472,7 +472,7 @@ void FloDisplaySwitch::Draw(SDL_Surface *screen) {
 
   if (font != 0 && font->font != 0 && title != 0) {
     // Evaluate exp
-    UserVariable val = exp->Evaluate(0);
+    UserVariable val; exp->Evaluate(&val, 0);
     char nonz = (char) val;
 
     // Draw title
@@ -494,7 +494,7 @@ void FloDisplayCircleSwitch::Draw(SDL_Surface *screen) {
     flashon = !((char) (((long int) (dt*flashspd)) % 2));
 
   // Evaluate exp
-  UserVariable val = exp->Evaluate(0);
+  UserVariable val; exp->Evaluate(&val, 0);
   char nonz = (char) val;
   if (nonz && !prevnonz)
     // Value is switching on-- store time
@@ -520,7 +520,7 @@ void FloDisplayTextSwitch::Draw(SDL_Surface *screen) {
   SDL_Color c0clr = { 0x99, 0x88, 0x77, 0 };
 
   // Evaluate exp
-  UserVariable val = exp->Evaluate(0);
+  UserVariable val; exp->Evaluate(&val, 0);
   char nonz = (char) val;
 
   // Draw appropriate text
@@ -547,7 +547,7 @@ void FloDisplayBar::Draw(SDL_Surface *screen) {
   }
 
   // Get value of expression
-  UserVariable val = exp->Evaluate(0);
+  UserVariable val; exp->Evaluate(&val, 0);
   float fval = (float) val;
 
   if (dbscale) {
@@ -692,9 +692,9 @@ void FloDisplayBarSwitch::Draw(SDL_Surface *screen) {
   }
 
   // Get value of expression
-  UserVariable val = exp->Evaluate(0);
+  UserVariable val; exp->Evaluate(&val, 0);
   float fval = (float) val;
-  UserVariable sval = switchexp->Evaluate(0);
+  UserVariable sval; switchexp->Evaluate(&val, 0);
   char sw = (char) sval;
 
   if (calibrate && fval >= cval)
