@@ -680,7 +680,8 @@ void InputMatrix::CreateVariable (xmlNode *declare) {
   vars = nw;
 
   printf(" declare: variable '%s' type '%s' value '%s'\n", nw->name, type, 
-         value);
+         (value != 0) ? value : (xmlChar *)"n/a");
+
   xmlFree(type);
   if (value != 0)
     xmlFree(value);
