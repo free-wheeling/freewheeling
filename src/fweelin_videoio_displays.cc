@@ -860,9 +860,11 @@ void FloDisplaySnapshots::Draw(SDL_Surface *screen) {
   int cury = ypos+margin;
   int height = TTF_FontHeight(font->font);
   for (int i = firstidx; i < firstidx + numdisp; i++, cury += height) {
-    const static int SNAP_NAME_LEN = 512;
+    const static int SNAP_BUF_LEN = 512;
+    const static int SNAP_NAME_LEN = SNAP_BUF_LEN - 12;
+    static char buf[SNAP_BUF_LEN] = {0};
+    static char snap_name[SNAP_NAME_LEN] = {0};
 
-    char buf[SNAP_NAME_LEN];
     Snapshot *sn = app->getSNAP(i);
     if (sn != 0) {
       RenameUIVars *rui = 0;
@@ -875,11 +877,22 @@ void FloDisplaySnapshots::Draw(SDL_Surface *screen) {
       }
 
       if (nm != 0)
-        snprintf(buf,SNAP_NAME_LEN,"%2d %s",i+1,nm);
+      {
+        for (int char_n = 0; char_n < SNAP_NAME_LEN; ++char_n)
+          if (!!nm[char_n])
+            snap_name[char_n] = nm[char_n];
+          else
+          {
+            snap_name[char_n] = '\0';
+            break;
+          }
+        snap_name[SNAP_NAME_LEN - 1] = '\0';
+        snprintf(buf,SNAP_BUF_LEN,"%2d %s",i+1,snap_name);
+      }
       else if (sn->exists != 0)
-        snprintf(buf,SNAP_NAME_LEN,"%2d **",i+1);
+        snprintf(buf,SNAP_BUF_LEN,"%2d **",i+1);
       else
-        snprintf(buf,SNAP_NAME_LEN,"%2d",i+1);
+        snprintf(buf,SNAP_BUF_LEN,"%2d",i+1);
 
       int sx, sy;
       VideoIO::draw_text(screen,font->font,
