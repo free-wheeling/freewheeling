@@ -687,8 +687,12 @@ public:
   
   int WriteElement (const T &el) {
     if (num_writers != RT_RWThreads::num_rw_threads) {
-      printf("CORE: ERROR: SRMWRingBuffer thread count mismatch.\n");
-      exit(1);
+      pthread_mutex_lock(&RT_RWThreads::register_rtstruct_lock);
+      pthread_mutex_unlock(&RT_RWThreads::register_rtstruct_lock);
+      if (num_writers != RT_RWThreads::num_rw_threads) {
+        printf("CORE: ERROR: SRMWRingBuffer thread count mismatch.\n");
+        exit(1);
+      }
     }
 
     // Determine which write thread we are
@@ -709,8 +713,12 @@ public:
   
   const T ReadElement () {
     if (num_writers != RT_RWThreads::num_rw_threads) {
-      printf("CORE: ERROR: SRMWRingBuffer thread count mismatch.\n");
-      exit(1);
+      pthread_mutex_lock(&RT_RWThreads::register_rtstruct_lock);
+      pthread_mutex_unlock(&RT_RWThreads::register_rtstruct_lock);
+      if (num_writers != RT_RWThreads::num_rw_threads) {
+        printf("CORE: ERROR: SRMWRingBuffer thread count mismatch.\n");
+        exit(1);
+      }
     }
 
     // Check each ring buffer
