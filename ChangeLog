@@ -1,4 +1,11 @@
 
+2019-05-02 v0.6.6
+            * fixed thread-count race condition during memory-manager init -
+              long-standing bug which caused intermittent startup failures
+            * changed C FALSE to C++ false in fluidsynth class -
+              fixes build failures with GCC9 on some systems
+
+
 2019-01-29 v0.6.5
             * made compatible with both fluidsynth v1 and v2
             * fixed deprecation and compiler warnings and other housekeeping tasks

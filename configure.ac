@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.69])
-AC_INIT([fweelin], [0.6.5], [https://github.com/free-wheeling/freewheeling/issues])
+AC_INIT([fweelin],[0.6.6],[https://github.com/free-wheeling/freewheeling/issues])
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/fweelin.cc])
 #AM_CONFIG_HEADER(config.h)
