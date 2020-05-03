@@ -62,20 +62,13 @@ popular operating systems. If you prefer using your favorite graphical
 package manager (such as synaptic) or your distro's Add/Remove Software
 Control Panel, search for a package named *freewheeling* or *fweelin*.
 
--   Install one of the [OS Specific Packages][OS_Specific_Packages] - (recommended)
+-   Install one of the [Packages][OS_Specific_Packages] for your distro - (recommended)
 -   or, [Download][Freewheeling_Tarballs] a tarball - (advanced)
--   or, Debian, KxStudio, Mint, and Ubuntu users can download the
-    sourecs with your package manager: - (advanced)
-
-```
-    $ apt source freewheeling
-```
-
--   or, Checkout the latest git master - (advanced)
+-   or, Checkout the latest git sources - (advanced)
 
 ```
     $ git clone https://github.com/free-wheeling/freewheeling.git
-    $ git clone https://notabug.org/freewheeling/freewheeling.git
+    $ git clone https://pagure.io/freewheeling.git
 ```
 
 
