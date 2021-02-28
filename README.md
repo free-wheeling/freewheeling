@@ -152,7 +152,7 @@ The Freewheeling Community
     [Music made with Freewheeling][Music_made_with_Freewheeling] article
 
 
-[Freewheeling_Screenshot]:                 http://freewheeling.sourceforge.net/flo-051-looptray-t.png
+[Freewheeling_Screenshot]:                 data/freewheeling-scrot.png
 [Freewheeling_Screenshots]:                http://freewheeling.sourceforge.net/shots.shtml
 [Freewheeling_Demo_Video]:                 http://freewheeling.sourceforge.net/video/fw-demo1.avi
 [JACK]:                                    http://jackaudio.org
