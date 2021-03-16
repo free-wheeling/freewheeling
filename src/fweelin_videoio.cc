@@ -314,7 +314,8 @@ int VideoIO::activate() {
                            run_video_thread,
                            this);
   if (ret != 0) {
-    printf("VIDEO: (start) pthread_create failed, exiting");
+    printf("VIDEO: (start) pthread_create failed, exiting\n");
+    printf("HINT: Did you forget to add yourself to the 'audio' group?\n");
     return 1;
   }
   RT_RWThreads::RegisterReaderOrWriter(video_thread);
