@@ -1,0 +1,1 @@
+To use fweelin with Azerty keyboard, replace the original _coreinterface.xml_ and _pckeyboard.xml_ files in $HOME/.fweelin by those two files.
