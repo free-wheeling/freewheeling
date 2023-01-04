@@ -250,11 +250,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 fweelin_dirname = fweelin
-fonts_path = fonts/truetype/ttf-bitstream-vera
+fonts_path = fonts/truetype/dejavu
 fweelindir = $(datadir)/$(fweelin_dirname)
 fontsdir = ${datadir}/$(fweelin_dirname)/${fonts_path}
 fweelin_DATA = *.txt *.xml *.mid basic.sf2 gdb-stackdump-cmds
-fonts_DATA = fonts/truetype/ttf-bitstream-vera/*
+fonts_DATA = fonts/truetype/dejavu/*
 all: all-am
 
 .SUFFIXES:
